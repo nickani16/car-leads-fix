@@ -2889,14 +2889,14 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[292px_minmax(0,1fr)] bg-[#f4f6f8] min-[1120px]:grid"
+              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[316px_minmax(0,1fr)] bg-[#f5f7fa] min-[1120px]:grid 2xl:grid-cols-[332px_minmax(0,1fr)]"
             >
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
-                className="flex min-h-0 flex-col border-r border-[#dfe5ee] bg-white"
+                className="flex min-h-0 flex-col border-r border-[#d8e0eb] bg-white shadow-[8px_0_28px_rgba(16,24,40,.035)]"
               >
-                <div className="border-b border-[#e6ebf2] px-5 pb-4 pt-5">
+                <div className="border-b border-[#e6ebf2] px-5 pb-5 pt-5 2xl:px-6">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
@@ -2920,8 +2920,9 @@ export default function VehicleSearchExperience({
                   <div className="mt-4">{renderMarketplaceSearchInput()}</div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-1 [scrollbar-width:thin]">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-6">
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.offerType}
                     summary={marketplaceModeLabel(locale, mode)}
                     open={listOfferTypeOpen}
@@ -2946,6 +2947,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.vehicleCategory}
                     summary={categoryText(
                       visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
@@ -2968,6 +2970,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.makeModelYear}
                     summary={[make, model, minYear || maxYear ? `${minYear || '1950'}-${maxYear || '+'}` : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
                     open={listVehicleOpen}
@@ -3011,6 +3014,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={uiText(locale, 'Price', 'Pris', 'Preis')}
                     summary={minPrice || maxPrice ? `${minPrice || '0'}-${maxPrice || '+'} ${priceFilterCurrency}` : desktopListText.anyPrice}
                     open={priceYearOpen}
@@ -3031,6 +3035,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.locationMarket}
                     summary={[region, municipality, marketSummary].filter(Boolean).join(' · ')}
                     open={locationFiltersOpen}
@@ -3053,6 +3058,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.vehicleDetails}
                     summary={desktopListText.mileageFuelEquipment}
                     open={moreFiltersOpen}
@@ -3067,6 +3073,7 @@ export default function VehicleSearchExperience({
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
+                    density="sidebar"
                     title={desktopListText.sellerCondition}
                     summary={sellerSummary}
                     open={sellerFiltersOpen}
@@ -3092,7 +3099,7 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-6 py-4 2xl:px-8">
+                <div className="border-b border-[#dfe5ee] bg-white px-7 py-4 2xl:px-10">
                   <div className="flex items-center justify-between gap-5">
                     <div className="min-w-0">
                       <p className="truncate text-[20px] font-semibold text-[#101828]">
@@ -3131,9 +3138,9 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f8] px-6 py-5 [scrollbar-width:thin] 2xl:px-8">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f5f7fa] px-7 py-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-10 2xl:py-6">
                   {filteredListings.length ? (
-                    <ol className="mx-auto max-w-[1260px] space-y-4">
+                    <ol className="mx-auto max-w-[1420px] space-y-3.5">
                       {filteredListings.map((listing) => (
                         <li key={listing.id}>
                           <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
@@ -3141,7 +3148,7 @@ export default function VehicleSearchExperience({
                       ))}
                     </ol>
                   ) : (
-                    <div className="mx-auto flex max-w-[520px] flex-col items-center px-6 py-14 text-center">
+                    <div className="mx-auto flex min-h-[calc(100dvh-290px)] max-w-[560px] flex-col items-center justify-center px-6 py-14 text-center">
                       <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={220} height={150} className="h-auto w-[200px]" />
                       <p className="mt-5 text-2xl font-semibold text-[#101828]">{seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}</p>
                       <p className="mt-2 text-sm leading-6 text-[#667085]">{translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}</p>
@@ -3154,7 +3161,7 @@ export default function VehicleSearchExperience({
                       </button>
                     </div>
                   ) : null}
-                  <div className="mx-auto mt-4 max-w-[1260px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                  <div className="mx-auto mt-6 max-w-[1420px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
                 </div>
                 {compareIds.length ? (
                   <div className="absolute bottom-5 left-1/2 z-30 w-[min(640px,calc(100%_-_40px))] -translate-x-1/2 rounded-[10px] border border-[#c9d9ef] bg-white/96 px-4 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur">
@@ -3494,42 +3501,6 @@ export default function VehicleSearchExperience({
                   </button>
                 </div>
               ) : null}
-              {seoLanding ? (
-                <section className="border-t border-[#eceff4] bg-white px-4 py-5 sm:px-6 sm:py-6" aria-labelledby="seo-marketplace-heading">
-                  <nav aria-label="Breadcrumb" className="overflow-hidden">
-                    <ol className="flex min-w-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[12px] font-medium text-[#667085] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:text-[13px]">
-                      {seoLanding.breadcrumbs.map((item, index) => (
-                        <li key={item.href} className="inline-flex min-w-0 items-center gap-1.5">
-                          {index ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" aria-hidden="true" /> : null}
-                          <Link href={item.href} prefetch={false} className="truncate transition hover:text-[#0866ff]">
-                            {item.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ol>
-                  </nav>
-                  <h1 id="seo-marketplace-heading" className="mt-3 text-[24px] font-semibold leading-[1.16] text-[#101828] sm:text-[30px]">
-                    {seoLanding.h1}
-                  </h1>
-                  <p className="mt-2 max-w-[680px] text-[14px] font-normal leading-6 text-[#667085] sm:text-[15px]">
-                    {seoLanding.description}
-                  </p>
-                  {seoLanding.relatedLinks.length ? (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label={translatePublic(locale, 'Related searches')}>
-                      {seoLanding.relatedLinks.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          prefetch={false}
-                          className="shrink-0 rounded-full border border-[#c9d9ef] bg-white px-3 py-1.5 text-[12px] font-medium text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] sm:text-[13px]"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
-              ) : null}
               <VehicleSearchFooter locale={locale} />
             </div>
               </div>
@@ -3859,30 +3830,40 @@ function CollapsibleFilterSection({
   open,
   onToggle,
   children,
+  density = 'default',
 }: {
   title: string
   summary?: string
   open: boolean
   onToggle: () => void
   children: ReactNode
+  density?: 'default' | 'sidebar'
 }) {
+  const sidebar = density === 'sidebar'
+
   return (
-    <section className="border-b border-[#edf1f6] pb-3 last:border-b-0">
+    <section
+      className={`border-b border-[#edf1f6] last:border-b-0 ${
+        sidebar ? 'py-4' : 'pb-3'
+      }`}
+    >
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 rounded-[8px] bg-white px-0 py-0.5 text-left"
+        className={`flex w-full items-center justify-between gap-3 rounded-[8px] bg-white px-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
+          sidebar ? 'py-0' : 'py-0.5'
+        }`}
         aria-expanded={open}
       >
-        <span>
-          <span className="block text-[14px] font-semibold text-[#101828]">{title}</span>
-          {summary ? <span className="mt-0.5 block text-xs font-normal text-[#667085]">{summary}</span> : null}
+        <span className="min-w-0">
+          <span className={`block font-semibold text-[#101828] ${sidebar ? 'text-[13px]' : 'text-[14px]'}`}>{title}</span>
+          {summary ? <span className="mt-0.5 block truncate text-[11px] font-normal text-[#667085]">{summary}</span> : null}
         </span>
-        <span className={`grid h-8 w-8 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
+        <span className={`grid h-7 w-7 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
           <ChevronDown className="h-4 w-4" />
         </span>
       </button>
-      {open ? <div className="mt-3">{children}</div> : null}
+      {open ? <div className={sidebar ? 'mt-3.5' : 'mt-3'}>{children}</div> : null}
     </section>
   )
 }

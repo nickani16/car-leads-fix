@@ -39,11 +39,16 @@ export default async function RegisterPage({
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')
-    .select('user_id')
+    .select('user_id,risk_status,deleted_at,removed_by_admin')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (profile) redirect(localizePublicHref(locale, '/account'))
+  const canReactivate = Boolean(
+    profile?.deleted_at &&
+      !profile.removed_by_admin &&
+      profile.risk_status === 'restricted',
+  )
+  if (profile && !canReactivate) redirect(localizePublicHref(locale, '/account'))
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#101828]">

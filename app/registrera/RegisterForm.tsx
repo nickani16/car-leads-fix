@@ -71,6 +71,9 @@ type RegistrationErrorCode =
   | 'register_invalid_company'
   | 'register_terms_required'
   | 'register_profile_exists'
+  | 'register_identity_in_use'
+  | 'register_company_in_use'
+  | 'register_recovery_required'
   | 'register_failed'
 
 type RegistrationFieldErrorCode = Extract<
@@ -96,6 +99,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Kontrollera kontaktperson, företagsuppgifter, adress, telefonnummer och villkor.',
     register_invalid_private: 'Kontrollera namn, födelsedatum, adress, telefonnummer och identitetsuppgifter.',
     register_profile_exists: 'Det finns redan en kontoprofil för den här användaren.',
+    register_identity_in_use: 'Identitetsuppgifterna används redan av ett annat konto. Logga in på det befintliga kontot eller kontakta supporten för säker återställning.',
+    register_company_in_use: 'Företaget är redan kopplat till ett annat konto. Logga in på det befintliga företagskontot eller kontakta supporten.',
+    register_recovery_required: 'Kontot kan inte återaktiveras automatiskt. Logga in på det tidigare kontot eller kontakta supporten för säker återställning.',
     register_failed: 'Kontot kunde inte skapas. Försök igen eller kontakta support.',
   },
   en: {
@@ -104,6 +110,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Check the contact person, company details, address, phone number and terms.',
     register_invalid_private: 'Check your name, date of birth, address, phone number and identity details.',
     register_profile_exists: 'An account profile already exists for this user.',
+    register_identity_in_use: 'These identity details are already used by another account. Sign in to the existing account or contact support for secure recovery.',
+    register_company_in_use: 'This company is already linked to another account. Sign in to the existing business account or contact support.',
+    register_recovery_required: 'This account cannot be reactivated automatically. Sign in to the previous account or contact support for secure recovery.',
     register_failed: 'The account could not be created. Try again or contact support.',
   },
   de: {
@@ -112,6 +121,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Prüfen Sie Kontaktperson, Unternehmensdaten, Adresse, Telefonnummer und Bedingungen.',
     register_invalid_private: 'Prüfen Sie Name, Geburtsdatum, Adresse, Telefonnummer und Identitätsangaben.',
     register_profile_exists: 'Für diesen Benutzer besteht bereits ein Kontoprofil.',
+    register_identity_in_use: 'Diese Identitätsdaten werden bereits von einem anderen Konto verwendet. Melden Sie sich beim bestehenden Konto an oder wenden Sie sich zur sicheren Wiederherstellung an den Support.',
+    register_company_in_use: 'Dieses Unternehmen ist bereits mit einem anderen Konto verknüpft. Melden Sie sich beim bestehenden Unternehmenskonto an oder kontaktieren Sie den Support.',
+    register_recovery_required: 'Dieses Konto kann nicht automatisch reaktiviert werden. Melden Sie sich beim früheren Konto an oder wenden Sie sich zur sicheren Wiederherstellung an den Support.',
     register_failed: 'Das Konto konnte nicht erstellt werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.',
   },
   at: {
@@ -120,6 +132,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Prüfen Sie Kontaktperson, Unternehmensdaten, Adresse, Telefonnummer und Bedingungen.',
     register_invalid_private: 'Prüfen Sie Name, Geburtsdatum, Adresse, Telefonnummer und Identitätsangaben.',
     register_profile_exists: 'Für diesen Benutzer besteht bereits ein Kontoprofil.',
+    register_identity_in_use: 'Diese Identitätsdaten werden bereits von einem anderen Konto verwendet. Melden Sie sich beim bestehenden Konto an oder wenden Sie sich zur sicheren Wiederherstellung an den Support.',
+    register_company_in_use: 'Dieses Unternehmen ist bereits mit einem anderen Konto verknüpft. Melden Sie sich beim bestehenden Unternehmenskonto an oder kontaktieren Sie den Support.',
+    register_recovery_required: 'Dieses Konto kann nicht automatisch reaktiviert werden. Melden Sie sich beim früheren Konto an oder wenden Sie sich zur sicheren Wiederherstellung an den Support.',
     register_failed: 'Das Konto konnte nicht erstellt werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.',
   },
   be: {
@@ -128,6 +143,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Controleer de contactpersoon, bedrijfsgegevens, het adres, telefoonnummer en de voorwaarden.',
     register_invalid_private: 'Controleer je naam, geboortedatum, adres, telefoonnummer en identiteitsgegevens.',
     register_profile_exists: 'Er bestaat al een accountprofiel voor deze gebruiker.',
+    register_identity_in_use: 'Deze identiteitsgegevens worden al door een ander account gebruikt. Meld je aan bij het bestaande account of neem contact op met support voor veilig herstel.',
+    register_company_in_use: 'Dit bedrijf is al aan een ander account gekoppeld. Meld je aan bij het bestaande bedrijfsaccount of neem contact op met support.',
+    register_recovery_required: 'Dit account kan niet automatisch opnieuw worden geactiveerd. Meld je aan bij het eerdere account of neem contact op met support voor veilig herstel.',
     register_failed: 'Het account kon niet worden aangemaakt. Probeer opnieuw of neem contact op met support.',
   },
   fr: {
@@ -136,6 +154,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Vérifiez le contact, les informations de l’entreprise, l’adresse, le téléphone et les conditions.',
     register_invalid_private: 'Vérifiez votre nom, date de naissance, adresse, téléphone et justificatifs d’identité.',
     register_profile_exists: 'Un profil de compte existe déjà pour cet utilisateur.',
+    register_identity_in_use: 'Ces données d’identité sont déjà utilisées par un autre compte. Connectez-vous au compte existant ou contactez l’assistance pour une récupération sécurisée.',
+    register_company_in_use: 'Cette entreprise est déjà liée à un autre compte. Connectez-vous au compte professionnel existant ou contactez l’assistance.',
+    register_recovery_required: 'Ce compte ne peut pas être réactivé automatiquement. Connectez-vous à l’ancien compte ou contactez l’assistance pour une récupération sécurisée.',
     register_failed: 'Le compte n’a pas pu être créé. Réessayez ou contactez le support.',
   },
   es: {
@@ -144,6 +165,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Revisa la persona de contacto, los datos de empresa, la dirección, el teléfono y las condiciones.',
     register_invalid_private: 'Revisa tu nombre, fecha de nacimiento, dirección, teléfono y datos de identidad.',
     register_profile_exists: 'Ya existe un perfil de cuenta para este usuario.',
+    register_identity_in_use: 'Estos datos de identidad ya se utilizan en otra cuenta. Inicia sesión en la cuenta existente o contacta con soporte para recuperarla de forma segura.',
+    register_company_in_use: 'Esta empresa ya está vinculada a otra cuenta. Inicia sesión en la cuenta de empresa existente o contacta con soporte.',
+    register_recovery_required: 'Esta cuenta no se puede reactivar automáticamente. Inicia sesión en la cuenta anterior o contacta con soporte para recuperarla de forma segura.',
     register_failed: 'No se pudo crear la cuenta. Inténtalo de nuevo o contacta con soporte.',
   },
   it: {
@@ -152,6 +176,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Controlla referente, dati aziendali, indirizzo, telefono e condizioni.',
     register_invalid_private: 'Controlla nome, data di nascita, indirizzo, telefono e dati identificativi.',
     register_profile_exists: 'Esiste già un profilo account per questo utente.',
+    register_identity_in_use: 'Questi dati identificativi sono già usati da un altro account. Accedi all’account esistente o contatta l’assistenza per il recupero sicuro.',
+    register_company_in_use: 'Questa azienda è già collegata a un altro account. Accedi all’account aziendale esistente o contatta l’assistenza.',
+    register_recovery_required: 'Questo account non può essere riattivato automaticamente. Accedi all’account precedente o contatta l’assistenza per un recupero sicuro.',
     register_failed: 'Impossibile creare l’account. Riprova o contatta l’assistenza.',
   },
   pl: {
@@ -160,6 +187,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Sprawdź osobę kontaktową, dane firmy, adres, telefon i akceptację warunków.',
     register_invalid_private: 'Sprawdź imię i nazwisko, datę urodzenia, adres, telefon i dane tożsamości.',
     register_profile_exists: 'Profil konta dla tego użytkownika już istnieje.',
+    register_identity_in_use: 'Te dane tożsamości są już używane przez inne konto. Zaloguj się na istniejące konto lub skontaktuj się z pomocą, aby bezpiecznie je odzyskać.',
+    register_company_in_use: 'Ta firma jest już połączona z innym kontem. Zaloguj się na istniejące konto firmowe lub skontaktuj się z pomocą.',
+    register_recovery_required: 'Tego konta nie można automatycznie ponownie aktywować. Zaloguj się na poprzednie konto lub skontaktuj się z pomocą w celu bezpiecznego odzyskania.',
     register_failed: 'Nie udało się utworzyć konta. Spróbuj ponownie lub skontaktuj się z pomocą.',
   },
   nl: {
@@ -168,6 +198,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Controleer de contactpersoon, bedrijfsgegevens, het adres, telefoonnummer en de voorwaarden.',
     register_invalid_private: 'Controleer je naam, geboortedatum, adres, telefoonnummer en identiteitsgegevens.',
     register_profile_exists: 'Er bestaat al een accountprofiel voor deze gebruiker.',
+    register_identity_in_use: 'Deze identiteitsgegevens worden al door een ander account gebruikt. Meld je aan bij het bestaande account of neem contact op met support voor veilig herstel.',
+    register_company_in_use: 'Dit bedrijf is al aan een ander account gekoppeld. Meld je aan bij het bestaande bedrijfsaccount of neem contact op met support.',
+    register_recovery_required: 'Dit account kan niet automatisch opnieuw worden geactiveerd. Meld je aan bij het eerdere account of neem contact op met support voor veilig herstel.',
     register_failed: 'Het account kon niet worden aangemaakt. Probeer opnieuw of neem contact op met support.',
   },
   fi: {
@@ -176,6 +209,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Tarkista yhteyshenkilö, yritystiedot, osoite, puhelinnumero ja ehdot.',
     register_invalid_private: 'Tarkista nimi, syntymäaika, osoite, puhelinnumero ja henkilötiedot.',
     register_profile_exists: 'Tälle käyttäjälle on jo olemassa tiliprofiili.',
+    register_identity_in_use: 'Nämä henkilötiedot ovat jo toisen tilin käytössä. Kirjaudu olemassa olevalle tilille tai ota yhteyttä tukeen turvallista palautusta varten.',
+    register_company_in_use: 'Tämä yritys on jo liitetty toiseen tiliin. Kirjaudu olemassa olevalle yritystilille tai ota yhteyttä tukeen.',
+    register_recovery_required: 'Tätä tiliä ei voida aktivoida automaattisesti uudelleen. Kirjaudu aiemmalle tilille tai ota yhteyttä tukeen turvallista palautusta varten.',
     register_failed: 'Tiliä ei voitu luoda. Yritä uudelleen tai ota yhteyttä tukeen.',
   },
   da: {
@@ -184,6 +220,9 @@ const registrationErrorCopy: Record<
     register_invalid_business: 'Kontrollér kontaktperson, virksomhedsoplysninger, adresse, telefonnummer og vilkår.',
     register_invalid_private: 'Kontrollér navn, fødselsdato, adresse, telefonnummer og identitetsoplysninger.',
     register_profile_exists: 'Der findes allerede en kontoprofil for denne bruger.',
+    register_identity_in_use: 'Disse identitetsoplysninger bruges allerede af en anden konto. Log ind på den eksisterende konto, eller kontakt support for sikker gendannelse.',
+    register_company_in_use: 'Denne virksomhed er allerede knyttet til en anden konto. Log ind på den eksisterende virksomhedskonto, eller kontakt support.',
+    register_recovery_required: 'Denne konto kan ikke genaktiveres automatisk. Log ind på den tidligere konto, eller kontakt support for sikker gendannelse.',
     register_failed: 'Kontoen kunne ikke oprettes. Prøv igen, eller kontakt support.',
   },
 }
@@ -422,6 +461,7 @@ export default function RegisterForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (loading) return
     setLoading(true)
     setError('')
     const form = new FormData(event.currentTarget)
@@ -432,49 +472,58 @@ export default function RegisterForm({
       return
     }
     const normalizedPhone = normalizePhoneForSubmit(phone, countryCode)
-    const response = await fetch('/api/account/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accountType,
-        firstName: form.get('firstName'),
-        lastName: form.get('lastName'),
-        birthDate,
-        nationalId: form.get('nationalId'),
-        phone: normalizedPhone,
-        countryCode,
-        addressLine1: form.get('addressLine1'),
-        addressLine2: form.get('addressLine2'),
-        postalCode: form.get('postalCode'),
-        city: form.get('city'),
-        region: form.get('region'),
-        companyName: form.get('companyName'),
-        registrationNumber: form.get('registrationNumber'),
-        vatNumber: form.get('vatNumber'),
-        websiteUrl: form.get('websiteUrl'),
-        adult18: accountType === 'private' && legalAccepted,
-        acceptedMarketplaceTerms: legalAccepted,
-        acceptedPurchaseTerms: legalAccepted,
-        acceptedPrivacyPolicy: legalAccepted,
-        confirmedRightToSellOnly: accountType === 'private' && legalAccepted,
-        confirmedBusinessRightToSell: accountType === 'business' && legalAccepted,
-        locale,
-      }),
-    })
-    const result = (await response.json()) as { error?: string; code?: string; field?: string }
-    if (!response.ok) {
-      const codedError = result.code as RegistrationErrorCode | undefined
-      const localizedCodeError = localizedRegistrationErrorCode(locale, codedError)
-      setError(
-        localizedCodeError
-          ? localizedCodeError
-          : localizedAccountError(locale, result, copy.createError),
-      )
+    try {
+      const response = await fetch('/api/account/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountType,
+          firstName: form.get('firstName'),
+          lastName: form.get('lastName'),
+          birthDate,
+          nationalId: form.get('nationalId'),
+          phone: normalizedPhone,
+          countryCode,
+          addressLine1: form.get('addressLine1'),
+          addressLine2: form.get('addressLine2'),
+          postalCode: form.get('postalCode'),
+          city: form.get('city'),
+          region: form.get('region'),
+          companyName: form.get('companyName'),
+          registrationNumber: form.get('registrationNumber'),
+          vatNumber: form.get('vatNumber'),
+          websiteUrl: form.get('websiteUrl'),
+          adult18: accountType === 'private' && legalAccepted,
+          acceptedMarketplaceTerms: legalAccepted,
+          acceptedPurchaseTerms: legalAccepted,
+          acceptedPrivacyPolicy: legalAccepted,
+          confirmedRightToSellOnly: accountType === 'private' && legalAccepted,
+          confirmedBusinessRightToSell: accountType === 'business' && legalAccepted,
+          locale,
+        }),
+      })
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string
+        code?: string
+        field?: string
+      }
+      if (!response.ok) {
+        const codedError = result.code as RegistrationErrorCode | undefined
+        const localizedCodeError = localizedRegistrationErrorCode(locale, codedError)
+        setError(
+          localizedCodeError
+            ? localizedCodeError
+            : localizedAccountError(locale, result, copy.createError),
+        )
+        return
+      }
+      router.push(localizePublicHref(locale, '/account'))
+      router.refresh()
+    } catch {
+      setError(copy.createError)
+    } finally {
       setLoading(false)
-      return
     }
-    router.push(localizePublicHref(locale, '/account'))
-    router.refresh()
   }
 
   return (

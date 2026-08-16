@@ -100,14 +100,17 @@ export default function MarketplaceDesktopListingRow({
   const photoLabel = `${images.length.toLocaleString(numberLocale(locale))} ${copy.uploadedPhotos}`
 
   return (
-    <article className="group relative grid min-h-[258px] grid-cols-[minmax(280px,330px)_minmax(0,1fr)] overflow-hidden rounded-[8px] border border-[#d8e0eb] bg-white shadow-[0_2px_8px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:258px] [content-visibility:auto] hover:-translate-y-px hover:border-[#9fc3ff] hover:shadow-[0_12px_30px_rgba(16,24,40,.09)] motion-reduce:transform-none motion-reduce:transition-none 2xl:grid-cols-[360px_minmax(0,1fr)]">
-      <div className="relative min-h-[258px] overflow-hidden border-r border-[#e8edf4] bg-white">
+    <article
+      data-marketplace-listing-row
+      className="group relative grid min-h-[226px] grid-cols-[minmax(270px,306px)_minmax(0,1fr)] overflow-hidden rounded-[8px] border border-[#d8e0eb] bg-white shadow-[0_2px_7px_rgba(16,24,40,.035)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:226px] [content-visibility:auto] hover:-translate-y-px hover:border-[#9fc3ff] hover:shadow-[0_10px_26px_rgba(16,24,40,.08)] motion-reduce:transform-none motion-reduce:transition-none 2xl:grid-cols-[330px_minmax(0,1fr)]"
+    >
+      <div className="relative min-h-[226px] overflow-hidden border-r border-[#e8edf4] bg-white">
         <ListingCardImageCarousel
           images={images}
           title={listing.title}
           href={href}
           onNavigate={onBeforeNavigate}
-          sizes="(min-width: 1536px) 360px, 330px"
+          sizes="(min-width: 1536px) 330px, 306px"
           previousLabel={copy.previousPhoto}
           nextLabel={copy.nextPhoto}
           showControlsOnDesktop
@@ -115,9 +118,9 @@ export default function MarketplaceDesktopListingRow({
           showDotsOnMobile={false}
           enableTouchSwipe={false}
           placeholder={(
-            <div className="grid h-full min-h-[258px] place-items-center bg-[#f7faff] text-[#0866ff]">
+            <div className="grid h-full min-h-[226px] place-items-center bg-[#f7faff] text-[#0866ff]">
               <div className="text-center">
-                {renderCategoryIcon(listing.category, 'mx-auto h-14 w-14')}
+                {renderCategoryIcon(listing.category, 'mx-auto h-12 w-12')}
                 <p className="mt-2 text-xs font-semibold text-[#667085]">
                   {copy.noPhotoAvailable}
                 </p>
@@ -137,48 +140,42 @@ export default function MarketplaceDesktopListingRow({
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-col p-5 2xl:p-6">
-        <div className="flex min-w-0 items-start justify-between gap-5 pr-11">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold ring-1 ${offerBadge.className}`}>
-                {offerBadge.label}
-              </span>
-              {listing.sellerTrust === 'verified' ? (
-                <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#eef5ff] px-2.5 text-[11px] font-semibold text-[#0866ff] ring-1 ring-[#c7dbff]">
-                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                  {copy.verified}
-                </span>
-              ) : null}
-            </div>
+      <div className="flex min-w-0 flex-col px-5 py-4 2xl:px-6">
+        <div className="min-w-0 pr-12">
+          <Link
+            href={href}
+            prefetch={false}
+            onClick={onBeforeNavigate}
+            className="block rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+          >
+            <h2 className="line-clamp-1 text-[18px] font-semibold leading-6 text-[#101828] transition-colors group-hover:text-[#0757da] 2xl:text-[19px]">
+              {listing.title}
+            </h2>
+          </Link>
+        </div>
 
-            <Link
-              href={href}
-              prefetch={false}
-              onClick={onBeforeNavigate}
-              className="mt-2 block rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
-            >
-              <h2 className="line-clamp-2 text-[20px] font-semibold leading-7 text-[#101828] transition-colors group-hover:text-[#0757da]">
-                {listing.title}
-              </h2>
-            </Link>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[22px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
-            {insuranceLabel ? (
-              <p className="mt-1 max-w-[230px] text-[11px] font-medium leading-4 text-[#667085]">{insuranceLabel}</p>
-            ) : null}
-          </div>
+        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="shrink-0 text-[24px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
+          <span className={`inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold ring-1 ${offerBadge.className}`}>
+            {offerBadge.label}
+          </span>
+          {listing.sellerTrust === 'verified' ? (
+            <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[#eef5ff] px-2.5 text-[11px] font-semibold text-[#0866ff] ring-1 ring-[#c7dbff]">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              {copy.verified}
+            </span>
+          ) : null}
+          {insuranceLabel ? (
+            <span className="min-w-0 truncate text-[11px] font-medium text-[#667085]">{insuranceLabel}</span>
+          ) : null}
         </div>
 
         {metadata.length ? (
-          <dl className="mt-4 grid grid-cols-3 gap-x-4 gap-y-3 2xl:grid-cols-4">
+          <dl className="mt-3 flex min-w-0 flex-wrap gap-1.5">
             {metadata.map((item) => (
-              <div key={item.key} className="min-w-0">
-                <dt className="truncate text-[10px] font-semibold uppercase tracking-[.08em] text-[#667085]">
-                  {item.label}
-                </dt>
-                <dd className="mt-0.5 truncate text-[13px] font-semibold text-[#101828]" title={item.value}>
+              <div key={item.key} className="inline-flex min-w-0 items-center gap-1.5 rounded-[6px] border border-[#e4e9f1] bg-[#f8fafc] px-2.5 py-1.5">
+                <dt className="sr-only">{item.label}</dt>
+                <dd className="max-w-[170px] truncate text-[12px] font-semibold text-[#344054]" title={`${item.label}: ${item.value}`}>
                   {item.value}
                 </dd>
               </div>
@@ -187,27 +184,27 @@ export default function MarketplaceDesktopListingRow({
         ) : null}
 
         {listing.description ? (
-          <p className="mt-4 line-clamp-2 text-[13px] font-normal leading-5 text-[#667085]">
+          <p className="mt-3 line-clamp-2 text-[12px] font-normal leading-[18px] text-[#667085]">
             {listing.description}
           </p>
         ) : null}
 
         {equipmentChips.length ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {equipmentChips.map((item) => (
-              <span key={item} className="max-w-[180px] truncate rounded-full bg-[#f2f4f7] px-2.5 py-1 text-[11px] font-medium text-[#344054]">
+          <div className="mt-2.5 flex min-w-0 gap-1.5 overflow-hidden">
+            {equipmentChips.slice(0, 3).map((item) => (
+              <span key={item} className="max-w-[180px] shrink truncate rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-medium text-[#0757da]">
                 {item}
               </span>
             ))}
           </div>
         ) : null}
 
-        <div className="mt-auto flex min-w-0 items-end justify-between gap-4 border-t border-[#edf1f6] pt-3">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-[12px] font-medium text-[#667085]">
+        <div className="mt-auto flex min-w-0 items-center justify-between gap-4 border-t border-[#edf1f6] pt-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium text-[#667085]">
             <span className="inline-flex min-w-0 items-center gap-1.5">
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                <span className="relative h-6 w-9 shrink-0 overflow-hidden rounded-[4px] bg-white ring-1 ring-[#e4e7ec]">
-                  <Image src={listing.sellerLogoUrl} alt="" fill sizes="36px" className="object-contain p-0.5" />
+                <span className="relative h-5 w-8 shrink-0 overflow-hidden rounded-[4px] bg-white ring-1 ring-[#e4e7ec]">
+                  <Image src={listing.sellerLogoUrl} alt="" fill sizes="32px" className="object-contain p-0.5" />
                 </span>
               ) : null}
               <span className="max-w-[220px] truncate text-[#344054]">{sellerLabel}</span>
@@ -227,28 +224,28 @@ export default function MarketplaceDesktopListingRow({
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            aria-pressed={compareActive}
-            onClick={onCompare}
-            className={`inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
-              compareActive
-                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
-            }`}
-          >
-            <Scale className="h-4 w-4" aria-hidden="true" />
-            {copy.compare}
-          </button>
-          <Link
-            href={href}
-            prefetch={false}
-            onClick={onBeforeNavigate}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-5 text-[13px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
-          >
-            {copy.viewListing}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+            <button
+              type="button"
+              aria-pressed={compareActive}
+              onClick={onCompare}
+              className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border px-3 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
+                compareActive
+                  ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                  : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
+              }`}
+            >
+              <Scale className="h-3.5 w-3.5" aria-hidden="true" />
+              {copy.compare}
+            </button>
+            <Link
+              href={href}
+              prefetch={false}
+              onClick={onBeforeNavigate}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+            >
+              {copy.viewListing}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </div>
@@ -258,7 +255,7 @@ export default function MarketplaceDesktopListingRow({
         label={copy.saveListing}
         savedLabel={copy.saved}
         removeLabel={copy.removeSavedListing}
-        className="absolute right-3 top-3 z-20 h-10 w-10 rounded-full border border-[#d0d5dd] shadow-sm"
+        className="absolute right-3 top-3 z-20 h-9 w-9 rounded-full border border-[#d0d5dd] bg-white shadow-sm"
       />
     </article>
   )

@@ -70,11 +70,21 @@ export async function POST(request: Request) {
       },
     })
 
-    if (link.error || !link.data.properties?.hashed_token) {
+    if (link.error) {
+      const reason = `${link.error.code || ''} ${link.error.message || ''}`.toLowerCase()
+      if (reason.includes('already') || reason.includes('exists') || reason.includes('registered')) {
+        return NextResponse.json(
+          { code: 'auth_account_exists', error: copy.accountAlreadyExists },
+          { status: 409 },
+        )
+      }
       return NextResponse.json(
         { error: copy.signupError },
         { status: 400 },
       )
+    }
+    if (!link.data.properties?.hashed_token) {
+      return NextResponse.json({ error: copy.signupError }, { status: 400 })
     }
 
     const confirmationUrl = new URL('/auth/callback', origin)
@@ -102,7 +112,16 @@ export async function POST(request: Request) {
         label: confirmationCopy.cta,
       }),
     })
-    if (sendError) throw sendError
+    if (sendError) {
+      const generatedUser = link.data.user
+      if (generatedUser?.id && !generatedUser.email_confirmed_at) {
+        const { error: cleanupError } = await admin.auth.admin.deleteUser(generatedUser.id)
+        if (cleanupError) {
+          console.error('Password signup cleanup failed', cleanupError)
+        }
+      }
+      throw sendError
+    }
 
     return NextResponse.json({
       success: true,

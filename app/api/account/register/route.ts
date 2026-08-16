@@ -22,6 +22,56 @@ function normalizeIdentifier(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
 
+function normalizeIdentityName(value: string) {
+  return value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+}
+
+type DatabaseError = {
+  code?: string
+  details?: string
+  message?: string
+}
+
+function uniqueConstraintName(error: DatabaseError | null | undefined) {
+  return `${error?.message || ''} ${error?.details || ''}`.toLowerCase()
+}
+
+function registrationConflictResponse(error: DatabaseError | null | undefined) {
+  if (error?.code !== '23505') return null
+  const constraint = uniqueConstraintName(error)
+  if (constraint.includes('national_id')) {
+    return NextResponse.json(
+      {
+        code: 'register_identity_in_use',
+        field: 'nationalId',
+        error: 'Identitetsuppgifterna är redan kopplade till ett annat konto.',
+      },
+      { status: 409 },
+    )
+  }
+  if (constraint.includes('business_registration')) {
+    return NextResponse.json(
+      {
+        code: 'register_company_in_use',
+        field: 'registrationNumber',
+        error: 'Företagsidentiteten är redan kopplad till ett annat konto.',
+      },
+      { status: 409 },
+    )
+  }
+  return null
+}
+
+function recoveryRequiredResponse() {
+  return NextResponse.json(
+    {
+      code: 'register_recovery_required',
+      error: 'Kontot kan inte återaktiveras automatiskt. Logga in på det tidigare kontot eller kontakta supporten för säker återställning.',
+    },
+    { status: 409 },
+  )
+}
+
 const freeEmailDomains = new Set([
   'gmail.com',
   'googlemail.com',
@@ -161,8 +211,8 @@ export async function POST(request: Request) {
     const accountType = body.accountType === 'business' ? 'business' : 'private'
     const nationalId = clean(body.nationalId)
     const companyName = clean(body.companyName)
-    const registrationNumber = clean(body.registrationNumber)
-    const vatNumber = clean(body.vatNumber)
+    const registrationNumber = normalizeIdentifier(clean(body.registrationNumber))
+    const vatNumber = normalizeIdentifier(clean(body.vatNumber))
     const websiteUrl = normalizeWebsite(body.websiteUrl)
     const locale = clean(body.locale || 'en').slice(0, 5)
     const confirmations =
@@ -240,22 +290,249 @@ export async function POST(request: Request) {
         : { status: 'pending' as const, reference: null }
 
     const admin = createAdminClient()
-    const { data: existingProfile } = await admin
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      null
+    const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
+    const recordLegalAcceptances = async () => {
+      const { error: legalAcceptanceError } = await admin
+        .from('marketplace_legal_acceptances')
+        .insert(
+          requiredConfirmations.map((key) => ({
+            user_id: user.id,
+            acceptance_scope:
+              key === 'privacy_policy'
+                ? 'privacy'
+                : key === 'purchase_terms'
+                  ? 'purchase'
+                  : 'account',
+            acceptance_key: key,
+            accepted: true,
+            terms_version:
+              key === 'privacy_policy'
+                ? MARKETPLACE_PRIVACY_VERSION
+                : key === 'purchase_terms'
+                  ? MARKETPLACE_PURCHASE_TERMS_VERSION
+                  : MARKETPLACE_TERMS_VERSION,
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            metadata: { account_type: accountType, locale },
+          })),
+        )
+      if (legalAcceptanceError) throw legalAcceptanceError
+    }
+    const { data: existingProfile, error: existingProfileError } = await admin
       .from('marketplace_profiles')
-      .select('user_id')
+      .select('user_id,account_type,email,first_name,last_name,birth_date,national_id_hash,registration_number,vat_number,risk_status,suspended,deleted_at,removed_by_admin,company_id')
       .eq('user_id', user.id)
       .maybeSingle()
+    if (existingProfileError) throw existingProfileError
     if (existingProfile) {
-      return NextResponse.json(
-        { code: 'register_profile_exists', error: 'Det finns redan en profil för kontot.' },
-        { status: 409 },
+      const selfDeleted = Boolean(
+        existingProfile.deleted_at &&
+          !existingProfile.removed_by_admin &&
+          existingProfile.risk_status === 'restricted',
       )
+
+      if (!selfDeleted) {
+        if (
+          existingProfile.risk_status === 'blocked' ||
+          existingProfile.removed_by_admin ||
+          existingProfile.account_type !== accountType
+        ) {
+          return recoveryRequiredResponse()
+        }
+
+        if (existingProfile.account_type === 'business') {
+          if (!existingProfile.company_id) return recoveryRequiredResponse()
+          const { error: membershipRetryError } = await admin
+            .from('marketplace_company_members')
+            .upsert(
+              {
+                company_id: existingProfile.company_id,
+                user_id: user.id,
+                role: 'contact_person',
+              },
+              { onConflict: 'company_id,user_id' },
+            )
+          if (membershipRetryError) throw membershipRetryError
+        }
+
+        // A retry after a slow response or interrupted redirect must be safe.
+        return NextResponse.json({ success: true, existing: true })
+      }
+
+      const sameName =
+        normalizeIdentityName(existingProfile.first_name || '') === normalizeIdentityName(firstName) &&
+        normalizeIdentityName(existingProfile.last_name || '') === normalizeIdentityName(lastName)
+      const submittedCompanyIdentifiers = [registrationNumber, vatNumber].filter(Boolean)
+      const retainedCompanyIdentifiers = [existingProfile.registration_number, existingProfile.vat_number]
+        .map((value) => normalizeIdentifier(String(value || '')))
+        .filter(Boolean)
+      const sameRetainedIdentity =
+        existingProfile.account_type === accountType &&
+        sameName &&
+        (accountType === 'private'
+          ? Boolean(
+              nationalIdHash &&
+                existingProfile.national_id_hash === nationalIdHash &&
+                existingProfile.birth_date === birthDate,
+            )
+          : Boolean(
+              existingProfile.company_id &&
+                submittedCompanyIdentifiers.some((identifier) =>
+                  retainedCompanyIdentifiers.includes(identifier),
+                ),
+            ))
+
+      if (!sameRetainedIdentity) return recoveryRequiredResponse()
+
+      const reactivatedAt = new Date().toISOString()
+      await recordLegalAcceptances()
+      const { error: reactivationError } = await admin
+        .from('marketplace_profiles')
+        .update({
+          email,
+          phone,
+          phone_verified: false,
+          phone_verification_status: phoneValidation.status,
+          phone_risk_flags: phoneValidation.riskFlags,
+          address_line_1: addressLine1,
+          address_line_2: addressLine2 || null,
+          registered_address: [addressLine1, addressLine2].filter(Boolean).join(', '),
+          city,
+          postal_code: postalCode,
+          region: region || null,
+          locale,
+          risk_status: phoneRiskStatus(phoneValidation.riskFlags),
+          suspended: false,
+          deleted_at: null,
+          removed_by_admin: false,
+          updated_at: reactivatedAt,
+        })
+        .eq('user_id', user.id)
+      if (reactivationError) throw reactivationError
+
+      const rollbackReactivation = async (cause: unknown) => {
+        const { error: rollbackError } = await admin
+          .from('marketplace_profiles')
+          .update({
+            risk_status: 'restricted',
+            suspended: true,
+            deleted_at: existingProfile.deleted_at,
+            removed_by_admin: false,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+        if (rollbackError) {
+          console.error('Registration reactivation rollback failed', rollbackError)
+        }
+        throw cause
+      }
+
+      if (existingProfile.account_type === 'business' && existingProfile.company_id) {
+        const { error: companyReactivationError } = await admin
+          .from('marketplace_companies')
+          .update({
+            website_url: websiteUrl || null,
+            phone,
+            address_line_1: addressLine1,
+            address_line_2: addressLine2 || null,
+            postal_code: postalCode,
+            city,
+            region: region || null,
+            contact_name: `${existingProfile.first_name || firstName} ${existingProfile.last_name || lastName}`.trim(),
+            contact_email: email,
+            contact_phone: phone,
+            updated_at: reactivatedAt,
+          })
+          .eq('id', existingProfile.company_id)
+        if (companyReactivationError) await rollbackReactivation(companyReactivationError)
+
+        const { error: membershipError } = await admin
+          .from('marketplace_company_members')
+          .upsert(
+            {
+              company_id: existingProfile.company_id,
+              user_id: user.id,
+              role: 'contact_person',
+            },
+            { onConflict: 'company_id,user_id' },
+          )
+        if (membershipError) await rollbackReactivation(membershipError)
+      }
+
+      const { error: deletionReportCloseError } = await admin
+        .from('marketplace_reports')
+        .update({ status: 'closed' })
+        .eq('reporter_user_id', user.id)
+        .ilike('details', '%[account_deletion_request]%')
+        .in('status', ['new', 'reviewing', 'actioned'])
+      if (deletionReportCloseError) await rollbackReactivation(deletionReportCloseError)
+
+      const { error: authMetadataError } = await admin.auth.admin.updateUserById(user.id, {
+        email_confirm: true,
+        user_metadata: {
+          display_name: `${existingProfile.first_name || firstName} ${existingProfile.last_name || lastName}`.trim(),
+          account_type: existingProfile.account_type,
+        },
+      })
+      if (authMetadataError) {
+        console.error('Registration reactivation metadata update failed', authMetadataError)
+      }
+
+      return NextResponse.json({ success: true, reactivated: true })
     }
 
-    await admin.auth.admin.updateUserById(user.id, {
-      email_confirm: true,
-      user_metadata: { display_name: displayName, account_type: accountType },
-    })
+    if (nationalIdHash) {
+      const { data: identityOwner, error: identityOwnerError } = await admin
+        .from('marketplace_profiles')
+        .select('user_id')
+        .eq('country_code', countryCode)
+        .eq('national_id_hash', nationalIdHash)
+        .maybeSingle()
+      if (identityOwnerError) throw identityOwnerError
+      if (identityOwner && identityOwner.user_id !== user.id) {
+        return NextResponse.json(
+          {
+            code: 'register_identity_in_use',
+            field: 'nationalId',
+            error: 'Identitetsuppgifterna är redan kopplade till ett annat konto.',
+          },
+          { status: 409 },
+        )
+      }
+    }
+
+    const companyIdentifiers = accountType === 'business'
+      ? [registrationNumber, vatNumber].filter(Boolean)
+      : []
+    const companyIdentifier = companyIdentifiers[0] || ''
+    if (companyIdentifiers.length) {
+      const { data: companyIdentityOwners, error: companyIdentityOwnerError } = await admin
+        .from('marketplace_profiles')
+        .select('user_id,registration_number,vat_number')
+        .eq('account_type', 'business')
+        .eq('country_code', countryCode)
+      if (companyIdentityOwnerError) throw companyIdentityOwnerError
+      const companyIdentityOwner = companyIdentityOwners?.find((profile) => {
+        const identifiers = [profile.registration_number, profile.vat_number]
+          .map((value) => normalizeIdentifier(String(value || '')))
+          .filter(Boolean)
+        return companyIdentifiers.some((identifier) => identifiers.includes(identifier))
+      })
+      if (companyIdentityOwner?.user_id && companyIdentityOwner.user_id !== user.id) {
+        return NextResponse.json(
+          {
+            code: 'register_company_in_use',
+            field: 'registrationNumber',
+            error: 'Företagsidentiteten är redan kopplad till ett annat konto.',
+          },
+          { status: 409 },
+        )
+      }
+    }
 
     const emailDomain = domainFromEmail(email)
     const websiteDomain = domainFromWebsite(websiteUrl)
@@ -273,6 +550,7 @@ export async function POST(request: Request) {
       accountType === 'business' ? 'under_review' : null
 
     let companyId: string | null = null
+    let createdCompanyId: string | null = null
     if (accountType === 'business') {
       const { data: existingCompany } = await admin
         .from('marketplace_companies')
@@ -282,6 +560,28 @@ export async function POST(request: Request) {
 
       if (existingCompany?.id) {
         companyId = existingCompany.id
+        const { error: companyUpdateError } = await admin
+          .from('marketplace_companies')
+          .update({
+            name: companyName,
+            registration_number: registrationNumber || vatNumber,
+            vat_number: vatNumber || null,
+            country_code: countryCode,
+            website_url: websiteUrl || null,
+            phone,
+            address_line_1: addressLine1,
+            address_line_2: addressLine2 || null,
+            postal_code: postalCode,
+            city,
+            region: region || null,
+            contact_name: displayName,
+            contact_email: email,
+            contact_phone: phone,
+            domain_match: domainMatch,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingCompany.id)
+        if (companyUpdateError) throw companyUpdateError
       } else {
         const { data: company, error: companyError } = await admin
           .from('marketplace_companies')
@@ -308,6 +608,7 @@ export async function POST(request: Request) {
           .single()
         if (companyError || !company) throw companyError
         companyId = company.id
+        createdCompanyId = company.id
       }
     }
 
@@ -326,7 +627,7 @@ export async function POST(request: Request) {
       phone_risk_flags: phoneFlags,
       country_code: countryCode,
       company_name: accountType === 'business' ? companyName : null,
-      registration_number: accountType === 'business' ? registrationNumber : null,
+      registration_number: accountType === 'business' ? companyIdentifier : null,
       vat_number: accountType === 'business' ? vatNumber || null : null,
       website_url: accountType === 'business' ? websiteUrl || null : null,
       company_id: companyId,
@@ -351,14 +652,59 @@ export async function POST(request: Request) {
       privacy_version: MARKETPLACE_PRIVACY_VERSION,
     })
 
-    if (profileError) throw profileError
+    if (profileError) {
+      if (createdCompanyId) {
+        const { error: companyCleanupError } = await admin
+          .from('marketplace_companies')
+          .delete()
+          .eq('id', createdCompanyId)
+        if (companyCleanupError) {
+          console.error('Registration company cleanup failed', companyCleanupError)
+        }
+      }
+      const conflictResponse = registrationConflictResponse(profileError)
+      if (conflictResponse) return conflictResponse
+      throw profileError
+    }
+
+    const { error: authMetadataError } = await admin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+      user_metadata: { display_name: displayName, account_type: accountType },
+    })
+    if (authMetadataError) {
+      console.error('Registration auth metadata update failed', authMetadataError)
+    }
 
     if (accountType === 'business' && companyId) {
-      await admin.from('marketplace_company_members').insert({
-        company_id: companyId,
-        user_id: user.id,
-        role: 'contact_person',
-      })
+      const { error: companyMemberError } = await admin
+        .from('marketplace_company_members')
+        .upsert(
+          {
+            company_id: companyId,
+            user_id: user.id,
+            role: 'contact_person',
+          },
+          { onConflict: 'company_id,user_id' },
+        )
+      if (companyMemberError) {
+        const { error: profileCleanupError } = await admin
+          .from('marketplace_profiles')
+          .delete()
+          .eq('user_id', user.id)
+        if (profileCleanupError) {
+          console.error('Registration profile cleanup failed', profileCleanupError)
+        }
+        if (createdCompanyId) {
+          const { error: companyCleanupError } = await admin
+            .from('marketplace_companies')
+            .delete()
+            .eq('id', createdCompanyId)
+          if (companyCleanupError) {
+            console.error('Registration company cleanup failed', companyCleanupError)
+          }
+        }
+        throw companyMemberError
+      }
       try {
         await queueCompanyApplicationReview({
           admin,
@@ -408,37 +754,13 @@ export async function POST(request: Request) {
       },
     })
 
-    const ipAddress =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      null
-    const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
-    await admin.from('marketplace_legal_acceptances').insert(
-      requiredConfirmations.map((key) => ({
-        user_id: user.id,
-        acceptance_scope:
-          key === 'privacy_policy'
-            ? 'privacy'
-            : key === 'purchase_terms'
-              ? 'purchase'
-              : 'account',
-        acceptance_key: key,
-        accepted: true,
-        terms_version:
-          key === 'privacy_policy'
-            ? MARKETPLACE_PRIVACY_VERSION
-            : key === 'purchase_terms'
-              ? MARKETPLACE_PURCHASE_TERMS_VERSION
-              : MARKETPLACE_TERMS_VERSION,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        metadata: { account_type: accountType, locale },
-      })),
-    )
+    await recordLegalAcceptances()
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Marketplace registration failed', error)
+    const conflictResponse = registrationConflictResponse(error as DatabaseError)
+    if (conflictResponse) return conflictResponse
     return NextResponse.json(
       { code: 'register_failed', error: 'Kontot kunde inte skapas. Försök igen eller kontakta support.' },
       { status: 500 },

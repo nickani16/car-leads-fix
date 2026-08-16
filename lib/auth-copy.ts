@@ -67,6 +67,7 @@ export type AuthApiCopy = Pick<
   rateLimited: string
   waitBeforeNewCode: string
   emailUnavailable: string
+  accountAlreadyExists: string
   tooManyAttempts: string
   usedCode: string
   recoveryUnavailable: string
@@ -803,6 +804,18 @@ export function getAuthApiCopy(locale: PublicLocale): AuthApiCopy {
       nl: 'Inloggen via e-mail is tijdelijk niet beschikbaar.',
       fi: 'Sähköpostikirjautuminen ei ole tilapäisesti käytettävissä.',
       da: 'Login via e-mail er midlertidigt utilgængeligt.',
+    }[copyKey(locale)],
+    accountAlreadyExists: {
+      en: 'This email already has an account. Log in, use a one-time code or reset your password.',
+      sv: 'Mejladressen har redan ett konto. Logga in, använd engångskod eller återställ lösenordet.',
+      de: 'Für diese E-Mail besteht bereits ein Konto. Melden Sie sich an, nutzen Sie einen Einmalcode oder setzen Sie das Passwort zurück.',
+      fr: 'Un compte existe déjà pour cet e-mail. Connectez-vous, utilisez un code unique ou réinitialisez le mot de passe.',
+      es: 'Ya existe una cuenta con este correo. Inicia sesión, usa un código de un solo uso o restablece la contraseña.',
+      it: 'Esiste già un account con questa email. Accedi, usa un codice monouso o reimposta la password.',
+      pl: 'Dla tego adresu e-mail istnieje już konto. Zaloguj się, użyj kodu jednorazowego lub zresetuj hasło.',
+      nl: 'Er bestaat al een account voor dit e-mailadres. Log in, gebruik een eenmalige code of herstel je wachtwoord.',
+      fi: 'Tällä sähköpostiosoitteella on jo tili. Kirjaudu sisään, käytä kertakäyttökoodia tai palauta salasana.',
+      da: 'Der findes allerede en konto til denne e-mail. Log ind, brug en engangskode eller nulstil adgangskoden.',
     }[copyKey(locale)],
     tooManyAttempts: {
       en: 'Too many attempts. Wait a while and try again.',

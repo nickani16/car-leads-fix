@@ -46,7 +46,7 @@ export async function POST() {
     return NextResponse.json({ error: reportError.message }, { status: 400 })
   }
 
-  await Promise.all([
+  const [listingsResult, profileResult] = await Promise.all([
     admin
       .from('marketplace_listings')
       .update({ status: 'pending_review', updated_at: now })
@@ -54,9 +54,27 @@ export async function POST() {
       .eq('status', 'published'),
     admin
       .from('marketplace_profiles')
-      .update({ risk_status: 'restricted', updated_at: now })
+      .update({
+        risk_status: 'restricted',
+        suspended: true,
+        deleted_at: now,
+        removed_by_admin: false,
+        updated_at: now,
+      })
       .eq('user_id', user.id),
   ])
+
+  if (listingsResult.error || profileResult.error) {
+    console.error('Account deletion request state update failed', {
+      listingsError: listingsResult.error,
+      profileError: profileResult.error,
+      userId: user.id,
+    })
+    return NextResponse.json(
+      { error: 'The account deletion request could not be completed.' },
+      { status: 500 },
+    )
+  }
 
   await supabase.auth.signOut()
   revalidateTag('marketplace-listings', 'max')

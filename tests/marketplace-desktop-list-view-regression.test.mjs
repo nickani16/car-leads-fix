@@ -24,6 +24,7 @@ test('desktop list view extends the current marketplace instead of restoring a p
   assert.match(experienceSource, /useState<DesktopMarketplaceView>\('map'\)/)
   assert.match(experienceSource, /desktopMarketplaceView === 'list'/)
   assert.match(experienceSource, /data-marketplace-list-sidebar/)
+  assert.match(experienceSource, /density="sidebar"/)
   assert.match(experienceSource, /<MarketplaceDesktopListingRow/)
   assert.match(experienceSource, /onShowDesktopList=\{\(\) => setDesktopMarketplaceView\('list'\)\}/)
   assert.match(experienceSource, /setDesktopMarketplaceView\('map'\)/)
@@ -68,6 +69,9 @@ test('desktop list rows expose mapped vehicle, seller and action data', () => {
   assert.match(listRowSource, /label: copy\.operatingHours/)
   assert.match(listRowSource, /label: copy\.fuel/)
   assert.match(listRowSource, /label: copy\.gearbox/)
+  assert.match(listRowSource, /data-marketplace-listing-row/)
+  assert.match(listRowSource, /grid-cols-\[minmax\(270px,306px\)_minmax\(0,1fr\)\]/)
+  assert.match(listRowSource, /equipmentChips\.slice\(0, 3\)/)
 })
 
 test('mobile card and mobile map flows remain available while list mode stays desktop-only', () => {

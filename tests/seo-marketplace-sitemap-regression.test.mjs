@@ -47,14 +47,22 @@ test('clean SEO URLs render the real Marketplace with server metadata and struct
   assert.match(marketplacePageSource, /marketplaceResultsPage/)
   assert.match(marketplacePageSource, /preserveCanonicalUrl=\{Boolean\(seoLanding\)\}/)
   assert.match(publicHeaderSource, /marketplaceResultsPage \|\|/)
-  assert.match(vehicleSearchSource, /<h1 id="seo-marketplace-heading"/)
   assert.match(vehicleSearchSource, /seoLanding\?\.zeroResultsText/)
   assert.match(vehicleSearchSource, /params\.set\('markets', safeAutomaticCountry\)/)
-  assert.ok(
-    vehicleSearchSource.indexOf('aria-labelledby="seo-marketplace-heading"') >
-      vehicleSearchSource.indexOf("Show more listings"),
-    'SEO support copy must stay below Marketplace results instead of becoming a second top navigation',
-  )
+  assert.doesNotMatch(vehicleSearchSource, /seo-marketplace-heading/)
+  assert.doesNotMatch(vehicleSearchSource, /seoLanding\.relatedLinks\.map/)
+  assert.doesNotMatch(vehicleSearchSource, /seoLanding\.breadcrumbs\.map/)
+})
+
+test('SEO landing metadata remains indexable without rendering the legacy visible text block', () => {
+  assert.match(seoRouteSource, /generateMetadata/)
+  assert.match(seoRouteSource, /landing\.title/)
+  assert.match(seoRouteSource, /landing\.description/)
+  assert.match(seoRouteSource, /alternates: \{ canonical \}/)
+  assert.match(seoRouteSource, /BreadcrumbList/)
+  assert.match(seoRouteSource, /CollectionPage/)
+  assert.match(sitemapShardSource, /buildSeoMarketplacePath/)
+  assert.doesNotMatch(vehicleSearchSource, /aria-label=\{translatePublic\(locale, 'Related searches'\)\}/)
 })
 
 test('filtered query pages canonicalize to clean SEO paths and stay out of the index', () => {

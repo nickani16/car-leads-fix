@@ -58,6 +58,9 @@ type ProfileRow = {
   business_verification_status: string | null
   business_onboarding_status?: string | null
   risk_status: string
+  suspended?: boolean | null
+  deleted_at?: string | null
+  removed_by_admin?: boolean | null
   national_id_last4: string | null
   display_name?: string | null
 }
@@ -109,6 +112,9 @@ export default async function AccountPage() {
       business_verification_status,
       business_onboarding_status,
       risk_status,
+      suspended,
+      deleted_at,
+      removed_by_admin,
       national_id_last4,
       display_name
     `)
@@ -116,6 +122,13 @@ export default async function AccountPage() {
     .maybeSingle<ProfileRow>()
 
   if (!profile) redirect(localizePublicHref(locale, '/register'))
+  if (
+    profile.deleted_at &&
+    !profile.removed_by_admin &&
+    profile.risk_status === 'restricted'
+  ) {
+    redirect(localizePublicHref(locale, '/register?reactivate=1'))
+  }
   if (profile.account_type === 'business') {
     await redirectBusinessAccountFromLegacyAccount(admin, user.id, profile, locale)
   }
