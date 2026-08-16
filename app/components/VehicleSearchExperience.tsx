@@ -2889,18 +2889,18 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[316px_minmax(0,1fr)] bg-[#f5f7fa] min-[1120px]:grid 2xl:grid-cols-[332px_minmax(0,1fr)]"
+              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[276px_minmax(0,1fr)] bg-[#f4f6f9] min-[1120px]:grid 2xl:grid-cols-[288px_minmax(0,1fr)]"
             >
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
-                className="flex min-h-0 flex-col border-r border-[#d8e0eb] bg-white shadow-[8px_0_28px_rgba(16,24,40,.035)]"
+                className="flex min-h-0 flex-col border-r border-[#d8e0eb] bg-white"
               >
-                <div className="border-b border-[#e6ebf2] px-5 pb-5 pt-5 2xl:px-6">
+                <div className="border-b border-[#e6ebf2] px-4 pb-4 pt-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
-                      <h2 className="text-[18px] font-semibold text-[#101828]">
+                      <h2 className="text-[17px] font-semibold text-[#101828]">
                         {desktopListText.filters}
                       </h2>
                       {activeFilters.length ? (
@@ -2917,10 +2917,10 @@ export default function VehicleSearchExperience({
                       {desktopListText.clearAll}
                     </button>
                   </div>
-                  <div className="mt-4">{renderMarketplaceSearchInput()}</div>
+                  <div className="mt-3">{renderMarketplaceSearchInput()}</div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-6">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin]">
                   <CollapsibleFilterSection
                     density="sidebar"
                     title={desktopListText.offerType}
@@ -3099,10 +3099,10 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-7 py-4 2xl:px-10">
+                <div className="border-b border-[#dfe5ee] bg-white px-5 py-3 2xl:px-7">
                   <div className="flex items-center justify-between gap-5">
                     <div className="min-w-0">
-                      <p className="truncate text-[20px] font-semibold text-[#101828]">
+                      <p className="truncate text-[19px] font-semibold text-[#101828]">
                         {searchLoading && searchPage === 1
                           ? desktopListText.updatingResults
                           : searchError
@@ -3116,20 +3116,20 @@ export default function VehicleSearchExperience({
                     <div className="flex shrink-0 items-center gap-2">
                       <label className="relative block">
                         <span className="sr-only">{desktopListText.sorting}</span>
-                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-10 min-w-[170px] appearance-none rounded-[8px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[13px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
+                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-9 min-w-[160px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
                           {sortOptions.map((option) => (
                             <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
                           ))}
                         </select>
                         <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
                       </label>
-                      <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-[13px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                      <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-9 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
                         <MapPin className="h-4 w-4" aria-hidden="true" />
                         {desktopListText.showMap}
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3 flex min-h-8 items-center justify-between gap-3">
+                  <div className="mt-2.5 flex min-h-8 items-center justify-between gap-3">
                     <div className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"><ActiveFilterChips filters={activeFilters} locale={locale} /></div>
                     <button type="button" onClick={saveCurrentSearch} disabled={savingSearch} className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[8px] px-4 text-[12px] font-semibold text-white transition ${savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'} disabled:cursor-wait disabled:opacity-70`}>
                       <Bookmark className="h-4 w-4" aria-hidden="true" />
@@ -3138,9 +3138,9 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f5f7fa] px-7 py-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-10 2xl:py-6">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-5 py-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-7 2xl:py-5">
                   {filteredListings.length ? (
-                    <ol className="mx-auto max-w-[1420px] space-y-3.5">
+                    <ol className="mx-auto max-w-[1180px] space-y-3">
                       {filteredListings.map((listing) => (
                         <li key={listing.id}>
                           <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
@@ -3161,7 +3161,9 @@ export default function VehicleSearchExperience({
                       </button>
                     </div>
                   ) : null}
-                  <div className="mx-auto mt-6 max-w-[1420px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                  {filteredListings.length ? (
+                    <div className="mx-auto mt-6 max-w-[1180px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                  ) : null}
                 </div>
                 {compareIds.length ? (
                   <div className="absolute bottom-5 left-1/2 z-30 w-[min(640px,calc(100%_-_40px))] -translate-x-1/2 rounded-[10px] border border-[#c9d9ef] bg-white/96 px-4 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur">

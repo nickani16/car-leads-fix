@@ -70,7 +70,8 @@ test('desktop list rows expose mapped vehicle, seller and action data', () => {
   assert.match(listRowSource, /label: copy\.fuel/)
   assert.match(listRowSource, /label: copy\.gearbox/)
   assert.match(listRowSource, /data-marketplace-listing-row/)
-  assert.match(listRowSource, /grid-cols-\[minmax\(270px,306px\)_minmax\(0,1fr\)\]/)
+  assert.match(listRowSource, /grid-cols-\[248px_minmax\(0,1fr\)\]/)
+  assert.match(experienceSource, /grid-cols-\[276px_minmax\(0,1fr\)\]/)
   assert.match(listRowSource, /equipmentChips\.slice\(0, 3\)/)
 })
 

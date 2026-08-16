@@ -10,6 +10,14 @@ const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.m
 const accountPage = readFileSync(new URL('../app/konto/page.tsx', import.meta.url), 'utf8')
 const deleteRoute = readFileSync(new URL('../app/api/account/delete-request/route.ts', import.meta.url), 'utf8')
 const adminUserRoute = readFileSync(new URL('../app/api/admin/users/[id]/route.ts', import.meta.url), 'utf8')
+const profileLifecycleMigration = readFileSync(
+  new URL('../supabase/migrations/20260816170712_marketplace_profile_account_lifecycle.sql', import.meta.url),
+  'utf8',
+)
+const profileLifecycleBackfill = readFileSync(
+  new URL('../supabase/migrations/20260816171420_backfill_self_deleted_profile_lifecycle.sql', import.meta.url),
+  'utf8',
+)
 
 test('sell menu exposes the dealer flow with explicit copy for every public market', () => {
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
@@ -91,6 +99,15 @@ test('self-deleted accounts can reactivate only with the retained identity', () 
   assert.match(registerRoute, /rollbackReactivation/)
   assert.match(adminUserRoute, /patch\.deleted_at = null/)
   assert.match(adminUserRoute, /patch\.removed_by_admin = false/)
+})
+
+test('profile lifecycle fields used by registration are part of the deployed schema contract', () => {
+  for (const column of ['suspended', 'deleted_at', 'removed_by_admin']) {
+    assert.match(profileLifecycleMigration, new RegExp(`add column if not exists ${column}`))
+    assert.ok(registerRoute.includes(column), `${column} should be consumed by registration`)
+  }
+  assert.match(profileLifecycleBackfill, /\[account_deletion_request\]/)
+  assert.match(profileLifecycleBackfill, /risk_status = 'restricted'/)
 })
 
 test('registration explains national identity format and keeps account labels at weight 600', () => {

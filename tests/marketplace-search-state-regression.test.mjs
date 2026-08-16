@@ -29,6 +29,10 @@ const marketplaceCategoryPageSource = readFileSync(
   'utf8',
 )
 const searchRouteSource = readFileSync(new URL('../app/api/marketplace/search-v2/route.ts', import.meta.url), 'utf8')
+const geoContractRepairMigration = readFileSync(
+  new URL('../supabase/migrations/20260816171048_marketplace_listing_geo_contract_repair.sql', import.meta.url),
+  'utf8',
+)
 const findCarsPageSource = readFileSync(new URL('../app/find-cars/page.tsx', import.meta.url), 'utf8')
 const listingDetailPageSource = readFileSync(
   new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url),
@@ -142,6 +146,19 @@ test('geo search migration prepares stable IDs, polygons and indexed coordinates
   ]) {
     assert.ok(migrationSource.includes(snippet), `${snippet} should be present`)
   }
+})
+
+test('production geo filter columns are guarded by an additive contract repair', () => {
+  for (const column of [
+    'geo_place_code',
+    'geo_area_id',
+    'geo_region_code',
+    'geo_municipality_code',
+    'geo_locality_code',
+  ]) {
+    assert.match(geoContractRepairMigration, new RegExp(`add column if not exists ${column} text`))
+  }
+  assert.match(geoContractRepairMigration, /marketplace_listings_geo_area_idx/)
 })
 
 test('marketplace UI hydrates geo search state into URL, API and map handoff', () => {
