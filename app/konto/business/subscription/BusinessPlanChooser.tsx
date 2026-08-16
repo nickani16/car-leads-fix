@@ -71,36 +71,48 @@ export default function BusinessPlanChooser({
     setError('')
     setSuccess(null)
     const productPeriod = key === 'free' ? 'monthly' : billingPeriod
-    const response = await fetch('/api/account/listing-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        productKey: `subscription.business.${key}.${productPeriod}`,
-        market,
-        locale,
-        billingMethod,
-      }),
-    })
-    const result = await response.json().catch(() => ({}))
-    if (result.activated) {
-      setSuccess({ message: copy.freeActivated })
-      window.location.assign(localizePublicHref(locale, '/account/company/listings/create'))
-      return
-    }
-    if (result.invoice) {
-      setSuccess({
-        message: `${copy.invoiceCreated} ${result.invoiceEmail || copy.companyEmail}. ${copy.paymentTerms}`,
-        invoiceUrl: result.invoiceUrl || null,
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 20_000)
+
+    try {
+      const response = await fetch('/api/account/listing-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productKey: `subscription.business.${key}.${productPeriod}`,
+          market,
+          locale,
+          billingMethod,
+        }),
+        signal: controller.signal,
       })
+      const result = await response.json().catch(() => ({}))
+      if (result.activated) {
+        setSuccess({ message: copy.freeActivated })
+        window.location.assign(localizePublicHref(locale, '/account/company/listings/create'))
+        return
+      }
+      if (result.invoice) {
+        setSuccess({
+          message: `${copy.invoiceCreated} ${result.invoiceEmail || copy.companyEmail}. ${copy.paymentTerms}`,
+          invoiceUrl: result.invoiceUrl || null,
+        })
+        return
+      }
+      if (result.url) {
+        window.location.assign(result.url)
+        return
+      }
+      setError(localizedAccountError(locale, result, copy.paymentError))
+    } catch (requestError) {
+      const fallback = requestError instanceof DOMException && requestError.name === 'AbortError'
+        ? 'The request took too long. Please try again.'
+        : copy.paymentError
+      setError(localizedAccountError(locale, null, fallback))
+    } finally {
+      window.clearTimeout(timeout)
       setLoading('')
-      return
     }
-    if (result.url) {
-      window.location.assign(result.url)
-      return
-    }
-    setError(localizedAccountError(locale, result, copy.paymentError))
-    setLoading('')
   }
 
   return (
@@ -164,7 +176,7 @@ export default function BusinessPlanChooser({
           </div>
         ) : null}
 
-        {error ? <p className="mt-5 rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+        {error ? <p role="alert" className="mt-5 rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
 
         <div className="mt-5 grid gap-3 rounded-[14px] border border-[#cfe0ff] bg-white p-4 text-sm text-[#475467] shadow-[0_18px_46px_rgba(16,24,40,.045)] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
           <span className="grid h-10 w-10 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">

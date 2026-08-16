@@ -24,6 +24,7 @@ test('desktop list view extends the current marketplace instead of restoring a p
   assert.match(experienceSource, /useState<DesktopMarketplaceView>\('map'\)/)
   assert.match(experienceSource, /desktopMarketplaceView === 'list'/)
   assert.match(experienceSource, /data-marketplace-list-sidebar/)
+  assert.match(experienceSource, /data-marketplace-list-empty/)
   assert.match(experienceSource, /density="sidebar"/)
   assert.match(experienceSource, /<MarketplaceDesktopListingRow/)
   assert.match(experienceSource, /onShowDesktopList=\{\(\) => setDesktopMarketplaceView\('list'\)\}/)
@@ -71,7 +72,9 @@ test('desktop list rows expose mapped vehicle, seller and action data', () => {
   assert.match(listRowSource, /label: copy\.gearbox/)
   assert.match(listRowSource, /data-marketplace-listing-row/)
   assert.match(listRowSource, /grid-cols-\[248px_minmax\(0,1fr\)\]/)
-  assert.match(experienceSource, /grid-cols-\[276px_minmax\(0,1fr\)\]/)
+  assert.match(experienceSource, /grid-cols-\[304px_minmax\(0,1fr\)\]/)
+  assert.match(experienceSource, /icon=\{<Scale/)
+  assert.match(experienceSource, /icon=\{<Layers/)
   assert.match(listRowSource, /equipmentChips\.slice\(0, 3\)/)
 })
 

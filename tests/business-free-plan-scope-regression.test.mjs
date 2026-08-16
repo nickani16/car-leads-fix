@@ -36,3 +36,16 @@ test('successful Free activation leaves the plan gate and opens listing creation
   assert.match(planChooser, /result\.activated/)
   assert.match(planChooser, /window\.location\.assign\(localizePublicHref\(locale, '\/account\/company\/listings\/create'\)\)/)
 })
+
+test('Free activation distinguishes account, verification and onboarding failures', () => {
+  assert.match(checkoutRoute, /code: 'business_account_required'/)
+  assert.match(checkoutRoute, /code: 'company_not_verified'/)
+  assert.match(checkoutRoute, /code: 'business_onboarding_incomplete'/)
+})
+
+test('plan activation always clears loading after request and timeout failures', () => {
+  assert.match(planChooser, /new AbortController\(\)/)
+  assert.match(planChooser, /signal: controller\.signal/)
+  assert.match(planChooser, /finally \{/)
+  assert.match(planChooser, /setLoading\(''\)/)
+})

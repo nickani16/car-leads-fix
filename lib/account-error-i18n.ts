@@ -10,6 +10,8 @@ const errorCodeAliases: Record<string, string> = {
   active_listing_limit_reached: 'The listing limit for the company plan has been reached.',
   subscription_not_active: 'The business subscription must be active before more listings can be created.',
   company_not_verified: 'The company must be reviewed by Autorell before new listings can be published.',
+  business_account_required: 'Create a business account to activate a plan.',
+  business_onboarding_incomplete: 'The company must be reviewed by Autorell before new listings can be published.',
   plan_required: 'The business subscription must be active before more listings can be created.',
 }
 

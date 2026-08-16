@@ -99,8 +99,23 @@ export async function POST(request: Request) {
   const subscriptionBusinessId = businessScope?.companyId || body.businessId || null
 
   if (product.kind === 'subscription' && product.businessPlan === 'free') {
-    if (profile.account_type !== 'business' || profile.business_verification_status !== 'verified' || !['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
-      return NextResponse.json({ error: 'Företaget måste vara godkänt innan Free kan aktiveras.' }, { status: 403 })
+    if (profile.account_type !== 'business') {
+      return NextResponse.json({
+        code: 'business_account_required',
+        error: 'Create a business account to activate a plan.',
+      }, { status: 403 })
+    }
+    if (profile.business_verification_status !== 'verified') {
+      return NextResponse.json({
+        code: 'company_not_verified',
+        error: 'The company must be reviewed by Autorell before a plan can be activated.',
+      }, { status: 403 })
+    }
+    if (!['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
+      return NextResponse.json({
+        code: 'business_onboarding_incomplete',
+        error: 'Complete the company onboarding before activating a plan.',
+      }, { status: 403 })
     }
     const { data: existingSubscriptions, error: existingSubscriptionError } = await admin
       .from('business_subscriptions')

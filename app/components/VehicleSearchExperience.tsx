@@ -2889,14 +2889,14 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[276px_minmax(0,1fr)] bg-[#f4f6f9] min-[1120px]:grid 2xl:grid-cols-[288px_minmax(0,1fr)]"
+              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[304px_minmax(0,1fr)] bg-[#f4f6f9] min-[1120px]:grid 2xl:grid-cols-[316px_minmax(0,1fr)]"
             >
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
-                className="flex min-h-0 flex-col border-r border-[#d8e0eb] bg-white"
+                className="flex min-h-0 flex-col border-r border-[#d8e0eb] bg-[#f6f8fb]"
               >
-                <div className="border-b border-[#e6ebf2] px-4 pb-4 pt-4">
+                <div className="border-b border-[#dfe5ee] bg-white px-4 pb-4 pt-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
@@ -2920,9 +2920,10 @@ export default function VehicleSearchExperience({
                   <div className="mt-3">{renderMarketplaceSearchInput()}</div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin]">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin]">
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<Scale className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.offerType}
                     summary={marketplaceModeLabel(locale, mode)}
                     open={listOfferTypeOpen}
@@ -2948,6 +2949,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<Layers className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.vehicleCategory}
                     summary={categoryText(
                       visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
@@ -2971,6 +2973,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<Search className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.makeModelYear}
                     summary={[make, model, minYear || maxYear ? `${minYear || '1950'}-${maxYear || '+'}` : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
                     open={listVehicleOpen}
@@ -3015,6 +3018,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<Star className="h-4 w-4" aria-hidden="true" />}
                     title={uiText(locale, 'Price', 'Pris', 'Preis')}
                     summary={minPrice || maxPrice ? `${minPrice || '0'}-${maxPrice || '+'} ${priceFilterCurrency}` : desktopListText.anyPrice}
                     open={priceYearOpen}
@@ -3036,6 +3040,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<MapPin className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.locationMarket}
                     summary={[region, municipality, marketSummary].filter(Boolean).join(' · ')}
                     open={locationFiltersOpen}
@@ -3059,6 +3064,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.vehicleDetails}
                     summary={desktopListText.mileageFuelEquipment}
                     open={moreFiltersOpen}
@@ -3074,6 +3080,7 @@ export default function VehicleSearchExperience({
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />}
                     title={desktopListText.sellerCondition}
                     summary={sellerSummary}
                     open={sellerFiltersOpen}
@@ -3099,17 +3106,17 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-5 py-3 2xl:px-7">
+                <div className="border-b border-[#dfe5ee] bg-white px-6 py-4 2xl:px-8">
                   <div className="flex items-center justify-between gap-5">
                     <div className="min-w-0">
-                      <p className="truncate text-[19px] font-semibold text-[#101828]">
+                      <p className="truncate text-[20px] font-semibold tracking-[-.02em] text-[#101828]">
                         {searchLoading && searchPage === 1
                           ? desktopListText.updatingResults
                           : searchError
                             ? desktopListText.countFailure
                             : resultCountSummary}
                       </p>
-                      <p className="mt-1 text-[12px] font-medium text-[#667085]">
+                      <p className="mt-1 text-[12px] font-normal text-[#667085]">
                         {desktopListText.resultsUpdate}
                       </p>
                     </div>
@@ -3138,7 +3145,7 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-5 py-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-7 2xl:py-5">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-6 py-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-8 2xl:py-6">
                   {filteredListings.length ? (
                     <ol className="mx-auto max-w-[1180px] space-y-3">
                       {filteredListings.map((listing) => (
@@ -3148,10 +3155,36 @@ export default function VehicleSearchExperience({
                       ))}
                     </ol>
                   ) : (
-                    <div className="mx-auto flex min-h-[calc(100dvh-290px)] max-w-[560px] flex-col items-center justify-center px-6 py-14 text-center">
-                      <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={220} height={150} className="h-auto w-[200px]" />
-                      <p className="mt-5 text-2xl font-semibold text-[#101828]">{seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#667085]">{translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}</p>
+                    <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" data-marketplace-list-empty>
+                      <div className="w-full overflow-hidden rounded-[8px] border border-[#dbe3ee] bg-white shadow-[0_10px_34px_rgba(16,24,40,.055)]">
+                        <div className="grid min-h-[310px] grid-cols-[minmax(0,1fr)_260px] items-center gap-8 px-10 py-9 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:px-12">
+                          <div className="min-w-0 text-left">
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1.5 text-[11px] font-semibold text-[#0866ff]">
+                              <List className="h-3.5 w-3.5" aria-hidden="true" />
+                              {desktopListText.searchResults}
+                            </span>
+                            <p className="mt-4 max-w-[560px] text-[28px] font-semibold leading-[1.12] tracking-[-.035em] text-[#101828]">
+                              {seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}
+                            </p>
+                            <p className="mt-3 max-w-[570px] text-sm font-normal leading-6 text-[#667085]">
+                              {translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}
+                            </p>
+                            <div className="mt-6 flex flex-wrap items-center gap-3">
+                              <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                <X className="h-4 w-4" aria-hidden="true" />
+                                {desktopListText.clearAll}
+                              </button>
+                              <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                <MapPin className="h-4 w-4" aria-hidden="true" />
+                                {desktopListText.showMap}
+                              </button>
+                            </div>
+                          </div>
+                          <div className="grid min-h-[220px] place-items-center border-l border-[#edf1f6] pl-8">
+                            <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={240} height={166} className="h-auto w-[220px]" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                   {filteredListings.length > 0 && searchPage < searchTotalPages ? (
@@ -3827,6 +3860,7 @@ export default function VehicleSearchExperience({
 }
 
 function CollapsibleFilterSection({
+  icon,
   title,
   summary,
   open,
@@ -3834,6 +3868,7 @@ function CollapsibleFilterSection({
   children,
   density = 'default',
 }: {
+  icon?: ReactNode
   title: string
   summary?: string
   open: boolean
@@ -3845,27 +3880,36 @@ function CollapsibleFilterSection({
 
   return (
     <section
-      className={`border-b border-[#edf1f6] last:border-b-0 ${
-        sidebar ? 'py-4' : 'pb-3'
+      className={`${
+        sidebar
+          ? `mb-2 overflow-hidden rounded-[8px] border bg-white transition-colors last:mb-0 ${open ? 'border-[#b9cef1]' : 'border-[#dfe5ee] hover:border-[#c5d2e4]'}`
+          : 'border-b border-[#edf1f6] pb-3 last:border-b-0'
       }`}
     >
       <button
         type="button"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between gap-3 rounded-[8px] bg-white px-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
-          sidebar ? 'py-0' : 'py-0.5'
+        className={`flex w-full items-center justify-between gap-3 bg-white text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] ${
+          sidebar ? 'min-h-[54px] px-3 py-2.5' : 'rounded-[8px] px-0 py-0.5'
         }`}
         aria-expanded={open}
       >
-        <span className="min-w-0">
-          <span className={`block font-semibold text-[#101828] ${sidebar ? 'text-[13px]' : 'text-[14px]'}`}>{title}</span>
-          {summary ? <span className="mt-0.5 block truncate text-[11px] font-normal text-[#667085]">{summary}</span> : null}
+        <span className="flex min-w-0 items-center gap-2.5">
+          {icon ? (
+            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[7px] transition-colors ${open ? 'bg-[#eaf2ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#667085]'}`}>
+              {icon}
+            </span>
+          ) : null}
+          <span className="min-w-0">
+            <span className={`block font-semibold text-[#101828] ${sidebar ? 'text-[12px]' : 'text-[14px]'}`}>{title}</span>
+            {summary ? <span className="mt-0.5 block truncate text-[10px] font-normal text-[#667085]">{summary}</span> : null}
+          </span>
         </span>
-        <span className={`grid h-7 w-7 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
-          <ChevronDown className="h-4 w-4" />
+        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#667085] transition ${open ? 'rotate-180 bg-[#f2f4f7]' : ''}`}>
+          <ChevronDown className="h-3.5 w-3.5" />
         </span>
       </button>
-      {open ? <div className={sidebar ? 'mt-3.5' : 'mt-3'}>{children}</div> : null}
+      {open ? <div className={sidebar ? 'border-t border-[#edf1f6] px-3 pb-3 pt-3' : 'mt-3'}>{children}</div> : null}
     </section>
   )
 }
