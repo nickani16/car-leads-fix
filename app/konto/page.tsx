@@ -160,11 +160,17 @@ export default async function AccountPage() {
   const emailVerified = await hasVerifiedAccountEmail(profile.email, user)
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
+  const accountNeedsReview =
+    ['restricted', 'blocked', 'suspended'].includes(String(profile.risk_status || '')) ||
+    String(profile.identity_status || '') === 'rejected'
   const privateVerificationComplete =
     emailVerified &&
-    profile.risk_status === 'standard' &&
-    !['needs_review', 'rejected'].includes(String(profile.identity_status || ''))
-  const verificationLabel = privateVerificationComplete ? copy.verified : copy.reviewPending
+    !accountNeedsReview
+  const verificationLabel = privateVerificationComplete
+    ? copy.basicCheckDone
+    : accountNeedsReview
+      ? copy.needsReview
+      : copy.verifyEmailStatus
   const profileComplete = Boolean(
     profile.first_name &&
       profile.last_name &&
@@ -797,7 +803,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     user: 'Autorell user',
     privateAccount: 'Private account',
     verified: 'Verified',
-    reviewPending: 'Review pending',
+    basicCheckDone: 'Basic check complete',
+    needsReview: 'Needs review',
+    verifyEmailStatus: 'Verify email',
     editProfile: 'Edit profile',
     accountNavigation: 'Account navigation',
     overview: 'Overview',
@@ -869,7 +877,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     user: 'Autorell-användare',
     privateAccount: 'Privatkonto',
     verified: 'Verifierad',
-    reviewPending: 'Granskning pågår',
+    basicCheckDone: 'Grundkontroll klar',
+    needsReview: 'Behöver granskas',
+    verifyEmailStatus: 'Verifiera mejl',
     editProfile: 'Redigera profil',
     accountNavigation: 'Kontonavigation',
     overview: 'Översikt',
@@ -944,7 +954,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       user: 'Autorell-användare',
       privateAccount: 'Privatkonto',
       verified: 'Verifierad',
-      reviewPending: 'Granskning pågår',
+      basicCheckDone: 'Grundkontroll klar',
+      needsReview: 'Behöver granskas',
+      verifyEmailStatus: 'Verifiera mejl',
       editProfile: 'Redigera profil',
       accountNavigation: 'Kontonavigation',
       overview: 'Översikt',
@@ -1018,7 +1030,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       user: 'Autorell-Nutzer',
       privateAccount: 'Privatkonto',
       verified: 'Verifiziert',
-      reviewPending: 'Prüfung läuft',
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
       editProfile: 'Profil bearbeiten',
       overview: 'Übersicht',
       profile: 'Profil',
@@ -1057,5 +1071,77 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     }
   }
 
-  return translatePublicObject(locale, en)
+  return {
+    ...translatePublicObject(locale, en),
+    ...privateAccountStatusCopy(locale),
+  }
+}
+
+function privateAccountStatusCopy(locale: PublicLocale) {
+  const copy: Record<
+    PublicLocale,
+    { basicCheckDone: string; needsReview: string; verifyEmailStatus: string }
+  > = {
+    sv: {
+      basicCheckDone: 'Grundkontroll klar',
+      needsReview: 'Behöver granskas',
+      verifyEmailStatus: 'Verifiera mejl',
+    },
+    en: {
+      basicCheckDone: 'Basic check complete',
+      needsReview: 'Needs review',
+      verifyEmailStatus: 'Verify email',
+    },
+    de: {
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
+    },
+    at: {
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
+    },
+    be: {
+      basicCheckDone: 'Basiscontrole voltooid',
+      needsReview: 'Controle nodig',
+      verifyEmailStatus: 'E-mail verifiëren',
+    },
+    fr: {
+      basicCheckDone: 'Contrôle de base terminé',
+      needsReview: 'Vérification nécessaire',
+      verifyEmailStatus: 'Vérifier l’e-mail',
+    },
+    es: {
+      basicCheckDone: 'Comprobación básica completada',
+      needsReview: 'Requiere revisión',
+      verifyEmailStatus: 'Verificar correo',
+    },
+    it: {
+      basicCheckDone: 'Controllo di base completato',
+      needsReview: 'Revisione necessaria',
+      verifyEmailStatus: 'Verifica e-mail',
+    },
+    pl: {
+      basicCheckDone: 'Podstawowa kontrola zakończona',
+      needsReview: 'Wymaga weryfikacji',
+      verifyEmailStatus: 'Zweryfikuj e-mail',
+    },
+    nl: {
+      basicCheckDone: 'Basiscontrole voltooid',
+      needsReview: 'Controle nodig',
+      verifyEmailStatus: 'E-mail verifiëren',
+    },
+    fi: {
+      basicCheckDone: 'Perustarkistus valmis',
+      needsReview: 'Vaatii tarkistuksen',
+      verifyEmailStatus: 'Vahvista sähköposti',
+    },
+    da: {
+      basicCheckDone: 'Grundkontrol fuldført',
+      needsReview: 'Kræver gennemgang',
+      verifyEmailStatus: 'Bekræft e-mail',
+    },
+  }
+  return copy[locale]
 }
