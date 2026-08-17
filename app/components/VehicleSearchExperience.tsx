@@ -31,7 +31,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
-import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
 import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
@@ -70,7 +69,7 @@ import { translateListingEquipmentValue } from '@/lib/listing-equipment'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
-type ResultsLayout = 'single' | 'split'
+type ResultsLayout = 'single' | 'split' | 'desktopCard'
 type DesktopMarketplaceView = 'map' | 'list'
 type QuickFilterPlacement = 'desktop' | 'mobile'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
@@ -3377,14 +3376,22 @@ export default function VehicleSearchExperience({
 
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-6 py-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-8 2xl:py-6">
                   {filteredListings.length ? (
-                    <ol className="mx-auto max-w-[1180px] space-y-3">
+                    <ol className="mx-auto grid max-w-[920px] grid-cols-2 gap-4 2xl:max-w-[980px] 2xl:gap-5">
                       {filteredListings.map((listing) => (
-                        <li key={listing.id}>
-                          <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment, locale)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
+                        <li key={listing.id} className="min-w-0">
+                          <VehicleResultCard
+                            listing={listing}
+                            locale={locale}
+                            marketCountryCode={safeInitialCountry}
+                            compareActive={compareIds.includes(listing.id)}
+                            onCompare={() => toggleCompare(listing.id)}
+                            onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                            layout="desktopCard"
+                          />
                         </li>
                       ))}
                     </ol>
-                  ) : (
+) : (
                     <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" aria-label={seoLanding?.zeroResultsText || emptyStateCopy.title} data-marketplace-list-empty>
                       <div className="w-full overflow-hidden rounded-[8px] border border-[#dbe3ee] bg-white shadow-[0_10px_34px_rgba(16,24,40,.055)]">
                         <div className="grid min-h-[310px] grid-cols-[minmax(0,1fr)_260px] items-center gap-8 px-10 py-9 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:px-12">
@@ -5151,14 +5158,14 @@ function VehicleResultCard({
 
   return (
     <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
-      layout === 'split' ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
+      layout === 'desktopCard' ? 'h-full rounded-[8px] border border-[#d6dde8] px-0 pb-4 shadow-[0_1px_3px_rgba(16,24,40,.04)] hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)]' : layout === 'split' ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
     }`}>
       <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
       <div className={`pointer-events-none relative z-20 grid gap-4 ${
-        layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
+        layout === 'desktopCard' ? 'grid-cols-1' : layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
       }`}>
         <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
-          layout === 'split' ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]' : 'h-[246px] sm:h-[174px]'
+          layout === 'desktopCard' ? 'aspect-[16/10] rounded-b-none border-b border-[#e5ebf3]' : layout === 'split' ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]' : 'h-[246px] sm:h-[174px]'
         }`}>
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
@@ -5166,7 +5173,7 @@ function VehicleResultCard({
               title={listing.title}
               href={href}
               onNavigate={onBeforeNavigate}
-              sizes={layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : '(max-width: 640px) 100vw, 260px'}
+              sizes={layout === 'desktopCard' ? '(min-width: 1536px) 470px, 440px' : layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : '(max-width: 640px) 100vw, 260px'}
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
@@ -5200,18 +5207,18 @@ function VehicleResultCard({
           </button>
         </div>
 
-        <div className="min-w-0">
+        <div className={`min-w-0 ${layout === 'desktopCard' ? 'px-4 pt-3' : ''}`}>
           <div className="grid min-w-0 gap-1.5">
             <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
               {offerBadge.label}
             </span>
-            <span className={`${layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
+            <span className={`${layout === 'desktopCard' ? 'text-[18px]' : layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
               {listing.title}
             </span>
-            <p className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
+            <p className={`${layout === 'desktopCard' ? 'text-[13px] leading-5' : layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
               {subtitle}
             </p>
-            <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828] no-underline [text-decoration:none]`}>
+            <p className={`${layout === 'desktopCard' ? 'text-[22px] leading-7' : layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828] no-underline [text-decoration:none]`}>
               {listing.priceLabel}
             </p>
             {insuranceLabel ? (
@@ -5222,8 +5229,8 @@ function VehicleResultCard({
             ) : null}
             <MetaSeparatorList
               items={visibleMeta}
-              compact={layout === 'split'}
-              className={`${layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`}
+              compact={layout === 'split' || layout === 'desktopCard'}
+              className={`${layout === 'desktopCard' ? 'max-w-full text-[13px] leading-5' : layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`}
             />
             <p className="hidden">
               {listing.sellerIsTrader
