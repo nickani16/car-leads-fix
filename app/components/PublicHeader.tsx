@@ -567,23 +567,6 @@ export default function PublicHeader({
     if (locale === 'de') return de || en
     return locale === 'en' ? en : translatePublic(locale, en)
   }
-  const mobileSavedSearchesLabel = (() => {
-    const labels: Partial<Record<PublicLocale, string>> = {
-      sv: 'Sökningar',
-      en: 'Searches',
-      de: 'Suchen',
-      at: 'Suchen',
-      fr: 'Recherches',
-      es: 'Búsquedas',
-      it: 'Ricerche',
-      nl: 'Zoeken',
-      be: 'Zoeken',
-      pl: 'Wyszuk.',
-      da: 'Søgninger',
-      fi: 'Haut',
-    }
-    return labels[locale] || 'Searches'
-  })()
   const [open, setOpen] = useState(false)
   const [marketSelectorOpen, setMarketSelectorOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -2377,38 +2360,68 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
-        className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 pb-[calc(10px+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
-          lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
+        className={`pointer-events-none fixed bottom-0 left-3 z-[120] transform-gpu pb-[calc(10px+env(safe-area-inset-bottom))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
+          lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
+        aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
+        style={{ width: 'min(366px, calc(100vw - 24px))' }}
       >
-        <div className="grid h-[54px] w-full grid-cols-4 px-1 pt-1">
+        <div
+          className="pointer-events-auto grid h-[62px] w-full grid-cols-4 items-center rounded-[30px] border border-white/75 bg-white/86 px-1.5 shadow-[0_18px_48px_rgba(16,24,40,.20),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/78"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
+        >
           <Link
             href={homeHref}
             onClick={closeMobile}
-            className={`hidden min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
+            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 transition active:scale-[.98] ${
+              isHomePage ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-[#111827]'
             }`}
           >
             <Home className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
+            <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">{t.home}</span>
           </Link>
           <Link
             href={vehicleSearchHref}
             onClick={closeMobile}
-            className={`order-1 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isMarketplaceResults || isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
+            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 transition active:scale-[.98] ${
+              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-[#111827]'
             }`}
           >
             <Search className="h-[22px] w-[22px]" strokeWidth={1.8} />
-            <span className="max-w-full truncate text-[10px] font-medium leading-none">
+            <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">
               {publicLabel('Search', 'Sök', 'Suche')}
             </span>
           </Link>
           {headerAccount.authenticated ? (
             <Link
+              href={createListingHref}
+              onClick={closeMobile}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 text-[#111827] transition active:scale-[.98]"
+            >
+              <Plus className="h-[24px] w-[24px]" strokeWidth={1.8} />
+              <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">
+                {publicLabel('New ad', 'Ny annons', 'Neue Anzeige')}
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login', createListingHref)}
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 text-[#111827] transition active:scale-[.98]"
+            >
+              <Plus className="h-[24px] w-[24px]" strokeWidth={1.8} />
+              <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">
+                {publicLabel('New ad', 'Ny annons', 'Neue Anzeige')}
+              </span>
+            </button>
+          )}
+          {headerAccount.authenticated ? (
+            <Link
               href={accountMessagesHref}
               onClick={closeMobile}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 transition active:scale-[.98] ${
+                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-[#111827]'
+              }`}
             >
               <span className="relative">
                 <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -2418,72 +2431,16 @@ export default function PublicHeader({
                   </span>
                 ) : null}
               </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
+              <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">{t.messages}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 py-2 text-[#111827] transition active:scale-[.98]"
             >
               <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
-            </button>
-          )}
-          {headerAccount.authenticated ? (
-            <Link
-              href={savedHref}
-              onClick={closeMobile}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                {savedListingCount ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {savedListingBadge}
-                  </span>
-                ) : null}
-              </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedHref)}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
-            </button>
-          )}
-          {headerAccount.authenticated ? (
-            <Link
-              href={savedSearchesHref}
-              onClick={closeMobile}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <span className="relative">
-                <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                {savedSearchBadge ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {savedSearchBadge}
-                  </span>
-                ) : null}
-              </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {mobileSavedSearchesLabel}
-              </span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedSearchesHref)}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
-            >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">
-                {mobileSavedSearchesLabel}
-              </span>
+              <span className="max-w-full truncate text-[9px] font-semibold leading-none min-[380px]:text-[10px]">{t.messages}</span>
             </button>
           )}
         </div>

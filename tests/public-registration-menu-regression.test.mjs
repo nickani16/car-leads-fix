@@ -27,6 +27,19 @@ test('sell menu exposes the dealer flow with explicit copy for every public mark
   assert.match(header, /'\/sell-to-dealer'/)
 })
 
+test('mobile bottom navigation is a floating rounded glass bar', () => {
+  assert.match(header, /aria-label=\{publicLabel\('Mobile navigation'/)
+  assert.match(header, /pointer-events-none fixed bottom-0 left-3/)
+  assert.match(header, /style=\{\{ width: 'min\(366px, calc\(100vw - 24px\)\)' \}\}/)
+  assert.match(header, /w-full grid-cols-4/)
+  assert.match(header, /display: 'grid', gridTemplateColumns: 'repeat\(4, minmax\(0, 1fr\)\)'/)
+  assert.match(header, /rounded-\[30px\] border border-white\/75 bg-white\/86/)
+  assert.match(header, /backdrop-blur-2xl supports-\[backdrop-filter\]:bg-white\/78/)
+  assert.match(header, /shadow-\[0_18px_48px_rgba\(16,24,40,\.20\),0_2px_10px_rgba\(16,24,40,\.08\)\]/)
+  assert.match(header, /publicLabel\('New ad', 'Ny annons', 'Neue Anzeige'\)/)
+  assert.doesNotMatch(header, /fixed bottom-0 left-0 right-0 z-\[120\] w-full[\s\S]{0,180}border-t border-\[#e6ebf2\] bg-white\/96/)
+})
+
 test('registration uses the fast localized birth-date picker for private and business accounts', () => {
   assert.match(registerForm, /<BirthDatePicker/)
   assert.match(registerForm, /value=\{birthDate\}/)
