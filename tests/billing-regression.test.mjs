@@ -432,13 +432,14 @@ test('featured listings have active-window queries for home and category UI', ()
   assert.match(publicData, /\.gt\('featured_expires_at', now\)/)
 })
 
-test('home listing cards show offer type above the title without widening cards', () => {
+test('home listing cards show offer type above the title without mobile carousel widths', () => {
   assert.match(home, /offerType: string \| null/)
   assert.match(home, /const offerBadge = homeListingOfferBadge\(locale, item\.offerType\)/)
   assert.match(home, /mb-1\.5 inline-flex w-max max-w-full rounded-full px-2 py-0\.5 text-\[11px\]/)
   assert.match(home, /offer_type\?: string \| null/)
   assert.match(home, /offerType: listing\.offer_type \|\| 'sale'/)
-  assert.match(home, /w-\[76vw\] max-w-\[280px\]/)
+  assert.doesNotMatch(home, /w-\[76vw\] max-w-\[280px\]/)
+  assert.doesNotMatch(home, /<article className="group relative w-\[76vw\]/)
 })
 
 test('refresh credits are protected by RPC atomic locks and cooldown', () => {
@@ -494,6 +495,11 @@ test('EU home sections and browser-only header state hydrate deterministically',
   assert.match(home, /const latestLocalListingSection = localListingSections\.find/)
   assert.match(home, /const remainingListingSections = localListingSections\.filter/)
   assert.match(home, /key=\{section\.id\}/)
+  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top', 12\)/)
+  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 12\)/)
+  assert.match(home, /grid grid-cols-2[\s\S]*lg:grid-cols-4/)
+  assert.match(home, /index >= 8 \? 'max-sm:hidden' : ''/)
+  assert.doesNotMatch(home, /mt-5 flex snap-x gap-4 overflow-x-auto/)
   assert.match(countryFlag, /\.toFixed\(4\)/)
   assert.match(publicHeader, /useState<HeaderAccount>\(emptyHeaderAccount\)/)
   assert.match(publicHeader, /useState\(true\)/)

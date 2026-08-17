@@ -542,8 +542,8 @@ export default async function BusinessMarketplaceHome({
     vehicleNews,
   ] =
     await Promise.all([
-      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 8),
-      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 8),
+      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 12),
+      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 12),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
@@ -631,7 +631,7 @@ export default async function BusinessMarketplaceHome({
 
       {latestLocalListingSection ? (
         <section className="bg-white py-10 sm:py-14">
-          <div className={homeContentContainerClass}>
+          <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
             <HomeListingSection
               section={latestLocalListingSection}
               locale={locale}
@@ -663,7 +663,7 @@ export default async function BusinessMarketplaceHome({
       </section>
 
       <section className="bg-white py-10 sm:py-16">
-        <div className={homeContentContainerClass}>
+        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
           <div className="space-y-10">
             {remainingListingSections.map((section) => (
               <HomeListingSection key={section.id} section={section} locale={locale} />
@@ -1420,12 +1420,13 @@ function HomeListingSection({
         </Link>
       </div>
       {section.items.length ? (
-        <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
-          {section.items.map((item) => (
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {section.items.map((item, index) => (
             <HomeListingCard
               key={`${section.title}-${item.id}`}
               item={item}
               locale={locale}
+              className={index >= 8 ? 'max-sm:hidden' : ''}
             />
           ))}
         </div>
@@ -1441,21 +1442,23 @@ function HomeListingSection({
 function HomeListingCard({
   item,
   locale,
+  className = '',
 }: {
   item: HomeListingCardItem
   locale: PublicLocale
+  className?: string
 }) {
   const offerBadge = homeListingOfferBadge(locale, item.offerType)
 
   return (
-    <article className="group relative w-[76vw] max-w-[280px] flex-none snap-start overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm sm:w-auto sm:max-w-none">
+    <article className={`group relative overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm ${className}`}>
       <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[16/10]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
             images={item.imageUrls}
             title={item.title}
             href={item.href}
-            sizes="(max-width: 640px) 76vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             showControlsOnMobile
             showDotsOnMobile={false}
             enableTouchSwipe={false}
