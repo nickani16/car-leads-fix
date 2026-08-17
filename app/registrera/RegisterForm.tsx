@@ -380,6 +380,20 @@ const nationalIdPlaceholderCopy: Record<PublicLocale, string> = {
   da: 'Personligt ID i dit lands format',
 }
 
+const nationalIdPlaceholderByCountry: Record<string, string> = {
+  AT: 'Ausweis-/Passnr.: PA1234567',
+  BE: 'RN: 84.12.25-123.45',
+  DE: 'Ausweis-/Passnr.: L01X00T47',
+  DK: 'CPR: DDMMYY-XXXX',
+  ES: 'DNI 12345678Z / NIE X1234567L',
+  FI: 'HETU: 131052-308T',
+  FR: 'NIR: 1 84 12 75 056 789 01',
+  IT: 'Codice fiscale: RSSMRA80A01H501U',
+  NL: 'BSN: 123456782',
+  PL: 'PESEL: 44051401359',
+  SE: 'ÅÅMMDD-XXXX / YYYYMMDD-XXXX',
+}
+
 const nationalIdGuidanceCopy: Record<
   PublicLocale,
   { nationalId: string; nationalIdHelper: string }
@@ -635,7 +649,7 @@ export default function RegisterForm({
               label={copy.nationalId}
               value={nationalId}
               onChange={setNationalId}
-              placeholder={countryCode === 'SE' ? 'ÅÅMMDD-XXXX eller YYYYMMDD-XXXX' : nationalIdPlaceholderCopy[locale]}
+              placeholder={nationalIdPlaceholderByCountry[countryCode] ?? nationalIdPlaceholderCopy[locale]}
               helper={copy.nationalIdHelper}
               required
             />

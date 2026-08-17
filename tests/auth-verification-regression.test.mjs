@@ -49,7 +49,14 @@ test('private registration can continue when Swedish national id needs manual re
   assert.match(registerApi, /needs_review/)
   assert.match(registerApi, /identityStatus\s*=[\s\S]*nationalIdStatus === 'passed'[\s\S]*'verified'[\s\S]*'needs_review'/)
   assert.match(registerForm, /<NationalIdField/)
-  assert.match(registerForm, /placeholder=\{countryCode === 'SE'/)
+  assert.match(registerForm, /nationalIdPlaceholderByCountry: Record<string, string>/)
+  assert.match(registerForm, /placeholder=\{nationalIdPlaceholderByCountry\[countryCode\] \?\? nationalIdPlaceholderCopy\[locale\]\}/)
+  for (const countryCode of ['AT', 'BE', 'DE', 'DK', 'ES', 'FI', 'FR', 'IT', 'NL', 'PL', 'SE']) {
+    assert.match(registerForm, new RegExp(`\\b${countryCode}: '`))
+  }
+  assert.match(registerForm, /DNI 12345678Z \/ NIE X1234567L/)
+  assert.match(registerForm, /HETU: 131052-308T/)
+  assert.match(registerForm, /PESEL: 44051401359/)
   assert.match(registerForm, /!value \? \(/)
   assert.match(registerForm, /text-\[#7b8494\]/)
   assert.match(registerForm, /text-\[#101828\]/)
