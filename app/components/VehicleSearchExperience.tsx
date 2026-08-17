@@ -1209,6 +1209,7 @@ export default function VehicleSearchExperience({
   const [searchError, setSearchError] = useState(false)
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
+  const mobileSortSelectRef = useRef<HTMLSelectElement>(null)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1912,6 +1913,11 @@ export default function VehicleSearchExperience({
     } catch {
       setSavedSearchMessage(uiText(locale, 'Could not save search', 'Kunde inte spara sökningen', 'Suche konnte nicht gespeichert werden'))
     }
+  }
+
+  function focusMobileSortControl() {
+    mobileSortSelectRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    window.setTimeout(() => mobileSortSelectRef.current?.focus(), 180)
   }
 
   function rememberSearchBeforeListingNavigation() {
@@ -3424,6 +3430,8 @@ export default function VehicleSearchExperience({
                   <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
+                    ref={mobileSortSelectRef}
+                    data-marketplace-mobile-sort
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
                     className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-5 text-[10px] font-medium leading-none tracking-[-0.01em] outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px] sm:tracking-normal"
@@ -3545,17 +3553,38 @@ export default function VehicleSearchExperience({
           </div>
 
           {!mobileMapOpen ? (
-            <button
-              type="button"
-              onClick={() => setMobileMapOpen(true)}
-              style={{ fontWeight: 500 }}
-              className={`fixed left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#0866ff] px-4 py-2.5 text-[13px] font-[500] text-white transition-transform duration-200 active:scale-[.98] lg:hidden ${
-                compareIds.length ? 'bottom-[calc(10.4rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.85rem+env(safe-area-inset-bottom))]'
+            <div
+              className={`pointer-events-none fixed left-3 z-[86] flex w-[min(356px,calc(100vw-24px))] items-center justify-between gap-2 lg:hidden ${
+                compareIds.length ? 'bottom-[calc(10.35rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'
               }`}
+              aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
             >
-              <MapPin className="h-4 w-4" />
-              {translatePublic(locale, 'Map')}
-            </button>
+              <button
+                type="button"
+                onClick={() => setMobileMapOpen(true)}
+                className="pointer-events-auto inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-white/65 bg-[#101828]/86 px-3 text-[13px] font-normal text-white shadow-[0_12px_28px_rgba(16,24,40,.20),inset_0_1px_0_rgba(255,255,255,.18)] backdrop-blur-2xl transition active:scale-[.98]"
+              >
+                <MapPin className="h-4 w-4" />
+                {translatePublic(locale, 'Map')}
+              </button>
+              <button
+                type="button"
+                onClick={saveCurrentSearch}
+                disabled={savingSearch}
+                className="pointer-events-auto inline-flex h-10 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full border border-white/65 bg-[#101828]/86 px-3 text-[13px] font-normal text-white shadow-[0_12px_28px_rgba(16,24,40,.20),inset_0_1px_0_rgba(255,255,255,.18)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70"
+              >
+                <Bookmark className="h-4 w-4" />
+                <span className="truncate">{saveSearchButtonLabel}</span>
+              </button>
+              <button
+                type="button"
+                onClick={focusMobileSortControl}
+                className="pointer-events-auto inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-white/65 bg-[#101828]/86 px-3 text-[13px] font-normal text-white shadow-[0_12px_28px_rgba(16,24,40,.20),inset_0_1px_0_rgba(255,255,255,.18)] backdrop-blur-2xl transition active:scale-[.98]"
+              >
+                <ChevronDown className="h-4 w-4" />
+                {uiText(locale, 'Sort', 'Sortera', 'Sortieren')}
+              </button>
+            </div>
           ) : null}
 
           {compareOpen && compareListings.length >= 2 ? (

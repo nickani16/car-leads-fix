@@ -499,7 +499,7 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   assert.match(vehicleSearchExperienceSource, /className="hidden min-w-\[860px\] sm:block"/)
   assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
   assert.match(vehicleSearchExperienceSource, /fixed inset-x-3 bottom-\[calc\(5\.15rem\+env\(safe-area-inset-bottom\)\)\]/)
-  assert.match(vehicleSearchExperienceSource, /compareIds\.length \? 'bottom-\[calc\(10\.4rem\+env\(safe-area-inset-bottom\)\)\]'/)
+  assert.match(vehicleSearchExperienceSource, /compareIds\.length \? 'bottom-\[calc\(10\.35rem\+env\(safe-area-inset-bottom\)\)\]'/)
   assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `minmax\(150px, \.55fr\) repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /sticky left-0 top-0 z-20/)
   assert.match(vehicleSearchExperienceSource, /copy\.price/)
@@ -510,6 +510,18 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   assert.match(marketplaceCategoryBrowserSource, /max 4 annonser/)
   assert.match(marketplaceCategoryBrowserSource, /up to 4 listings/)
   assert.match(marketplaceCategoryBrowserSource, /maximal 4 Anzeigen/)
+})
+
+test('marketplace mobile shortcuts use existing map, saved search and sorting controls', () => {
+  assert.match(vehicleSearchExperienceSource, /aria-label=\{uiText\(locale, 'Marketplace shortcuts'/)
+  assert.match(vehicleSearchExperienceSource, /fixed left-3 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\]/)
+  assert.match(vehicleSearchExperienceSource, /onClick=\{\(\) => setMobileMapOpen\(true\)\}/)
+  assert.match(vehicleSearchExperienceSource, /onClick=\{saveCurrentSearch\}/)
+  assert.match(vehicleSearchExperienceSource, /disabled=\{savingSearch\}/)
+  assert.match(vehicleSearchExperienceSource, /onClick=\{focusMobileSortControl\}/)
+  assert.match(vehicleSearchExperienceSource, /ref=\{mobileSortSelectRef\}/)
+  assert.match(vehicleSearchExperienceSource, /data-marketplace-mobile-sort/)
+  assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {
