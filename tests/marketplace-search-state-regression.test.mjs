@@ -522,6 +522,7 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /ref=\{mobileSortSelectRef\}/)
   assert.match(vehicleSearchExperienceSource, /data-marketplace-mobile-sort/)
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
+  assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /rounded-full border border-white\/70 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
   assert.match(vehicleSearchExperienceSource, /supports-\[backdrop-filter\]:bg-white\/64/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /bg-\[#101828\]\/86 px-3 text-\[13px\] font-normal text-white/)
