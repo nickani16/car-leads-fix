@@ -17,6 +17,10 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
+const listingCardImageCarouselSource = readFileSync(
+  new URL('../app/components/ListingCardImageCarousel.tsx', import.meta.url),
+  'utf8',
+)
 const marketplaceCategoryBrowserSource = readFileSync(
   new URL('../app/components/MarketplaceCategoryBrowser.tsx', import.meta.url),
   'utf8',
@@ -526,7 +530,10 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
   assert.match(vehicleSearchExperienceSource, /rounded-full border border-\[#101828\]\/10 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
-  assert.match(vehicleSearchExperienceSource, /text-white \[mix-blend-mode:difference\]/)
+  assert.match(vehicleSearchExperienceSource, /data-autorell-floating-shortcuts-tone=\{mobileShortcutOverMedia \? 'light' : 'dark'\}/)
+  assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia \? 'text-white' : 'text-\[#111827\]'/)
+  assert.match(vehicleSearchExperienceSource, /floatingControlsOverlapMedia\(mobileShortcutBarRef\.current\)/)
+  assert.match(listingCardImageCarouselSource, /data-autorell-media-surface="true"/)
   assert.match(vehicleSearchExperienceSource, /supports-\[backdrop-filter\]:bg-white\/64/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /border border-white\/70 bg-white\/72/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /inset_0_1px_0\(rgba\(255,255,255/)
@@ -535,9 +542,12 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
 
 test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
   assert.match(publicHeaderSource, /rounded-\[28px\] border border-\[#101828\]\/10 bg-white\/72/)
-  assert.match(publicHeaderSource, /text-white \[mix-blend-mode:difference\]/)
+  assert.match(publicHeaderSource, /data-autorell-mobile-nav-tone=\{mobileNavOverMedia \? 'light' : 'dark'\}/)
+  assert.match(publicHeaderSource, /mobileNavOverMedia \? 'text-white' : 'text-\[#101828\]'/)
+  assert.match(publicHeaderSource, /floatingNavOverlapsMedia\(mobileBottomNavRef\.current\)/)
   assert.doesNotMatch(publicHeaderSource, /rounded-\[28px\] border border-white\/70 bg-white\/72/)
   assert.doesNotMatch(publicHeaderSource, /inset_0_1px_0\(rgba\(255,255,255/)
+  assert.doesNotMatch(publicHeaderSource, /\[mix-blend-mode:difference\]/)
 })
 
 test('marketplace mobile listing prices do not render as underlined detected numbers', () => {

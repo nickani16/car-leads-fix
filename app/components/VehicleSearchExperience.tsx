@@ -79,6 +79,33 @@ type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   dedupeKey: string
 }
 
+function floatingControlsOverlapMedia(root: HTMLElement | null) {
+  if (!root || typeof document === 'undefined') return false
+  const rect = root.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return false
+
+  const y = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2))
+  const samplePoints = [0.2, 0.5, 0.8]
+
+  return samplePoints.some((point) => {
+    const x = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width * point))
+    return document.elementsFromPoint(x, y).some((element) => {
+      if (root.contains(element)) return false
+      if (element.closest('[data-autorell-media-surface]')) return true
+
+      const computed = window.getComputedStyle(element)
+      const color = computed.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+      if (!color) return false
+
+      const alpha = color[4] === undefined ? 1 : Number(color[4])
+      if (alpha < 0.45) return false
+
+      const luminance = (Number(color[1]) * 0.2126 + Number(color[2]) * 0.7152 + Number(color[3]) * 0.0722) / 255
+      return luminance < 0.38
+    })
+  })
+}
+
 type ListingInsuranceOffer = {
   provider: string | null
   monthlyCost: number | string | null
@@ -1210,6 +1237,8 @@ export default function VehicleSearchExperience({
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
   const mobileSortSelectRef = useRef<HTMLSelectElement>(null)
+  const mobileShortcutBarRef = useRef<HTMLDivElement | null>(null)
+  const [mobileShortcutOverMedia, setMobileShortcutOverMedia] = useState(false)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1219,6 +1248,27 @@ export default function VehicleSearchExperience({
     }, 0)
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let frame = 0
+    const updateShortcutContrast = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        setMobileShortcutOverMedia(!mobileMapOpen && floatingControlsOverlapMedia(mobileShortcutBarRef.current))
+      })
+    }
+
+    updateShortcutContrast()
+    window.addEventListener('scroll', updateShortcutContrast, { passive: true })
+    window.addEventListener('resize', updateShortcutContrast)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateShortcutContrast)
+      window.removeEventListener('resize', updateShortcutContrast)
+    }
+  }, [mobileMapOpen, searchListings.length, compareIds.length])
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,
@@ -3554,10 +3604,12 @@ export default function VehicleSearchExperience({
 
           {!mobileMapOpen ? (
             <div
+              ref={mobileShortcutBarRef}
               className={`pointer-events-none fixed left-3 z-[86] flex w-[min(356px,calc(100vw-24px))] items-center justify-between gap-2 lg:hidden ${
                 compareIds.length ? 'bottom-[calc(10.35rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'
               }`}
               aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
+              data-autorell-floating-shortcuts-tone={mobileShortcutOverMedia ? 'light' : 'dark'}
             >
               <button
                 type="button"
@@ -3565,8 +3617,8 @@ export default function VehicleSearchExperience({
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
                 style={{ fontWeight: 400 }}
               >
-                <MapPin className="h-[18px] w-[18px] text-white [mix-blend-mode:difference]" />
-                <span className="text-white [mix-blend-mode:difference]">{translatePublic(locale, 'Map')}</span>
+                <MapPin className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}>{translatePublic(locale, 'Map')}</span>
               </button>
               <button
                 type="button"
@@ -3575,8 +3627,8 @@ export default function VehicleSearchExperience({
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 supports-[backdrop-filter]:bg-white/64"
                 style={{ fontWeight: 400 }}
               >
-                <Bookmark className="h-[18px] w-[18px] text-white [mix-blend-mode:difference]" />
-                <span className="truncate text-white [mix-blend-mode:difference]">{saveSearchButtonLabel}</span>
+                <Bookmark className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={`truncate ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`}>{saveSearchButtonLabel}</span>
               </button>
               <button
                 type="button"
@@ -3584,8 +3636,8 @@ export default function VehicleSearchExperience({
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
                 style={{ fontWeight: 400 }}
               >
-                <ChevronDown className="h-[18px] w-[18px] text-white [mix-blend-mode:difference]" />
-                <span className="text-white [mix-blend-mode:difference]">{uiText(locale, 'Sort', 'Sortera', 'Sortieren')}</span>
+                <ChevronDown className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}>{uiText(locale, 'Sort', 'Sortera', 'Sortieren')}</span>
               </button>
             </div>
           ) : null}

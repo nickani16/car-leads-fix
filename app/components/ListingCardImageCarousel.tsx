@@ -88,6 +88,7 @@ export default function ListingCardImageCarousel({
   return (
     <div
       className={`group pointer-events-auto relative h-full w-full overflow-hidden ${className}`}
+      data-autorell-media-surface="true"
       onTouchStart={(event) => {
         if (!enableTouchSwipe || visibleImages.length < 2) return
         const touch = event.touches[0]

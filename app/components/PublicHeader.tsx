@@ -106,6 +106,33 @@ type SearchMegaCopy = {
   openLeasing: string
 }
 
+function floatingNavOverlapsMedia(root: HTMLElement | null) {
+  if (!root || typeof document === 'undefined') return false
+  const rect = root.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return false
+
+  const y = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2))
+  const samplePoints = [0.18, 0.42, 0.66, 0.9]
+
+  return samplePoints.some((point) => {
+    const x = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width * point))
+    return document.elementsFromPoint(x, y).some((element) => {
+      if (root.contains(element)) return false
+      if (element.closest('[data-autorell-media-surface]')) return true
+
+      const computed = window.getComputedStyle(element)
+      const color = computed.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+      if (!color) return false
+
+      const alpha = color[4] === undefined ? 1 : Number(color[4])
+      if (alpha < 0.45) return false
+
+      const luminance = (Number(color[1]) * 0.2126 + Number(color[2]) * 0.7152 + Number(color[3]) * 0.0722) / 255
+      return luminance < 0.38
+    })
+  })
+}
+
 const searchMegaCopy: Record<PublicLocale, SearchMegaCopy> = {
   sv: {
     intro: 'Välj en fordonskategori och gå direkt till matchande annonser.',
@@ -606,12 +633,14 @@ export default function PublicHeader({
   const [mobileHelpMenuOpen, setMobileHelpMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(true)
+  const [mobileNavOverMedia, setMobileNavOverMedia] = useState(false)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
   const searchMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
   const businessMenuRef = useRef<HTMLDivElement | null>(null)
   const helpMenuRef = useRef<HTMLDivElement | null>(null)
+  const mobileBottomNavRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -663,6 +692,27 @@ export default function PublicHeader({
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isMarketplaceRoute])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let frame = 0
+    const updateNavContrast = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        setMobileNavOverMedia(floatingNavOverlapsMedia(mobileBottomNavRef.current))
+      })
+    }
+
+    updateNavContrast()
+    window.addEventListener('scroll', updateNavContrast, { passive: true })
+    window.addEventListener('resize', updateNavContrast)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateNavContrast)
+      window.removeEventListener('resize', updateNavContrast)
+    }
+  }, [activePathname, isMarketplaceRoute])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -2375,10 +2425,12 @@ export default function PublicHeader({
         </>
       ) : null}
       <nav
+        ref={mobileBottomNavRef}
         className={`pointer-events-none fixed bottom-0 left-3 z-[120] transform-gpu pb-[calc(8px+env(safe-area-inset-bottom))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
           lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
+        data-autorell-mobile-nav-tone={mobileNavOverMedia ? 'light' : 'dark'}
         style={{ width: 'min(356px, calc(100vw - 24px))' }}
       >
         <div
@@ -2389,7 +2441,7 @@ export default function PublicHeader({
             href={vehicleSearchHref}
             onClick={closeMobile}
             className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
-              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-white [mix-blend-mode:difference]'
+              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : mobileNavOverMedia ? 'text-white' : 'text-[#101828]'
             }`}
           >
             <Search className="h-[21px] w-[21px]" strokeWidth={1.8} />
@@ -2402,7 +2454,7 @@ export default function PublicHeader({
               href={accountMessagesHref}
               onClick={closeMobile}
               className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
-                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-white [mix-blend-mode:difference]'
+                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : mobileNavOverMedia ? 'text-white' : 'text-[#101828]'
               }`}
             >
               <span className="relative">
@@ -2419,7 +2471,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.messages}</span>
@@ -2429,7 +2481,7 @@ export default function PublicHeader({
             <Link
               href={savedHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <span className="relative">
                 <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
@@ -2445,7 +2497,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
@@ -2455,7 +2507,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <span className="relative">
                 <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
@@ -2473,7 +2525,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">
