@@ -2382,14 +2382,14 @@ export default function PublicHeader({
         style={{ width: 'min(356px, calc(100vw - 24px))' }}
       >
         <div
-          className="pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] border border-white/70 bg-white/72 px-1.5 shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08),inset_0_1px_0_rgba(255,255,255,.88)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/64"
+          className="pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] border border-[#101828]/10 bg-white/72 px-1.5 shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/64"
           style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
         >
           <Link
             href={vehicleSearchHref}
             onClick={closeMobile}
             className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
-              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-[#111827]'
+              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-white [mix-blend-mode:difference]'
             }`}
           >
             <Search className="h-[21px] w-[21px]" strokeWidth={1.8} />
@@ -2402,7 +2402,7 @@ export default function PublicHeader({
               href={accountMessagesHref}
               onClick={closeMobile}
               className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
-                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-[#111827]'
+                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : 'text-white [mix-blend-mode:difference]'
               }`}
             >
               <span className="relative">
@@ -2419,7 +2419,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-[#111827] transition active:scale-[.98]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
             >
               <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.messages}</span>
@@ -2429,7 +2429,7 @@ export default function PublicHeader({
             <Link
               href={savedHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-[#111827] transition active:scale-[.98]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
             >
               <span className="relative">
                 <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
@@ -2445,7 +2445,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-[#111827] transition active:scale-[.98]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
             >
               <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
@@ -2455,7 +2455,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-[#111827] transition active:scale-[.98]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
             >
               <span className="relative">
                 <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
@@ -2473,7 +2473,7 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-[#111827] transition active:scale-[.98]"
+              className="flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 text-white transition active:scale-[.98] [mix-blend-mode:difference]"
             >
               <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">

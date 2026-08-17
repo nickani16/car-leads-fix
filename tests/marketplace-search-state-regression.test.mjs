@@ -525,9 +525,19 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
-  assert.match(vehicleSearchExperienceSource, /rounded-full border border-white\/70 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
+  assert.match(vehicleSearchExperienceSource, /rounded-full border border-\[#101828\]\/10 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
+  assert.match(vehicleSearchExperienceSource, /text-white \[mix-blend-mode:difference\]/)
   assert.match(vehicleSearchExperienceSource, /supports-\[backdrop-filter\]:bg-white\/64/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /border border-white\/70 bg-white\/72/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /inset_0_1px_0\(rgba\(255,255,255/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /bg-\[#101828\]\/86 px-3 text-\[13px\] font-normal text-white/)
+})
+
+test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
+  assert.match(publicHeaderSource, /rounded-\[28px\] border border-\[#101828\]\/10 bg-white\/72/)
+  assert.match(publicHeaderSource, /text-white \[mix-blend-mode:difference\]/)
+  assert.doesNotMatch(publicHeaderSource, /rounded-\[28px\] border border-white\/70 bg-white\/72/)
+  assert.doesNotMatch(publicHeaderSource, /inset_0_1px_0\(rgba\(255,255,255/)
 })
 
 test('marketplace mobile listing prices do not render as underlined detected numbers', () => {
