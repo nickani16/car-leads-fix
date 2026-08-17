@@ -1194,6 +1194,7 @@ export default function VehicleSearchExperience({
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [resultsLayoutTouched, setResultsLayoutTouched] = useState(false)
   const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>('map')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
   const categoryRouteSyncArmedRef = useRef(false)
@@ -3490,9 +3491,12 @@ export default function VehicleSearchExperience({
                 <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
                   <button
                     type="button"
-                    onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
+                    onClick={() => {
+                      setResultsLayoutTouched(true)
+                      setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))
+                    }}
                     className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
-                      resultsLayout === 'split'
+                      resultsLayoutTouched && resultsLayout === 'split'
                         ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                         : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
                     }`}

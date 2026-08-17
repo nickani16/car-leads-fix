@@ -23,7 +23,7 @@ export function createCategoryMapMarker({
   offerType,
   active = false,
 }: CategoryMapMarkerInput) {
-  const leasing = offerType === 'lease'
+  const leasing = offerType === 'lease' || offerType === 'sale_and_lease'
   const colorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
   const markerElement = document.createElement('button')
   markerElement.type = 'button'
@@ -52,5 +52,5 @@ export function createCategoryMapMarker({
 
 function categoryMarkerSvg(category?: string | null) {
   const paths = categoryIconPaths[category || ''] || categoryIconPaths.cars
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`
 }
