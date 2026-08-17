@@ -8,6 +8,7 @@ const vehicleSearchExperienceSource = readFileSync(
   new URL('../app/components/VehicleSearchExperience.tsx', import.meta.url),
   'utf8',
 )
+const appLayoutSource = readFileSync(new URL('../app/layout.tsx', import.meta.url), 'utf8')
 const homeHeroVehicleSearchSource = readFileSync(
   new URL('../app/components/HomeHeroVehicleSearch.tsx', import.meta.url),
   'utf8',
@@ -523,9 +524,16 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /data-marketplace-mobile-sort/)
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
+  assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
   assert.match(vehicleSearchExperienceSource, /rounded-full border border-white\/70 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
   assert.match(vehicleSearchExperienceSource, /supports-\[backdrop-filter\]:bg-white\/64/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /bg-\[#101828\]\/86 px-3 text-\[13px\] font-normal text-white/)
+})
+
+test('marketplace mobile listing prices do not render as underlined detected numbers', () => {
+  assert.match(vehicleSearchExperienceSource, /listing\.priceLabel/)
+  assert.match(vehicleSearchExperienceSource, /font-semibold text-\[#101828\] no-underline \[text-decoration:none\]/)
+  assert.match(appLayoutSource, /formatDetection:\s*\{\s*telephone: false,\s*\}/)
 })
 
 test('listing detail lookups are uncached so newly published listings do not keep stale 404s', () => {

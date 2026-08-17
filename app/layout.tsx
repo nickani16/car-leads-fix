@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     'Autorell is a European marketplace where private sellers and businesses can list and find vehicles across the EU.',
   applicationName: 'Autorell',
   manifest: '/manifest.webmanifest',
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
       { url: '/favicon.ico?v=8', sizes: 'any' },

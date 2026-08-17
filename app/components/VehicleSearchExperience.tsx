@@ -3563,6 +3563,7 @@ export default function VehicleSearchExperience({
                 type="button"
                 onClick={() => setMobileMapOpen(true)}
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-white/70 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08),inset_0_1px_0_rgba(255,255,255,.88)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
+                style={{ fontWeight: 400 }}
               >
                 <MapPin className="h-[18px] w-[18px]" />
                 {translatePublic(locale, 'Map')}
@@ -3572,6 +3573,7 @@ export default function VehicleSearchExperience({
                 onClick={saveCurrentSearch}
                 disabled={savingSearch}
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full border border-white/70 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08),inset_0_1px_0_rgba(255,255,255,.88)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 supports-[backdrop-filter]:bg-white/64"
+                style={{ fontWeight: 400 }}
               >
                 <Bookmark className="h-[18px] w-[18px]" />
                 <span className="truncate">{saveSearchButtonLabel}</span>
@@ -3580,6 +3582,7 @@ export default function VehicleSearchExperience({
                 type="button"
                 onClick={focusMobileSortControl}
                 className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-white/70 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08),inset_0_1px_0_rgba(255,255,255,.88)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
+                style={{ fontWeight: 400 }}
               >
                 <ChevronDown className="h-[18px] w-[18px]" />
                 {uiText(locale, 'Sort', 'Sortera', 'Sortieren')}
@@ -4952,7 +4955,7 @@ function VehicleResultCard({
             <p className={`${layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
               {subtitle}
             </p>
-            <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828]`}>
+            <p className={`${layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828] no-underline [text-decoration:none]`}>
               {listing.priceLabel}
             </p>
             {insuranceLabel ? (
