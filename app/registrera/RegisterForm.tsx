@@ -503,6 +503,7 @@ export default function RegisterForm({
   )
   const [phone, setPhone] = useState(() => buildInitialPhone(countryCode))
   const [birthDate, setBirthDate] = useState('')
+  const [nationalId, setNationalId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const countries = useMemo(
@@ -629,14 +630,13 @@ export default function RegisterForm({
             required={accountType === 'private'}
           />
           {accountType === 'private' ? (
-            <Field
+            <NationalIdField
               name="nationalId"
               label={copy.nationalId}
-              autoComplete="off"
+              value={nationalId}
+              onChange={setNationalId}
               placeholder={countryCode === 'SE' ? 'ÅÅMMDD-XXXX eller YYYYMMDD-XXXX' : nationalIdPlaceholderCopy[locale]}
               helper={copy.nationalIdHelper}
-              spellCheck={false}
-              autoCapitalize="off"
               required
             />
           ) : (
@@ -819,6 +819,51 @@ function Field({
         {...inputProps}
         className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
+      {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
+    </label>
+  )
+}
+
+function NationalIdField({
+  helper,
+  label,
+  name,
+  onChange,
+  placeholder,
+  required,
+  value,
+}: {
+  helper?: string
+  label: string
+  name: string
+  onChange: (value: string) => void
+  placeholder: string
+  required?: boolean
+  value: string
+}) {
+  return (
+    <label className="block min-w-0">
+      <span className="mb-2 block text-sm font-semibold">{label}</span>
+      <span className="relative block">
+        <input
+          name={name}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          required={required}
+          className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        />
+        {!value ? (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-normal leading-5 text-[#7b8494]"
+          >
+            {placeholder}
+          </span>
+        ) : null}
+      </span>
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
   )
