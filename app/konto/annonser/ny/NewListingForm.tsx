@@ -1067,7 +1067,7 @@ export default function NewListingForm({
               label={copy.equipment}
               value={
                 equipment.length
-                  ? `${equipment.length} valda`
+                  ? copy.selectedEquipmentCount.replace('{count}', String(equipment.length))
                   : copy.chooseEquipment
               }
               open={openField === 'equipment'}
@@ -1080,6 +1080,7 @@ export default function NewListingForm({
                 onSearch={setEquipmentSearch}
                 onSelectedKeys={setEquipment}
                 locale={locale}
+                copy={copy}
               />
             </SelectCard>
           </StepShell>
@@ -1560,6 +1561,7 @@ function EquipmentMultiSelect({
   onSearch,
   onSelectedKeys,
   locale,
+  copy,
 }: {
   category: MarketplaceCategorySlug
   selectedKeys: string[]
@@ -1567,6 +1569,7 @@ function EquipmentMultiSelect({
   onSearch: (value: string) => void
   onSelectedKeys: (value: string[]) => void
   locale: PublicLocale
+  copy: ListingFormCopy
 }) {
   const groups = equipmentGroupsForCategory(category)
   const selected = new Set(selectedKeys)
@@ -1585,6 +1588,11 @@ function EquipmentMultiSelect({
 
   return (
     <div className="space-y-5">
+      <div className="rounded-[16px] border border-[#cfe0ff] bg-[#f5f9ff] p-4">
+        <h4 className="text-sm font-semibold text-[#101828]">{copy.equipmentAssistTitle}</h4>
+        <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.equipmentAssistText}</p>
+      </div>
+
       {selectedOptions.length ? (
         <div className="flex flex-wrap gap-2">
           {selectedOptions.map((option) => (
@@ -1612,7 +1620,7 @@ function EquipmentMultiSelect({
           value={search}
           onChange={(event) => onSearch(event.target.value)}
           placeholder={localizeFormText(locale, 'Sök utrustning, t.ex. dragkrok, navigation eller värmepump', 'Search equipment, e.g. towbar, navigation or heat pump', 'Ausstattung suchen, z. B. Anhängerkupplung, Navigation oder Wärmepumpe')}
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-10 pr-4 text-sm font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-10 pr-4 text-sm font-normal text-[#101828] outline-none placeholder:text-[#7b8494] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
       </label>
 
@@ -1915,15 +1923,18 @@ function PreviewStep({
             {copy.structuredDataText}
           </p>
         </div>
-        <label className="mt-4 block">
-          <span className="mb-2 block text-sm font-semibold">
+        <label className="mt-5 block rounded-[18px] border border-[#cfe0ff] bg-[#f8fbff] p-4">
+          <span className="block text-base font-semibold text-[#101828]">
             {copy.sellerNoteLabel}
+          </span>
+          <span className="mt-1 block text-sm leading-6 text-[#667085]">
+            {copy.sellerNoteIntro}
           </span>
           <textarea
             value={values.sellerNote || ''}
             onChange={(event) => onChange('sellerNote', event.target.value)}
             placeholder={copy.sellerNotePlaceholder}
-            className="min-h-28 w-full rounded-[16px] border border-[#d7deed] p-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            className="mt-3 min-h-28 w-full rounded-[16px] border border-[#d7deed] bg-white p-4 text-sm font-normal leading-6 text-[#101828] outline-none placeholder:text-[#7b8494] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
           />
           <span className="mt-2 block text-xs leading-5 text-[#667085]">
             {copy.sellerNoteHelp}
@@ -2809,6 +2820,9 @@ function getListingFormCopy(locale: PublicLocale) {
     chooseColor: 'Choose colour',
     equipment: 'Equipment',
     chooseEquipment: 'Choose equipment',
+    selectedEquipmentCount: '{count} selected',
+    equipmentAssistTitle: 'Find equipment faster',
+    equipmentAssistText: 'Search or open each group and tick everything that belongs to the vehicle. If something is missing, add it in the seller note on the preview step.',
     imagesTitle: 'Images',
     imagesText: 'Images are compressed before upload. Upload at least 5 images for a stronger listing. Drag images to reorder them.',
     addImages: 'Add images',
@@ -2823,10 +2837,11 @@ function getListingFormCopy(locale: PublicLocale) {
     previewText: 'This is how the listing can appear on Autorell. Go back if anything needs changing.',
     previewNotice: 'This is a preview. The listing is not published yet.',
     structuredDataTitle: 'Structured listing data',
-    structuredDataText: 'Specifications, equipment, condition and faults are shown as fixed choices and can be translated through Autorell language files.',
-    sellerNoteLabel: 'Additional seller information (optional)',
-    sellerNotePlaceholder: 'Short original text if something important is missing from the structured choices.',
-    sellerNoteHelp: 'This text is shown in the seller’s original language.',
+    structuredDataText: 'Use the fixed choices for specifications, equipment, condition and faults. They make the listing easier to search, compare and translate.',
+    sellerNoteLabel: 'Describe anything extra about the vehicle',
+    sellerNoteIntro: 'Use this only for important details that do not fit the structured choices above.',
+    sellerNotePlaceholder: 'Example: imported vehicle, recent service, extra wheels, special equipment or other details buyers should know.',
+    sellerNoteHelp: 'This optional text is shown in the seller’s original language.',
     noImage: 'No image uploaded',
     listingTitle: 'Listing title',
     priceMissing: 'Price missing',
@@ -2922,6 +2937,9 @@ function getListingFormCopy(locale: PublicLocale) {
       chooseColor: 'Välj färg',
       equipment: 'Utrustning',
       chooseEquipment: 'Välj utrustning',
+      selectedEquipmentCount: '{count} valda',
+      equipmentAssistTitle: 'Hitta utrustning snabbare',
+      equipmentAssistText: 'Sök eller öppna varje grupp och bocka i allt som finns på fordonet. Om något saknas lägger du det i egen information i förhandsvisningen.',
       imagesTitle: 'Bilder',
       imagesText: 'Bilder komprimeras innan de skickas. Ladda upp minst 5 bilder för en starkare annons. Dra bilderna för att ändra ordning.',
       addImages: 'Lägg till bilder',
@@ -2936,10 +2954,11 @@ function getListingFormCopy(locale: PublicLocale) {
       previewText: 'Så här kan annonsen upplevas på Autorell. Gå tillbaka om något behöver ändras.',
       previewNotice: 'Detta är en förhandsvisning. Annonsen är inte publicerad ännu.',
       structuredDataTitle: 'Strukturerad annonsdata',
-      structuredDataText: 'Specifikationer, utrustning, skick och skador/fel visas som fasta val och kan översättas via Autorells språkfiler.',
-      sellerNoteLabel: 'Ytterligare information från säljaren (valfritt)',
-      sellerNotePlaceholder: 'Kort originaltext om något viktigt saknas i de strukturerade valen.',
-      sellerNoteHelp: 'Denna text visas i säljarens originalspråk.',
+      structuredDataText: 'Använd de fasta valen för specifikationer, utrustning, skick och skador/fel. Då blir annonsen lättare att söka, jämföra och översätta.',
+      sellerNoteLabel: 'Beskriv extra information om objektet',
+      sellerNoteIntro: 'Använd detta bara för viktiga detaljer som inte passar i de strukturerade valen ovan.',
+      sellerNotePlaceholder: 'Exempel: import, nyligen servad, extra hjul, specialutrustning eller annat köparen bör känna till.',
+      sellerNoteHelp: 'Denna frivilliga text visas i säljarens originalspråk.',
       noImage: 'Ingen bild uppladdad',
       listingTitle: 'Annonsrubrik',
       priceMissing: 'Pris saknas',
@@ -3020,6 +3039,14 @@ function getListingFormCopy(locale: PublicLocale) {
       publishWaitingImages: 'Bilder werden hochgeladen',
       publishWaitingPayment: 'Paket wird vorbereitet',
       processingImages: 'Bilder werden verarbeitet...',
+      selectedEquipmentCount: '{count} ausgewählt',
+      equipmentAssistTitle: 'Ausstattung schneller finden',
+      equipmentAssistText: 'Suchen Sie oder öffnen Sie jede Gruppe und markieren Sie alles, was zum Fahrzeug gehört. Fehlt etwas, ergänzen Sie es in den Verkäuferhinweisen in der Vorschau.',
+      structuredDataText: 'Nutzen Sie die festen Auswahlfelder für Spezifikationen, Ausstattung, Zustand und Schäden/Mängel. So lässt sich die Anzeige besser suchen, vergleichen und übersetzen.',
+      sellerNoteLabel: 'Zusätzliche Informationen zum Objekt beschreiben',
+      sellerNoteIntro: 'Nur für wichtige Details verwenden, die nicht in die strukturierten Auswahlfelder oben passen.',
+      sellerNotePlaceholder: 'Beispiel: Import, kürzlich gewartet, zusätzliche Räder, Sonderausstattung oder andere Details, die Käufer wissen sollten.',
+      sellerNoteHelp: 'Dieser optionale Text wird in der Originalsprache des Verkäufers angezeigt.',
       batchTitle: 'Mehrere Anzeigen gleichzeitig erstellen',
       batchText: 'Fertige Anzeige in die Warteschlange legen, die nächste erstellen, alles prüfen und gemeinsam veröffentlichen.',
       addToBatch: 'Zur Anzeigenwarteschlange',
@@ -3109,6 +3136,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Valitse',
     chooseColor: 'Valitse väri',
     chooseEquipment: 'Valitse varusteet',
+    selectedEquipmentCount: '{count} valittu',
+    equipmentAssistTitle: 'Löydä varusteet nopeammin',
+    equipmentAssistText: 'Hae tai avaa jokainen ryhmä ja valitse kaikki kohteeseen kuuluvat varusteet. Jos jotain puuttuu, lisää se myyjän lisätietoihin esikatselussa.',
     processingImages: 'Kuvia käsitellään...',
     publishWaitingTitle: 'Odota, julkaisemme ilmoitustasi',
     publishWaitingText: 'Tarkistamme tiedot, lataamme kuvat ja valmistelemme ilmoituksen. Pidä tämä ikkuna avoinna.',
@@ -3118,6 +3148,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingPayment: 'Pakettia valmistellaan',
     imagesTitle: 'Kuvat',
     previewTitle: 'Esikatselu',
+    structuredDataText: 'Käytä teknisille tiedoille, varusteille, kunnolle ja vioille kiinteitä valintoja. Ne helpottavat ilmoituksen hakua, vertailua ja kääntämistä.',
+    sellerNoteLabel: 'Kuvaile kohteen lisätiedot',
+    sellerNoteIntro: 'Käytä tätä vain tärkeisiin tietoihin, jotka eivät sovi yllä oleviin rakenteisiin valintoihin.',
+    sellerNotePlaceholder: 'Esimerkki: tuonti, hiljattain huollettu, lisärenkaat, erikoisvarusteet tai muu tieto ostajalle.',
+    sellerNoteHelp: 'Tämä valinnainen teksti näytetään myyjän alkuperäisellä kielellä.',
     technicalTitle: 'Tekniset tiedot ja tarkistus',
     technicalText: 'Vaihtoehdot näytetään vasta, kun avaat kohdan. Näin lomake pysyy selkeänä myös mobiilissa.',
     errors: {
@@ -3134,6 +3169,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Vælg',
     chooseColor: 'Vælg farve',
     chooseEquipment: 'Vælg udstyr',
+    selectedEquipmentCount: '{count} valgt',
+    equipmentAssistTitle: 'Find udstyr hurtigere',
+    equipmentAssistText: 'Søg eller åbn hver gruppe, og markér alt det udstyr, der hører til køretøjet. Hvis noget mangler, kan du tilføje det i sælgerens ekstra information i forhåndsvisningen.',
     processingImages: 'Behandler billeder...',
     publishWaitingTitle: 'Vent, vi publicerer din annonce',
     publishWaitingText: 'Vi kontrollerer oplysningerne, uploader billederne og gør annoncen klar. Hold vinduet åbent.',
@@ -3143,6 +3181,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingPayment: 'Pakke forberedes',
     imagesTitle: 'Billeder',
     previewTitle: 'Forhåndsvisning',
+    structuredDataText: 'Brug de faste valg til specifikationer, udstyr, stand og skader/fejl. Det gør annoncen lettere at søge, sammenligne og oversætte.',
+    sellerNoteLabel: 'Beskriv ekstra information om objektet',
+    sellerNoteIntro: 'Brug dette kun til vigtige detaljer, som ikke passer i de strukturerede valg ovenfor.',
+    sellerNotePlaceholder: 'Eksempel: import, nyligt serviceret, ekstra hjul, specialudstyr eller andet køberen bør vide.',
+    sellerNoteHelp: 'Denne valgfrie tekst vises på sælgerens originalsprog.',
     errors: {
       submit: 'Annoncen kunne ikke oprettes lige nu. Kontrollér oplysningerne, og prøv igen.',
       checkout: 'Annoncen blev gemt, men Stripe Checkout kunne ikke åbnes. Gå til Mine annoncer, og prøv betalingen igen.',
@@ -3150,6 +3193,14 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     },
   },
   be: {
+    selectedEquipmentCount: '{count} gekozen',
+    equipmentAssistTitle: 'Vind uitrusting sneller',
+    equipmentAssistText: 'Zoek of open elke groep en vink alles aan wat bij het voertuig hoort. Ontbreekt er iets, voeg het toe bij extra verkopersinformatie in het voorbeeld.',
+    structuredDataText: 'Gebruik de vaste keuzes voor specificaties, uitrusting, staat en schade/gebreken. Zo wordt de advertentie makkelijker te zoeken, vergelijken en vertalen.',
+    sellerNoteLabel: 'Beschrijf extra informatie over het object',
+    sellerNoteIntro: 'Gebruik dit alleen voor belangrijke details die niet in de gestructureerde keuzes hierboven passen.',
+    sellerNotePlaceholder: 'Voorbeeld: import, recent onderhoud, extra wielen, speciale uitrusting of andere details voor kopers.',
+    sellerNoteHelp: 'Deze optionele tekst wordt getoond in de oorspronkelijke taal van de verkoper.',
     publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
     publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
     publishWaitingPercentLabel: 'Publicatievoortgang',
@@ -3165,6 +3216,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Choisir',
     chooseColor: 'Choisir la couleur',
     chooseEquipment: 'Choisir les équipements',
+    selectedEquipmentCount: '{count} sélectionné(s)',
+    equipmentAssistTitle: 'Trouver les équipements plus vite',
+    equipmentAssistText: 'Recherchez ou ouvrez chaque groupe et cochez tout ce qui appartient au véhicule. S’il manque quelque chose, ajoutez-le dans les informations vendeur de l’aperçu.',
     processingImages: 'Traitement des images...',
     publishWaitingTitle: 'Veuillez patienter, nous publions votre annonce',
     publishWaitingText: 'Nous vérifions les informations, téléversons les images et préparons l’annonce. Gardez cette fenêtre ouverte.',
@@ -3172,6 +3226,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingReview: 'Informations vérifiées',
     publishWaitingImages: 'Images téléversées',
     publishWaitingPayment: 'Forfait préparé',
+    structuredDataText: 'Utilisez les choix fixes pour les caractéristiques, équipements, état et dommages/défauts. L’annonce sera plus facile à rechercher, comparer et traduire.',
+    sellerNoteLabel: 'Décrire les informations supplémentaires sur le véhicule',
+    sellerNoteIntro: 'À utiliser uniquement pour les détails importants qui ne rentrent pas dans les choix structurés ci-dessus.',
+    sellerNotePlaceholder: 'Exemple : import, entretien récent, roues supplémentaires, équipement spécial ou autre détail utile aux acheteurs.',
+    sellerNoteHelp: 'Ce texte facultatif est affiché dans la langue originale du vendeur.',
     errors: {
       submit: 'L’annonce ne peut pas être créée pour le moment. Vérifiez les informations et réessayez.',
       checkout: 'L’annonce a été enregistrée, mais Stripe Checkout n’a pas pu être ouvert. Ouvrez Mes annonces et réessayez le paiement.',
@@ -3186,6 +3245,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Elegir',
     chooseColor: 'Elegir color',
     chooseEquipment: 'Elegir equipamiento',
+    selectedEquipmentCount: '{count} seleccionados',
+    equipmentAssistTitle: 'Encuentra el equipamiento más rápido',
+    equipmentAssistText: 'Busca o abre cada grupo y marca todo lo que pertenece al vehículo. Si falta algo, añádelo en la información extra del vendedor en la vista previa.',
     processingImages: 'Procesando imágenes...',
     publishWaitingTitle: 'Espera, estamos publicando tu anuncio',
     publishWaitingText: 'Estamos revisando los datos, subiendo las imágenes y preparando el anuncio. Mantén esta ventana abierta.',
@@ -3193,6 +3255,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingReview: 'Datos revisados',
     publishWaitingImages: 'Imágenes subidas',
     publishWaitingPayment: 'Paquete preparado',
+    structuredDataText: 'Usa las opciones fijas para especificaciones, equipamiento, estado y daños/fallos. Así el anuncio será más fácil de buscar, comparar y traducir.',
+    sellerNoteLabel: 'Describe información extra sobre el vehículo',
+    sellerNoteIntro: 'Úsalo solo para detalles importantes que no encajen en las opciones estructuradas anteriores.',
+    sellerNotePlaceholder: 'Ejemplo: importación, revisión reciente, ruedas extra, equipamiento especial u otros detalles para el comprador.',
+    sellerNoteHelp: 'Este texto opcional se muestra en el idioma original del vendedor.',
     errors: {
       submit: 'El anuncio no se puede crear ahora mismo. Revisa los datos e inténtalo de nuevo.',
       checkout: 'El anuncio se ha guardado, pero no se pudo abrir Stripe Checkout. Abre Mis anuncios e intenta pagar de nuevo.',
@@ -3207,6 +3274,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Scegli',
     chooseColor: 'Scegli colore',
     chooseEquipment: 'Scegli equipaggiamento',
+    selectedEquipmentCount: '{count} selezionati',
+    equipmentAssistTitle: 'Trova più rapidamente le dotazioni',
+    equipmentAssistText: 'Cerca oppure apri ogni gruppo e seleziona tutto ciò che appartiene al veicolo. Se manca qualcosa, aggiungilo nelle informazioni extra del venditore nell’anteprima.',
     processingImages: 'Elaborazione immagini...',
     publishWaitingTitle: 'Attendi, stiamo pubblicando il tuo annuncio',
     publishWaitingText: 'Controlliamo i dati, carichiamo le immagini e prepariamo l’annuncio. Tieni aperta questa finestra.',
@@ -3214,6 +3284,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingReview: 'Dati controllati',
     publishWaitingImages: 'Immagini caricate',
     publishWaitingPayment: 'Pacchetto preparato',
+    structuredDataText: 'Usa le scelte fisse per specifiche, dotazioni, condizioni e danni/difetti. L’annuncio sarà più facile da cercare, confrontare e tradurre.',
+    sellerNoteLabel: 'Descrivi informazioni extra sul veicolo',
+    sellerNoteIntro: 'Usa questo campo solo per dettagli importanti che non rientrano nelle scelte strutturate sopra.',
+    sellerNotePlaceholder: 'Esempio: importazione, tagliando recente, ruote extra, dotazioni speciali o altri dettagli utili all’acquirente.',
+    sellerNoteHelp: 'Questo testo facoltativo viene mostrato nella lingua originale del venditore.',
     errors: {
       submit: 'Non è possibile creare l’annuncio in questo momento. Controlla i dati e riprova.',
       checkout: 'L’annuncio è stato salvato, ma non è stato possibile aprire Stripe Checkout. Apri I miei annunci e riprova il pagamento.',
@@ -3228,6 +3303,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Kies',
     chooseColor: 'Kies kleur',
     chooseEquipment: 'Kies uitrusting',
+    selectedEquipmentCount: '{count} gekozen',
+    equipmentAssistTitle: 'Vind uitrusting sneller',
+    equipmentAssistText: 'Zoek of open elke groep en vink alles aan wat bij het voertuig hoort. Ontbreekt er iets, voeg het toe bij extra verkopersinformatie in het voorbeeld.',
     processingImages: 'Afbeeldingen verwerken...',
     publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
     publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
@@ -3235,6 +3313,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingReview: 'Gegevens gecontroleerd',
     publishWaitingImages: 'Afbeeldingen geüpload',
     publishWaitingPayment: 'Pakket voorbereid',
+    structuredDataText: 'Gebruik de vaste keuzes voor specificaties, uitrusting, staat en schade/gebreken. Zo wordt de advertentie makkelijker te zoeken, vergelijken en vertalen.',
+    sellerNoteLabel: 'Beschrijf extra informatie over het object',
+    sellerNoteIntro: 'Gebruik dit alleen voor belangrijke details die niet in de gestructureerde keuzes hierboven passen.',
+    sellerNotePlaceholder: 'Voorbeeld: import, recent onderhoud, extra wielen, speciale uitrusting of andere details voor kopers.',
+    sellerNoteHelp: 'Deze optionele tekst wordt getoond in de oorspronkelijke taal van de verkoper.',
     errors: {
       submit: 'De advertentie kan nu niet worden aangemaakt. Controleer de gegevens en probeer het opnieuw.',
       checkout: 'De advertentie is opgeslagen, maar Stripe Checkout kon niet worden geopend. Open Mijn advertenties en probeer de betaling opnieuw.',
@@ -3249,6 +3332,9 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Wybierz',
     chooseColor: 'Wybierz kolor',
     chooseEquipment: 'Wybierz wyposażenie',
+    selectedEquipmentCount: '{count} wybrano',
+    equipmentAssistTitle: 'Szybciej znajdź wyposażenie',
+    equipmentAssistText: 'Wyszukaj lub otwórz każdą grupę i zaznacz wszystko, co należy do pojazdu. Jeśli czegoś brakuje, dodaj to w dodatkowych informacjach sprzedającego w podglądzie.',
     processingImages: 'Przetwarzanie zdjęć...',
     publishWaitingTitle: 'Poczekaj, publikujemy Twoje ogłoszenie',
     publishWaitingText: 'Sprawdzamy dane, przesyłamy zdjęcia i przygotowujemy ogłoszenie. Pozostaw to okno otwarte.',
@@ -3256,6 +3342,11 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     publishWaitingReview: 'Dane sprawdzone',
     publishWaitingImages: 'Zdjęcia przesłane',
     publishWaitingPayment: 'Pakiet przygotowany',
+    structuredDataText: 'Użyj stałych wyborów dla specyfikacji, wyposażenia, stanu oraz uszkodzeń/usterek. Dzięki temu ogłoszenie łatwiej wyszukać, porównać i przetłumaczyć.',
+    sellerNoteLabel: 'Opisz dodatkowe informacje o pojeździe',
+    sellerNoteIntro: 'Użyj tego pola tylko dla ważnych szczegółów, które nie pasują do powyższych ustrukturyzowanych wyborów.',
+    sellerNotePlaceholder: 'Przykład: import, niedawny serwis, dodatkowe koła, specjalne wyposażenie lub inne informacje dla kupującego.',
+    sellerNoteHelp: 'Ten opcjonalny tekst jest wyświetlany w oryginalnym języku sprzedającego.',
     errors: {
       submit: 'Nie można teraz utworzyć ogłoszenia. Sprawdź dane i spróbuj ponownie.',
       checkout: 'Ogłoszenie zostało zapisane, ale nie udało się otworzyć Stripe Checkout. Otwórz Moje ogłoszenia i spróbuj zapłacić ponownie.',

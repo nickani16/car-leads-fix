@@ -142,13 +142,28 @@ test('technical max trailer weight remains optional and is placed last for commo
   assert.match(options, /motorhomes: \[[\s\S]*chips\('damageStatus'[\s\S]*numberField\('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'\)/)
 })
 
-test('create listing customer-entered values use medium font weight', () => {
+test('create listing customer-entered values use the intended weights and placeholder style', () => {
   assert.match(form, /function Field[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function PriceField[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function GeoPlaceCombobox[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function SelectNative[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /<strong className="mt-1 block[\s\S]*text-sm font-medium/)
-  assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*font-medium/)
+  assert.match(form, /<textarea[\s\S]*className="mt-3 min-h-28[\s\S]*text-sm font-normal[\s\S]*placeholder:text-\[#7b8494\][\s\S]*placeholder:font-normal/)
+  assert.match(form, /placeholder:text-\[#7b8494\][\s\S]*placeholder:font-normal[\s\S]*focus:border-\[#0866ff\]/)
+})
+
+test('listing equipment and preview seller notes are easier to understand across locales', () => {
+  assert.match(form, /equipmentAssistTitle/)
+  assert.match(form, /equipmentAssistText/)
+  assert.match(form, /selectedEquipmentCount\.replace\('\{count\}'/)
+  assert.match(form, /sellerNoteIntro/)
+  assert.match(form, /Beskriv extra information om objektet/)
+  assert.match(form, /Hitta utrustning snabbare/)
+  assert.match(form, /Use the fixed choices for specifications/)
+  assert.match(form, /Använd de fasta valen för specifikationer/)
+  for (const locale of ['fi', 'da', 'be', 'fr', 'es', 'it', 'nl', 'pl']) {
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*selectedEquipmentCount:[\\s\\S]*equipmentAssistTitle:[\\s\\S]*equipmentAssistText:[\\s\\S]*sellerNoteLabel:[\\s\\S]*sellerNoteIntro:[\\s\\S]*sellerNotePlaceholder:`))
+  }
 })
 
 test('create listing first step does not render a disabled back button', () => {
