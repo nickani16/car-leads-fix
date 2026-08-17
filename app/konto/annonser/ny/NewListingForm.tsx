@@ -1930,12 +1930,18 @@ function PreviewStep({
           <span className="mt-1 block text-sm leading-6 text-[#667085]">
             {copy.sellerNoteIntro}
           </span>
-          <textarea
-            value={values.sellerNote || ''}
-            onChange={(event) => onChange('sellerNote', event.target.value)}
-            placeholder={copy.sellerNotePlaceholder}
-            className="mt-3 min-h-28 w-full rounded-[16px] border border-[#d7deed] bg-white p-4 text-sm font-normal leading-6 text-[#101828] outline-none placeholder:text-[#7b8494] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-          />
+          <span className="relative mt-3 block">
+            <textarea
+              value={values.sellerNote || ''}
+              onChange={(event) => onChange('sellerNote', event.target.value)}
+              className="min-h-28 w-full rounded-[16px] border border-[#d7deed] bg-white p-4 text-sm font-normal leading-6 text-[#101828] outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            />
+            {values.sellerNote ? null : (
+              <span className="pointer-events-none absolute left-4 right-4 top-4 text-sm font-normal leading-6 text-[#7b8494]">
+                {copy.sellerNotePlaceholder}
+              </span>
+            )}
+          </span>
           <span className="mt-2 block text-xs leading-5 text-[#667085]">
             {copy.sellerNoteHelp}
           </span>

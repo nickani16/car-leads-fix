@@ -148,8 +148,10 @@ test('create listing customer-entered values use the intended weights and placeh
   assert.match(form, /function GeoPlaceCombobox[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function SelectNative[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /<strong className="mt-1 block[\s\S]*text-sm font-medium/)
-  assert.match(form, /<textarea[\s\S]*className="mt-3 min-h-28[\s\S]*text-sm font-normal[\s\S]*placeholder:text-\[#7b8494\][\s\S]*placeholder:font-normal/)
-  assert.match(form, /placeholder:text-\[#7b8494\][\s\S]*placeholder:font-normal[\s\S]*focus:border-\[#0866ff\]/)
+  assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*text-sm font-normal[\s\S]*text-\[#101828\]/)
+  assert.match(form, /values\.sellerNote \? null : \(/)
+  assert.match(form, /pointer-events-none absolute left-4 right-4 top-4 text-sm font-normal leading-6 text-\[#7b8494\]/)
+  assert.doesNotMatch(form, /placeholder=\{copy\.sellerNotePlaceholder\}/)
 })
 
 test('listing equipment and preview seller notes are easier to understand across locales', () => {
