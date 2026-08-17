@@ -2442,7 +2442,7 @@ export default function PublicHeader({
       ) : null}
       <nav
         ref={mobileBottomNavRef}
-        className={`pointer-events-none fixed bottom-0 left-3 z-[120] transform-gpu pb-[calc(8px+env(safe-area-inset-bottom))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
+        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[calc(8px+env(safe-area-inset-bottom))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
           lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}

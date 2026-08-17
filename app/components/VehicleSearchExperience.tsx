@@ -1258,10 +1258,12 @@ export default function VehicleSearchExperience({
     const timer = window.setTimeout(() => {
       if (window.matchMedia('(min-width: 768px)').matches) {
         setResultsLayout('split')
+      } else if (listings.length > 1) {
+        setResultsLayout('split')
       }
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [listings.length])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1982,8 +1984,14 @@ export default function VehicleSearchExperience({
   }
 
   function focusMobileSortControl() {
-    mobileSortSelectRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    window.setTimeout(() => mobileSortSelectRef.current?.focus(), 180)
+    const select = mobileSortSelectRef.current
+    select?.focus()
+    try {
+      ;(select as (HTMLSelectElement & { showPicker?: () => void }) | null)?.showPicker?.()
+    } catch {
+      // Some browsers only allow the native picker during the original tap event.
+    }
+    select?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }
 
   function rememberSearchBeforeListingNavigation() {
@@ -3621,7 +3629,7 @@ export default function VehicleSearchExperience({
           {!mobileMapOpen ? (
             <div
               ref={mobileShortcutBarRef}
-              className={`pointer-events-none fixed left-3 z-[86] flex w-[min(356px,calc(100vw-24px))] items-center justify-between gap-2 lg:hidden ${
+              className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(356px,calc(100vw-24px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
                 compareIds.length ? 'bottom-[calc(10.35rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'
               }`}
               aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
@@ -5568,11 +5576,11 @@ function MetaSeparatorList({
   if (compact) {
     return (
       <div className={`min-w-0 ${className}`}>
-        <div className="grid min-w-0 grid-cols-2 gap-1 sm:hidden">
+        <div className="flex min-w-0 flex-wrap items-center gap-1 sm:hidden">
           {visibleItems.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="min-w-0 truncate rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[11px] font-medium leading-4 text-[#475467]"
+              className="inline-flex max-w-full shrink-0 rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[11px] font-medium leading-4 text-[#475467]"
             >
               {item}
             </span>

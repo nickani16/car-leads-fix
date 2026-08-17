@@ -494,6 +494,7 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   assert.match(vehicleSearchExperienceSource, /type ResultsLayout = 'single' \| 'split'/)
   assert.match(vehicleSearchExperienceSource, /useState<ResultsLayout>\('single'\)/)
   assert.match(vehicleSearchExperienceSource, /window\.matchMedia\('\(min-width: 768px\)'\)\.matches[\s\S]*setResultsLayout\('split'\)/)
+  assert.match(vehicleSearchExperienceSource, /else if \(listings\.length > 1\) \{[\s\S]*setResultsLayout\('split'\)/)
   assert.match(vehicleSearchExperienceSource, /resultsLayout === 'split' && filteredListings\.length > 1 \? 'grid grid-cols-2' : ''/)
   assert.match(vehicleSearchExperienceSource, /layout=\{resultsLayout === 'split' && filteredListings\.length > 1 \? 'split' : 'single'\}/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /desktopSplit/)
@@ -519,13 +520,15 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
 
 test('marketplace mobile shortcuts use existing map, saved search and sorting controls', () => {
   assert.match(vehicleSearchExperienceSource, /aria-label=\{uiText\(locale, 'Marketplace shortcuts'/)
-  assert.match(vehicleSearchExperienceSource, /fixed left-3 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\]/)
+  assert.match(vehicleSearchExperienceSource, /fixed left-1\/2 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\] -translate-x-1\/2/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{\(\) => setMobileMapOpen\(true\)\}/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{saveCurrentSearch\}/)
   assert.match(vehicleSearchExperienceSource, /disabled=\{savingSearch\}/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{focusMobileSortControl\}/)
   assert.match(vehicleSearchExperienceSource, /ref=\{mobileSortSelectRef\}/)
   assert.match(vehicleSearchExperienceSource, /data-marketplace-mobile-sort/)
+  assert.match(vehicleSearchExperienceSource, /showPicker\?: \(\) => void/)
+  assert.match(vehicleSearchExperienceSource, /catch \{[\s\S]*Some browsers only allow the native picker/)
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
@@ -540,9 +543,12 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.doesNotMatch(vehicleSearchExperienceSource, /border border-white\/70 bg-white\/72/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /inset_0_1px_0\(rgba\(255,255,255/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /bg-\[#101828\]\/86 px-3 text-\[13px\] font-normal text-white/)
+  assert.match(vehicleSearchExperienceSource, /flex min-w-0 flex-wrap items-center gap-1 sm:hidden/)
+  assert.match(vehicleSearchExperienceSource, /inline-flex max-w-full shrink-0 rounded-full bg-\[#f2f4f7\] px-2 py-0\.5/)
 })
 
 test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
+  assert.match(publicHeaderSource, /fixed bottom-0 left-1\/2 z-\[120\] -translate-x-1\/2/)
   assert.match(publicHeaderSource, /mobileNavOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
   assert.match(publicHeaderSource, /'border border-\[#101828\]\/10 bg-white\/72 supports-\[backdrop-filter\]:bg-white\/64'/)
   assert.match(publicHeaderSource, /data-autorell-mobile-nav-tone=\{mobileNavOverMedia \? 'light' : 'dark'\}/)
