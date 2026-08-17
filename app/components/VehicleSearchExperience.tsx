@@ -1276,10 +1276,12 @@ export default function VehicleSearchExperience({
 
     updateShortcutContrast()
     window.addEventListener('scroll', updateShortcutContrast, { passive: true })
+    document.addEventListener('scroll', updateShortcutContrast, { passive: true, capture: true })
     window.addEventListener('resize', updateShortcutContrast)
     return () => {
       window.cancelAnimationFrame(frame)
       window.removeEventListener('scroll', updateShortcutContrast)
+      document.removeEventListener('scroll', updateShortcutContrast, { capture: true })
       window.removeEventListener('resize', updateShortcutContrast)
     }
   }, [mobileMapOpen, searchListings.length, compareIds.length])

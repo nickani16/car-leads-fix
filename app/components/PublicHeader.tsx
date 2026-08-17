@@ -720,10 +720,12 @@ export default function PublicHeader({
 
     updateNavContrast()
     window.addEventListener('scroll', updateNavContrast, { passive: true })
+    document.addEventListener('scroll', updateNavContrast, { passive: true, capture: true })
     window.addEventListener('resize', updateNavContrast)
     return () => {
       window.cancelAnimationFrame(frame)
       window.removeEventListener('scroll', updateNavContrast)
+      document.removeEventListener('scroll', updateNavContrast, { capture: true })
       window.removeEventListener('resize', updateNavContrast)
     }
   }, [activePathname, isMarketplaceRoute])
