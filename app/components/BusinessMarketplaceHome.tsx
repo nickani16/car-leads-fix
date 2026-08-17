@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Check, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
@@ -17,6 +17,7 @@ import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import CountryFlag from './CountryFlag'
+import SavedListingButton from './SavedListingButton'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
@@ -508,10 +509,11 @@ type HomeListingCardItem = {
   countryCode: string
   countryLabel: string
   showCountryChip: boolean
-  specChips: string[]
+  headline: string
+  versionLabel: string | null
+  detailItems: string[]
   sellerTypeLabel: string
-  offerType: string | null
-  insuranceOfferLabel: string | null
+  sellerDetailLabel: string
   sellerTrust: 'verified' | 'unverified'
   isFeatured: boolean
   isTopPlacement: boolean
@@ -1468,11 +1470,11 @@ function HomeListingCard({
   locale: PublicLocale
   className?: string
 }) {
-  const offerBadge = homeListingOfferBadge(locale, item.offerType)
+  const saveLabels = homeSaveListingLabels(locale)
 
   return (
-    <article className={`group relative min-w-0 bg-white ${className}`}>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+    <article className={`group relative flex min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d7dee8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.10)] ${className}`}>
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
             images={item.imageUrls}
@@ -1498,42 +1500,44 @@ function HomeListingCard({
           </span>
         ) : null}
       </div>
-      <div className="min-w-0 pt-3">
-        <span className={`mb-2 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
-          {offerBadge.label}
-        </span>
+      <div className="flex min-h-[190px] flex-1 flex-col px-3 py-3 sm:min-h-[205px] sm:px-3.5">
         <Link href={item.href} className="block">
-          <h3 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#101828] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
-            {item.title}
+          <h3 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
+            {item.headline}
           </h3>
         </Link>
-        <p className="mt-1 line-clamp-1 text-[13px] font-light leading-5 text-[#667085] sm:text-[14px]">
-          {item.location}
-        </p>
-        <p className="mt-2 text-[17px] font-semibold leading-6 text-[#101828] no-underline [text-decoration:none] sm:text-[18px]">
+        {item.versionLabel ? (
+          <p className="mt-1 line-clamp-1 text-[13px] font-normal leading-5 text-[#101828] sm:text-[14px]">
+            {item.versionLabel}
+          </p>
+        ) : null}
+        <p className="mt-2 text-[17px] font-semibold leading-6 text-[#050b18] no-underline [text-decoration:none] sm:text-[18px]">
           {item.priceLabel}
         </p>
-        {item.insuranceOfferLabel ? (
-          <span className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 text-[11px] font-medium leading-4 text-[#344054]">
-            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
-            <span className="truncate">{item.insuranceOfferLabel}</span>
-          </span>
+        {item.detailItems.length ? (
+          <p className="mt-2 line-clamp-1 text-[12px] font-normal leading-5 text-[#344054] sm:text-[13px]">
+            {item.detailItems.join(' | ')}
+          </p>
         ) : null}
-        <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
-          {item.specChips.map((chip) => (
-            <span key={chip} className="max-w-full truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-              {chip}
-            </span>
-          ))}
-          <span className="max-w-full truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-            {item.sellerTypeLabel}
-          </span>
-          {item.showCountryChip ? (
-            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-              <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
-              <span className="truncate">{item.countryLabel}</span>
-            </span>
-          ) : null}
+        <div className="mt-2 border-t border-[#e4e7ec]" />
+        <div className="mt-auto grid grid-cols-[minmax(0,1fr)_44px] items-end gap-2 pt-2">
+          <div className="min-w-0 text-[12px] font-normal leading-4 text-[#050b18]">
+            <p className="truncate">{item.sellerTypeLabel}</p>
+            <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
+              {item.showCountryChip ? (
+                <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+              ) : null}
+              <span className="truncate">{item.sellerDetailLabel}</span>
+            </p>
+          </div>
+          <SavedListingButton
+            listingId={item.id}
+            label={saveLabels.label}
+            savedLabel={saveLabels.savedLabel}
+            removeLabel={saveLabels.removeLabel}
+            className="h-9 w-9 rounded-[8px] border border-[#cfd7e6] shadow-none"
+            iconClassName="h-5 w-5"
+          />
         </div>
       </div>
     </article>
@@ -1601,6 +1605,7 @@ type HomeListingSource = {
   title: string
   make: string | null
   model: string | null
+  variant?: string | null
   model_year: number | string | null
   mileage_km: number | string | null
   fuel_type?: string | null
@@ -1620,6 +1625,7 @@ type HomeListingSource = {
   boost_expires_at?: string | null
   offer_type?: string | null
   seller_type?: string | null
+  seller_name?: string | null
   insurance_offers?: unknown
 }
 
@@ -1636,14 +1642,16 @@ async function mapHomeListingCard(
     .join(', ')
   const price = Number(listing.price)
   const mileage = Number(listing.mileage_km)
-  const specChips = [
-    listing.model_year ? String(listing.model_year) : null,
+  const headline = buildHomeListingHeadline(listing)
+  const versionLabel = buildHomeListingVersionLabel(listing, headline)
+  const detailItems = [
     Number.isFinite(mileage) ? formatMileageAsMil(mileage, locale) : null,
-    listing.fuel_type ? translateListingVehicleValue(locale, listing.fuel_type) : null,
     listing.gearbox ? translateListingVehicleValue(locale, listing.gearbox) : null,
+    listing.fuel_type ? translateListingVehicleValue(locale, listing.fuel_type) : null,
   ]
     .filter(Boolean)
     .filter((item): item is string => typeof item === 'string' && Boolean(item))
+  const sellerDetailLabel = listing.seller_name || listing.city || listing.municipality || countryName
 
   return {
     id: listing.id,
@@ -1663,14 +1671,31 @@ async function mapHomeListingCard(
     countryCode: listing.country_code,
     countryLabel: countryName,
     showCountryChip: shouldShowListingCountryChip(listing.country_code, marketCountryCode),
-    specChips,
+    headline,
+    versionLabel,
+    detailItems,
     sellerTypeLabel: homeSellerTypeLabel(locale, listing.seller_type),
-    offerType: listing.offer_type || 'sale',
-    insuranceOfferLabel: homeInsuranceOfferLabel(locale, listing.insurance_offers, listing.country_code),
+    sellerDetailLabel,
     sellerTrust,
     isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
     isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
   }
+}
+
+function buildHomeListingHeadline(listing: HomeListingSource) {
+  const generated = [listing.model_year, listing.make, listing.model]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(' ')
+  return generated || listing.title
+}
+
+function buildHomeListingVersionLabel(listing: HomeListingSource, headline: string) {
+  const variant = String(listing.variant || '').trim()
+  if (variant) return variant
+  const title = String(listing.title || '').trim()
+  if (!title || title.toLowerCase() === headline.toLowerCase()) return null
+  return title
 }
 
 function shouldShowListingCountryChip(listingCountryCode?: string | null, marketCountryCode?: string | null) {
@@ -1687,122 +1712,33 @@ function homeSellerTypeLabel(locale: PublicLocale, sellerType?: string | null) {
   return translatePublic(locale, isBusiness ? 'Business seller' : 'Private seller')
 }
 
-function homeListingOfferBadge(locale: PublicLocale, offerType?: string | null) {
-  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
-  const saleLabels: Partial<Record<PublicLocale, string>> = {
-    sv: 'Till salu',
-    de: 'Zum Verkauf',
-    fr: 'À vendre',
-    es: 'En venta',
-    it: 'In vendita',
-    pl: 'Na sprzedaż',
-    nl: 'Te koop',
-    da: 'Til salg',
-    fi: 'Myynnissä',
-    en: 'For sale',
-  }
-  const leaseLabels: Partial<Record<PublicLocale, string>> = {
-    sv: 'Till leasing',
-    de: 'Leasing',
-    fr: 'Leasing',
-    es: 'Leasing',
-    it: 'Leasing',
-    pl: 'Leasing',
-    nl: 'Leasing',
-    da: 'Leasing',
-    fi: 'Leasing',
-    en: 'For leasing',
-  }
-  const bothLabels: Partial<Record<PublicLocale, string>> = {
-    sv: 'Salu eller leasing',
-    de: 'Kauf oder Leasing',
-    fr: 'Vente ou leasing',
-    es: 'Venta o leasing',
-    it: 'Vendita o leasing',
-    pl: 'Sprzedaż lub leasing',
-    nl: 'Koop of leasing',
-    da: 'Salg eller leasing',
-    fi: 'Myynti tai leasing',
-    en: 'Sale or leasing',
-  }
-  if (offerType === 'lease') {
+function homeSaveListingLabels(locale: PublicLocale) {
+  if (locale === 'sv') {
     return {
-      label: leaseLabels[effectiveLocale] || translatePublic(locale, 'For leasing'),
-      className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
+      label: 'Spara annons',
+      savedLabel: 'Sparad',
+      removeLabel: 'Ta bort sparad annons',
     }
   }
-  if (offerType === 'sale_and_lease') {
+  if (locale === 'de' || locale === 'at') {
     return {
-      label: bothLabels[effectiveLocale] || translatePublic(locale, 'Sale or leasing'),
-      className: 'bg-[#eef4ff] text-[#084dbb] ring-[#c9dcff]',
+      label: 'Anzeige speichern',
+      savedLabel: 'Gespeichert',
+      removeLabel: 'Gespeicherte Anzeige entfernen',
+    }
+  }
+  if (locale === 'en') {
+    return {
+      label: 'Save listing',
+      savedLabel: 'Saved',
+      removeLabel: 'Remove saved listing',
     }
   }
   return {
-    label: saleLabels[effectiveLocale] || translatePublic(locale, 'For sale'),
-    className: 'bg-[#eef5ff] text-[#0757da] ring-[#c7dbff]',
+    label: translatePublic(locale, 'Save listing'),
+    savedLabel: translatePublic(locale, 'Saved'),
+    removeLabel: translatePublic(locale, 'Remove saved listing'),
   }
-}
-
-function homeInsuranceOfferLabel(locale: PublicLocale, value: unknown, countryCode?: string | null) {
-  if (!shouldShowHomeLocalFinancing(locale, countryCode)) return null
-  if (!Array.isArray(value)) return null
-  const best = value
-    .map((offer) => {
-      if (!offer || typeof offer !== 'object' || Array.isArray(offer)) return null
-      const record = offer as Record<string, unknown>
-      const monthlyCost = Number(record.monthlyCost)
-      if (!Number.isFinite(monthlyCost) || monthlyCost <= 0) return null
-      return {
-        monthlyCost,
-        currency: typeof record.currency === 'string' && record.currency ? record.currency : displayCurrencyForMarket(countryCode),
-      }
-    })
-    .filter((offer): offer is { monthlyCost: number; currency: string } => offer !== null)
-    .sort((left, right) => left.monthlyCost - right.monthlyCost)[0]
-  if (!best) return null
-
-  const monthly = formatHomeInsuranceMonthlyPrice(best.monthlyCost, best.currency, locale)
-  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
-  if (effectiveLocale === 'sv') return `Lån från ${monthly}/mån`
-  if (effectiveLocale === 'de') return `Finanzierung ab ${monthly}/Mon.`
-  if (effectiveLocale === 'fr') return `Financement dès ${monthly}/mois`
-  if (effectiveLocale === 'es') return `Financiación desde ${monthly}/mes`
-  if (effectiveLocale === 'it') return `Finanziamento da ${monthly}/mese`
-  if (effectiveLocale === 'pl') return `Finansowanie od ${monthly}/mies.`
-  if (effectiveLocale === 'nl') return `Financiering vanaf ${monthly}/mnd`
-  if (effectiveLocale === 'da') return `Finansiering fra ${monthly}/md.`
-  if (effectiveLocale === 'fi') return `Rahoitus alkaen ${monthly}/kk`
-  return `Loan from ${monthly}/mo`
-}
-
-function shouldShowHomeLocalFinancing(locale: PublicLocale, listingCountryCode?: string | null) {
-  const marketCountryCode = countryForLocale(locale).toUpperCase()
-  const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
-  return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
-}
-
-function formatHomeInsuranceMonthlyPrice(amount: number, currency: string, locale: PublicLocale) {
-  const normalizedCurrency = currency.toUpperCase()
-  const formattedAmount = amount.toLocaleString(homeNumberLocale(locale), { maximumFractionDigits: 0 })
-  if (normalizedCurrency === 'SEK' && locale === 'sv') return `${formattedAmount} kr`
-  if (normalizedCurrency === 'DKK' && locale === 'da') return `${formattedAmount} kr.`
-  if (normalizedCurrency === 'NOK') return `${formattedAmount} kr`
-  if (normalizedCurrency === 'EUR') return `${formattedAmount} €`
-  if (normalizedCurrency === 'PLN') return `${formattedAmount} zł`
-  return `${formattedAmount} ${normalizedCurrency}`
-}
-
-function homeNumberLocale(locale: PublicLocale) {
-  if (locale === 'sv') return 'sv-SE'
-  if (locale === 'de' || locale === 'at') return 'de-DE'
-  if (locale === 'fr') return 'fr-FR'
-  if (locale === 'es') return 'es-ES'
-  if (locale === 'it') return 'it-IT'
-  if (locale === 'pl') return 'pl-PL'
-  if (locale === 'nl' || locale === 'be') return 'nl-NL'
-  if (locale === 'da') return 'da-DK'
-  if (locale === 'fi') return 'fi-FI'
-  return 'en-GB'
 }
 
 function isActiveWindow(status?: string | null, startedAt?: string | null, expiresAt?: string | null) {
