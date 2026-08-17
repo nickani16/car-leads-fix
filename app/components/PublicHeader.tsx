@@ -2483,7 +2483,7 @@ export default function PublicHeader({
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
         data-autorell-mobile-nav-tone={mobileNavOverMedia ? 'light' : 'dark'}
-        style={{ width: 'min(356px, calc(100vw - 24px))' }}
+        style={{ width: 'min(560px, calc(100vw - 24px))' }}
       >
         <div
           className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition-colors ${
