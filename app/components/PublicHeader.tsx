@@ -111,9 +111,23 @@ function floatingNavOverlapsMedia(root: HTMLElement | null) {
   const rect = root.getBoundingClientRect()
   if (rect.width <= 0 || rect.height <= 0) return false
 
+  const mediaSurfaces = Array.from(document.querySelectorAll('[data-autorell-media-surface]'))
+  const overlapsMedia = mediaSurfaces.some((surface) => {
+    const mediaRect = surface.getBoundingClientRect()
+    return (
+      mediaRect.width > 0 &&
+      mediaRect.height > 0 &&
+      rect.left < mediaRect.right &&
+      rect.right > mediaRect.left &&
+      rect.top < mediaRect.bottom &&
+      rect.bottom > mediaRect.top
+    )
+  })
+
+  if (overlapsMedia) return true
+
   const y = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2))
   const samplePoints = [0.18, 0.42, 0.66, 0.9]
-
   return samplePoints.some((point) => {
     const x = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width * point))
     return document.elementsFromPoint(x, y).some((element) => {
