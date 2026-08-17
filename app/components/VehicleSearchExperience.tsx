@@ -3610,6 +3610,7 @@ export default function VehicleSearchExperience({
                         key={listing.id}
                         listing={listing}
                         locale={locale}
+                        marketCountryCode={safeInitialCountry}
                         compareActive={compareIds.includes(listing.id)}
                         onCompare={() => toggleCompare(listing.id)}
                         onBeforeNavigate={rememberSearchBeforeListingNavigation}
@@ -5029,6 +5030,7 @@ function buildVehicleCompareRows(
 function VehicleResultCard({
   listing,
   locale,
+  marketCountryCode,
   compareActive,
   onCompare,
   onBeforeNavigate,
@@ -5036,6 +5038,7 @@ function VehicleResultCard({
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
+  marketCountryCode?: string
   compareActive: boolean
   onCompare: () => void
   onBeforeNavigate: () => void
@@ -5058,6 +5061,7 @@ function VehicleResultCard({
     ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
     : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')
   const countryLabel = getEuCountryName(listing.country, locale)
+  const showCountryChip = shouldShowListingCountryChip(listing.country, marketCountryCode)
   const meta = [
     listing.year,
     listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
@@ -5161,10 +5165,12 @@ function VehicleResultCard({
               <span className="rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                 {sellerTypeLabel}
               </span>
-              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
-                <span className="truncate">{countryLabel}</span>
-              </span>
+              {showCountryChip ? (
+                <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                  <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+                  <span className="truncate">{countryLabel}</span>
+                </span>
+              ) : null}
             </div>
             {listing.sellerRatingAverage && listing.sellerRatingCount ? (
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
@@ -6368,6 +6374,12 @@ function shouldShowLocalFinancing(locale: PublicLocale, listingCountryCode?: str
   const marketCountryCode = countryForLocale(locale).toUpperCase()
   const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
   return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
+}
+
+function shouldShowListingCountryChip(listingCountryCode?: string | null, marketCountryCode?: string | null) {
+  const listingCountry = (listingCountryCode || '').toUpperCase()
+  const marketCountry = (marketCountryCode || '').toUpperCase()
+  return Boolean(listingCountry && (!marketCountry || marketCountry === 'EU' || listingCountry !== marketCountry))
 }
 
 function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {

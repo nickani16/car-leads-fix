@@ -507,6 +507,7 @@ type HomeListingCardItem = {
   location: string
   countryCode: string
   countryLabel: string
+  showCountryChip: boolean
   specChips: string[]
   sellerTypeLabel: string
   offerType: string | null
@@ -563,7 +564,7 @@ export default async function BusinessMarketplaceHome({
       .filter((id): id is string => typeof id === 'string' && Boolean(id)),
   )
   const toHomeCard = (listing: HomeListingSource) =>
-    mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified')
+    mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified', localMarketCode)
   const localListingSections: HomeListingSectionData[] = [
     {
       id: 'local-top',
@@ -1527,10 +1528,12 @@ function HomeListingCard({
           <span className="max-w-full truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
             {item.sellerTypeLabel}
           </span>
-          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-            <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
-            <span className="truncate">{item.countryLabel}</span>
-          </span>
+          {item.showCountryChip ? (
+            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+              <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+              <span className="truncate">{item.countryLabel}</span>
+            </span>
+          ) : null}
         </div>
       </div>
     </article>
@@ -1625,6 +1628,7 @@ async function mapHomeListingCard(
   locale: PublicLocale,
   displayCurrency: string,
   sellerTrust: 'verified' | 'unverified',
+  marketCountryCode?: string | null,
 ): Promise<HomeListingCardItem> {
   const countryName = getEuCountryName(listing.country_code, locale)
   const location = Array.from(new Set([listing.city, listing.municipality, countryName].filter(Boolean)))
@@ -1658,6 +1662,7 @@ async function mapHomeListingCard(
     location: location || countryName,
     countryCode: listing.country_code,
     countryLabel: countryName,
+    showCountryChip: shouldShowListingCountryChip(listing.country_code, marketCountryCode),
     specChips,
     sellerTypeLabel: homeSellerTypeLabel(locale, listing.seller_type),
     offerType: listing.offer_type || 'sale',
@@ -1666,6 +1671,12 @@ async function mapHomeListingCard(
     isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
     isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
   }
+}
+
+function shouldShowListingCountryChip(listingCountryCode?: string | null, marketCountryCode?: string | null) {
+  const listingCountry = (listingCountryCode || '').toUpperCase()
+  const marketCountry = (marketCountryCode || '').toUpperCase()
+  return Boolean(listingCountry && (!marketCountry || marketCountry === 'EU' || listingCountry !== marketCountry))
 }
 
 function homeSellerTypeLabel(locale: PublicLocale, sellerType?: string | null) {
