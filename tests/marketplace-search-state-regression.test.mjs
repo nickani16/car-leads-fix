@@ -529,7 +529,8 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
-  assert.match(vehicleSearchExperienceSource, /rounded-full border border-\[#101828\]\/10 bg-white\/72 px-3 text-\[10px\] font-normal text-\[#111827\]/)
+  assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 text-white supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
+  assert.match(vehicleSearchExperienceSource, /'border border-\[#101828\]\/10 bg-white\/72 text-\[#111827\] supports-\[backdrop-filter\]:bg-white\/64'/)
   assert.match(vehicleSearchExperienceSource, /data-autorell-floating-shortcuts-tone=\{mobileShortcutOverMedia \? 'light' : 'dark'\}/)
   assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia \? 'text-white' : 'text-\[#111827\]'/)
   assert.match(vehicleSearchExperienceSource, /floatingControlsOverlapMedia\(mobileShortcutBarRef\.current\)/)
@@ -542,7 +543,8 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
 })
 
 test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
-  assert.match(publicHeaderSource, /rounded-\[28px\] border border-\[#101828\]\/10 bg-white\/72/)
+  assert.match(publicHeaderSource, /mobileNavOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
+  assert.match(publicHeaderSource, /'border border-\[#101828\]\/10 bg-white\/72 supports-\[backdrop-filter\]:bg-white\/64'/)
   assert.match(publicHeaderSource, /data-autorell-mobile-nav-tone=\{mobileNavOverMedia \? 'light' : 'dark'\}/)
   assert.match(publicHeaderSource, /mobileNavOverMedia \? 'text-white' : 'text-\[#101828\]'/)
   assert.match(publicHeaderSource, /floatingNavOverlapsMedia\(mobileBottomNavRef\.current\)/)

@@ -3630,7 +3630,11 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={() => setMobileMapOpen(true)}
-                className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] ${
+                  mobileShortcutOverMedia
+                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
+                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                }`}
                 style={{ fontWeight: 400 }}
               >
                 <MapPin className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
@@ -3640,7 +3644,11 @@ export default function VehicleSearchExperience({
                 type="button"
                 onClick={saveCurrentSearch}
                 disabled={savingSearch}
-                className="pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 supports-[backdrop-filter]:bg-white/64"
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
+                  mobileShortcutOverMedia
+                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
+                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                }`}
                 style={{ fontWeight: 400 }}
               >
                 <Bookmark className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
@@ -3649,7 +3657,11 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={focusMobileSortControl}
-                className="pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#101828]/10 bg-white/72 px-3 text-[10px] font-normal text-[#111827] shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] supports-[backdrop-filter]:bg-white/64"
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] ${
+                  mobileShortcutOverMedia
+                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
+                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                }`}
                 style={{ fontWeight: 400 }}
               >
                 <ChevronDown className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
