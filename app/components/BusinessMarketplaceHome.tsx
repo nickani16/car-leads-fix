@@ -546,8 +546,8 @@ export default async function BusinessMarketplaceHome({
     vehicleNews,
   ] =
     await Promise.all([
-      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 12),
-      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 12),
+      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 17),
+      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17),
       getPublishedMarketplaceListingCount(localMarketCode),
       getPublishedMarketplaceListingCount('EU'),
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
@@ -1409,6 +1409,9 @@ function HomeListingSection({
   section: HomeListingSectionData
   locale: PublicLocale
 }) {
+  const visibleItems = section.items.slice(0, 16)
+  const hasMoreListings = section.items.length > visibleItems.length
+
   return (
     <section>
       <div className="flex items-end justify-between gap-5">
@@ -1423,17 +1426,29 @@ function HomeListingSection({
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
-      {section.items.length ? (
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-          {section.items.map((item, index) => (
-            <HomeListingCard
-              key={`${section.title}-${item.id}`}
-              item={item}
-              locale={locale}
-              className={index >= 8 ? 'max-sm:hidden' : ''}
-            />
-          ))}
-        </div>
+      {visibleItems.length ? (
+        <>
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+            {visibleItems.map((item, index) => (
+              <HomeListingCard
+                key={`${section.title}-${item.id}`}
+                item={item}
+                locale={locale}
+                className={index >= 8 ? 'max-sm:hidden' : ''}
+              />
+            ))}
+          </div>
+          {hasMoreListings ? (
+            <div className="mt-7 flex justify-center">
+              <Link
+                href={localizePublicHref(locale, '/marketplace')}
+                className="inline-flex h-11 items-center justify-center rounded-full border border-[#cbd5e1] bg-white px-5 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
+              >
+                {homeLoadMoreListingsLabel(locale)}
+              </Link>
+            </div>
+          ) : null}
+        </>
       ) : (
         <div className="mt-5 rounded-[12px] border border-[#d8e0ec] bg-[#f8fbff] px-5 py-7 text-sm font-medium text-[#667085]">
           {section.emptyText}
@@ -1464,7 +1479,7 @@ function HomeListingCard({
             href={item.href}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             showControlsOnMobile
-            showDotsOnMobile={false}
+            showDotsOnMobile
             enableTouchSwipe={false}
             previousLabel={locale === 'sv' ? 'Föregående bild' : translatePublic(locale, 'Previous photo')}
             nextLabel={locale === 'sv' ? 'Nästa bild' : translatePublic(locale, 'Next photo')}
@@ -1569,6 +1584,13 @@ function homeViewListingsLabel(locale: PublicLocale) {
   if (locale === 'de') return 'Anzeigen ansehen'
   if (locale === 'en') return 'View listings'
   return translatePublic(locale, 'View listings')
+}
+
+function homeLoadMoreListingsLabel(locale: PublicLocale) {
+  if (locale === 'sv') return 'Ladda fler annonser'
+  if (locale === 'de') return 'Mehr Anzeigen laden'
+  if (locale === 'en') return 'Load more listings'
+  return translatePublic(locale, 'Load more listings')
 }
 
 type HomeListingSource = {
