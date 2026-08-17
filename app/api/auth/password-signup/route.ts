@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       const reason = `${link.error.code || ''} ${link.error.message || ''}`.toLowerCase()
       if (reason.includes('already') || reason.includes('exists') || reason.includes('registered')) {
         return NextResponse.json(
-          { code: 'auth_account_exists', error: copy.accountAlreadyExists },
+          { code: 'auth_account_exists', accountExists: true, error: copy.accountAlreadyExists },
           { status: 409 },
         )
       }

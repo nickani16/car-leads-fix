@@ -10,6 +10,10 @@ const registerApi = readFileSync(
   new URL('../app/api/account/register/route.ts', import.meta.url),
   'utf8',
 )
+const registerForm = readFileSync(
+  new URL('../app/registrera/RegisterForm.tsx', import.meta.url),
+  'utf8',
+)
 
 test('email login codes are consumed atomically before session creation', () => {
   assert.match(emailCodeVerifyApi, /const consumedAt = new Date\(\)\.toISOString\(\)/)
@@ -38,4 +42,13 @@ test('marketplace profile creation requires a confirmed email session', () => {
   assert.match(registerApi, /Bekr.*mejladressen med koden/)
   assert.match(registerApi, /\{ status: 403 \}/)
   assert.match(registerApi, /verified_at: user\.email_confirmed_at/)
+})
+
+test('private registration can continue when Swedish national id needs manual review', () => {
+  assert.match(registerApi, /nationalIdReviewStatus/)
+  assert.match(registerApi, /needs_review/)
+  assert.match(registerApi, /identityStatus\s*=[\s\S]*nationalIdStatus === 'passed'[\s\S]*'verified'[\s\S]*'needs_review'/)
+  assert.match(registerForm, /placeholder=\{countryCode === 'SE'/)
+  assert.match(registerForm, /placeholder:text-\[#98a2b3\]/)
+  assert.match(registerForm, /Om formatet behöver granskas kan kontot ändå fortsätta/)
 })

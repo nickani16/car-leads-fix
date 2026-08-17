@@ -67,10 +67,23 @@ test('password registration uses Supabase Auth without a parallel password store
   assert.match(signupRoute, /preferred_locale/)
   assert.match(signupRoute, /isStrongPassword/)
   assert.match(signupRoute, /auth_account_exists/)
+  assert.match(signupRoute, /accountExists: true/)
   assert.match(signupRoute, /copy\.accountAlreadyExists/)
   assert.match(signupRoute, /admin\.auth\.admin\.deleteUser\(generatedUser\.id\)/)
   assert.match(signupRoute, /!generatedUser\.email_confirmed_at/)
   assert.doesNotMatch(signupRoute, /from\('.*password|password_hash|create table/)
+})
+
+test('existing accounts fall back to login with password and one-time code choices', () => {
+  assert.match(authModal, /result\.accountExists/)
+  assert.match(authModal, /result\.code === 'auth_account_exists'/)
+  assert.match(authModal, /setMode\('login'\)/)
+  assert.match(authModal, /setAuthMethod\('password'\)/)
+  assert.match(authModal, /copy\.useCodeInstead/)
+  assert.match(authComponent, /result\.accountExists/)
+  assert.match(authComponent, /setFlowMode\('login'\)/)
+  assert.match(authComponent, /copy\.useCodeInstead/)
+  assert.match(authComponent, /copy\.usePasswordInstead/)
 })
 
 test('auth emails carry active locale and localized reset links', () => {

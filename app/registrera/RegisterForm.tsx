@@ -761,7 +761,7 @@ function Field({
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <input
         {...inputProps}
-        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
@@ -888,7 +888,7 @@ function getRegisterFormCopy(locale: PublicLocale) {
     birthDateRequired: 'Choose your date of birth to continue.',
     nationalId: 'National identity number',
     nationalIdHelper:
-      'Checked against the country format. The number is never shown publicly.',
+      'Checked against the country format. If the format needs review, the account can still continue. The number is never shown publicly.',
     companyName: 'Company name',
     registrationNumber: 'Registration number',
     vatNumber: 'VAT number',
@@ -938,7 +938,7 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDateRequired: 'Välj ditt födelsedatum för att fortsätta.',
       nationalId: 'Nationellt identitetsnummer',
       nationalIdHelper:
-        'Kontrolleras mot landets format. Numret visas aldrig publikt.',
+        'Kontrolleras mot landets format. Om formatet behöver granskas kan kontot ändå fortsätta. Numret visas aldrig publikt.',
       companyName: 'Företagsnamn',
       registrationNumber: 'Organisationsnummer',
       vatNumber: 'VAT-nummer',
@@ -989,7 +989,7 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.',
       nationalId: 'Nationale Identifikationsnummer',
       nationalIdHelper:
-        'Wird gegen das Länderformat geprüft. Die Nummer wird nie öffentlich angezeigt.',
+        'Wird gegen das Länderformat geprüft. Wenn das Format geprüft werden muss, kann das Konto trotzdem fortfahren. Die Nummer wird nie öffentlich angezeigt.',
       companyName: 'Firmenname',
       registrationNumber: 'Handelsregisternummer',
       vatNumber: 'USt-IdNr.',

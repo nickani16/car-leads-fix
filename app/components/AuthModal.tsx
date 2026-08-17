@@ -174,7 +174,18 @@ export default function AuthModal({
           success?: boolean
           sessionReady?: boolean
           destination?: string
+          accountExists?: boolean
+          code?: string
           error?: string
+        }
+        if (result.accountExists || result.code === 'auth_account_exists') {
+          setMode('login')
+          setView('login')
+          setStep('email')
+          setAuthMethod('password')
+          setConfirmPassword('')
+          setNotice(result.error || copy.signupError)
+          return
         }
         if (!response.ok || !result.success) {
           setError(result.error || copy.signupError)

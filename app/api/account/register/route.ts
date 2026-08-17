@@ -141,11 +141,14 @@ function passesSwedishPersonalNumber(value: string) {
   return (10 - (sum % 10)) % 10 === Number(digits[9])
 }
 
-function validateNationalId(countryCode: string, value: string) {
+function nationalIdReviewStatus(countryCode: string, value: string) {
   const normalized = normalizeIdentifier(value)
-  if (normalized.length < 6 || normalized.length > 24) return false
-  if (countryCode === 'SE') return passesSwedishPersonalNumber(normalized)
-  return /[0-9]/.test(normalized)
+  if (normalized.length < 6 || normalized.length > 24 || !/[0-9]/.test(normalized)) {
+    return 'invalid' as const
+  }
+  if (countryCode !== 'SE') return 'passed' as const
+  if (passesSwedishPersonalNumber(normalized)) return 'passed' as const
+  return /^\d{10}$|^\d{12}$/.test(normalized) ? 'needs_review' as const : 'invalid' as const
 }
 
 async function validateVat(countryCode: string, vatNumber: string) {
@@ -210,6 +213,10 @@ export async function POST(request: Request) {
     const region = normalizePlaceName(body.region)
     const accountType = body.accountType === 'business' ? 'business' : 'private'
     const nationalId = clean(body.nationalId)
+    const nationalIdStatus =
+      accountType === 'private'
+        ? nationalIdReviewStatus(countryCode, nationalId)
+        : 'passed'
     const companyName = clean(body.companyName)
     const registrationNumber = normalizeIdentifier(clean(body.registrationNumber))
     const vatNumber = normalizeIdentifier(clean(body.vatNumber))
@@ -257,7 +264,7 @@ export async function POST(request: Request) {
       if (!addressLine1 || !postalCode || !city) {
         return { code: 'register_invalid_address', field: !addressLine1 ? 'addressLine1' : !postalCode ? 'postalCode' : 'city', error: 'Fyll i gatuadress, postnummer och ort.' }
       }
-      if (accountType === 'private' && !validateNationalId(countryCode, nationalId)) {
+      if (accountType === 'private' && nationalIdStatus === 'invalid') {
         return { code: 'register_invalid_national_id', field: 'nationalId', error: 'Kontrollera identitetsnumrets format.' }
       }
       if (accountType === 'business' && (!companyName || !(registrationNumber || vatNumber))) {
@@ -537,7 +544,12 @@ export async function POST(request: Request) {
     const emailDomain = domainFromEmail(email)
     const websiteDomain = domainFromWebsite(websiteUrl)
     const domainMatch = domainsMatch(emailDomain, websiteDomain)
-    const identityStatus = accountType === 'private' ? 'verified' : 'pending'
+    const identityStatus =
+      accountType === 'private'
+        ? nationalIdStatus === 'passed'
+          ? 'verified'
+          : 'needs_review'
+        : 'pending'
     const phoneFlags = phoneValidation.riskFlags
     const profileRiskStatus = phoneRiskStatus(phoneFlags)
     // marketplace_profiles only accepts the verification states defined by the
@@ -731,7 +743,7 @@ export async function POST(request: Request) {
       country_code: countryCode,
       status:
         accountType === 'private'
-          ? 'passed'
+          ? nationalIdStatus
           : vatCheck.status,
       provider: accountType === 'private' ? 'autorell-format-check' : 'eu-vies',
       reference:

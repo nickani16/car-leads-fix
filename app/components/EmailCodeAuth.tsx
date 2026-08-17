@@ -33,7 +33,8 @@ export default function EmailCodeAuth({
   mode?: 'login' | 'register'
 }) {
   const router = useRouter()
-  const copy = getCopy(locale, mode)
+  const [flowMode, setFlowMode] = useState(mode)
+  const copy = getCopy(locale, flowMode)
   const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
@@ -124,7 +125,7 @@ export default function EmailCodeAuth({
           email,
           code,
           next:
-            mode === 'register'
+            flowMode === 'register'
               ? destinationForRegister
               : requestedNext || localizePublicHref(locale, '/account'),
         }),
@@ -140,7 +141,7 @@ export default function EmailCodeAuth({
       }
       router.replace(
         result.destination ||
-          (mode === 'register'
+          (flowMode === 'register'
             ? destinationForRegister
             : localizePublicHref(locale, '/account')),
       )
@@ -161,7 +162,7 @@ export default function EmailCodeAuth({
       const params = new URLSearchParams(window.location.search)
       const requestedNext = params.get('next')
       const registerDestinationForSubmit = registerDestination(requestedNext)
-      if (mode === 'register') {
+      if (flowMode === 'register') {
         if (!isStrongPassword(password)) {
           setError(PASSWORD_REQUIREMENTS)
           return
@@ -185,7 +186,17 @@ export default function EmailCodeAuth({
           success?: boolean
           sessionReady?: boolean
           destination?: string
+          accountExists?: boolean
+          code?: string
           error?: string
+        }
+        if (result.accountExists || result.code === 'auth_account_exists') {
+          setFlowMode('login')
+          setAuthMethod('password')
+          setStep('email')
+          setConfirmPassword('')
+          setNotice(result.error || copy.passwordSignupError)
+          return
         }
         if (!response.ok || !result.success) {
           setError(result.error || copy.passwordSignupError)
@@ -324,7 +335,7 @@ export default function EmailCodeAuth({
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                        autoComplete={flowMode === 'register' ? 'new-password' : 'current-password'}
                         required
                         className="h-full min-w-0 flex-1 bg-transparent text-base outline-none"
                       />
@@ -338,7 +349,7 @@ export default function EmailCodeAuth({
                       </button>
                     </span>
                   </label>
-                  {mode === 'register' ? (
+                  {flowMode === 'register' ? (
                     <label className="mt-5 block text-sm font-semibold">
                       {copy.confirmPassword}
                       <input
@@ -360,7 +371,7 @@ export default function EmailCodeAuth({
                       className="h-5 w-5 accent-[#0866ff]"
                     />
                   </label>
-                  {mode === 'login' ? (
+                  {flowMode === 'login' ? (
                     <Link href={localizePublicHref(locale, '/forgot-password')} className="mt-4 inline-block text-sm font-bold text-[#0866ff]">
                       {copy.forgotPassword}
                     </Link>
@@ -498,12 +509,12 @@ export default function EmailCodeAuth({
               )}
 
               <p className="mt-8 border-t border-[#eaecf0] pt-6 text-center text-sm text-[#667085]">
-                {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
+                {flowMode === 'login' ? copy.newHere : copy.haveAccount}{' '}
                 <Link
-                  href={mode === 'login' ? localizePublicHref(locale, '/register') : localizePublicHref(locale, '/')}
+                  href={flowMode === 'login' ? localizePublicHref(locale, '/register') : localizePublicHref(locale, '/')}
                   className="font-bold text-[#0866ff]"
                 >
-                  {mode === 'login' ? copy.createAccount : copy.signIn}
+                  {flowMode === 'login' ? copy.createAccount : copy.signIn}
                 </Link>
               </p>
             </div>
