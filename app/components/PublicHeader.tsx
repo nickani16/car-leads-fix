@@ -734,15 +734,21 @@ export default function PublicHeader({
     if (typeof window === 'undefined') return
 
     const root = document.documentElement
+    let largestViewportHeight = 0
     const updateMobileBottomInset = () => {
       const viewport = window.visualViewport
+      const viewportHeight = Math.round(viewport?.height || window.innerHeight)
+      largestViewportHeight = Math.max(largestViewportHeight, viewportHeight)
+      const screenHeight = Math.max(window.screen?.height || 0, window.screen?.availHeight || 0)
       const browserToolbarInset = viewport
         ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
         : 0
       const roundedBrowserToolbarInset = Math.round(browserToolbarInset)
-      const browserChromeVisible = roundedBrowserToolbarInset > 24
+      const viewportShortByScreen = screenHeight > 0 && viewportHeight < screenHeight - 120
+      const viewportShortBySession = largestViewportHeight > 0 && viewportHeight < largestViewportHeight - 48
+      const browserChromeVisible = roundedBrowserToolbarInset > 24 || viewportShortByScreen || viewportShortBySession
       root.style.setProperty('--autorell-mobile-browser-inset', `${roundedBrowserToolbarInset}px`)
-      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '8px' : '20px')
+      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '0px' : '20px')
     }
 
     updateMobileBottomInset()
