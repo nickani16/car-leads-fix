@@ -302,6 +302,37 @@ test('marketplace mode defaults to all while sale and leasing stay query-separat
   assert.match(searchSource, /return ''/)
 })
 
+test('marketplace empty state converts zero-result searches into seller and buyer actions', () => {
+  assert.match(vehicleSearchExperienceSource, /function getMarketplaceEmptySubject/)
+  assert.match(vehicleSearchExperienceSource, /function getMarketplaceEmptyCopy/)
+  assert.match(vehicleSearchExperienceSource, /No listings for \{subject\} match your search in \{location\} yet/)
+  assert.match(vehicleSearchExperienceSource, /const createListingHref = localizePublicHref\(/)
+  assert.match(vehicleSearchExperienceSource, /\/account\/listings\/new/)
+  assert.match(vehicleSearchExperienceSource, /category', activeCategoryKey/)
+  assert.match(vehicleSearchExperienceSource, /const loginForListingHref = localizePublicHref\(locale, `\/login\?next=\$\{encodeURIComponent\(createListingHref\)\}`\)/)
+  assert.match(vehicleSearchExperienceSource, /function broadenSearchToEurope\(\)/)
+  assert.match(vehicleSearchExperienceSource, /setSelectedMarkets\(\[\]\)/)
+  assert.match(vehicleSearchExperienceSource, /setRegion\(''\)/)
+  assert.match(vehicleSearchExperienceSource, /setGeoBounds\(null\)/)
+  assert.match(vehicleSearchExperienceSource, /emptyStateCopy\.createLabel/)
+  assert.match(vehicleSearchExperienceSource, /emptyStateCopy\.searchEurope/)
+  assert.match(vehicleSearchExperienceSource, /emptyStateCopy\.clearFilters/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /seoLanding\?\.zeroResultsText \|\| translatePublic\(locale, 'There do not seem to be any results\.'\)/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /translatePublic\(locale, 'Try searching for another location, another vehicle or another make\.'\)/)
+
+  for (const locale of ['sv', 'de', 'fr', 'es', 'it', 'nl', 'pl', 'fi', 'da']) {
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'No listings match your search yet':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'No listings for \\{subject\\} match your search yet':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'No listings for \\{subject\\} match your search in \\{location\\} yet':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Be the first to publish a listing and reach buyers in your market and across Europe\\.':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Create free listing':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'It only takes a few minutes to get started\\.':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Already have an account\\?':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Looking for a vehicle\\?':`))
+    assert.match(manualPublicTranslationsSource, new RegExp(`${locale}: \\{[\\s\\S]*'Broaden the search or adjust your filters\\.':`))
+  }
+})
+
 test('marketplace make and model filters use live category-scoped options while keeping free text', () => {
   assert.match(vehicleSearchExperienceSource, /const makeModelOptions = useMemo/)
   assert.match(vehicleSearchExperienceSource, /optionListings\.filter/)

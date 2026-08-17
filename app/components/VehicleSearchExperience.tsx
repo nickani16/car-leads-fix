@@ -19,6 +19,7 @@ import {
   Layers,
   List,
   MapPin,
+  Plus,
   Search,
   Scale,
   ShieldCheck,
@@ -980,6 +981,65 @@ function categoryText(item: (typeof categories)[number], locale: PublicLocale, s
   }
   const en = categoryEnglishLabels[item.key] || item.label
   return locale === 'en' ? en : translatePublic(locale, en)
+}
+
+function getMarketplaceEmptySubject({
+  locale,
+  make,
+  model,
+  bodyType,
+  selectedCategoryItems,
+}: {
+  locale: PublicLocale
+  make: string
+  model: string
+  bodyType: string
+  selectedCategoryItems: Array<(typeof categories)[number]>
+}) {
+  const makeModel = [make, model].filter(Boolean).join(' ').trim()
+  if (makeModel) return makeModel
+  if (bodyType) return translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType).toLocaleLowerCase(emptyStateLocale(locale))
+  const category = selectedCategoryItems.length === 1 ? selectedCategoryItems[0] : null
+  if (category && category.key !== 'all') return categoryText(category, locale, true).toLocaleLowerCase(emptyStateLocale(locale))
+  return ''
+}
+
+function getMarketplaceEmptyCopy(locale: PublicLocale, subject: string, location: string) {
+  const cleanedSubject = subject.trim()
+  const cleanedLocation = location.trim()
+  const titleTemplate = cleanedSubject && cleanedLocation
+    ? translatePublic(locale, 'No listings for {subject} match your search in {location} yet')
+    : cleanedSubject
+      ? translatePublic(locale, 'No listings for {subject} match your search yet')
+      : translatePublic(locale, 'No listings match your search yet')
+
+  return {
+    title: titleTemplate
+      .replace('{subject}', cleanedSubject)
+      .replace('{location}', cleanedLocation),
+    sellerText: translatePublic(locale, 'Be the first to publish a listing and reach buyers in your market and across Europe.'),
+    createLabel: translatePublic(locale, 'Create free listing'),
+    quickStart: translatePublic(locale, 'It only takes a few minutes to get started.'),
+    loginIntro: translatePublic(locale, 'Already have an account?'),
+    loginLabel: translatePublic(locale, 'Log in'),
+    buyerTitle: translatePublic(locale, 'Looking for a vehicle?'),
+    buyerText: translatePublic(locale, 'Broaden the search or adjust your filters.'),
+    searchEurope: translatePublic(locale, 'Search across all of Europe'),
+    clearFilters: translatePublic(locale, 'Clear filters'),
+  }
+}
+
+function emptyStateLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'de' || locale === 'at') return 'de-DE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl' || locale === 'be') return 'nl-NL'
+  return 'en-US'
 }
 
 function sortOptionLabel(value: string, fallback: string, locale: PublicLocale) {
@@ -2050,6 +2110,32 @@ export default function VehicleSearchExperience({
     region,
     mode,
   })
+  const emptyStateSubject = getMarketplaceEmptySubject({
+    locale,
+    make,
+    model,
+    bodyType,
+    selectedCategoryItems,
+  })
+  const emptyStateLocation = selectedMarketCodes.length || city || municipality || region ? resultLocationName : ''
+  const emptyStateCopy = getMarketplaceEmptyCopy(locale, emptyStateSubject, emptyStateLocation)
+  const createListingParams = new URLSearchParams()
+  if (activeCategoryKey && activeCategoryKey !== 'all') createListingParams.set('category', activeCategoryKey)
+  const createListingHref = localizePublicHref(
+    locale,
+    `/account/listings/new${createListingParams.toString() ? `?${createListingParams.toString()}` : ''}`,
+  )
+  const loginForListingHref = localizePublicHref(locale, `/login?next=${encodeURIComponent(createListingHref)}`)
+  function broadenSearchToEurope() {
+    setMarketOverride(true)
+    setSelectedMarkets([])
+    setRegion('')
+    setCity('')
+    setMunicipality('')
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
+  }
 
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
@@ -3238,7 +3324,7 @@ export default function VehicleSearchExperience({
                       ))}
                     </ol>
                   ) : (
-                    <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" data-marketplace-list-empty>
+                    <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" aria-label={seoLanding?.zeroResultsText || emptyStateCopy.title} data-marketplace-list-empty>
                       <div className="w-full overflow-hidden rounded-[8px] border border-[#dbe3ee] bg-white shadow-[0_10px_34px_rgba(16,24,40,.055)]">
                         <div className="grid min-h-[310px] grid-cols-[minmax(0,1fr)_260px] items-center gap-8 px-10 py-9 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:px-12">
                           <div className="min-w-0 text-left">
@@ -3247,20 +3333,39 @@ export default function VehicleSearchExperience({
                               {desktopListText.searchResults}
                             </span>
                             <p className="mt-4 max-w-[560px] text-[28px] font-semibold leading-[1.12] tracking-[-.035em] text-[#101828]">
-                              {seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}
+                              {emptyStateCopy.title}
                             </p>
                             <p className="mt-3 max-w-[570px] text-sm font-normal leading-6 text-[#667085]">
-                              {translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}
+                              {emptyStateCopy.sellerText}
                             </p>
                             <div className="mt-6 flex flex-wrap items-center gap-3">
-                              <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
-                                <X className="h-4 w-4" aria-hidden="true" />
-                                {desktopListText.clearAll}
-                              </button>
-                              <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
-                                <MapPin className="h-4 w-4" aria-hidden="true" />
-                                {desktopListText.showMap}
-                              </button>
+                              <Link href={createListingHref} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                                {emptyStateCopy.createLabel}
+                              </Link>
+                              <span className="text-xs font-medium text-[#667085]">
+                                {emptyStateCopy.quickStart}
+                              </span>
+                            </div>
+                            <p className="mt-3 text-xs font-medium text-[#667085]">
+                              {emptyStateCopy.loginIntro}{' '}
+                              <Link href={loginForListingHref} className="font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                                {emptyStateCopy.loginLabel}
+                              </Link>
+                            </p>
+                            <div className="mt-6 border-t border-[#edf1f6] pt-5">
+                              <p className="text-sm font-semibold text-[#101828]">{emptyStateCopy.buyerTitle}</p>
+                              <p className="mt-1 text-sm leading-6 text-[#667085]">{emptyStateCopy.buyerText}</p>
+                              <div className="mt-4 flex flex-wrap items-center gap-3">
+                                <button type="button" onClick={broadenSearchToEurope} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                  <Globe2 className="h-4 w-4" aria-hidden="true" />
+                                  {emptyStateCopy.searchEurope}
+                                </button>
+                                <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                  <X className="h-4 w-4" aria-hidden="true" />
+                                  {emptyStateCopy.clearFilters}
+                                </button>
+                              </div>
                             </div>
                           </div>
                           <div className="grid min-h-[220px] place-items-center border-l border-[#edf1f6] pl-8">
@@ -3553,20 +3658,44 @@ export default function VehicleSearchExperience({
                       className="h-auto w-[180px] max-w-[60vw] sm:w-[220px]"
                     />
                     <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
-                      {seoLanding?.zeroResultsText || translatePublic(locale, 'There do not seem to be any results.')}
+                      {emptyStateCopy.title}
                     </p>
                     <p className="mt-2 max-w-[420px] text-sm leading-6 text-[#667085] sm:text-base">
-                      {translatePublic(locale, 'Try searching for another location, another vehicle or another make.')}
+                      {emptyStateCopy.sellerText}
                     </p>
+                    <Link
+                      href={createListingHref}
+                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(8,102,255,.20)] transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      {emptyStateCopy.createLabel}
+                    </Link>
+                    <p className="mt-2 text-xs font-medium text-[#667085]">
+                      {emptyStateCopy.quickStart}
+                    </p>
+                    <p className="mt-3 text-xs font-medium text-[#667085]">
+                      {emptyStateCopy.loginIntro}{' '}
+                      <Link href={loginForListingHref} className="font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                        {emptyStateCopy.loginLabel}
+                      </Link>
+                    </p>
+                    <div className="mt-6 w-full border-t border-[#edf1f6] pt-5">
+                      <p className="text-sm font-semibold text-[#101828]">{emptyStateCopy.buyerTitle}</p>
+                      <p className="mt-1 text-sm leading-6 text-[#667085]">{emptyStateCopy.buyerText}</p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        setMarketOverride(true)
-                        setSelectedMarkets([])
-                      }}
+                      onClick={broadenSearchToEurope}
                       className="mt-5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4 sm:text-base"
                     >
-                      {translatePublic(locale, 'Search across all of Europe')}
+                      {emptyStateCopy.searchEurope}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="mt-3 text-sm font-semibold text-[#475467] transition hover:text-[#0866ff] hover:underline hover:underline-offset-4"
+                    >
+                      {emptyStateCopy.clearFilters}
                     </button>
                   </div>
                 </div>
