@@ -557,6 +557,8 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /fixed left-1\/2 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\] -translate-x-1\/2/)
   assert.match(vehicleSearchExperienceSource, /bottom-\[calc\(var\(--autorell-mobile-bottom-gap/)
   assert.match(vehicleSearchExperienceSource, /max\(0px,var\(--autorell-mobile-browser-inset,0px\)-env\(safe-area-inset-bottom\)\)/)
+  assert.match(vehicleSearchExperienceSource, /VehicleSearchFooter locale=\{locale\} \/>[\s\S]*h-\[calc\(var\(--autorell-mobile-bottom-gap/)
+  assert.match(vehicleSearchExperienceSource, /7\.25rem\)\] lg:hidden/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{\(\) => setMobileMapOpen\(true\)\}/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{saveCurrentSearch\}/)
   assert.match(vehicleSearchExperienceSource, /disabled=\{savingSearch\}/)

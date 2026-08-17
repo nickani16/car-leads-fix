@@ -3707,6 +3707,10 @@ export default function VehicleSearchExperience({
                 </div>
               ) : null}
               <VehicleSearchFooter locale={locale} />
+              <div
+                aria-hidden="true"
+                className="h-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+7.25rem)] lg:hidden"
+              />
             </div>
               </div>
             </div>
