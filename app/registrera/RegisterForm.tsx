@@ -366,18 +366,72 @@ const registrationFieldErrorCopy: Record<
 }
 
 const nationalIdPlaceholderCopy: Record<PublicLocale, string> = {
-  sv: 'Ange enligt landets officiella format',
-  en: 'Use your country’s official format',
-  de: 'Amtliches Format Ihres Landes verwenden',
-  at: 'Amtliches Format Ihres Landes verwenden',
-  be: 'Gebruik het officiële formaat van je land',
-  fr: 'Utilisez le format officiel de votre pays',
-  es: 'Usa el formato oficial de tu país',
-  it: 'Usa il formato ufficiale del tuo paese',
-  pl: 'Użyj oficjalnego formatu swojego kraju',
-  nl: 'Gebruik het officiële formaat van je land',
-  fi: 'Käytä maasi virallista muotoa',
-  da: 'Brug dit lands officielle format',
+  sv: 'Personnummer enligt svenskt format',
+  en: 'Personal ID in your country’s format',
+  de: 'Persönliche ID im Format Ihres Landes',
+  at: 'Persönliche ID im Format Ihres Landes',
+  be: 'Persoonlijk ID in het formaat van je land',
+  fr: 'Identifiant personnel au format de votre pays',
+  es: 'ID personal en el formato de tu país',
+  it: 'ID personale nel formato del tuo paese',
+  pl: 'Identyfikator osobisty w formacie kraju',
+  nl: 'Persoonlijk ID in het formaat van je land',
+  fi: 'Henkilötunnus maasi muodossa',
+  da: 'Personligt ID i dit lands format',
+}
+
+const nationalIdGuidanceCopy: Record<
+  PublicLocale,
+  { nationalId: string; nationalIdHelper: string }
+> = {
+  sv: {
+    nationalId: 'Personnummer',
+    nationalIdHelper: 'Används bara för kontosäkerhet och kontroll. Om uppgiften behöver granskas kan du ändå fortsätta. Visas aldrig offentligt.',
+  },
+  en: {
+    nationalId: 'Personal ID number',
+    nationalIdHelper: 'Used only for account security and verification. If it needs review, you can still continue. Never shown publicly.',
+  },
+  de: {
+    nationalId: 'Persönliche Identifikationsnummer',
+    nationalIdHelper: 'Wird nur für Kontosicherheit und Prüfung verwendet. Wenn eine Prüfung nötig ist, können Sie trotzdem fortfahren. Wird nie öffentlich angezeigt.',
+  },
+  at: {
+    nationalId: 'Persönliche Identifikationsnummer',
+    nationalIdHelper: 'Wird nur für Kontosicherheit und Prüfung verwendet. Wenn eine Prüfung nötig ist, können Sie trotzdem fortfahren. Wird nie öffentlich angezeigt.',
+  },
+  be: {
+    nationalId: 'Persoonlijk identificatienummer',
+    nationalIdHelper: 'Alleen gebruikt voor accountbeveiliging en controle. Als controle nodig is, kun je toch doorgaan. Wordt nooit openbaar getoond.',
+  },
+  fr: {
+    nationalId: 'Numéro d’identification personnel',
+    nationalIdHelper: 'Utilisé uniquement pour la sécurité du compte et la vérification. Si un examen est nécessaire, vous pouvez continuer. Jamais affiché publiquement.',
+  },
+  es: {
+    nationalId: 'Número de identificación personal',
+    nationalIdHelper: 'Solo se usa para seguridad y verificación de la cuenta. Si necesita revisión, puedes continuar. Nunca se muestra públicamente.',
+  },
+  it: {
+    nationalId: 'Numero identificativo personale',
+    nationalIdHelper: 'Usato solo per sicurezza e verifica dell’account. Se serve una revisione, puoi comunque continuare. Non viene mai mostrato pubblicamente.',
+  },
+  pl: {
+    nationalId: 'Osobisty numer identyfikacyjny',
+    nationalIdHelper: 'Używany tylko do bezpieczeństwa i weryfikacji konta. Jeśli wymaga sprawdzenia, nadal możesz kontynuować. Nigdy nie jest publiczny.',
+  },
+  nl: {
+    nationalId: 'Persoonlijk identificatienummer',
+    nationalIdHelper: 'Alleen gebruikt voor accountbeveiliging en controle. Als controle nodig is, kun je toch doorgaan. Wordt nooit openbaar getoond.',
+  },
+  fi: {
+    nationalId: 'Henkilötunnus',
+    nationalIdHelper: 'Käytetään vain tilin turvallisuuteen ja tarkistukseen. Jos tieto vaatii tarkistuksen, voit silti jatkaa. Ei näy julkisesti.',
+  },
+  da: {
+    nationalId: 'Personligt identifikationsnummer',
+    nationalIdHelper: 'Bruges kun til kontosikkerhed og kontrol. Hvis oplysningerne skal gennemgås, kan du stadig fortsætte. Vises aldrig offentligt.',
+  },
 }
 
 const birthDateGuidanceCopy: Record<
@@ -581,6 +635,8 @@ export default function RegisterForm({
               autoComplete="off"
               placeholder={countryCode === 'SE' ? 'ÅÅMMDD-XXXX eller YYYYMMDD-XXXX' : nationalIdPlaceholderCopy[locale]}
               helper={copy.nationalIdHelper}
+              spellCheck={false}
+              autoCapitalize="off"
               required
             />
           ) : (
@@ -761,7 +817,7 @@ function Field({
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <input
         {...inputProps}
-        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
@@ -886,9 +942,8 @@ function getRegisterFormCopy(locale: PublicLocale) {
     birthDatePrivateHelper: 'Choose your date of birth. You must be at least 18 years old.',
     birthDateBusinessHelper: 'Optional for business accounts. If provided, you must be at least 18 years old.',
     birthDateRequired: 'Choose your date of birth to continue.',
-    nationalId: 'National identity number',
-    nationalIdHelper:
-      'Checked against the country format. If the format needs review, the account can still continue. The number is never shown publicly.',
+    nationalId: nationalIdGuidanceCopy.en.nationalId,
+    nationalIdHelper: nationalIdGuidanceCopy.en.nationalIdHelper,
     companyName: 'Company name',
     registrationNumber: 'Registration number',
     vatNumber: 'VAT number',
@@ -936,9 +991,8 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDatePrivateHelper: 'Välj ditt födelsedatum. Du måste vara minst 18 år.',
       birthDateBusinessHelper: 'Valfritt för företagskonto. Om det anges måste du vara minst 18 år.',
       birthDateRequired: 'Välj ditt födelsedatum för att fortsätta.',
-      nationalId: 'Nationellt identitetsnummer',
-      nationalIdHelper:
-        'Kontrolleras mot landets format. Om formatet behöver granskas kan kontot ändå fortsätta. Numret visas aldrig publikt.',
+      nationalId: nationalIdGuidanceCopy.sv.nationalId,
+      nationalIdHelper: nationalIdGuidanceCopy.sv.nationalIdHelper,
       companyName: 'Företagsnamn',
       registrationNumber: 'Organisationsnummer',
       vatNumber: 'VAT-nummer',
@@ -987,9 +1041,8 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDatePrivateHelper: 'Wählen Sie Ihr Geburtsdatum. Sie müssen mindestens 18 Jahre alt sein.',
       birthDateBusinessHelper: 'Für Unternehmenskonten optional. Bei Angabe müssen Sie mindestens 18 Jahre alt sein.',
       birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.',
-      nationalId: 'Nationale Identifikationsnummer',
-      nationalIdHelper:
-        'Wird gegen das Länderformat geprüft. Wenn das Format geprüft werden muss, kann das Konto trotzdem fortfahren. Die Nummer wird nie öffentlich angezeigt.',
+      nationalId: nationalIdGuidanceCopy.de.nationalId,
+      nationalIdHelper: nationalIdGuidanceCopy.de.nationalIdHelper,
       companyName: 'Firmenname',
       registrationNumber: 'Handelsregisternummer',
       vatNumber: 'USt-IdNr.',
@@ -1025,5 +1078,6 @@ function getRegisterFormCopy(locale: PublicLocale) {
   return {
     ...translatePublicObject(locale, en),
     ...birthDateGuidanceCopy[locale],
+    ...nationalIdGuidanceCopy[locale],
   }
 }
