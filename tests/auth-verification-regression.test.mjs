@@ -14,6 +14,18 @@ const registerForm = readFileSync(
   new URL('../app/registrera/RegisterForm.tsx', import.meta.url),
   'utf8',
 )
+const accountPage = readFileSync(
+  new URL('../app/konto/page.tsx', import.meta.url),
+  'utf8',
+)
+const accountSettingsPage = readFileSync(
+  new URL('../app/account/settings/page.tsx', import.meta.url),
+  'utf8',
+)
+const emailVerification = readFileSync(
+  new URL('../lib/email-verification.ts', import.meta.url),
+  'utf8',
+)
 
 test('email login codes are consumed atomically before session creation', () => {
   assert.match(emailCodeVerifyApi, /const consumedAt = new Date\(\)\.toISOString\(\)/)
@@ -42,6 +54,17 @@ test('marketplace profile creation requires a confirmed email session', () => {
   assert.match(registerApi, /Bekr.*mejladressen med koden/)
   assert.match(registerApi, /\{ status: 403 \}/)
   assert.match(registerApi, /verified_at: user\.email_confirmed_at/)
+})
+
+test('account profile treats confirmed Supabase email as verified', () => {
+  assert.match(emailVerification, /hasConfirmedSupabaseEmail/)
+  assert.match(emailVerification, /user\?\.email_confirmed_at/)
+  assert.match(emailVerification, /normalizeEmail\(user\.email\) === normalizedEmail/)
+  assert.match(emailVerification, /hasConfirmedSupabaseEmail\(user, email\) \|\| \(await hasVerifiedEmailCode\(email\)\)/)
+  assert.match(accountPage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
+  assert.match(accountSettingsPage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
+  assert.doesNotMatch(accountPage, /hasVerifiedEmailCode\(profile\.email\)/)
+  assert.doesNotMatch(accountSettingsPage, /hasVerifiedEmailCode\(profile\.email\)/)
 })
 
 test('private registration can continue when Swedish national id needs manual review', () => {
