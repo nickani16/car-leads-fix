@@ -16,6 +16,7 @@ import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import CountryFlag from './CountryFlag'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
@@ -32,7 +33,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { countryForLocale } from '@/lib/market-locale'
-import { formatMileageAsMil } from '@/lib/listing-display'
+import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
@@ -503,8 +504,11 @@ type HomeListingCardItem = {
   imageUrl: string | null
   imageUrls: string[]
   priceLabel: string
-  meta: string
+  location: string
   countryCode: string
+  countryLabel: string
+  specChips: string[]
+  sellerTypeLabel: string
   offerType: string | null
   insuranceOfferLabel: string | null
   sellerTrust: 'verified' | 'unverified'
@@ -1420,7 +1424,7 @@ function HomeListingSection({
         </Link>
       </div>
       {section.items.length ? (
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
           {section.items.map((item, index) => (
             <HomeListingCard
               key={`${section.title}-${item.id}`}
@@ -1451,8 +1455,8 @@ function HomeListingCard({
   const offerBadge = homeListingOfferBadge(locale, item.offerType)
 
   return (
-    <article className={`group relative overflow-hidden rounded-[12px] border border-[#d8e0ec] bg-white shadow-sm ${className}`}>
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#eef3f8] sm:aspect-[16/10]">
+    <article className={`group relative min-w-0 bg-white ${className}`}>
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#eef3f8]">
         {item.imageUrls.length ? (
           <ListingCardImageCarousel
             images={item.imageUrls}
@@ -1478,23 +1482,41 @@ function HomeListingCard({
           </span>
         ) : null}
       </div>
-      <div className="p-3">
-        <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+      <div className="min-w-0 pt-3">
+        <span className={`mb-2 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
           {offerBadge.label}
         </span>
         <Link href={item.href} className="block">
-          <h3 className="line-clamp-2 text-[15px] font-medium leading-5 text-[#101828] transition hover:text-[#0866ff]">
+          <h3 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#101828] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
             {item.title}
           </h3>
         </Link>
-        <p className="mt-2 text-[14px] font-semibold text-[#101828]">{item.priceLabel}</p>
+        <p className="mt-1 line-clamp-1 text-[13px] font-light leading-5 text-[#667085] sm:text-[14px]">
+          {item.location}
+        </p>
+        <p className="mt-2 text-[17px] font-semibold leading-6 text-[#101828] no-underline [text-decoration:none] sm:text-[18px]">
+          {item.priceLabel}
+        </p>
         {item.insuranceOfferLabel ? (
           <span className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 text-[11px] font-medium leading-4 text-[#344054]">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
             <span className="truncate">{item.insuranceOfferLabel}</span>
           </span>
         ) : null}
-        <p className="mt-1 line-clamp-1 text-[12px] font-medium text-[#667085]">{item.meta}</p>
+        <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+          {item.specChips.map((chip) => (
+            <span key={chip} className="max-w-full truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+              {chip}
+            </span>
+          ))}
+          <span className="max-w-full truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+            {item.sellerTypeLabel}
+          </span>
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+            <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+            <span className="truncate">{item.countryLabel}</span>
+          </span>
+        </div>
       </div>
     </article>
   )
@@ -1556,7 +1578,10 @@ type HomeListingSource = {
   model: string | null
   model_year: number | string | null
   mileage_km: number | string | null
+  fuel_type?: string | null
+  gearbox?: string | null
   city: string | null
+  municipality?: string | null
   country_code: string
   price: number | string | null
   currency: string | null
@@ -1569,6 +1594,7 @@ type HomeListingSource = {
   boost_started_at?: string | null
   boost_expires_at?: string | null
   offer_type?: string | null
+  seller_type?: string | null
   insurance_offers?: unknown
 }
 
@@ -1579,18 +1605,19 @@ async function mapHomeListingCard(
   sellerTrust: 'verified' | 'unverified',
 ): Promise<HomeListingCardItem> {
   const countryName = getEuCountryName(listing.country_code, locale)
-  const location = [listing.city, countryName]
+  const location = Array.from(new Set([listing.city, listing.municipality, countryName].filter(Boolean)))
     .filter(Boolean)
     .join(', ')
   const price = Number(listing.price)
   const mileage = Number(listing.mileage_km)
-  const vehicleMeta = [
+  const specChips = [
     listing.model_year ? String(listing.model_year) : null,
     Number.isFinite(mileage) ? formatMileageAsMil(mileage, locale) : null,
-    location || countryName,
+    listing.fuel_type ? translateListingVehicleValue(locale, listing.fuel_type) : null,
+    listing.gearbox ? translateListingVehicleValue(locale, listing.gearbox) : null,
   ]
     .filter(Boolean)
-    .join(' | ')
+    .filter((item): item is string => typeof item === 'string' && Boolean(item))
 
   return {
     id: listing.id,
@@ -1606,14 +1633,25 @@ async function mapHomeListingCard(
           targetCurrency: displayCurrency,
         })).label
       : translatePublic(locale, 'Price on request'),
-    meta: vehicleMeta,
+    location: location || countryName,
     countryCode: listing.country_code,
+    countryLabel: countryName,
+    specChips,
+    sellerTypeLabel: homeSellerTypeLabel(locale, listing.seller_type),
     offerType: listing.offer_type || 'sale',
     insuranceOfferLabel: homeInsuranceOfferLabel(locale, listing.insurance_offers, listing.country_code),
     sellerTrust,
     isFeatured: isActiveWindow(listing.featured_status, listing.featured_started_at, listing.featured_expires_at),
     isTopPlacement: isActiveWindow(listing.boost_status, listing.boost_started_at, listing.boost_expires_at),
   }
+}
+
+function homeSellerTypeLabel(locale: PublicLocale, sellerType?: string | null) {
+  const isBusiness = sellerType === 'business'
+  if (locale === 'sv') return isBusiness ? 'Företagssäljare' : 'Privat säljare'
+  if (locale === 'de' || locale === 'at') return isBusiness ? 'Gewerblicher Verkäufer' : 'Privatverkäufer'
+  if (locale === 'en') return isBusiness ? 'Business seller' : 'Private seller'
+  return translatePublic(locale, isBusiness ? 'Business seller' : 'Private seller')
 }
 
 function homeListingOfferBadge(locale: PublicLocale, offerType?: string | null) {
