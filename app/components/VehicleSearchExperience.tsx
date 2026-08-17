@@ -3716,7 +3716,9 @@ export default function VehicleSearchExperience({
             <div
               ref={mobileShortcutBarRef}
               className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(356px,calc(100vw-24px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
-                compareIds.length ? 'bottom-[calc(10.35rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'
+                compareIds.length
+                  ? 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+6.05rem)]'
+                  : 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+3.75rem)]'
               }`}
               aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
               data-autorell-floating-shortcuts-tone={mobileShortcutOverMedia ? 'light' : 'dark'}

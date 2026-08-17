@@ -731,6 +731,32 @@ export default function PublicHeader({
   }, [activePathname, isMarketplaceRoute])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+    const updateMobileBottomInset = () => {
+      const viewport = window.visualViewport
+      const browserToolbarInset = viewport
+        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        : 0
+      root.style.setProperty('--autorell-mobile-browser-inset', `${Math.round(browserToolbarInset)}px`)
+    }
+
+    updateMobileBottomInset()
+    window.visualViewport?.addEventListener('resize', updateMobileBottomInset)
+    window.visualViewport?.addEventListener('scroll', updateMobileBottomInset)
+    window.addEventListener('resize', updateMobileBottomInset)
+    window.addEventListener('orientationchange', updateMobileBottomInset)
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateMobileBottomInset)
+      window.visualViewport?.removeEventListener('scroll', updateMobileBottomInset)
+      window.removeEventListener('resize', updateMobileBottomInset)
+      window.removeEventListener('orientationchange', updateMobileBottomInset)
+      root.style.removeProperty('--autorell-mobile-browser-inset')
+    }
+  }, [])
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setHeaderAccount(readCachedHeaderAccount())
     }, 0)
@@ -2442,7 +2468,7 @@ export default function PublicHeader({
       ) : null}
       <nav
         ref={mobileBottomNavRef}
-        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[calc(8px+env(safe-area-inset-bottom))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
+        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
           lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}

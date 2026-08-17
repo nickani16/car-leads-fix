@@ -538,8 +538,8 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
   assert.match(vehicleSearchExperienceSource, /grid grid-cols-\[minmax\(0,\.9fr\)_minmax\(0,1\.1fr\)\]/)
   assert.match(vehicleSearchExperienceSource, /className="hidden min-w-\[860px\] sm:block"/)
   assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
-  assert.match(vehicleSearchExperienceSource, /fixed inset-x-3 bottom-\[calc\(5\.15rem\+env\(safe-area-inset-bottom\)\)\]/)
-  assert.match(vehicleSearchExperienceSource, /compareIds\.length \? 'bottom-\[calc\(10\.35rem\+env\(safe-area-inset-bottom\)\)\]'/)
+  assert.match(vehicleSearchExperienceSource, /--autorell-mobile-bottom-gap/)
+  assert.match(vehicleSearchExperienceSource, /--autorell-mobile-browser-inset/)
   assert.match(vehicleSearchExperienceSource, /gridTemplateColumns: `minmax\(150px, \.55fr\) repeat\(\$\{compareListings\.length\}, minmax\(170px, 1fr\)\)`/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /sticky left-0 top-0 z-20/)
   assert.match(vehicleSearchExperienceSource, /copy\.price/)
@@ -555,6 +555,8 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
 test('marketplace mobile shortcuts use existing map, saved search and sorting controls', () => {
   assert.match(vehicleSearchExperienceSource, /aria-label=\{uiText\(locale, 'Marketplace shortcuts'/)
   assert.match(vehicleSearchExperienceSource, /fixed left-1\/2 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\] -translate-x-1\/2/)
+  assert.match(vehicleSearchExperienceSource, /bottom-\[calc\(var\(--autorell-mobile-bottom-gap/)
+  assert.match(vehicleSearchExperienceSource, /max\(0px,var\(--autorell-mobile-browser-inset,0px\)-env\(safe-area-inset-bottom\)\)/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{\(\) => setMobileMapOpen\(true\)\}/)
   assert.match(vehicleSearchExperienceSource, /onClick=\{saveCurrentSearch\}/)
   assert.match(vehicleSearchExperienceSource, /disabled=\{savingSearch\}/)
@@ -583,6 +585,11 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
 
 test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
   assert.match(publicHeaderSource, /fixed bottom-0 left-1\/2 z-\[120\] -translate-x-1\/2/)
+  assert.match(publicHeaderSource, /--autorell-mobile-browser-inset/)
+  assert.match(publicHeaderSource, /--autorell-mobile-bottom-gap/)
+  assert.match(publicHeaderSource, /window\.visualViewport\?\.addEventListener\('resize', updateMobileBottomInset\)/)
+  assert.match(publicHeaderSource, /window\.visualViewport\?\.addEventListener\('scroll', updateMobileBottomInset\)/)
+  assert.match(publicHeaderSource, /pb-\[var\(--autorell-mobile-bottom-gap/)
   assert.match(publicHeaderSource, /mobileNavOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
   assert.match(publicHeaderSource, /'border border-\[#101828\]\/10 bg-white\/72 supports-\[backdrop-filter\]:bg-white\/64'/)
   assert.match(publicHeaderSource, /data-autorell-mobile-nav-tone=\{mobileNavOverMedia \? 'light' : 'dark'\}/)
