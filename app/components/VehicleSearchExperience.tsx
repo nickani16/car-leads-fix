@@ -3716,7 +3716,7 @@ export default function VehicleSearchExperience({
           {!mobileMapOpen ? (
             <div
               ref={mobileShortcutBarRef}
-              className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(560px,calc(100vw-24px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
+              className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(960px,calc(100vw-32px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
                 compareIds.length
                   ? 'bottom-[calc(var(--autorell-mobile-bottom-gap,20px)+6.05rem)]'
                   : 'bottom-[calc(var(--autorell-mobile-bottom-gap,20px)+3.75rem)]'
