@@ -1022,10 +1022,6 @@ function getMarketplaceEmptyCopy(locale: PublicLocale, subject: string, location
     quickStart: translatePublic(locale, 'It only takes a few minutes to get started.'),
     loginIntro: translatePublic(locale, 'Already have an account?'),
     loginLabel: translatePublic(locale, 'Log in'),
-    buyerTitle: translatePublic(locale, 'Looking for a vehicle?'),
-    buyerText: translatePublic(locale, 'Broaden the search or adjust your filters.'),
-    searchEurope: translatePublic(locale, 'Search across all of Europe'),
-    clearFilters: translatePublic(locale, 'Clear filters'),
   }
 }
 
@@ -2126,17 +2122,6 @@ export default function VehicleSearchExperience({
     `/account/listings/new${createListingParams.toString() ? `?${createListingParams.toString()}` : ''}`,
   )
   const loginForListingHref = localizePublicHref(locale, `/login?next=${encodeURIComponent(createListingHref)}`)
-  function broadenSearchToEurope() {
-    setMarketOverride(true)
-    setSelectedMarkets([])
-    setRegion('')
-    setCity('')
-    setMunicipality('')
-    setGeoAreaId('')
-    setGeoBounds(null)
-    setGeoFilterMode('legacy')
-  }
-
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
@@ -3335,11 +3320,11 @@ export default function VehicleSearchExperience({
                             <p className="mt-4 max-w-[560px] text-[28px] font-semibold leading-[1.12] tracking-[-.035em] text-[#101828]">
                               {emptyStateCopy.title}
                             </p>
-                            <p className="mt-3 max-w-[570px] text-sm font-normal leading-6 text-[#667085]">
+                            <p className="mt-3 max-w-[500px] text-[13px] font-normal leading-5 text-[#667085]">
                               {emptyStateCopy.sellerText}
                             </p>
                             <div className="mt-6 flex flex-wrap items-center gap-3">
-                              <Link href={createListingHref} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                              <Link href={createListingHref} className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                                 {emptyStateCopy.createLabel}
                               </Link>
@@ -3353,20 +3338,6 @@ export default function VehicleSearchExperience({
                                 {emptyStateCopy.loginLabel}
                               </Link>
                             </p>
-                            <div className="mt-6 border-t border-[#edf1f6] pt-5">
-                              <p className="text-sm font-semibold text-[#101828]">{emptyStateCopy.buyerTitle}</p>
-                              <p className="mt-1 text-sm leading-6 text-[#667085]">{emptyStateCopy.buyerText}</p>
-                              <div className="mt-4 flex flex-wrap items-center gap-3">
-                                <button type="button" onClick={broadenSearchToEurope} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
-                                  <Globe2 className="h-4 w-4" aria-hidden="true" />
-                                  {emptyStateCopy.searchEurope}
-                                </button>
-                                <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-[#b9c5d6] bg-white px-5 text-[12px] font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
-                                  <X className="h-4 w-4" aria-hidden="true" />
-                                  {emptyStateCopy.clearFilters}
-                                </button>
-                              </div>
-                            </div>
                           </div>
                           <div className="grid min-h-[220px] place-items-center border-l border-[#edf1f6] pl-8">
                             <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={240} height={166} className="h-auto w-[220px]" />
@@ -3660,12 +3631,12 @@ export default function VehicleSearchExperience({
                     <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
                       {emptyStateCopy.title}
                     </p>
-                    <p className="mt-2 max-w-[420px] text-sm leading-6 text-[#667085] sm:text-base">
+                    <p className="mt-2 max-w-[380px] text-[13px] leading-5 text-[#667085]">
                       {emptyStateCopy.sellerText}
                     </p>
                     <Link
                       href={createListingHref}
-                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(8,102,255,.20)] transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
                     >
                       <Plus className="h-4 w-4" aria-hidden="true" />
                       {emptyStateCopy.createLabel}
@@ -3679,24 +3650,6 @@ export default function VehicleSearchExperience({
                         {emptyStateCopy.loginLabel}
                       </Link>
                     </p>
-                    <div className="mt-6 w-full border-t border-[#edf1f6] pt-5">
-                      <p className="text-sm font-semibold text-[#101828]">{emptyStateCopy.buyerTitle}</p>
-                      <p className="mt-1 text-sm leading-6 text-[#667085]">{emptyStateCopy.buyerText}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={broadenSearchToEurope}
-                      className="mt-5 text-sm font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4 sm:text-base"
-                    >
-                      {emptyStateCopy.searchEurope}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetFilters}
-                      className="mt-3 text-sm font-semibold text-[#475467] transition hover:text-[#0866ff] hover:underline hover:underline-offset-4"
-                    >
-                      {emptyStateCopy.clearFilters}
-                    </button>
                   </div>
                 </div>
               )}
