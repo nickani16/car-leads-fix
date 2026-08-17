@@ -65,6 +65,7 @@ import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import { applyMarketplaceSearchModeParams } from '@/lib/marketplace-search-seo'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
+import { translateListingEquipmentValue } from '@/lib/listing-equipment'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
@@ -412,13 +413,14 @@ function normalizeSearchMode(value?: string | null): SearchMode {
   return 'all'
 }
 
-function listingEquipmentChips(equipment: string | null | undefined) {
+function listingEquipmentChips(equipment: string | null | undefined, locale: PublicLocale) {
   return Array.from(
     new Set(
       (equipment || '')
         .split(/[,;\n|]+/)
         .map((item) => item.trim())
         .filter(Boolean)
+        .map((item) => translateListingEquipmentValue(locale, item) || item)
         .filter((item) => item.length <= 28),
     ),
   ).slice(0, 2)
@@ -3150,7 +3152,7 @@ export default function VehicleSearchExperience({
                     <ol className="mx-auto max-w-[1180px] space-y-3">
                       {filteredListings.map((listing) => (
                         <li key={listing.id}>
-                          <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
+                          <MarketplaceDesktopListingRow listing={listing} locale={locale} offerBadge={listingOfferBadge(locale, listing)} insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)} equipmentChips={listingEquipmentChips(listing.equipment, locale)} compareActive={compareIds.includes(listing.id)} onCompare={() => toggleCompare(listing.id)} onBeforeNavigate={rememberSearchBeforeListingNavigation} />
                         </li>
                       ))}
                     </ol>
@@ -4843,7 +4845,7 @@ function VehicleResultCard({
   const location = Array.from(new Set([listing.city, listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean)))
     .join(', ')
   const subtitle = location
-  const equipmentChips = listingEquipmentChips(listing.equipment)
+  const equipmentChips = listingEquipmentChips(listing.equipment, locale)
   const sellerTypeLabel = listing.sellerIsTrader
     ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
     : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')

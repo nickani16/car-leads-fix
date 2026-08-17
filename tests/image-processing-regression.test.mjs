@@ -192,6 +192,12 @@ test('marketplace result cards only show seller trust when verified', () => {
   assert.doesNotMatch(vehicleSearchExperienceSource, /sellerTrustClass/)
 })
 
+test('marketplace equipment chips are translated for the active locale', () => {
+  assert.match(vehicleSearchExperienceSource, /translateListingEquipmentValue\(locale, item\) \|\| item/)
+  assert.match(vehicleSearchExperienceSource, /listingEquipmentChips\(listing\.equipment, locale\)/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /equipmentChips=\{listingEquipmentChips\(listing\.equipment\)\}/)
+})
+
 function loadImageProcessingModule() {
   const sanitizedSource = processingSource.replace(/import 'server-only'\r?\n/, '')
   const transpiled = ts.transpileModule(sanitizedSource, {

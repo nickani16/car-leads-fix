@@ -55,6 +55,7 @@ import { selectedEquipmentGroups, translateListingEquipmentValue } from '@/lib/l
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import { cleanSeoText } from '@/lib/market-seo'
 import { publicSellerName } from '@/lib/public-seller'
+import { hasVerifiedAccountEmail } from '@/lib/email-verification'
 import {
   getListingHistory,
   getListingMarketInsights,
@@ -1603,7 +1604,7 @@ async function getSellerDetails(
   const [{ data: profile }, { data: reviews }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('user_id,company_id,website_url,logo_url,identity_status,business_verification_status,address_line_1,postal_code,city,region,created_at')
+      .select('user_id,company_id,email,website_url,logo_url,identity_status,business_verification_status,risk_status,address_line_1,postal_code,city,region,created_at')
       .eq('user_id', listing.seller_user_id)
       .maybeSingle(),
     admin
@@ -1662,7 +1663,15 @@ async function getSellerDetails(
     }
   }
 
-  const verified = profile?.identity_status === 'verified' || profile?.identity_status === 'format_validated'
+  const authUser = await admin.auth.admin
+    .getUserById(listing.seller_user_id)
+    .then((result) => result.data.user)
+    .catch(() => null)
+  const identityStatus = String(profile?.identity_status || '')
+  const riskOk = !['restricted', 'blocked', 'suspended'].includes(String(profile?.risk_status || '')) && identityStatus !== 'rejected'
+  const identityApproved = ['verified', 'format_validated'].includes(identityStatus)
+  const emailVerified = await hasVerifiedAccountEmail(profile?.email, authUser)
+  const verified = riskOk && (identityApproved || emailVerified)
   return verified
     ? {
         ...base,

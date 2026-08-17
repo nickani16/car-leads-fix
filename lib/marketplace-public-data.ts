@@ -6,6 +6,7 @@ import {
 } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import { createAdminClient } from './supabase/admin'
+import { hasVerifiedAccountEmail } from './email-verification'
 
 const publicListingTtl = 300
 
@@ -406,9 +407,10 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
   const ids = [...new Set(userIds.filter(Boolean))]
   if (!ids.length) return new Map<string, 'verified' | 'unverified'>()
 
-  const { data } = await createAdminClient()
+  const admin = createAdminClient()
+  const { data } = await admin
     .from('marketplace_profiles')
-    .select('user_id,account_type,identity_status,business_verification_status')
+    .select('user_id,email,account_type,identity_status,business_verification_status,risk_status')
     .in('user_id', ids)
 
   const trust = new Map<string, 'verified' | 'unverified'>()
@@ -416,9 +418,7 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
     const businessVerified =
       profile.account_type === 'business' &&
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
-    const privateVerified =
-      profile.account_type !== 'business' &&
-      ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
+    const privateVerified = profile.account_type !== 'business' && await isPrivateSellerTrusted(admin, profile)
     trust.set(profile.user_id, businessVerified || privateVerified ? 'verified' : 'unverified')
   }
   return trust
@@ -430,12 +430,13 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     return new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified'; ratingAverage: number | null; ratingCount: number }>()
   }
 
-  const { data } = await createAdminClient()
+  const admin = createAdminClient()
+  const { data } = await admin
     .from('marketplace_profiles')
-    .select('user_id,account_type,identity_status,business_verification_status,logo_url')
+    .select('user_id,email,account_type,identity_status,business_verification_status,risk_status,logo_url')
     .in('user_id', ids)
 
-  const { data: reviewData } = await createAdminClient()
+  const { data: reviewData } = await admin
     .from('marketplace_reviews')
     .select('reviewee_id,rating')
     .in('reviewee_id', ids)
@@ -456,9 +457,7 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     const businessVerified =
       profile.account_type === 'business' &&
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
-    const privateVerified =
-      profile.account_type !== 'business' &&
-      ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
+    const privateVerified = profile.account_type !== 'business' && await isPrivateSellerTrusted(admin, profile)
     const stats = reviewStats.get(profile.user_id)
     profiles.set(profile.user_id, {
       logoUrl: typeof profile.logo_url === 'string' && profile.logo_url ? profile.logo_url : null,
@@ -468,4 +467,24 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     })
   }
   return profiles
+}
+
+async function isPrivateSellerTrusted(
+  admin: ReturnType<typeof createAdminClient>,
+  profile: { user_id: string; email?: string | null; identity_status?: string | null; risk_status?: string | null },
+) {
+  const identityStatus = String(profile.identity_status || '')
+  const riskOk = !['restricted', 'blocked', 'suspended'].includes(String(profile.risk_status || '')) && identityStatus !== 'rejected'
+  if (!riskOk) return false
+
+  if (['verified', 'format_validated'].includes(identityStatus)) {
+    return true
+  }
+
+  const authUser = await admin.auth.admin
+    .getUserById(profile.user_id)
+    .then((result) => result.data.user)
+    .catch(() => null)
+
+  return hasVerifiedAccountEmail(profile.email, authUser)
 }

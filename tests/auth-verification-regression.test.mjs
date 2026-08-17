@@ -26,6 +26,14 @@ const emailVerification = readFileSync(
   new URL('../lib/email-verification.ts', import.meta.url),
   'utf8',
 )
+const listingDetailPage = readFileSync(
+  new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url),
+  'utf8',
+)
+const marketplacePublicData = readFileSync(
+  new URL('../lib/marketplace-public-data.ts', import.meta.url),
+  'utf8',
+)
 
 test('email login codes are consumed atomically before session creation', () => {
   assert.match(emailCodeVerifyApi, /const consumedAt = new Date\(\)\.toISOString\(\)/)
@@ -65,6 +73,16 @@ test('account profile treats confirmed Supabase email as verified', () => {
   assert.match(accountSettingsPage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
   assert.doesNotMatch(accountPage, /hasVerifiedEmailCode\(profile\.email\)/)
   assert.doesNotMatch(accountSettingsPage, /hasVerifiedEmailCode\(profile\.email\)/)
+})
+
+test('public private seller trust follows verified email and risk status', () => {
+  assert.match(listingDetailPage, /hasVerifiedAccountEmail\(profile\?\.email, authUser\)/)
+  assert.match(listingDetailPage, /const verified = riskOk && \(identityApproved \|\| emailVerified\)/)
+  assert.match(marketplacePublicData, /select\('user_id,email,account_type,identity_status,business_verification_status,risk_status/)
+  assert.match(marketplacePublicData, /isPrivateSellerTrusted\(admin, profile\)/)
+  assert.match(marketplacePublicData, /hasVerifiedAccountEmail\(profile\.email, authUser\)/)
+  assert.match(marketplacePublicData, /identityStatus !== 'rejected'/)
+  assert.match(listingDetailPage, /identityStatus !== 'rejected'/)
 })
 
 test('private registration can continue when Swedish national id needs manual review', () => {
