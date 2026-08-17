@@ -739,7 +739,10 @@ export default function PublicHeader({
       const browserToolbarInset = viewport
         ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
         : 0
-      root.style.setProperty('--autorell-mobile-browser-inset', `${Math.round(browserToolbarInset)}px`)
+      const roundedBrowserToolbarInset = Math.round(browserToolbarInset)
+      const browserChromeVisible = roundedBrowserToolbarInset > 24
+      root.style.setProperty('--autorell-mobile-browser-inset', `${roundedBrowserToolbarInset}px`)
+      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '8px' : '20px')
     }
 
     updateMobileBottomInset()
@@ -753,6 +756,7 @@ export default function PublicHeader({
       window.removeEventListener('resize', updateMobileBottomInset)
       window.removeEventListener('orientationchange', updateMobileBottomInset)
       root.style.removeProperty('--autorell-mobile-browser-inset')
+      root.style.removeProperty('--autorell-mobile-bottom-gap')
     }
   }, [])
 
@@ -2468,7 +2472,7 @@ export default function PublicHeader({
       ) : null}
       <nav
         ref={mobileBottomNavRef}
-        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,calc(20px+min(24px,max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom)))))] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
+        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,20px)] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
           lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
