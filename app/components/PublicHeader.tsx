@@ -748,7 +748,7 @@ export default function PublicHeader({
       const viewportShortBySession = largestViewportHeight > 0 && viewportHeight < largestViewportHeight - 48
       const browserChromeVisible = roundedBrowserToolbarInset > 24 || viewportShortByScreen || viewportShortBySession
       root.style.setProperty('--autorell-mobile-browser-inset', `${roundedBrowserToolbarInset}px`)
-      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '0px' : '20px')
+      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '12px' : '20px')
     }
 
     updateMobileBottomInset()
