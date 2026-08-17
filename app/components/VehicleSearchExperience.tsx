@@ -1245,6 +1245,10 @@ export default function VehicleSearchExperience({
   const [listOfferTypeOpen, setListOfferTypeOpen] = useState(true)
   const [listCategoryOpen, setListCategoryOpen] = useState(true)
   const [listVehicleOpen, setListVehicleOpen] = useState(true)
+  const [listMileageOpen, setListMileageOpen] = useState(true)
+  const [listSpecsOpen, setListSpecsOpen] = useState(true)
+  const [listSaleDriveOpen, setListSaleDriveOpen] = useState(false)
+  const [listEquipmentOpen, setListEquipmentOpen] = useState(false)
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
@@ -1818,43 +1822,44 @@ export default function VehicleSearchExperience({
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
-    setSelectedSearchSuggestions(initialSearchSuggestions)
-    setMode(normalizeSearchMode(initialMode))
-    setSearchInput(initialQuery)
-    setDebouncedSearchInput(initialQuery)
-    setQuery(initialChipQuery)
-    setSelectedCategories(safeInitialCategories)
+    setSelectedSearchSuggestions([])
+    setMode('all')
+    setSearchInput('')
+    setDebouncedSearchInput('')
+    setQuery('')
+    setSelectedCategories([])
     setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
     setMarketOverride(false)
-    setMinPrice(initialMinPrice)
-    setMaxPrice(initialMaxPrice)
-    setMinYear(initialMinYear)
-    setMaxYear(initialMaxYear)
-    setMinMileage(initialMinMileage)
-    setMaxMileage(initialMaxMileage)
-    setMinOperatingHours(initialMinOperatingHours)
-    setMaxOperatingHours(initialMaxOperatingHours)
-    setMake(initialMake)
-    setModel(initialModel)
-    setRegion(initialRegion)
-    setCity(initialCity)
-    setMunicipality(initialMunicipality)
-    setGeoAreaId(initialGeoAreaId)
-    setGeoBounds(initialGeoBounds)
-    setGeoFilterMode(initialGeoFilterMode)
-    setFuel(initialFuel)
-    setGearbox(initialGearbox)
-    setBodyType(initialBodyType)
-    setCondition(initialCondition)
-    setColor(initialColor)
-    setSellerType(initialSellerType || 'all')
-    setVerifiedOnly(initialVerifiedOnly)
-    setFourWheelDrive(initialFourWheelDrive)
-    setLeasingPossible(initialLeasingPossible)
-    setEquipmentQuery(initialEquipmentQuery)
+    setMinPrice('')
+    setMaxPrice('')
+    setMinYear('')
+    setMaxYear('')
+    setMinMileage('')
+    setMaxMileage('')
+    setMinOperatingHours('')
+    setMaxOperatingHours('')
+    setMake('')
+    setModel('')
+    setRegion('')
+    setCity('')
+    setMunicipality('')
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
+    setFuel('')
+    setGearbox('')
+    setBodyType('')
+    setCondition('')
+    setColor('')
+    setSellerType('all')
+    setVerifiedOnly(false)
+    setFourWheelDrive(false)
+    setLeasingPossible(false)
+    setEquipmentQuery('')
     setTechnicalFilters({})
-    setSortBy(initialSortBy || 'published')
+    setSortBy('published')
     setSavedSearchMessage('')
+    closeQuickFilterMenu()
   }
 
   function clearUnsupportedCategoryFilters(nextCategories: string[]) {
@@ -2397,6 +2402,11 @@ export default function VehicleSearchExperience({
       )
     }
     return null
+  }
+
+  function renderSidebarTechnicalFilter(key: VehicleFilterKey) {
+    const filter = categoryFilterProfile(activeCategoryKey).find((item) => item.key === key)
+    return filter ? renderTechnicalFilterControl(filter, activeCategoryKey) : null
   }
 
   function renderCategoryFilterSections() {
@@ -2949,6 +2959,26 @@ export default function VehicleSearchExperience({
   }
 
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
+    selectedCategoryItems.length && selectedCategoryItems.some((item) => item.key !== safeInitialCategory)
+      ? {
+        key: 'categories',
+        label: selectedCategoryItems.map((item) => categoryText(item, locale)).join(', '),
+        onRemove: () => {
+          setSelectedCategories([])
+          clearUnsupportedCategoryFilters([])
+        },
+      }
+      : null,
+    marketOverride || !sameMarketSelection(selectedMarkets, normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+      ? {
+        key: 'markets',
+        label: marketSummary,
+        onRemove: () => {
+          setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+          setMarketOverride(false)
+        },
+      }
+      : null,
     make ? { key: 'make', label: make, onRemove: () => {
       setMake('')
       setModel('')
@@ -3216,26 +3246,72 @@ export default function VehicleSearchExperience({
                     </div>
                   </CollapsibleFilterSection>
 
+                  {renderSidebarTechnicalFilter('mileage') || renderSidebarTechnicalFilter('operatingHours') ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
+                      title={uiText(locale, 'Mileage and hours', 'Miltal och timmar', 'Kilometer und Stunden')}
+                      summary={minMileage || maxMileage ? formatMileageRangeLabel(minMileage, maxMileage, locale) : minOperatingHours || maxOperatingHours ? formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale) : desktopListText.allVehicles}
+                      open={listMileageOpen}
+                      onToggle={() => setListMileageOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        {renderSidebarTechnicalFilter('mileage')}
+                        {renderSidebarTechnicalFilter('operatingHours')}
+                      </div>
+                    </CollapsibleFilterSection>
+                  ) : null}
+
                   <CollapsibleFilterSection
                     density="sidebar"
                     icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
-                    title={desktopListText.vehicleDetails}
-                    summary={desktopListText.mileageFuelEquipment}
-                    open={moreFiltersOpen}
-                    onToggle={() => setMoreFiltersOpen((open) => !open)}
+                    title={uiText(locale, 'Fuel, body and gearbox', 'Drivmedel, biltyp och växellåda', 'Kraftstoff, Karosserie und Getriebe')}
+                    summary={[fuel, bodyType ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType) : '', gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listSpecsOpen}
+                    onToggle={() => setListSpecsOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      {categoryFilterProfile(activeCategoryKey)
-                        .filter((filter) => filter.key !== 'condition')
-                        .map((filter) => renderTechnicalFilterControl(filter, activeCategoryKey))}
-                      {renderDynamicTechnicalFacets(true)}
+                      {renderSidebarTechnicalFilter('fuel')}
+                      {renderSidebarTechnicalFilter('bodyType')}
+                      {renderSidebarTechnicalFilter('gearbox')}
                     </div>
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
                     density="sidebar"
+                    icon={<Scale className="h-4 w-4" aria-hidden="true" />}
+                    title={uiText(locale, 'Sale form and drive', 'Försäljningsform och drivhjul', 'Verkaufsform und Antrieb')}
+                    summary={[mode !== 'all' ? marketplaceModeLabel(locale, mode) : '', fourWheelDrive ? uiText(locale, 'Four-wheel drive', 'Fyrhjulsdrift', 'Allrad') : '', leasingPossible ? uiText(locale, 'Leasing possible', 'Leasing möjlig', 'Leasing möglich') : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listSaleDriveOpen}
+                    onToggle={() => setListSaleDriveOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      {renderSidebarTechnicalFilter('fourWheelDrive')}
+                      {renderSidebarTechnicalFilter('leasingPossible')}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  {renderSidebarTechnicalFilter('color') || renderSidebarTechnicalFilter('equipment') || renderDynamicTechnicalFacets(true) ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      icon={<Star className="h-4 w-4" aria-hidden="true" />}
+                      title={uiText(locale, 'Color and equipment', 'Färg och utrustning', 'Farbe und Ausstattung')}
+                      summary={[color, equipmentQuery.trim()].filter(Boolean).join(' · ') || uiText(locale, 'Equipment and details', 'Utrustning och detaljer', 'Ausstattung und Details')}
+                      open={listEquipmentOpen}
+                      onToggle={() => setListEquipmentOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        {renderSidebarTechnicalFilter('color')}
+                        {renderSidebarTechnicalFilter('equipment')}
+                        {renderDynamicTechnicalFacets(true)}
+                      </div>
+                    </CollapsibleFilterSection>
+                  ) : null}
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
                     icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />}
-                    title={desktopListText.sellerCondition}
+                    title={uiText(locale, 'Advertiser and condition', 'Annonsör och skick', 'Anbieter und Zustand')}
                     summary={sellerSummary}
                     open={sellerFiltersOpen}
                     onToggle={() => setSellerFiltersOpen((open) => !open)}
