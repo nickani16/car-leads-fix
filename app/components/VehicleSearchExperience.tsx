@@ -3707,10 +3707,6 @@ export default function VehicleSearchExperience({
                 </div>
               ) : null}
               <VehicleSearchFooter locale={locale} />
-              <div
-                aria-hidden="true"
-                className="h-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+7.25rem)] lg:hidden"
-              />
             </div>
               </div>
             </div>
@@ -3721,8 +3717,8 @@ export default function VehicleSearchExperience({
               ref={mobileShortcutBarRef}
               className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(356px,calc(100vw-24px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
                 compareIds.length
-                  ? 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+6.05rem)]'
-                  : 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(max(8px,env(safe-area-inset-bottom))+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+3.75rem)]'
+                  ? 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(6px+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+6.05rem)]'
+                  : 'bottom-[calc(var(--autorell-mobile-bottom-gap,calc(6px+max(0px,var(--autorell-mobile-browser-inset,0px)-env(safe-area-inset-bottom))))+3.75rem)]'
               }`}
               aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
               data-autorell-floating-shortcuts-tone={mobileShortcutOverMedia ? 'light' : 'dark'}
