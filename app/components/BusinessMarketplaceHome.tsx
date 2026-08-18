@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, MapPin } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
@@ -12,6 +12,8 @@ import HomeVehicleCategoryRails, {
 } from './HomeVehicleCategoryRails'
 import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
+import HomeLocationConsentPrompt from './HomeLocationConsentPrompt'
+import HomeListingSectionTitle from './HomeListingSectionTitle'
 import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -35,6 +37,7 @@ import {
 } from '@/lib/public-i18n'
 import { countryForLocale } from '@/lib/market-locale'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
@@ -513,7 +516,7 @@ type HomeListingCardItem = {
   versionLabel: string | null
   detailItems: string[]
   sellerTypeLabel: string
-  sellerDetailLabel: string
+  sellerDetailLabel: string | null
   sellerTrust: 'verified' | 'unverified'
   isFeatured: boolean
   isTopPlacement: boolean
@@ -524,6 +527,8 @@ type HomeListingSectionData = {
   title: string
   emptyText: string
   items: HomeListingCardItem[]
+  kind: 'top' | 'latest'
+  marketLabel: string
 }
 
 export default async function BusinessMarketplaceHome({
@@ -572,12 +577,16 @@ export default async function BusinessMarketplaceHome({
       id: 'local-top',
       title: homeListingSectionTitle(locale, 'top', localMarketLabel),
       emptyText: homeEmptyListingText(locale),
+      kind: 'top',
+      marketLabel: localMarketLabel,
       items: await Promise.all(localTopListings.map(toHomeCard)),
     },
     {
       id: 'local-latest',
       title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
       emptyText: homeEmptyListingText(locale),
+      kind: 'latest',
+      marketLabel: localMarketLabel,
       items: await Promise.all(localLatestListings.map(toHomeCard)),
     },
   ]
@@ -591,6 +600,7 @@ export default async function BusinessMarketplaceHome({
   return (
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
+      <HomeLocationConsentPrompt locale={locale} />
 
       <section className="-mt-[2px] bg-[#e9eef4] pt-0">
         <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
@@ -1419,7 +1429,13 @@ function HomeListingSection({
     <section>
       <div className="flex items-end justify-between gap-5">
         <h2 className="text-[24px] font-medium leading-tight tracking-[-0.035em] text-[#101828] sm:text-[30px]">
-          {section.title}
+          <HomeListingSectionTitle
+            baseTitle={section.title}
+            kind={section.kind}
+            marketLabel={section.marketLabel}
+            categoryLabels={homeListingCategoryLabels(locale)}
+            templates={homeListingCategoryTitleTemplates(locale)}
+          />
         </h2>
         <Link
           href={localizePublicHref(locale, '/marketplace')}
@@ -1512,6 +1528,12 @@ function HomeListingCard({
         <p className="mt-2 text-[17px] font-semibold leading-6 text-[#050b18] no-underline [text-decoration:none] sm:text-[18px]">
           {item.priceLabel}
         </p>
+        {item.location ? (
+          <p className="mt-1 flex min-w-0 items-center gap-1 text-[12px] font-normal leading-5 text-[#667085] sm:text-[13px]">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
+            <span className="truncate">{item.location}</span>
+          </p>
+        ) : null}
         {item.detailItems.length ? (
           <p className="mt-2 line-clamp-1 text-[12px] font-normal leading-5 text-[#344054] sm:text-[13px]">
             {item.detailItems.join(' | ')}
@@ -1521,12 +1543,14 @@ function HomeListingCard({
         <div className="mt-auto grid grid-cols-[minmax(0,1fr)_44px] items-end gap-2 pt-2">
           <div className="min-w-0 text-[12px] font-normal leading-4 text-[#050b18]">
             <p className="truncate">{item.sellerTypeLabel}</p>
-            <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
-              {item.showCountryChip ? (
-                <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
-              ) : null}
-              <span className="truncate">{item.sellerDetailLabel}</span>
-            </p>
+            {item.sellerDetailLabel || item.showCountryChip ? (
+              <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                {item.showCountryChip ? (
+                  <CountryFlag code={item.countryCode || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+                ) : null}
+                {item.sellerDetailLabel ? <span className="truncate">{item.sellerDetailLabel}</span> : null}
+              </p>
+            ) : null}
           </div>
           <SavedListingButton
             listingId={item.id}
@@ -1558,6 +1582,86 @@ function homeListingSectionTitle(
   if (locale === 'de') return `Top-Anzeigen in ${marketLabel}`
   if (locale === 'en') return `Top listings in ${marketLabel}`
   return `${translatePublic(locale, 'Top listings in')} ${marketLabel}`
+}
+
+
+function homeListingCategoryLabels(locale: PublicLocale): Partial<Record<MarketplaceCategorySlug, string>> {
+  const labels: Partial<Record<PublicLocale, Partial<Record<MarketplaceCategorySlug, string>>>> = {
+    sv: { cars: 'bilar', vans: 'transportbilar', trucks: 'lastbilar', motorcycles: 'motorcyklar', construction: 'entreprenadmaskiner', motorhomes: 'husbilar', caravans: 'husvagnar', agriculture: 'lantbruksmaskiner', 'electric-bikes': 'elcyklar' },
+    en: { cars: 'cars', vans: 'vans', trucks: 'trucks', motorcycles: 'motorcycles', construction: 'construction machinery', motorhomes: 'motorhomes', caravans: 'caravans', agriculture: 'agricultural machinery', 'electric-bikes': 'e-bikes' },
+    de: { cars: 'Autos', vans: 'Transporter', trucks: 'Lkw', motorcycles: 'Motorräder', construction: 'Baumaschinen', motorhomes: 'Wohnmobile', caravans: 'Wohnwagen', agriculture: 'Landmaschinen', 'electric-bikes': 'E-Bikes' },
+    at: { cars: 'Autos', vans: 'Transporter', trucks: 'Lkw', motorcycles: 'Motorräder', construction: 'Baumaschinen', motorhomes: 'Wohnmobile', caravans: 'Wohnwagen', agriculture: 'Landmaschinen', 'electric-bikes': 'E-Bikes' },
+    be: { cars: 'auto’s', vans: 'bestelwagens', trucks: 'vrachtwagens', motorcycles: 'motorfietsen', construction: 'bouwmachines', motorhomes: 'campers', caravans: 'caravans', agriculture: 'landbouwmachines', 'electric-bikes': 'e-bikes' },
+    fr: { cars: 'voitures', vans: 'utilitaires', trucks: 'camions', motorcycles: 'motos', construction: 'engins de chantier', motorhomes: 'camping-cars', caravans: 'caravanes', agriculture: 'machines agricoles', 'electric-bikes': 'vélos électriques' },
+    es: { cars: 'coches', vans: 'furgonetas', trucks: 'camiones', motorcycles: 'motos', construction: 'maquinaria de construcción', motorhomes: 'autocaravanas', caravans: 'caravanas', agriculture: 'maquinaria agrícola', 'electric-bikes': 'bicicletas eléctricas' },
+    it: { cars: 'auto', vans: 'furgoni', trucks: 'camion', motorcycles: 'moto', construction: 'macchine edili', motorhomes: 'camper', caravans: 'roulotte', agriculture: 'macchine agricole', 'electric-bikes': 'e-bike' },
+    pl: { cars: 'samochody', vans: 'samochody dostawcze', trucks: 'ciężarówki', motorcycles: 'motocykle', construction: 'maszyny budowlane', motorhomes: 'kampery', caravans: 'przyczepy kempingowe', agriculture: 'maszyny rolnicze', 'electric-bikes': 'rowery elektryczne' },
+    nl: { cars: 'auto’s', vans: 'bestelwagens', trucks: 'vrachtwagens', motorcycles: 'motorfietsen', construction: 'bouwmachines', motorhomes: 'campers', caravans: 'caravans', agriculture: 'landbouwmachines', 'electric-bikes': 'e-bikes' },
+    fi: { cars: 'autot', vans: 'pakettiautot', trucks: 'kuorma-autot', motorcycles: 'moottoripyörät', construction: 'maanrakennuskoneet', motorhomes: 'matkailuautot', caravans: 'asuntovaunut', agriculture: 'maatalouskoneet', 'electric-bikes': 'sähköpyörät' },
+    da: { cars: 'biler', vans: 'varebiler', trucks: 'lastbiler', motorcycles: 'motorcykler', construction: 'entreprenørmaskiner', motorhomes: 'autocampere', caravans: 'campingvogne', agriculture: 'landbrugsmaskiner', 'electric-bikes': 'elcykler' },
+  }
+  return labels[locale] || labels.en || {}
+}
+
+function homeListingCategoryTitleTemplates(locale: PublicLocale) {
+  if (locale === 'sv') {
+    return {
+      latest: 'Senaste annonser för {category} i {market}',
+      top: 'Topplistan för {category} i {market}',
+    }
+  }
+  if (locale === 'de' || locale === 'at') {
+    return {
+      latest: 'Neueste Anzeigen für {category} in {market}',
+      top: 'Top-Anzeigen für {category} in {market}',
+    }
+  }
+  if (locale === 'fr') {
+    return {
+      latest: 'Dernières annonces de {category} en {market}',
+      top: 'Meilleures annonces de {category} en {market}',
+    }
+  }
+  if (locale === 'es') {
+    return {
+      latest: 'Últimos anuncios de {category} en {market}',
+      top: 'Anuncios destacados de {category} en {market}',
+    }
+  }
+  if (locale === 'it') {
+    return {
+      latest: 'Ultimi annunci di {category} in {market}',
+      top: 'Annunci in evidenza di {category} in {market}',
+    }
+  }
+  if (locale === 'pl') {
+    return {
+      latest: 'Najnowsze ogłoszenia: {category} w {market}',
+      top: 'Top ogłoszenia: {category} w {market}',
+    }
+  }
+  if (locale === 'nl' || locale === 'be') {
+    return {
+      latest: 'Nieuwste advertenties voor {category} in {market}',
+      top: 'Topadvertenties voor {category} in {market}',
+    }
+  }
+  if (locale === 'fi') {
+    return {
+      latest: 'Uusimmat ilmoitukset: {category} maassa {market}',
+      top: 'Suosituimmat ilmoitukset: {category} maassa {market}',
+    }
+  }
+  if (locale === 'da') {
+    return {
+      latest: 'Seneste annoncer for {category} i {market}',
+      top: 'Topannoncer for {category} i {market}',
+    }
+  }
+  return {
+    latest: 'Latest {category} listings in {market}',
+    top: 'Top {category} listings in {market}',
+  }
 }
 
 function featuredListingLabel(locale: PublicLocale) {
@@ -1649,7 +1753,8 @@ async function mapHomeListingCard(
   ]
     .filter(Boolean)
     .filter((item): item is string => typeof item === 'string' && Boolean(item))
-  const sellerDetailLabel = listing.seller_name || listing.city || listing.municipality || countryName
+  const sellerIsBusiness = listing.seller_type === 'business'
+  const sellerDetailLabel = sellerIsBusiness ? String(listing.seller_name || '').trim() || null : null
 
   return {
     id: listing.id,
@@ -1704,10 +1809,10 @@ function shouldShowListingCountryChip(listingCountryCode?: string | null, market
 
 function homeSellerTypeLabel(locale: PublicLocale, sellerType?: string | null) {
   const isBusiness = sellerType === 'business'
-  if (locale === 'sv') return isBusiness ? 'Företagssäljare' : 'Privat säljare'
-  if (locale === 'de' || locale === 'at') return isBusiness ? 'Gewerblicher Verkäufer' : 'Privatverkäufer'
-  if (locale === 'en') return isBusiness ? 'Business seller' : 'Private seller'
-  return translatePublic(locale, isBusiness ? 'Business seller' : 'Private seller')
+  if (locale === 'sv') return isBusiness ? 'Företag' : 'Privat säljare'
+  if (locale === 'de' || locale === 'at') return isBusiness ? 'Unternehmen' : 'Privatverkäufer'
+  if (locale === 'en') return isBusiness ? 'Business' : 'Private seller'
+  return translatePublic(locale, isBusiness ? 'Business' : 'Private seller')
 }
 
 function homeSaveListingLabels(locale: PublicLocale) {

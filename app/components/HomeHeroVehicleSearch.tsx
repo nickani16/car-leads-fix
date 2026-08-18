@@ -804,6 +804,7 @@ export default function HomeHeroVehicleSearch({
   }
 
   function selectCategory(nextCategory: MarketplaceCategorySlug) {
+    window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: nextCategory } }))
     setCategory(nextCategory)
     setFilters(emptyFilters)
     setIntent((current) =>
@@ -816,6 +817,7 @@ export default function HomeHeroVehicleSearch({
   function changeIntent(nextIntent: Intent) {
     setIntent(nextIntent)
     if (nextIntent === 'leasing' && !isLeasingMarketplaceCategory(category)) {
+      window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: 'cars' } }))
       setCategory('cars')
       setFilters(emptyFilters)
       setSelectedSuggestions([])
@@ -830,6 +832,7 @@ export default function HomeHeroVehicleSearch({
     setFilters(emptyFilters)
     setVerifiedOnly(false)
     setMarket(defaultMarket)
+    window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: 'cars' } }))
     setSelectedSuggestions([])
     setMoreFiltersOpen(false)
   }
