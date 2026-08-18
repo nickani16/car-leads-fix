@@ -597,6 +597,7 @@ export default function PublicHeader({
     pathname.endsWith('/marketplace') ||
     unprefixedPathname === '/marketplace' ||
     unprefixedPathname.startsWith('/marketplace/')
+  const keepMobileBottomNavVisible = lockMobileBottomNav || marketplaceResultsPage || isMarketplaceRoute
   const language = marketplaceLanguage(locale)
   const t =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -2479,7 +2480,7 @@ export default function PublicHeader({
       <nav
         ref={mobileBottomNavRef}
         className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,20px)] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
-          lockMobileBottomNav || isMarketplaceRoute || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
+          keepMobileBottomNavVisible || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
         data-autorell-mobile-nav-tone={mobileNavOverMedia ? 'light' : 'dark'}

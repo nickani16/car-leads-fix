@@ -588,6 +588,8 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
 
 test('mobile bottom navigation glass avoids white outlines and adapts inactive item contrast', () => {
   assert.match(publicHeaderSource, /fixed bottom-0 left-1\/2 z-\[120\] -translate-x-1\/2/)
+  assert.match(publicHeaderSource, /const keepMobileBottomNavVisible = lockMobileBottomNav \|\| marketplaceResultsPage \|\| isMarketplaceRoute/)
+  assert.match(publicHeaderSource, /keepMobileBottomNavVisible \|\| visible \|\| open \|\| mobileCategoryOpen \|\| mobileMoreOpen/)
   assert.match(publicHeaderSource, /--autorell-mobile-browser-inset/)
   assert.match(publicHeaderSource, /--autorell-mobile-bottom-gap/)
   assert.match(publicHeaderSource, /browserChromeVisible \? '12px' : '20px'/)
