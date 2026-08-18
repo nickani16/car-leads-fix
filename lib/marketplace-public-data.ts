@@ -98,6 +98,7 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
     countryCode: string | null,
     sort: 'top' | 'latest',
     limit = 8,
+    category: MarketplaceCategorySlug | 'vehicles' | null = null,
   ) => {
     let query = createAdminClient()
       .from('marketplace_listings')
@@ -110,6 +111,10 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
     const normalizedCountry = (countryCode || '').toUpperCase()
     if (normalizedCountry && normalizedCountry !== 'EU') {
       query = query.eq('country_code', normalizedCountry)
+    }
+
+    if (category && category !== 'vehicles') {
+      query = query.eq('category', category)
     }
 
     const now = new Date().toISOString()
@@ -488,3 +493,5 @@ async function isPrivateSellerTrusted(
 
   return hasVerifiedAccountEmail(profile.email, authUser)
 }
+
+

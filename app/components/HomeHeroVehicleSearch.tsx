@@ -852,6 +852,7 @@ export default function HomeHeroVehicleSearch({
       const nextCategories = params.get('categories')?.split(',').filter(Boolean) || []
       const nextCategory = nextCategories[0] as MarketplaceCategorySlug | undefined
       if (nextCategory && categoryDefinitions.some((item) => item.slug === nextCategory)) {
+        window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: nextCategory } }))
         setCategory(nextCategory)
       }
       const nextMarket = params.get('markets')?.split(',').filter(Boolean)[0]
@@ -1445,3 +1446,4 @@ function SearchSubmitButton({
     </button>
   )
 }
+

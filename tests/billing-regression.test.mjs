@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict'
+import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
@@ -504,11 +504,13 @@ test('canonical English pricing routes do not redirect to themselves', () => {
 })
 
 test('EU home sections and browser-only header state hydrate deterministically', () => {
-  assert.match(home, /const latestLocalListingSection = localListingSections\.find/)
-  assert.match(home, /const remainingListingSections = localListingSections\.filter/)
+  assert.match(home, /const homeListingCategories: MarketplaceCategorySlug\[\] = \[/)
+  assert.match(home, /HomeListingCategorySwitcher categories=\{homeListingCategories\}/)
+  assert.match(home, /localListingSectionsByCategory\.get\(category\)\?\.latest/)
+  assert.match(home, /localListingSectionsByCategory\.get\(category\)\?\.top/)
   assert.match(home, /key=\{section\.id\}/)
-  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top', 17\)/)
-  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 17\)/)
+  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top', 17, category\)/)
+  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 17, category\)/)
   assert.match(home, /const visibleItems = section\.items\.slice\(0, 16\)/)
   assert.match(home, /homeLoadMoreListingsLabel\(locale\)/)
   assert.match(home, /grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5/)
@@ -522,3 +524,4 @@ test('EU home sections and browser-only header state hydrate deterministically',
 test('content security policy allows the MapLibre blob worker', () => {
   assert.match(nextConfig, /worker-src 'self' blob:/)
 })
+

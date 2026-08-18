@@ -13,7 +13,7 @@ import HomeVehicleCategoryRails, {
 import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import HomeLocationConsentPrompt from './HomeLocationConsentPrompt'
-import HomeListingSectionTitle from './HomeListingSectionTitle'
+import HomeListingCategorySwitcher from './HomeListingCategorySwitcher'
 import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
 import PublicHeader from './PublicHeader'
@@ -43,6 +43,17 @@ const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
 const homeSearchContainerClass =
   'mx-0 w-full max-w-none px-0 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8'
+const homeListingCategories: MarketplaceCategorySlug[] = [
+  'cars',
+  'vans',
+  'trucks',
+  'motorcycles',
+  'construction',
+  'motorhomes',
+  'caravans',
+  'agriculture',
+  'electric-bikes',
+]
 
 const homeCopy = {
   sv: {
@@ -547,54 +558,64 @@ export default async function BusinessMarketplaceHome({
       : getEuCountryName(localMarketCode, locale)
   const displayCurrency = displayCurrencyForMarket(localMarketCode)
   const [
-    localTopListings,
-    localLatestListings,
+    categoryListingGroups,
     localListingCount,
     europeListingCount,
     vehicleNews,
-  ] =
-    await Promise.all([
-      getPublishedMarketplaceHomeListings(localMarketCode, 'top', 17),
-      getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17),
-      getPublishedMarketplaceListingCount(localMarketCode),
-      getPublishedMarketplaceListingCount('EU'),
-      getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
-    ])
+  ] = await Promise.all([
+    Promise.all(
+      homeListingCategories.map(async (category) => {
+        const [top, latest] = await Promise.all([
+          getPublishedMarketplaceHomeListings(localMarketCode, 'top', 17, category),
+          getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category),
+        ])
+        return { category, top, latest }
+      }),
+    ),
+    getPublishedMarketplaceListingCount(localMarketCode),
+    getPublishedMarketplaceListingCount('EU'),
+    getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
+  ])
   const newsCards = vehicleNews.articles.slice(0, 3)
   const selectedVehicleCategories = getSelectedVehicleCategories(locale)
   const popularCarCategories = getPopularCarCategories(locale)
   const vehicleBodyCategories = getVehicleBodyCategories(locale)
   const popularVehicleBrands = getPopularVehicleBrands(locale)
+  const allHomeListings = categoryListingGroups.flatMap(({ top, latest }) => [
+    ...top,
+    ...latest,
+  ])
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
-    [...localTopListings, ...localLatestListings]
+    allHomeListings
       .map((listing) => listing.seller_user_id)
       .filter((id): id is string => typeof id === 'string' && Boolean(id)),
   )
   const toHomeCard = (listing: HomeListingSource) =>
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified', localMarketCode)
-  const localListingSections: HomeListingSectionData[] = [
-    {
-      id: 'local-top',
-      title: homeListingSectionTitle(locale, 'top', localMarketLabel),
-      emptyText: homeEmptyListingText(locale),
-      kind: 'top',
-      marketLabel: localMarketLabel,
-      items: await Promise.all(localTopListings.map(toHomeCard)),
-    },
-    {
-      id: 'local-latest',
-      title: homeListingSectionTitle(locale, 'latest', localMarketLabel),
-      emptyText: homeEmptyListingText(locale),
-      kind: 'latest',
-      marketLabel: localMarketLabel,
-      items: await Promise.all(localLatestListings.map(toHomeCard)),
-    },
-  ]
-  const latestLocalListingSection = localListingSections.find(
-    (section) => section.id === 'local-latest',
-  )
-  const remainingListingSections = localListingSections.filter(
-    (section) => section.id !== 'local-latest',
+  const localListingSectionsByCategory = new Map(
+    await Promise.all(
+      categoryListingGroups.map(async ({ category, top, latest }) => [
+        category,
+        {
+          top: {
+            id: `${category}-top`,
+            title: homeListingSectionTitle(locale, 'top', localMarketLabel, category),
+            emptyText: homeEmptyListingText(locale),
+            kind: 'top' as const,
+            marketLabel: localMarketLabel,
+            items: await Promise.all(top.map(toHomeCard)),
+          },
+          latest: {
+            id: `${category}-latest`,
+            title: homeListingSectionTitle(locale, 'latest', localMarketLabel, category),
+            emptyText: homeEmptyListingText(locale),
+            kind: 'latest' as const,
+            marketLabel: localMarketLabel,
+            items: await Promise.all(latest.map(toHomeCard)),
+          },
+        },
+      ] as const),
+    ),
   )
 
   return (
@@ -646,16 +667,16 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      {latestLocalListingSection ? (
-        <section className="bg-white py-10 sm:py-14">
-          <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
-            <HomeListingSection
-              section={latestLocalListingSection}
-              locale={locale}
-            />
-          </div>
-        </section>
-      ) : null}
+      <section className="bg-white py-10 sm:py-14">
+        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => {
+              const section = localListingSectionsByCategory.get(category)?.latest
+              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
+            })}
+          </HomeListingCategorySwitcher>
+        </div>
+      </section>
 
       <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
@@ -681,11 +702,12 @@ export default async function BusinessMarketplaceHome({
 
       <section className="bg-white py-10 sm:py-16">
         <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
-          <div className="space-y-10">
-            {remainingListingSections.map((section) => (
-              <HomeListingSection key={section.id} section={section} locale={locale} />
-            ))}
-          </div>
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => {
+              const section = localListingSectionsByCategory.get(category)?.top
+              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
+            })}
+          </HomeListingCategorySwitcher>
         </div>
       </section>
 
@@ -1429,13 +1451,7 @@ function HomeListingSection({
     <section>
       <div className="flex items-end justify-between gap-5">
         <h2 className="text-[24px] font-medium leading-tight tracking-[-0.035em] text-[#101828] sm:text-[30px]">
-          <HomeListingSectionTitle
-            baseTitle={section.title}
-            kind={section.kind}
-            marketLabel={section.marketLabel}
-            categoryLabels={homeListingCategoryLabels(locale)}
-            templates={homeListingCategoryTitleTemplates(locale)}
-          />
+          {section.title}
         </h2>
         <Link
           href={localizePublicHref(locale, '/marketplace')}
@@ -1570,7 +1586,18 @@ function homeListingSectionTitle(
   locale: PublicLocale,
   kind: 'top' | 'latest',
   marketLabel: string,
+  category?: MarketplaceCategorySlug,
 ) {
+  const categoryLabel = category && category !== 'cars'
+    ? homeListingCategoryLabels(locale)[category]
+    : ''
+
+  if (categoryLabel) {
+    return homeListingCategoryTitleTemplates(locale)[kind]
+      .replace('{category}', categoryLabel)
+      .replace('{market}', marketLabel)
+  }
+
   if (kind === 'latest') {
     if (locale === 'sv') return `Senaste annonser i ${marketLabel}`
     if (locale === 'de') return `Neueste Anzeigen in ${marketLabel}`
@@ -1583,7 +1610,6 @@ function homeListingSectionTitle(
   if (locale === 'en') return `Top listings in ${marketLabel}`
   return `${translatePublic(locale, 'Top listings in')} ${marketLabel}`
 }
-
 
 function homeListingCategoryLabels(locale: PublicLocale): Partial<Record<MarketplaceCategorySlug, string>> {
   const labels: Partial<Record<PublicLocale, Partial<Record<MarketplaceCategorySlug, string>>>> = {
@@ -1852,4 +1878,6 @@ function isActiveWindow(status?: string | null, startedAt?: string | null, expir
     new Date(String(startedAt)).getTime() <= now &&
     new Date(String(expiresAt)).getTime() > now
 }
+
+
 
