@@ -57,15 +57,13 @@ test('desktop list shell has explicit copy for every public locale', () => {
   assert.match(experienceSource, /showMap: 'Afficher la carte'/)
 })
 
-test('desktop list cards expose mapped vehicle, seller and action data in dense horizontal rows', () => {
+test('desktop list cards keep the image full-height and reserve the price column for price and save action', () => {
   for (const field of [
     'listing.title',
     'listing.priceLabel',
     'listing.mileageKm',
     'listing.fuelType',
     'listing.gearbox',
-    'listing.sellerName',
-    'listing.sellerRatingAverage',
     'listing.imageUrls',
   ]) {
     assert.ok(desktopListingRowSource.includes(field), `${field} should be represented in desktop marketplace rows`)
@@ -73,8 +71,11 @@ test('desktop list cards expose mapped vehicle, seller and action data in dense 
 
   assert.match(desktopListingRowSource, /<ListingCardImageCarousel/)
   assert.match(desktopListingRowSource, /<SavedListingButton/)
-  assert.match(desktopListingRowSource, /className="absolute right-2\.5 top-2\.5/)
-  assert.doesNotMatch(desktopListingRowSource, /className="absolute right-3 top-3/)
+  assert.match(desktopListingRowSource, /className="absolute right-3\.5 top-3/)
+  assert.match(desktopListingRowSource, /className="absolute inset-0 overflow-hidden bg-white"/)
+  assert.doesNotMatch(desktopListingRowSource, /sellerLogoUrl/)
+  assert.doesNotMatch(desktopListingRowSource, /sellerRatingAverage/)
+  assert.doesNotMatch(desktopListingRowSource, /location \|\| sellerLabel/)
   assert.match(desktopListingRowSource, /aria-pressed=\{compareActive\}/)
   assert.match(desktopListingRowSource, /buildListingPath/)
   assert.match(experienceSource, /<MetaSeparatorList/)
@@ -87,6 +88,23 @@ test('desktop list cards expose mapped vehicle, seller and action data in dense 
   assert.match(desktopListingRowSource, /grid-cols-\[260px_minmax\(0,1fr\)_184px\]/)
   assert.match(experienceSource, /icon=\{<Scale/)
   assert.match(experienceSource, /icon=\{<Layers/)
+})
+
+test('desktop location filtering uses the shared market hierarchy and scopes municipalities to the selected region', () => {
+  assert.match(experienceSource, /getMarketplaceCountryLocations,[\s\S]*inferMarketplaceLocation/)
+  assert.match(experienceSource, /function normalizeMarketplaceLocationSelection/)
+  assert.match(experienceSource, /const inferredOptionLocations = useMemo/)
+  assert.match(experienceSource, /<LocationHierarchyFilter/)
+  assert.match(experienceSource, /aria-pressed=\{selected\}/)
+  assert.match(experienceSource, /municipalityOptions\.map/)
+  assert.match(experienceSource, /setMunicipality\(''\)/)
+  assert.doesNotMatch(experienceSource, /label: `\$\{municipality\} kommun`/)
+})
+
+test('desktop range controls keep their handles inside the sidebar', () => {
+  assert.match(experienceSource, /className="relative mx-2 h-8 touch-none"/)
+  assert.match(experienceSource, /top-1\/2 z-20 h-\[18px\] w-\[18px\]/)
+  assert.match(experienceSource, /top-1\/2 z-30 h-\[18px\] w-\[18px\]/)
 })
 
 test('desktop list pagination is API-backed and preserved in browser history', () => {

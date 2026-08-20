@@ -1,8 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Camera, MapPin, Scale, ShieldCheck, Star } from 'lucide-react'
+import { ArrowRight, Camera, Scale, ShieldCheck } from 'lucide-react'
 import {
   AutorellAgricultureIcon,
   AutorellBikeIcon,
@@ -95,9 +94,6 @@ export default function MarketplaceDesktopListingRow({
     listing.city || listing.municipality,
     getEuCountryName(listing.country, locale),
   ].filter(Boolean).join(', ')
-  const sellerLabel = listing.sellerIsTrader
-    ? listing.sellerName || copy.businessSeller
-    : copy.privateSeller
   const metadata = listingRowMetadata(listing, locale)
   const photoLabel = `${images.length.toLocaleString(numberLocale(locale))} ${copy.uploadedPhotos}`
 
@@ -106,8 +102,8 @@ export default function MarketplaceDesktopListingRow({
       data-marketplace-listing-row
       className="group relative grid min-h-[194px] grid-cols-[260px_minmax(0,1fr)_184px] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:194px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none 2xl:grid-cols-[276px_minmax(0,1fr)_194px]"
     >
-      <div className="flex min-h-[194px] min-w-0 flex-col border-r border-[#e2e7ef] bg-white">
-        <div className="relative h-[140px] shrink-0 overflow-hidden border-b border-[#edf1f6] bg-white 2xl:h-[146px]">
+      <div className="relative min-h-[194px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-white">
+        <div className="absolute inset-0 overflow-hidden bg-white">
           <ListingCardImageCarousel
             images={images}
             title={listing.title}
@@ -139,35 +135,6 @@ export default function MarketplaceDesktopListingRow({
             >
               <Camera className="h-3.5 w-3.5" aria-hidden="true" />
               {images.length.toLocaleString(numberLocale(locale))}
-            </span>
-          ) : null}
-          <SavedListingButton
-            listingId={listing.id}
-            label={copy.saveListing}
-            savedLabel={copy.saved}
-            removeLabel={copy.removeSavedListing}
-            className="absolute right-2.5 top-2.5 z-20 h-9 w-9 rounded-[7px] border border-[#d0d5dd] bg-white/95 shadow-sm backdrop-blur-sm"
-          />
-        </div>
-        <div className="flex min-h-[48px] min-w-0 items-center gap-2.5 px-3 py-1.5">
-          {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-            <span className="relative h-8 w-11 shrink-0 overflow-hidden rounded-[5px] bg-white ring-1 ring-[#e1e6ee]">
-              <Image src={listing.sellerLogoUrl} alt="" fill sizes="44px" className="object-contain p-1" />
-            </span>
-          ) : null}
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold text-[#344054]">{sellerLabel}</p>
-            {location ? (
-              <p className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] font-medium text-[#667085]">
-                <MapPin className="h-3 w-3 shrink-0 text-[#0866ff]" aria-hidden="true" />
-                <span className="truncate">{location}</span>
-              </p>
-            ) : null}
-          </div>
-          {listing.sellerRatingAverage && listing.sellerRatingCount ? (
-            <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[10px] font-semibold text-[#475467]">
-              <Star className="h-3 w-3 text-[#0866ff]" fill="currentColor" aria-hidden="true" />
-              {formatRating(listing.sellerRatingAverage, locale)}
             </span>
           ) : null}
         </div>
@@ -241,7 +208,7 @@ export default function MarketplaceDesktopListingRow({
             {listing.country && listing.country.toUpperCase() !== marketCountryCode?.toUpperCase() ? (
               <CountryFlag code={listing.country} className="h-3.5 w-3.5 shrink-0 rounded-full" />
             ) : null}
-            <span className="truncate">{location || sellerLabel}</span>
+            <span className="truncate">{location}</span>
           </span>
           <div className="flex shrink-0 items-center gap-2">
             <button
@@ -261,9 +228,15 @@ export default function MarketplaceDesktopListingRow({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-col items-end px-3.5 pb-3.5 pt-12 text-right 2xl:px-4">
+      <div className="relative flex min-w-0 flex-col items-end px-3.5 pb-3.5 pt-14 text-right 2xl:px-4">
+        <SavedListingButton
+          listingId={listing.id}
+          label={copy.saveListing}
+          savedLabel={copy.saved}
+          removeLabel={copy.removeSavedListing}
+          className="absolute right-3.5 top-3 h-9 w-9 rounded-[7px] border border-[#d0d5dd] bg-white shadow-sm"
+        />
         <p className="text-[22px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
-        <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-4 text-[#667085]">{location || sellerLabel}</p>
         <Link
           href={href}
           prefetch={false}
@@ -357,13 +330,6 @@ function numberLocale(locale: PublicLocale) {
   if (locale === 'da') return 'da-DK'
   if (locale === 'fi') return 'fi-FI'
   return 'en-GB'
-}
-
-function formatRating(value: number, locale: PublicLocale) {
-  return value.toLocaleString(numberLocale(locale), {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  })
 }
 
 const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {

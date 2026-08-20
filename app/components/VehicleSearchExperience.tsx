@@ -55,7 +55,11 @@ import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { formatMileageAsMil } from '@/lib/listing-display'
-import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locations'
+import {
+  getMarketplaceCountryLocations,
+  inferMarketplaceLocation,
+  marketplaceListingMatchesLocationQuery,
+} from '@/lib/marketplace-locations'
 import { localizePublicHref, repairMojibakeText, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
@@ -157,19 +161,6 @@ function formatGeoBound(value: number) {
   return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
 }
 
-function normalizeFacetOption(option: string | { value: string; count: number }) {
-  if (typeof option === 'string') {
-    const value = option.trim()
-    return value ? { value, label: value } : null
-  }
-  const value = option.value.trim()
-  return value ? { value, label: `${value} (${option.count})` } : null
-}
-
-function isFacetSelectOption(option: ReturnType<typeof normalizeFacetOption>): option is { value: string; label: string } {
-  return option !== null
-}
-
 function countValues(values: string[]) {
   const counts = new Map<string, number>()
   for (const value of values) {
@@ -180,6 +171,35 @@ function countValues(values: string[]) {
   return new Map(
     Array.from(counts.entries()).sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'sv-SE')),
   )
+}
+
+function normalizeMarketplaceLocationSelection({
+  countryCode,
+  region,
+  municipality,
+  city,
+}: {
+  countryCode: string
+  region?: string | null
+  municipality?: string | null
+  city?: string | null
+}) {
+  const catalog = getMarketplaceCountryLocations(countryCode)
+  const explicitRegion = catalog.regions.find(
+    (item) => normalizeSearchText(item.name) === normalizeSearchText(region),
+  )
+  if (explicitRegion) {
+    return { region: explicitRegion.name, municipality: municipality || '' }
+  }
+
+  const inferred = inferMarketplaceLocation({
+    countryCode,
+    municipality: municipality || region,
+    city,
+  })
+  return inferred.region
+    ? inferred
+    : { region: region || '', municipality: municipality || '' }
 }
 
 type SavedVehicleSearch = {
@@ -1176,6 +1196,12 @@ export default function VehicleSearchExperience({
     initialMarkets.length ? initialMarkets : [safeInitialCountry],
     safeAutomaticCountry,
   )
+  const initialLocationSelection = normalizeMarketplaceLocationSelection({
+    countryCode: safeInitialMarkets[0] || safeAutomaticCountry,
+    region: initialRegion,
+    municipality: initialMunicipality,
+    city: initialCity,
+  })
   const initialSearchSuggestions = useMemo(
     () =>
       initialSearchChips
@@ -1272,9 +1298,9 @@ export default function VehicleSearchExperience({
   const [maxOperatingHours, setMaxOperatingHours] = useState(initialMaxOperatingHours)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
-  const [region, setRegion] = useState(initialRegion)
+  const [region, setRegion] = useState(initialLocationSelection.region)
   const [city, setCity] = useState(initialCity)
-  const [municipality, setMunicipality] = useState(initialMunicipality)
+  const [municipality, setMunicipality] = useState(initialLocationSelection.municipality)
   const [geoAreaId, setGeoAreaId] = useState(initialGeoAreaId)
   const [geoBounds, setGeoBounds] = useState<MarketplaceBoundingBox | null>(initialGeoBounds)
   const [geoFilterMode, setGeoFilterMode] = useState<GeoFilterMode>(initialGeoFilterMode)
@@ -1499,9 +1525,15 @@ export default function VehicleSearchExperience({
       setMaxOperatingHours(restored.maxOperatingHours || '')
       setMake(restored.make || '')
       setModel(restored.model || '')
-      setRegion(restored.region || '')
+      const restoredLocation = normalizeMarketplaceLocationSelection({
+        countryCode: restored.markets?.find(Boolean) || safeAutomaticCountry,
+        region: restored.region,
+        municipality: restored.municipality,
+        city: restored.city,
+      })
+      setRegion(restoredLocation.region)
       setCity(restored.city || '')
-      setMunicipality(restored.municipality || '')
+      setMunicipality(restoredLocation.municipality)
       setGeoAreaId(restored.geoAreaId || '')
       setGeoBounds(restored.geoBounds || null)
       setFuel(restored.fuel || '')
@@ -1732,23 +1764,46 @@ export default function VehicleSearchExperience({
         .sort((left, right) => left.value.localeCompare(right.value, locale)),
     }
   }, [locale, make, mode, optionListings])
+  const locationMarketCountryCode = selectedMarkets.find(Boolean) || safeInitialMarkets[0] || safeAutomaticCountry
+  const locationCatalog = useMemo(
+    () => getMarketplaceCountryLocations(locationMarketCountryCode),
+    [locationMarketCountryCode],
+  )
+  const inferredOptionLocations = useMemo(
+    () => optionListings.map((listing) => inferMarketplaceLocation({
+      countryCode: listing.country,
+      region: listing.region,
+      municipality: listing.municipality,
+      city: listing.city,
+    })),
+    [optionListings],
+  )
   const regionOptions = useMemo(() => {
-    const facetValues = (searchFacets?.regions || []).map(normalizeFacetOption).filter(isFacetSelectOption)
-    if (facetValues.length) return facetValues
-    return Array.from(
-      countValues(optionListings.map((listing) => listing.region || '')).entries(),
-    ).map(([value, count]) => ({ value, label: `${value} (${count})` }))
-  }, [optionListings, searchFacets?.regions])
+    const counts = countValues(inferredOptionLocations.map((location) => location.region))
+    return locationCatalog.regions.map((catalogRegion) => {
+      const count = counts.get(catalogRegion.name) || 0
+      return {
+        value: catalogRegion.name,
+        label: count ? `${catalogRegion.name} (${count})` : catalogRegion.name,
+      }
+    })
+  }, [inferredOptionLocations, locationCatalog.regions])
   const municipalityOptions = useMemo(() => {
-    const facetValues = (searchFacets?.municipalities || []).map(normalizeFacetOption).filter(isFacetSelectOption)
-    if (facetValues.length) return facetValues
-    const scopedListings = region
-      ? optionListings.filter((listing) => normalizeSearchText(listing.region) === normalizeSearchText(region))
-      : optionListings
-    return Array.from(
-      countValues(scopedListings.map((listing) => listing.municipality || listing.city || '')).entries(),
-    ).map(([value, count]) => ({ value, label: `${value} (${count})` }))
-  }, [optionListings, region, searchFacets?.municipalities])
+    if (!region) return []
+    const catalogRegion = locationCatalog.regions.find(
+      (item) => normalizeSearchText(item.name) === normalizeSearchText(region),
+    )
+    if (!catalogRegion) return []
+    const counts = countValues(
+      inferredOptionLocations
+        .filter((location) => normalizeSearchText(location.region) === normalizeSearchText(region))
+        .map((location) => location.municipality),
+    )
+    return catalogRegion.municipalities.map((name) => {
+      const count = counts.get(name) || 0
+      return { value: name, label: count ? `${name} (${count})` : name }
+    })
+  }, [inferredOptionLocations, locationCatalog.regions, region])
   const priceFilterCurrency = selectedMarkets.filter(Boolean).length === 1
     ? currencyForCountry(selectedMarkets.filter(Boolean)[0])
     : currencyForLocale(locale)
@@ -1784,15 +1839,15 @@ export default function VehicleSearchExperience({
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
       if (make && normalizeSearchText(listing.make) !== normalizeSearchText(make)) return false
       if (model && normalizeSearchText(listing.model) !== normalizeSearchText(model)) return false
-      if (region && !marketplaceListingMatchesLocationQuery({
-        query: region,
+      const inferredLocation = inferMarketplaceLocation({
         countryCode: listing.country,
-        city: listing.city,
+        region: listing.region,
         municipality: listing.municipality,
-        countryCodes: selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
-      })) return false
+        city: listing.city,
+      })
+      if (region && normalizeSearchText(inferredLocation.region) !== normalizeSearchText(region)) return false
       if (city && normalizeSearchText(listing.city) !== normalizeSearchText(city)) return false
-      if (municipality && normalizeSearchText(listing.municipality) !== normalizeSearchText(municipality)) return false
+      if (municipality && normalizeSearchText(inferredLocation.municipality) !== normalizeSearchText(municipality)) return false
       if (fuel && listing.fuelType !== fuel) return false
       if (gearbox && listing.gearbox !== gearbox) return false
       if (bodyType && listing.bodyType !== bodyType) return false
@@ -1966,10 +2021,10 @@ export default function VehicleSearchExperience({
 
   function updateRegionFilter(value: string) {
     setRegion(value)
+    setMunicipality('')
     setGeoAreaId('')
     setGeoBounds(null)
     setGeoFilterMode('legacy')
-    if (!value) setMunicipality('')
   }
 
   function updateMunicipalityFilter(value: string) {
@@ -3019,7 +3074,7 @@ export default function VehicleSearchExperience({
     model ? { key: 'model', label: model, onRemove: () => setModel('') } : null,
     region ? { key: 'region', label: region, onRemove: () => setRegion('') } : null,
     city ? { key: 'city', label: city, onRemove: () => setCity('') } : null,
-    municipality ? { key: 'municipality', label: `${municipality} kommun`, onRemove: () => setMunicipality('') } : null,
+    municipality ? { key: 'municipality', label: municipality, onRemove: () => setMunicipality('') } : null,
     fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
     gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
     bodyType ? { key: 'bodyType', label: translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType), onRemove: () => setBodyType('') } : null,
@@ -3263,8 +3318,16 @@ export default function VehicleSearchExperience({
                     onToggle={() => setLocationFiltersOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      <FilterSelect locale={locale} label={desktopListText.county} value={region} onChange={updateRegionFilter} options={regionOptions} />
-                      <FilterSelect locale={locale} label={desktopListText.municipality} value={municipality} onChange={updateMunicipalityFilter} options={municipalityOptions} />
+                      <LocationHierarchyFilter
+                        regionLabel={desktopListText.county}
+                        municipalityLabel={desktopListText.municipality}
+                        region={region}
+                        municipality={municipality}
+                        regionOptions={regionOptions}
+                        municipalityOptions={municipalityOptions}
+                        onRegionChange={updateRegionFilter}
+                        onMunicipalityChange={updateMunicipalityFilter}
+                      />
                       <FilterSelect
                         locale={locale}
                         label={uiText(locale, 'Market', 'Marknad', 'Markt')}
@@ -4809,7 +4872,7 @@ function RangeFilter({
       </div>
       <div
         ref={trackRef}
-        className="relative h-9 touch-none"
+        className="relative mx-2 h-8 touch-none"
         onPointerDown={(event) => {
           const handleTarget = (event.target as HTMLElement).closest<HTMLElement>('[data-range-handle]')
           const nextValue = valueFromClientX(event.clientX)
@@ -4837,7 +4900,7 @@ function RangeFilter({
         <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
         <button
           type="button"
-          className="absolute top-1/2 z-20 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-20 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_1px_4px_rgba(8,102,255,.18)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${lowerPercent}%` }}
           aria-label={`${title} min`}
           aria-valuemin={safeMinLimit}
@@ -4849,7 +4912,7 @@ function RangeFilter({
         />
         <button
           type="button"
-          className="absolute top-1/2 z-30 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-30 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_1px_4px_rgba(8,102,255,.18)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${upperPercent}%` }}
           aria-label={`${title} max`}
           aria-valuemin={lowerValue}
@@ -4906,6 +4969,75 @@ function FilterSelect({
       </select>
       <ChevronDown className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-[#667085]" />
     </label>
+  )
+}
+
+function LocationHierarchyFilter({
+  regionLabel,
+  municipalityLabel,
+  region,
+  municipality,
+  regionOptions,
+  municipalityOptions,
+  onRegionChange,
+  onMunicipalityChange,
+}: {
+  regionLabel: string
+  municipalityLabel: string
+  region: string
+  municipality: string
+  regionOptions: Array<{ value: string; label: string }>
+  municipalityOptions: Array<{ value: string; label: string }>
+  onRegionChange: (value: string) => void
+  onMunicipalityChange: (value: string) => void
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-[13px] font-semibold text-[#101828]">{regionLabel}</p>
+      <div className="space-y-0.5">
+        {regionOptions.map((option) => {
+          const selected = option.value === region
+          return (
+            <div key={option.value}>
+              <button
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onRegionChange(selected ? '' : option.value)}
+                className="flex min-h-8 w-full items-center gap-2 px-0.5 py-1 text-left text-[12px] font-normal text-[#344054] transition-colors hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+              >
+                <span className={`grid h-4 w-4 shrink-0 place-items-center border ${selected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white text-transparent'}`}>
+                  <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              </button>
+
+              {selected ? (
+                <div className="mb-1 ml-5 border-l border-[#e4e7ec] pl-2.5">
+                  <p className="sr-only">{municipalityLabel}</p>
+                  {municipalityOptions.map((municipalityOption) => {
+                    const municipalitySelected = municipalityOption.value === municipality
+                    return (
+                      <button
+                        key={municipalityOption.value}
+                        type="button"
+                        aria-pressed={municipalitySelected}
+                        onClick={() => onMunicipalityChange(municipalitySelected ? '' : municipalityOption.value)}
+                        className="flex min-h-8 w-full items-center gap-2 py-1 text-left text-[12px] font-normal text-[#475467] transition-colors hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                      >
+                        <span className={`grid h-4 w-4 shrink-0 place-items-center border ${municipalitySelected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white text-transparent'}`}>
+                          <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{municipalityOption.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
