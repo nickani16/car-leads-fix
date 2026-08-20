@@ -15,6 +15,10 @@ test('footer keeps localized copyright, language selector, currency selector and
     assert.match(footer, new RegExp(`\\n  ${locale}:`), `${locale} should have a language label`)
   }
   assert.match(footer, /© 2026 Autorell\. \{footerCopyright\[locale\]\}/)
+  assert.match(footer, /bg-white px-0 pb-0 pt-10/)
+  assert.doesNotMatch(footer, /<p className="mt-5[^>]*">\{t\.legalNotice\}<\/p>/)
+  assert.match(footer, /© 2026 Autorell\. \{footerCopyright\[locale\]\}[\s\S]*?<SocialLinks \/>/)
+  assert.equal(footer.match(/© 2026 Autorell\. \{footerCopyright\[locale\]\}/g)?.length, 1)
   assert.match(footer, /\{footerLanguageNames\[locale\]\}/)
   assert.match(footer, /ariaLabel=\{footerCurrencyLabels\[locale\]\}/)
   assert.match(footer, /defaultValue=\{footerMarket\.currency\}/)

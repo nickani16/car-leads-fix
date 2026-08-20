@@ -351,7 +351,7 @@ export default function PublicFooter({
   }
 
   return (
-    <footer className="border-t border-[#dbe3ee] bg-[#f4f6fa] px-0 pb-0 pt-10 text-[#101828] lg:pt-14">
+    <footer className="border-t border-[#dbe3ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-14">
       <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-[1.25fr_repeat(4,minmax(0,1fr))] lg:gap-x-12">
           <div className="col-span-2 flex max-w-[360px] flex-col items-start sm:col-span-3 lg:col-span-1">
@@ -363,7 +363,9 @@ export default function PublicFooter({
             >
               <BrandLogo underline={false} />
             </Link>
-            <p className="mt-5 text-[13px] leading-6 text-[#475467]">{t.legalNotice}</p>
+            <p className="mt-5 text-[14px] text-[#344f7a]">
+              © 2026 Autorell. {footerCopyright[locale]}
+            </p>
             <div className="mt-5">
               <SocialLinks />
             </div>
@@ -382,10 +384,8 @@ export default function PublicFooter({
 
         <div className="my-9 h-px bg-[#d8e0eb]" />
 
-        <div className="grid gap-5 pb-7 text-[13px] text-[#475467] lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
-          <p className="shrink-0">© 2026 Autorell. {footerCopyright[locale]}</p>
-
-          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium lg:justify-center">
+        <div className="grid gap-5 pb-7 text-[13px] text-[#475467] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
             <Link href={termsHref} className="transition hover:text-[#075fff]">
               {t.terms}
             </Link>
@@ -417,21 +417,21 @@ export default function PublicFooter({
           </nav>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
-              <button
-                type="button"
-                onClick={() => setIsMarketOpen(true)}
-                className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FlagIcon code={footerMarket.flagCode} size="sm" />
-                  {footerLanguageNames[locale]}
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              <FooterSelect
-                ariaLabel={footerCurrencyLabels[locale]}
-                defaultValue={footerMarket.currency}
-                options={[
+            <button
+              type="button"
+              onClick={() => setIsMarketOpen(true)}
+              className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+            >
+              <span className="inline-flex items-center gap-2">
+                <FlagIcon code={footerMarket.flagCode} size="sm" />
+                {footerLanguageNames[locale]}
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <FooterSelect
+              ariaLabel={footerCurrencyLabels[locale]}
+              defaultValue={footerMarket.currency}
+              options={[
                   ['eur', 'EUR'],
                   ['sek', 'SEK'],
                   ['dkk', 'DKK'],
@@ -444,8 +444,8 @@ export default function PublicFooter({
                   ['chf', 'CHF'],
                   ['gbp', 'GBP'],
                   ['usd', 'USD'],
-                ]}
-              />
+              ]}
+            />
           </div>
         </div>
       </div>
