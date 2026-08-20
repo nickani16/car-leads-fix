@@ -17,6 +17,10 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
+const floatingGlassToneSource = readFileSync(
+  new URL('../lib/floating-glass-tone.ts', import.meta.url),
+  'utf8',
+)
 const listingCardImageCarouselSource = readFileSync(
   new URL('../app/components/ListingCardImageCarousel.tsx', import.meta.url),
   'utf8',
@@ -555,7 +559,7 @@ test('marketplace comparison is localized, capped at four and uses a comparison 
 
 test('marketplace mobile shortcuts use existing map, saved search and sorting controls', () => {
   assert.match(vehicleSearchExperienceSource, /aria-label=\{uiText\(locale, 'Marketplace shortcuts'/)
-  assert.match(vehicleSearchExperienceSource, /fixed left-1\/2 z-\[86\] flex w-\[min\(356px,calc\(100vw-24px\)\)\] -translate-x-1\/2/)
+  assert.match(vehicleSearchExperienceSource, /fixed left-1\/2 z-\[86\] flex w-\[min\(960px,calc\(100vw-32px\)\)\] -translate-x-1\/2/)
   assert.match(vehicleSearchExperienceSource, /bottom-\[calc\(var\(--autorell-mobile-bottom-gap/)
   assert.match(vehicleSearchExperienceSource, /var\(--autorell-mobile-bottom-gap,20px\)/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /VehicleSearchFooter locale=\{locale\} \/>[\s\S]*h-\[calc\(var\(--autorell-mobile-bottom-gap/)
@@ -571,14 +575,14 @@ test('marketplace mobile shortcuts use existing map, saved search and sorting co
   assert.match(vehicleSearchExperienceSource, /uiText\(locale, 'Sort', 'Sortera', 'Sortieren'\)/)
   assert.match(vehicleSearchExperienceSource, /inline-flex h-9 min-w-0 flex-1/)
   assert.match(vehicleSearchExperienceSource, /style=\{\{ fontWeight: 400 \}\}/)
-  assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 text-white supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
-  assert.match(vehicleSearchExperienceSource, /'border border-\[#101828\]\/10 bg-white\/72 text-\[#111827\] supports-\[backdrop-filter\]:bg-white\/64'/)
+  assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia\s*\?\s*'bg-\[#111827\]\/70 text-white supports-\[backdrop-filter\]:bg-\[#111827\]\/58'/)
+  assert.match(vehicleSearchExperienceSource, /'bg-white\/78 text-\[#111827\] supports-\[backdrop-filter\]:bg-white\/58'/)
   assert.match(vehicleSearchExperienceSource, /data-autorell-floating-shortcuts-tone=\{mobileShortcutOverMedia \? 'light' : 'dark'\}/)
   assert.match(vehicleSearchExperienceSource, /mobileShortcutOverMedia \? 'text-white' : 'text-\[#111827\]'/)
-  assert.match(vehicleSearchExperienceSource, /floatingControlsOverlapMedia\(mobileShortcutBarRef\.current\)/)
+  assert.match(vehicleSearchExperienceSource, /shouldUseDarkFloatingGlass\(mobileShortcutBarRef\.current, current\)/)
   assert.match(vehicleSearchExperienceSource, /document\.addEventListener\('scroll', updateShortcutContrast, \{ passive: true, capture: true \}\)/)
   assert.match(listingCardImageCarouselSource, /data-autorell-media-surface="true"/)
-  assert.match(vehicleSearchExperienceSource, /supports-\[backdrop-filter\]:bg-white\/64/)
+  assert.match(vehicleSearchExperienceSource, /backdrop-blur-\[26px\] backdrop-saturate-\[160%\]/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /border border-white\/70 bg-white\/72/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /inset_0_1px_0\(rgba\(255,255,255/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /bg-\[#101828\]\/86 px-3 text-\[13px\] font-normal text-white/)
@@ -601,15 +605,25 @@ test('mobile bottom navigation glass avoids white outlines and adapts inactive i
   assert.match(publicHeaderSource, /window\.visualViewport\?\.addEventListener\('scroll', updateMobileBottomInset\)/)
   assert.match(publicHeaderSource, /pb-\[var\(--autorell-mobile-bottom-gap/)
   assert.match(publicHeaderSource, /pb-\[var\(--autorell-mobile-bottom-gap,20px\)\]/)
-  assert.match(publicHeaderSource, /mobileNavOverMedia\s*\?\s*'border border-white\/10 bg-\[#101828\]\/72 supports-\[backdrop-filter\]:bg-\[#101828\]\/64'/)
-  assert.match(publicHeaderSource, /'border border-\[#101828\]\/10 bg-white\/72 supports-\[backdrop-filter\]:bg-white\/64'/)
+  assert.match(publicHeaderSource, /mobileNavOverMedia\s*\?\s*'bg-\[#111827\]\/70 supports-\[backdrop-filter\]:bg-\[#111827\]\/58'/)
+  assert.match(publicHeaderSource, /'bg-white\/78 supports-\[backdrop-filter\]:bg-white\/58'/)
   assert.match(publicHeaderSource, /data-autorell-mobile-nav-tone=\{mobileNavOverMedia \? 'light' : 'dark'\}/)
   assert.match(publicHeaderSource, /mobileNavOverMedia \? 'text-white' : 'text-\[#101828\]'/)
-  assert.match(publicHeaderSource, /floatingNavOverlapsMedia\(mobileBottomNavRef\.current\)/)
+  assert.match(publicHeaderSource, /shouldUseDarkFloatingGlass\(mobileBottomNavRef\.current, current\)/)
   assert.match(publicHeaderSource, /document\.addEventListener\('scroll', updateNavContrast, \{ passive: true, capture: true \}\)/)
+  assert.match(publicHeaderSource, /backdrop-blur-\[28px\] backdrop-saturate-\[165%\]/)
   assert.doesNotMatch(publicHeaderSource, /rounded-\[28px\] border border-white\/70 bg-white\/72/)
   assert.doesNotMatch(publicHeaderSource, /inset_0_1px_0\(rgba\(255,255,255/)
   assert.doesNotMatch(publicHeaderSource, /\[mix-blend-mode:difference\]/)
+})
+
+test('adaptive floating glass requires broad dark coverage and uses hysteresis', () => {
+  assert.match(floatingGlassToneSource, /const sampleColumns = \[0\.08, 0\.25, 0\.42, 0\.58, 0\.75, 0\.92\]/)
+  assert.match(floatingGlassToneSource, /const sampleRows = \[0\.2, 0\.5, 0\.8\]/)
+  assert.match(floatingGlassToneSource, /const darkEnterThreshold = 0\.68/)
+  assert.match(floatingGlassToneSource, /const darkExitThreshold = 0\.48/)
+  assert.match(floatingGlassToneSource, /darkPoints \/ measuredPoints/)
+  assert.doesNotMatch(floatingGlassToneSource, /\.some\(\(surface\)/)
 })
 
 test('marketplace mobile listing prices do not render as underlined detected numbers', () => {

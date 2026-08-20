@@ -35,6 +35,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
+import { shouldUseDarkFloatingGlass } from '@/lib/floating-glass-tone'
 import BrandLogo from './BrandLogo'
 import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
@@ -104,47 +105,6 @@ type SearchMegaCopy = {
   leasingText: string
   openCategory: string
   openLeasing: string
-}
-
-function floatingNavOverlapsMedia(root: HTMLElement | null) {
-  if (!root || typeof document === 'undefined') return false
-  const rect = root.getBoundingClientRect()
-  if (rect.width <= 0 || rect.height <= 0) return false
-
-  const mediaSurfaces = Array.from(document.querySelectorAll('[data-autorell-media-surface]'))
-  const overlapsMedia = mediaSurfaces.some((surface) => {
-    const mediaRect = surface.getBoundingClientRect()
-    return (
-      mediaRect.width > 0 &&
-      mediaRect.height > 0 &&
-      rect.left < mediaRect.right &&
-      rect.right > mediaRect.left &&
-      rect.top < mediaRect.bottom &&
-      rect.bottom > mediaRect.top
-    )
-  })
-
-  if (overlapsMedia) return true
-
-  const y = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2))
-  const samplePoints = [0.18, 0.42, 0.66, 0.9]
-  return samplePoints.some((point) => {
-    const x = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width * point))
-    return document.elementsFromPoint(x, y).some((element) => {
-      if (root.contains(element)) return false
-      if (element.closest('[data-autorell-media-surface]')) return true
-
-      const computed = window.getComputedStyle(element)
-      const color = computed.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
-      if (!color) return false
-
-      const alpha = color[4] === undefined ? 1 : Number(color[4])
-      if (alpha < 0.45) return false
-
-      const luminance = (Number(color[1]) * 0.2126 + Number(color[2]) * 0.7152 + Number(color[3]) * 0.0722) / 255
-      return luminance < 0.38
-    })
-  })
 }
 
 const searchMegaCopy: Record<PublicLocale, SearchMegaCopy> = {
@@ -731,7 +691,7 @@ export default function PublicHeader({
     const updateNavContrast = () => {
       window.cancelAnimationFrame(frame)
       frame = window.requestAnimationFrame(() => {
-        setMobileNavOverMedia(floatingNavOverlapsMedia(mobileBottomNavRef.current))
+        setMobileNavOverMedia((current) => shouldUseDarkFloatingGlass(mobileBottomNavRef.current, current))
       })
     }
 
@@ -2503,10 +2463,10 @@ export default function PublicHeader({
         style={{ width: 'min(960px, calc(100vw - 32px))' }}
       >
         <div
-          className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 backdrop-blur-2xl transition-colors ${
+          className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 backdrop-blur-[28px] backdrop-saturate-[165%] transition-[background-color,color] duration-300 ${
             mobileNavOverMedia
-              ? 'border border-white/10 bg-[#101828]/72 supports-[backdrop-filter]:bg-[#101828]/64'
-              : 'border border-[#101828]/10 bg-white/72 supports-[backdrop-filter]:bg-white/64'
+              ? 'bg-[#111827]/70 supports-[backdrop-filter]:bg-[#111827]/58'
+              : 'bg-white/78 supports-[backdrop-filter]:bg-white/58'
           }`}
           style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
         >

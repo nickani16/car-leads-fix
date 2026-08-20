@@ -54,6 +54,7 @@ import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
+import { shouldUseDarkFloatingGlass } from '@/lib/floating-glass-tone'
 import {
   getMarketplaceCountryLocations,
   inferMarketplaceLocation,
@@ -80,47 +81,6 @@ type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
   dedupeKey: string
-}
-
-function floatingControlsOverlapMedia(root: HTMLElement | null) {
-  if (!root || typeof document === 'undefined') return false
-  const rect = root.getBoundingClientRect()
-  if (rect.width <= 0 || rect.height <= 0) return false
-
-  const mediaSurfaces = Array.from(document.querySelectorAll('[data-autorell-media-surface]'))
-  const overlapsMedia = mediaSurfaces.some((surface) => {
-    const mediaRect = surface.getBoundingClientRect()
-    return (
-      mediaRect.width > 0 &&
-      mediaRect.height > 0 &&
-      rect.left < mediaRect.right &&
-      rect.right > mediaRect.left &&
-      rect.top < mediaRect.bottom &&
-      rect.bottom > mediaRect.top
-    )
-  })
-
-  if (overlapsMedia) return true
-
-  const y = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2))
-  const samplePoints = [0.2, 0.5, 0.8]
-  return samplePoints.some((point) => {
-    const x = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width * point))
-    return document.elementsFromPoint(x, y).some((element) => {
-      if (root.contains(element)) return false
-      if (element.closest('[data-autorell-media-surface]')) return true
-
-      const computed = window.getComputedStyle(element)
-      const color = computed.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
-      if (!color) return false
-
-      const alpha = color[4] === undefined ? 1 : Number(color[4])
-      if (alpha < 0.45) return false
-
-      const luminance = (Number(color[1]) * 0.2126 + Number(color[2]) * 0.7152 + Number(color[3]) * 0.0722) / 255
-      return luminance < 0.38
-    })
-  })
 }
 
 type ListingInsuranceOffer = {
@@ -1361,7 +1321,9 @@ export default function VehicleSearchExperience({
     const updateShortcutContrast = () => {
       window.cancelAnimationFrame(frame)
       frame = window.requestAnimationFrame(() => {
-        setMobileShortcutOverMedia(!mobileMapOpen && floatingControlsOverlapMedia(mobileShortcutBarRef.current))
+        setMobileShortcutOverMedia((current) => (
+          !mobileMapOpen && shouldUseDarkFloatingGlass(mobileShortcutBarRef.current, current)
+        ))
       })
     }
 
@@ -3915,10 +3877,10 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={() => setMobileMapOpen(true)}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] ${
                   mobileShortcutOverMedia
-                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
-                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
                 }`}
                 style={{ fontWeight: 400 }}
               >
@@ -3929,10 +3891,10 @@ export default function VehicleSearchExperience({
                 type="button"
                 onClick={saveCurrentSearch}
                 disabled={savingSearch}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
                   mobileShortcutOverMedia
-                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
-                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
                 }`}
                 style={{ fontWeight: 400 }}
               >
@@ -3942,10 +3904,10 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={focusMobileSortControl}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] ${
                   mobileShortcutOverMedia
-                    ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
-                    : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
                 }`}
                 style={{ fontWeight: 400 }}
               >
