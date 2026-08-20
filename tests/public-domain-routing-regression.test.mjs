@@ -8,6 +8,7 @@ const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
 const footer = readFileSync(new URL('../app/components/PublicFooter.tsx', import.meta.url), 'utf8')
+const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const publicInfoPage = readFileSync(new URL('../app/components/PublicInfoPage.tsx', import.meta.url), 'utf8')
 const seoLandingData = readFileSync(new URL('../lib/seo-landing-data.ts', import.meta.url), 'utf8')
 
@@ -18,6 +19,9 @@ test('Swedish and German markets use their own canonical domains', () => {
   assert.match(proxy, /'autorell\.de': 'www\.autorell\.de'/)
   assert.match(publicSeo, /locale === 'sv'.*https:\/\/www\.autorell\.se/)
   assert.match(publicSeo, /locale === 'de'.*https:\/\/www\.autorell\.de/)
+  assert.match(publicSeo, /locale === 'sv' \|\| locale === 'de' \? '' : localePathPrefix\(locale\)/)
+  assert.doesNotMatch(publicSeo, /autorell\.se\/se/)
+  assert.doesNotMatch(publicSeo, /autorell\.de\/de/)
 })
 
 test('domain sitemap indexes and shards cannot mix markets', () => {
@@ -36,6 +40,9 @@ test('shared public pages and structured data use the market domain helper', () 
 })
 
 test('regular mobile footer can scroll above the fixed bottom navigation', () => {
-  assert.match(footer, /pb-\[calc\(7rem\+env\(safe-area-inset-bottom\)\)\]/)
+  assert.match(footer, /--autorell-mobile-footer-reserve,4\.75rem/)
+  assert.match(header, /--autorell-mobile-footer-reserve/)
+  assert.match(header, /mobileNavVisible \? '5\.5rem' : '4\.75rem'/)
+  assert.match(header, /document\.documentElement\.scrollHeight - 160/)
   assert.match(footer, /min-\[1120px\]:pb-7/)
 })

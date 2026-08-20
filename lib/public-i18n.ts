@@ -124,7 +124,7 @@ export function localizePublicHref(locale: PublicLocale, href: string) {
   }
 
   const strippedPath = stripLocalePrefix(normalizedPath)
-  const prefix = localePathPrefix(locale)
+  const prefix = locale === 'sv' || locale === 'de' ? '' : localePathPrefix(locale)
   const localized =
     prefix === ''
       ? strippedPath
@@ -197,13 +197,13 @@ export function getPublicAlternates(pathname: string) {
   const domainAlternates: Array<[string, string]> =
     normalized === ''
       ? [
-          ['sv-SE', 'https://www.autorell.se/se'],
-          ['de-DE', 'https://www.autorell.de/de'],
+          ['sv-SE', 'https://www.autorell.se/'],
+          ['de-DE', 'https://www.autorell.de/'],
         ]
       : normalized === '/find-cars'
         ? [
-            ['sv-SE', 'https://www.autorell.se/se/hitta-bilar'],
-            ['de-DE', 'https://www.autorell.de/de/fahrzeuge-finden'],
+            ['sv-SE', 'https://www.autorell.se/hitta-bilar'],
+            ['de-DE', 'https://www.autorell.de/fahrzeuge-finden'],
           ]
         : []
 

@@ -384,7 +384,7 @@ export default function PublicFooter({
 
         <div className="my-9 h-px bg-[#d8e0eb]" />
 
-        <div className="grid gap-5 pb-[calc(7rem+env(safe-area-inset-bottom))] text-[13px] text-[#475467] min-[1120px]:pb-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="grid gap-5 pb-[calc(var(--autorell-mobile-footer-reserve,4.75rem)+env(safe-area-inset-bottom))] text-[13px] text-[#475467] min-[1120px]:pb-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
             <Link href={termsHref} className="transition hover:text-[#075fff]">
               {t.terms}

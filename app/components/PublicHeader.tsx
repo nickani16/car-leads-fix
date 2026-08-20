@@ -661,6 +661,8 @@ export default function PublicHeader({
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const difference = currentScrollY - lastScrollY.current
+      const nearPageBottom =
+        currentScrollY + window.innerHeight >= document.documentElement.scrollHeight - 160
       setAtPageTop(currentScrollY < 8)
 
       if (isMarketplaceRoute) {
@@ -684,7 +686,7 @@ export default function PublicHeader({
         return
       }
 
-      if (currentScrollY < 10) setVisible(true)
+      if (currentScrollY < 10 || nearPageBottom) setVisible(true)
       else if (difference > 1) {
         setVisible(false)
         setOpen(false)
@@ -707,6 +709,20 @@ export default function PublicHeader({
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isMarketplaceRoute])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const root = document.documentElement
+    const mobileNavVisible =
+      !hideMobileBottomNav &&
+      (keepMobileBottomNavVisible || visible || open || mobileCategoryOpen || mobileMoreOpen)
+
+    root.style.setProperty('--autorell-mobile-footer-reserve', mobileNavVisible ? '5.5rem' : '4.75rem')
+    return () => {
+      root.style.removeProperty('--autorell-mobile-footer-reserve')
+    }
+  }, [hideMobileBottomNav, keepMobileBottomNavVisible, mobileCategoryOpen, mobileMoreOpen, open, visible])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1019,8 +1035,8 @@ export default function PublicHeader({
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
     ...([
-      ['se', 'SE', 'Sverige', 'https://www.autorell.se/se'] as const,
-      ['de', 'DE', 'Deutschland', 'https://www.autorell.de/de'] as const,
+      ['se', 'SE', 'Sverige', 'https://www.autorell.se/'] as const,
+      ['de', 'DE', 'Deutschland', 'https://www.autorell.de/'] as const,
       ...euBuyerMarkets
         .filter((market) => !highlightedMarketCodes.has(market.code))
         .map(

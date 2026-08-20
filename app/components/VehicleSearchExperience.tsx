@@ -3595,7 +3595,7 @@ export default function VehicleSearchExperience({
 
                 <div
                     aria-hidden={!filtersOpen}
-                    className={`fixed inset-0 z-[180] h-screen max-h-screen overflow-hidden rounded-none bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out [height:100dvh] [max-height:100dvh] min-[1120px]:absolute min-[1120px]:inset-0 min-[1120px]:z-50 min-[1120px]:h-auto min-[1120px]:max-h-none min-[1120px]:rounded-none min-[1120px]:border-t-0 min-[1120px]:shadow-none ${
+                    className={`fixed inset-x-0 top-0 bottom-[var(--autorell-mobile-browser-inset,0px)] z-[180] overflow-hidden rounded-none bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out min-[1120px]:absolute min-[1120px]:inset-0 min-[1120px]:z-50 min-[1120px]:h-auto min-[1120px]:max-h-none min-[1120px]:rounded-none min-[1120px]:border-t-0 min-[1120px]:shadow-none ${
                       filtersOpen
                         ? 'translate-y-0 opacity-100'
                         : 'pointer-events-none translate-y-full opacity-0 min-[1120px]:translate-y-6'
@@ -3661,7 +3661,7 @@ export default function VehicleSearchExperience({
                          <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle category, keyword and equipment.', 'Avgränsa på fordonskategori, sökord och utrustning.', 'Nach Fahrzeugkategorie, Suchbegriff und Ausstattung eingrenzen.')}</p>
                       )}
                     </div>
-                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
                     {renderLocationFilterSection()}
                     <div className="hidden">
@@ -3722,7 +3722,7 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                   </div>
-                      <div className="grid grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-7 sm:py-4">
+                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-7 sm:py-4">
                         <button
                           type="button"
                           onClick={resetFilters}
@@ -5070,7 +5070,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   ]
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
+    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-[calc(8.25rem+env(safe-area-inset-bottom))] pt-8 text-[#101828] sm:px-6 min-[1120px]:pb-8">
       <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>

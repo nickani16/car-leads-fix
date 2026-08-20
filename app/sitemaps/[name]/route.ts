@@ -278,8 +278,12 @@ function pageFromSitemapName(name: string) {
 
 function sitemapUrl(path: string, lastmod?: string, changefreq?: string, priority?: string) {
   const market = path.split('/').filter(Boolean)[0] as SitemapMarketCode
+  const publicPath =
+    market === 'se' || market === 'de'
+      ? path.slice(market.length + 1) || '/'
+      : path
   return {
-    loc: `${sitemapHostForMarket(market)}${path}`,
+    loc: `${sitemapHostForMarket(market)}${publicPath === '/' ? '' : publicPath}`,
     lastmod: lastmod ? new Date(lastmod).toISOString() : undefined,
     changefreq,
     priority,

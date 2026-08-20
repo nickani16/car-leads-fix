@@ -554,6 +554,20 @@ function redirectToHost(
   return NextResponse.redirect(url, status)
 }
 
+function countryDomainMarketPrefix(hostname: string) {
+  if (hostname === MARKET_HOSTS.sv) return 'se'
+  if (hostname === MARKET_HOSTS.de) return 'de'
+  return null
+}
+
+function stripCountryDomainMarketPrefix(pathname: string, marketPrefix: string) {
+  if (pathname === `/${marketPrefix}`) return '/'
+  if (pathname.startsWith(`/${marketPrefix}/`)) {
+    return pathname.slice(marketPrefix.length + 1) || '/'
+  }
+  return pathname
+}
+
 function isMarketSelection(value: string | null): value is string {
   return Boolean(
     value &&
@@ -578,7 +592,12 @@ function redirectToMarket(request: NextRequest, market: string) {
   url.protocol = 'https:'
   url.hostname = targetHostname
   url.port = ''
-  url.pathname = isLocalizedMarket ? `/${market === 'sv' ? 'se' : market}` : '/'
+  url.pathname =
+    market === 'sv' || market === 'de'
+      ? '/'
+      : isLocalizedMarket
+        ? `/${market}`
+        : '/'
 
   if (hostname !== targetHostname) {
     url.searchParams.set('market', market)
@@ -920,7 +939,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const publicPathSegments = pathname.split('/').filter(Boolean)
+  const countryDomainPrefix = countryDomainMarketPrefix(hostname)
+  if (methodCanRedirect && countryDomainPrefix) {
+    const requestedPrefix = pathname.split('/').filter(Boolean)[0]
+    if (requestedPrefix === 'se' || requestedPrefix === 'de') {
+      const targetHost = requestedPrefix === 'se' ? MARKET_HOSTS.sv : MARKET_HOSTS.de
+      const cleanPathname = stripCountryDomainMarketPrefix(pathname, requestedPrefix)
+      return redirectToHost(request, targetHost, 308, cleanPathname)
+    }
+  }
+
+  const routingPathname = countryDomainPrefix
+    ? `/${countryDomainPrefix}${pathname === '/' ? '' : pathname}`
+    : pathname
+  const publicPathSegments = routingPathname.split('/').filter(Boolean)
   const publicPathMarket = publicPathSegments[0]
   const publicLocaleContext = publicPathMarket
     ? getLocaleFromPathMarket(publicPathMarket)
@@ -940,19 +972,11 @@ export async function proxy(request: NextRequest) {
     hostname !== expectedPublicHost &&
     Object.prototype.hasOwnProperty.call(MARKET_BY_HOST, hostname)
   ) {
-    return redirectToHost(request, expectedPublicHost, 308)
-  }
-
-  const hostMarket = MARKET_BY_HOST[hostname]
-  if (
-    methodCanRedirect &&
-    (hostMarket === 'sv' || hostMarket === 'de') &&
-    !publicLocaleContext
-  ) {
-    const url = request.nextUrl.clone()
-    const marketPrefix = hostMarket === 'sv' ? '/se' : '/de'
-    url.pathname = `${marketPrefix}${pathname === '/' ? '' : pathname}`
-    return NextResponse.redirect(url, 308)
+    const targetPathname =
+      publicPathMarket === 'se' || publicPathMarket === 'de'
+        ? stripCountryDomainMarketPrefix(pathname, publicPathMarket)
+        : pathname
+    return redirectToHost(request, expectedPublicHost, 308, targetPathname)
   }
 
   if (
@@ -960,7 +984,7 @@ export async function proxy(request: NextRequest) {
     hostname === 'localhost' ||
     hostname === '127.0.0.1'
   ) {
-    const segments = pathname.split('/').filter(Boolean)
+    const segments = routingPathname.split('/').filter(Boolean)
     const pathMarket = segments[0]
     const localeContext = pathMarket
       ? getLocaleFromPathMarket(pathMarket)
@@ -972,7 +996,9 @@ export async function proxy(request: NextRequest) {
         : null
       if (methodCanRedirect && retiredLocalizedCategoryTarget) {
         const url = request.nextUrl.clone()
-        url.pathname = `/${pathMarket}${retiredLocalizedCategoryTarget}`
+        url.pathname = countryDomainPrefix
+          ? retiredLocalizedCategoryTarget
+          : `/${pathMarket}${retiredLocalizedCategoryTarget}`
         url.search = ''
         return NextResponse.redirect(url, 308)
       }
@@ -982,10 +1008,13 @@ export async function proxy(request: NextRequest) {
         : null
       if (methodCanRedirect && canonicalSlug) {
         const url = request.nextUrl.clone()
-        url.pathname = `/${pathMarket}/${[
+        const localizedPathname = `/${pathMarket}/${[
           canonicalSlug,
           ...segments.slice(2),
         ].join('/')}`
+        url.pathname = countryDomainPrefix
+          ? stripCountryDomainMarketPrefix(localizedPathname, pathMarket)
+          : localizedPathname
         return NextResponse.redirect(url, 308)
       }
 
@@ -998,9 +1027,13 @@ export async function proxy(request: NextRequest) {
       // metadata, content, and canonical URLs are market-specific. Do not strip
       // the market segment through the legacy localized-page rewrite below.
       if (segments[1] === 'app' || segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car' || LOCALIZED_AD_SEGMENTS.has(segments[1] || '')) {
+        const localizedUrl = request.nextUrl.clone()
+        localizedUrl.pathname = routingPathname
         return withMarketCookie(
           withLanguageCookie(
-            NextResponse.next({ request: { headers: requestHeaders } }),
+            countryDomainPrefix
+              ? NextResponse.rewrite(localizedUrl, { request: { headers: requestHeaders } })
+              : NextResponse.next({ request: { headers: requestHeaders } }),
             localeContext.language,
           ),
           localeContext.market,
@@ -1023,9 +1056,13 @@ export async function proxy(request: NextRequest) {
       }
 
       if (segments.length === 1) {
+        const localizedUrl = request.nextUrl.clone()
+        localizedUrl.pathname = routingPathname
         return withMarketCookie(
           withLanguageCookie(
-            NextResponse.next({ request: { headers: requestHeaders } }),
+            countryDomainPrefix
+              ? NextResponse.rewrite(localizedUrl, { request: { headers: requestHeaders } })
+              : NextResponse.next({ request: { headers: requestHeaders } }),
             localeContext.language,
           ),
           localeContext.market,
@@ -1039,6 +1076,7 @@ export async function proxy(request: NextRequest) {
           ? rawNext
           : ''
         url.pathname = `/${pathMarket}`
+        if (countryDomainPrefix) url.pathname = '/'
         url.search = ''
         url.searchParams.set('auth', segments[1] === 'login' ? 'login' : segments[1])
         if (next) url.searchParams.set('next', next)
@@ -1149,9 +1187,9 @@ export async function proxy(request: NextRequest) {
       if (targetMarket === 'sv') {
         const url = request.nextUrl.clone()
         url.protocol = 'https:'
-        url.hostname = MARKET_HOSTS.en
+        url.hostname = MARKET_HOSTS.sv
         url.port = ''
-        url.pathname = '/se'
+        url.pathname = '/'
         return withMarketCookie(
           withLanguageCookie(NextResponse.redirect(url, 307), 'sv'),
           'sv',
@@ -1160,9 +1198,9 @@ export async function proxy(request: NextRequest) {
       if (targetMarket === 'de') {
         const url = request.nextUrl.clone()
         url.protocol = 'https:'
-        url.hostname = MARKET_HOSTS.en
+        url.hostname = MARKET_HOSTS.de
         url.port = ''
-        url.pathname = '/de'
+        url.pathname = '/'
         return withMarketCookie(
           withLanguageCookie(NextResponse.redirect(url, 307), 'de'),
           'de',

@@ -3,7 +3,12 @@ import * as cheerio from 'cheerio'
 
 const baseUrl = new URL(process.argv[2] || process.env.SEO_BASE_URL || 'http://127.0.0.1:3000')
 const canonicalOrigin = 'https://www.autorell.com'
-const markets = ['se', 'de', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'at', 'dk', 'fi']
+const canonicalOrigins = {
+  se: 'https://www.autorell.se',
+  de: 'https://www.autorell.de',
+}
+const defaultMarkets = ['se', 'de', 'fr', 'it', 'es', 'nl', 'be', 'pl', 'at', 'dk', 'fi']
+const markets = process.env.SEO_MARKETS?.split(',').map((market) => market.trim()).filter(Boolean) || defaultMarkets
 const sitemapFamilies = [
   (market) => `categories-${market}.xml`,
   (market) => `brands-${market}.xml`,
@@ -40,10 +45,15 @@ console.log(`Verified ${results.length} rendered SEO landings across ${markets.l
 
 async function verifyLanding({ market, sitemap, canonicalUrl }) {
   const canonical = new URL(canonicalUrl)
-  assert.equal(canonical.origin, canonicalOrigin, `${sitemap} contains a non-canonical origin`)
+  const expectedOrigin = canonicalOrigins[market] || canonicalOrigin
+  assert.equal(canonical.origin, expectedOrigin, `${sitemap} contains a non-canonical origin`)
   assert.equal(canonical.search, '', `${sitemap} contains a query URL: ${canonicalUrl}`)
 
-  const requestUrl = new URL(`${canonical.pathname}${canonical.search}`, baseUrl)
+  const localMarketPrefix =
+    ['127.0.0.1', 'localhost'].includes(baseUrl.hostname) && ['se', 'de'].includes(market)
+      ? `/${market}`
+      : ''
+  const requestUrl = new URL(`${localMarketPrefix}${canonical.pathname}${canonical.search}`, baseUrl)
   const response = await fetch(requestUrl, { redirect: 'manual' })
   assert.equal(response.status, 200, `${canonical.pathname} returned ${response.status}`)
 

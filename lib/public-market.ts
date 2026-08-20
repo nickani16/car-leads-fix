@@ -12,7 +12,7 @@ const categoryPaths = marketplaceCategories.map(
 
 const marketConfig = {
   sv: {
-    host: 'https://www.autorell.se/se',
+    host: 'https://www.autorell.se',
     paths: [
       '',
       '/hitta-bilar',
@@ -32,7 +32,7 @@ const marketConfig = {
     priorityPath: '/marketplace/cars',
   },
   de: {
-    host: 'https://www.autorell.de/de',
+    host: 'https://www.autorell.de',
     paths: [
       '',
       '/fahrzeuge-finden',

@@ -12,7 +12,13 @@ export function publicHostForLocale(locale: PublicLocale) {
 
 export function publicUrlForLocale(locale: PublicLocale, path = '/') {
   const normalizedPath = path === '/' ? '' : path
-  return `${publicHostForLocale(locale)}${localePathPrefix(locale)}${normalizedPath}`
+  const countryPrefix = locale === 'sv' ? '/se' : locale === 'de' ? '/de' : ''
+  const publicPath =
+    countryPrefix && (normalizedPath === countryPrefix || normalizedPath.startsWith(`${countryPrefix}/`))
+      ? normalizedPath.slice(countryPrefix.length)
+      : normalizedPath
+  const prefix = locale === 'sv' || locale === 'de' ? '' : localePathPrefix(locale)
+  return `${publicHostForLocale(locale)}${prefix}${publicPath}`
 }
 
 export function publicUrlForPath(path: string) {
@@ -24,7 +30,11 @@ export function publicUrlForPath(path: string) {
       : market === 'de'
         ? 'https://www.autorell.de'
         : defaultSiteHost
-  return `${host}${normalizedPath === '/' ? '' : normalizedPath}`
+  const publicPath =
+    market === 'se' || market === 'de'
+      ? normalizedPath.slice(market.length + 1) || '/'
+      : normalizedPath
+  return `${host}${publicPath === '/' ? '' : publicPath}`
 }
 
 const hreflangByLocale: Record<PublicLocale, string> = {
