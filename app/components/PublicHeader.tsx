@@ -1030,7 +1030,10 @@ export default function PublicHeader({
     (['eu', 'EU', 'Europe', 'https://www.autorell.com/'] as const)
 
   const homeHref = localizePublicHref(locale, '/')
-  const marketPathPrefix = activeMarketCode === 'eu' ? '' : `/${activeMarketCode}`
+  const marketPathPrefix =
+    activeMarketCode === 'eu' || activeMarketCode === 'se' || activeMarketCode === 'de'
+      ? ''
+      : `/${activeMarketCode}`
   const accountHref = `${marketPathPrefix}/account`
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/saved`

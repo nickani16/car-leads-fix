@@ -805,8 +805,10 @@ function MarketCard({
 
 function marketHref(countryCode: string) {
   const normalizedCode = countryCode.toUpperCase()
-  if (normalizedCode === 'EU') return '/?market=en'
-  return `/${normalizedCode.toLowerCase()}`
+  if (normalizedCode === 'EU') return 'https://www.autorell.com/?market=en'
+  if (normalizedCode === 'SE') return 'https://www.autorell.se/'
+  if (normalizedCode === 'DE') return 'https://www.autorell.de/'
+  return `https://www.autorell.com/${normalizedCode.toLowerCase()}`
 }
 
 function isActiveMarket(

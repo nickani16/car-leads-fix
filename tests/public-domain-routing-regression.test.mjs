@@ -24,6 +24,34 @@ test('Swedish and German markets use their own canonical domains', () => {
   assert.doesNotMatch(publicSeo, /autorell\.de\/de/)
 })
 
+test('market switching never nests another market below the Swedish or German domain', () => {
+  assert.match(footer, /normalizedCode === 'SE'.*https:\/\/www\.autorell\.se\//s)
+  assert.match(footer, /normalizedCode === 'DE'.*https:\/\/www\.autorell\.de\//s)
+  assert.match(footer, /https:\/\/www\.autorell\.com\/\$\{normalizedCode\.toLowerCase\(\)\}/)
+  assert.match(proxy, /EU_BUYER_MARKET_CODES\.has\(requestedPrefix\)/)
+  assert.match(proxy, /requestedPrefix === 'de'[\s\S]*MARKET_HOSTS\.en/)
+})
+
+test('country-domain account and advertising links have no duplicate market prefix', () => {
+  assert.match(
+    header,
+    /activeMarketCode === 'eu' \|\| activeMarketCode === 'se' \|\| activeMarketCode === 'de'/,
+  )
+  assert.match(header, /localizePublicHref\(locale, '\/account\/listings\/new'\)/)
+})
+
+test('an explicit market selection is handled before country-domain routing', () => {
+  const marketSelection = proxy.indexOf(
+    'if (methodCanRedirect && isMarketSelection(selectedMarket))',
+  )
+  const countryDomainRouting = proxy.indexOf(
+    'const countryDomainPrefix = countryDomainMarketPrefix(hostname)',
+  )
+
+  assert.ok(marketSelection > 0)
+  assert.ok(countryDomainRouting > marketSelection)
+})
+
 test('domain sitemap indexes and shards cannot mix markets', () => {
   assert.match(sitemapUtils, /sitemapMarketsForRequest/)
   assert.match(sitemapUtils, /return \['se'\]/)

@@ -939,12 +939,30 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // A market selection is an explicit user action and must win over the
+  // current host, path, geolocation, and previously stored preferences.
+  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
+    return redirectToMarket(request, selectedMarket)
+  }
+
   const countryDomainPrefix = countryDomainMarketPrefix(hostname)
   if (methodCanRedirect && countryDomainPrefix) {
     const requestedPrefix = pathname.split('/').filter(Boolean)[0]
-    if (requestedPrefix === 'se' || requestedPrefix === 'de') {
-      const targetHost = requestedPrefix === 'se' ? MARKET_HOSTS.sv : MARKET_HOSTS.de
-      const cleanPathname = stripCountryDomainMarketPrefix(pathname, requestedPrefix)
+    if (
+      requestedPrefix === 'se' ||
+      requestedPrefix === 'de' ||
+      EU_BUYER_MARKET_CODES.has(requestedPrefix)
+    ) {
+      const targetHost =
+        requestedPrefix === 'se'
+          ? MARKET_HOSTS.sv
+          : requestedPrefix === 'de'
+            ? MARKET_HOSTS.de
+            : MARKET_HOSTS.en
+      const cleanPathname =
+        requestedPrefix === 'se' || requestedPrefix === 'de'
+          ? stripCountryDomainMarketPrefix(pathname, requestedPrefix)
+          : pathname
       return redirectToHost(request, targetHost, 308, cleanPathname)
     }
   }
@@ -1125,10 +1143,6 @@ export async function proxy(request: NextRequest) {
         : `/${language}${trailingPath ? `/${trailingPath}` : ''}`
     url.searchParams.delete('language')
     return withLanguageCookie(NextResponse.redirect(url, 307), language)
-  }
-
-  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
-    return redirectToMarket(request, selectedMarket)
   }
 
   const currentMarket = MARKET_BY_HOST[hostname]
