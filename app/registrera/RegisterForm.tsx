@@ -21,6 +21,7 @@ import {
 import { FlagIcon } from '../components/PublicFooter'
 import BirthDatePicker from '../components/BirthDatePicker'
 import { localizedAccountError } from '@/lib/account-error-i18n'
+import { reviewNationalId } from '@/lib/national-id'
 
 const euDialCodes: Record<string, string> = {
   AT: '+43',
@@ -238,7 +239,7 @@ const registrationFieldErrorCopy: Record<
     register_invalid_country: 'Välj ett giltigt land.',
     register_invalid_phone: 'Kontrollera telefonnumret och att landskoden stämmer.',
     register_invalid_address: 'Fyll i gatuadress, postnummer och ort.',
-    register_invalid_national_id: 'Kontrollera personnumret. Använd ÅÅMMDD-XXXX eller YYYYMMDD-XXXX.',
+    register_invalid_national_id: 'Kontrollera personnumret och formatet.',
     register_invalid_company: 'Fyll i företagsnamn och organisations- eller VAT-nummer.',
     register_terms_required: 'Godkänn villkoren för att skapa kontot.',
   },
@@ -407,35 +408,35 @@ const nationalIdGuidanceCopy: Record<
     nationalIdHelper: 'Used only for account security and verification. If it needs review, you can still continue. Never shown publicly.',
   },
   de: {
-    nationalId: 'Persönliche Identifikationsnummer',
+    nationalId: 'Ausweis- oder Reisepassnummer',
     nationalIdHelper: 'Wird nur für Kontosicherheit und Prüfung verwendet. Wenn eine Prüfung nötig ist, können Sie trotzdem fortfahren. Wird nie öffentlich angezeigt.',
   },
   at: {
-    nationalId: 'Persönliche Identifikationsnummer',
+    nationalId: 'Ausweis- oder Reisepassnummer',
     nationalIdHelper: 'Wird nur für Kontosicherheit und Prüfung verwendet. Wenn eine Prüfung nötig ist, können Sie trotzdem fortfahren. Wird nie öffentlich angezeigt.',
   },
   be: {
-    nationalId: 'Persoonlijk identificatienummer',
+    nationalId: 'Rijksregisternummer',
     nationalIdHelper: 'Alleen gebruikt voor accountbeveiliging en controle. Als controle nodig is, kun je toch doorgaan. Wordt nooit openbaar getoond.',
   },
   fr: {
-    nationalId: 'Numéro d’identification personnel',
+    nationalId: 'Numéro de sécurité sociale (NIR)',
     nationalIdHelper: 'Utilisé uniquement pour la sécurité du compte et la vérification. Si un examen est nécessaire, vous pouvez continuer. Jamais affiché publiquement.',
   },
   es: {
-    nationalId: 'Número de identificación personal',
+    nationalId: 'DNI o NIE',
     nationalIdHelper: 'Solo se usa para seguridad y verificación de la cuenta. Si necesita revisión, puedes continuar. Nunca se muestra públicamente.',
   },
   it: {
-    nationalId: 'Numero identificativo personale',
+    nationalId: 'Codice fiscale',
     nationalIdHelper: 'Usato solo per sicurezza e verifica dell’account. Se serve una revisione, puoi comunque continuare. Non viene mai mostrato pubblicamente.',
   },
   pl: {
-    nationalId: 'Osobisty numer identyfikacyjny',
+    nationalId: 'PESEL',
     nationalIdHelper: 'Używany tylko do bezpieczeństwa i weryfikacji konta. Jeśli wymaga sprawdzenia, nadal możesz kontynuować. Nigdy nie jest publiczny.',
   },
   nl: {
-    nationalId: 'Persoonlijk identificatienummer',
+    nationalId: 'Burgerservicenummer (BSN)',
     nationalIdHelper: 'Alleen gebruikt voor accountbeveiliging en controle. Als controle nodig is, kun je toch doorgaan. Wordt nooit openbaar getoond.',
   },
   fi: {
@@ -443,7 +444,7 @@ const nationalIdGuidanceCopy: Record<
     nationalIdHelper: 'Käytetään vain tilin turvallisuuteen ja tarkistukseen. Jos tieto vaatii tarkistuksen, voit silti jatkaa. Ei näy julkisesti.',
   },
   da: {
-    nationalId: 'Personligt identifikationsnummer',
+    nationalId: 'CPR-nummer',
     nationalIdHelper: 'Bruges kun til kontosikkerhed og kontrol. Hvis oplysningerne skal gennemgås, kan du stadig fortsætte. Vises aldrig offentligt.',
   },
 }
@@ -491,11 +492,15 @@ function normalizePhoneForSubmit(value: string, countryCode: string) {
 function localizedRegistrationErrorCode(
   locale: PublicLocale,
   code: RegistrationErrorCode | undefined,
+  countryCode?: string,
 ) {
   if (!code) return null
   const general = registrationErrorCopy[locale] as Partial<Record<RegistrationErrorCode, string>>
   const fields = registrationFieldErrorCopy[locale] as Partial<Record<RegistrationErrorCode, string>>
-  return general[code] || fields[code] || null
+  const message = general[code] || fields[code] || null
+  if (code !== 'register_invalid_national_id' || !message) return message
+  const expectedFormat = nationalIdPlaceholderByCountry[countryCode || ''] || nationalIdPlaceholderCopy[locale]
+  return `${message} ${expectedFormat}`
 }
 
 export default function RegisterForm({
@@ -540,6 +545,11 @@ export default function RegisterForm({
       setLoading(false)
       return
     }
+    if (accountType === 'private' && reviewNationalId(countryCode, nationalId).status === 'invalid') {
+      setError(localizedRegistrationErrorCode(locale, 'register_invalid_national_id', countryCode) || copy.createError)
+      setLoading(false)
+      return
+    }
     const normalizedPhone = normalizePhoneForSubmit(phone, countryCode)
     try {
       const response = await fetch('/api/account/register', {
@@ -578,7 +588,7 @@ export default function RegisterForm({
       }
       if (!response.ok) {
         const codedError = result.code as RegistrationErrorCode | undefined
-        const localizedCodeError = localizedRegistrationErrorCode(locale, codedError)
+        const localizedCodeError = localizedRegistrationErrorCode(locale, codedError, countryCode)
         setError(
           localizedCodeError
             ? localizedCodeError

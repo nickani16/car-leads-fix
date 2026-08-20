@@ -55,8 +55,13 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false)
   const [retryAfter, setRetryAfter] = useState(0)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
+  const onCloseRef = useRef(onClose)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!isOpen) return
@@ -64,7 +69,7 @@ export default function AuthModal({
     document.body.style.overflow = 'hidden'
     const focusTimer = window.setTimeout(() => emailInputRef.current?.focus(), 80)
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', closeOnEscape)
     return () => {
@@ -72,7 +77,7 @@ export default function AuthModal({
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', closeOnEscape)
     }
-  }, [initialMode, isOpen, onClose])
+  }, [initialMode, isOpen])
 
   useEffect(() => {
     if (!retryAfter) return

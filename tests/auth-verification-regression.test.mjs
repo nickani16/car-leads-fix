@@ -85,10 +85,11 @@ test('public private seller trust follows verified email and risk status', () =>
   assert.match(listingDetailPage, /identityStatus !== 'rejected'/)
 })
 
-test('private registration can continue when Swedish national id needs manual review', () => {
-  assert.match(registerApi, /nationalIdReviewStatus/)
+test('private registration uses shared country-specific national id review', () => {
+  assert.match(registerApi, /reviewNationalId\(countryCode, nationalId\)\.status/)
+  assert.match(registerApi, /normalizeNationalId\(nationalId\)/)
   assert.match(registerApi, /needs_review/)
-  assert.match(registerApi, /identityStatus\s*=[\s\S]*nationalIdStatus === 'passed'[\s\S]*'verified'[\s\S]*'needs_review'/)
+  assert.match(registerApi, /identityStatus\s*=[\s\S]*nationalIdStatus === 'passed'[\s\S]*'format_validated'[\s\S]*'needs_review'/)
   assert.match(registerForm, /<NationalIdField/)
   assert.match(registerForm, /nationalIdPlaceholderByCountry: Record<string, string>/)
   assert.match(registerForm, /placeholder=\{nationalIdPlaceholderByCountry\[countryCode\] \?\? nationalIdPlaceholderCopy\[locale\]\}/)
@@ -106,4 +107,6 @@ test('private registration can continue when Swedish national id needs manual re
   assert.match(registerForm, /nationalIdGuidanceCopy: Record<[\s\S]*sv:[\s\S]*en:[\s\S]*de:[\s\S]*at:[\s\S]*be:[\s\S]*fr:[\s\S]*es:[\s\S]*it:[\s\S]*pl:[\s\S]*nl:[\s\S]*fi:[\s\S]*da:/)
   assert.match(registerForm, /Används bara för kontosäkerhet och kontroll/)
   assert.match(registerForm, /Never shown publicly/)
+  assert.match(registerForm, /reviewNationalId\(countryCode, nationalId\)\.status === 'invalid'/)
+  assert.match(registerForm, /localizedRegistrationErrorCode\(locale, 'register_invalid_national_id', countryCode\)/)
 })

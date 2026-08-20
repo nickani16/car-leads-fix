@@ -13,6 +13,7 @@ import {
 } from '@/lib/marketplace-security'
 import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
 import { normalizePlaceName } from '@/lib/place-name'
+import { normalizeNationalId, reviewNationalId } from '@/lib/national-id'
 
 function clean(value: unknown) {
   return String(value || '').trim()
@@ -128,29 +129,6 @@ function isAdult(dateValue: string) {
   return birthDate <= adultDate && birthDate.getUTCFullYear() >= 1900
 }
 
-function passesSwedishPersonalNumber(value: string) {
-  const digits = value.replace(/\D/g, '').slice(-10)
-  if (digits.length !== 10) return false
-  const sum = digits
-    .slice(0, 9)
-    .split('')
-    .reduce((total, digit, index) => {
-      const product = Number(digit) * (index % 2 === 0 ? 2 : 1)
-      return total + Math.floor(product / 10) + (product % 10)
-    }, 0)
-  return (10 - (sum % 10)) % 10 === Number(digits[9])
-}
-
-function nationalIdReviewStatus(countryCode: string, value: string) {
-  const normalized = normalizeIdentifier(value)
-  if (normalized.length < 6 || normalized.length > 24 || !/[0-9]/.test(normalized)) {
-    return 'invalid' as const
-  }
-  if (countryCode !== 'SE') return 'passed' as const
-  if (passesSwedishPersonalNumber(normalized)) return 'passed' as const
-  return /^\d{10}$|^\d{12}$/.test(normalized) ? 'needs_review' as const : 'invalid' as const
-}
-
 async function validateVat(countryCode: string, vatNumber: string) {
   const normalized = normalizeIdentifier(vatNumber).replace(new RegExp(`^${countryCode}`), '')
   if (!normalized) return { status: 'pending' as const, reference: null }
@@ -215,7 +193,7 @@ export async function POST(request: Request) {
     const nationalId = clean(body.nationalId)
     const nationalIdStatus =
       accountType === 'private'
-        ? nationalIdReviewStatus(countryCode, nationalId)
+        ? reviewNationalId(countryCode, nationalId).status
         : 'passed'
     const companyName = clean(body.companyName)
     const registrationNumber = normalizeIdentifier(clean(body.registrationNumber))
@@ -281,7 +259,7 @@ export async function POST(request: Request) {
     }
 
     const normalizedNationalId =
-      accountType === 'private' ? normalizeIdentifier(nationalId) : ''
+      accountType === 'private' ? normalizeNationalId(nationalId) : ''
     const identifierSecret =
       process.env.MARKETPLACE_IDENTITY_HASH_SECRET ||
       process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -547,7 +525,7 @@ export async function POST(request: Request) {
     const identityStatus =
       accountType === 'private'
         ? nationalIdStatus === 'passed'
-          ? 'verified'
+          ? 'format_validated'
           : 'needs_review'
         : 'pending'
     const phoneFlags = phoneValidation.riskFlags

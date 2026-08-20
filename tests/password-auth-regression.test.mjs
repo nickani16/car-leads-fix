@@ -45,6 +45,14 @@ test('public header auth popup uses password first and keeps OTP fallback', () =
   assert.match(authModal, /setRemember\(\(current\) => !current\)/)
 })
 
+test('auth popup does not steal focus back to email during parent rerenders', () => {
+  assert.match(authModal, /const onCloseRef = useRef\(onClose\)/)
+  assert.match(authModal, /onCloseRef\.current = onClose/)
+  assert.match(authModal, /onCloseRef\.current\(\)/)
+  assert.match(authModal, /\}, \[initialMode, isOpen\]\)/)
+  assert.doesNotMatch(authModal, /\}, \[initialMode, isOpen, onClose\]\)/)
+})
+
 test('legacy auth pages redirect into the public auth popup', () => {
   assert.match(loginPage, /new URLSearchParams\(\{ auth: 'login' \}\)/)
   assert.match(loginPage, /safeReturnPath/)
