@@ -54,7 +54,7 @@ import {
 import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
-import { formatMileageAsMil } from '@/lib/listing-display'
+import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import {
   getMarketplaceCountryLocations,
   inferMarketplaceLocation,
@@ -74,7 +74,7 @@ import { translateListingEquipmentValue } from '@/lib/listing-equipment'
 
 type SearchMode = 'all' | 'sale' | 'leasing'
 type GeoFilterMode = 'legacy' | 'strict'
-type ResultsLayout = 'single' | 'split' | 'desktopCard'
+type ResultsLayout = 'single' | 'split'
 type DesktopMarketplaceView = 'map' | 'list'
 type QuickFilterPlacement = 'desktop' | 'mobile'
 type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
@@ -485,7 +485,7 @@ function listingEquipmentChips(equipment: string | null | undefined, locale: Pub
         .map((item) => translateListingEquipmentValue(locale, item) || item)
         .filter((item) => item.length <= 28),
     ),
-  ).slice(0, 2)
+  ).slice(0, 16)
 }
 
 const categoryEnglishLabels: Record<string, string> = {
@@ -1281,7 +1281,7 @@ export default function VehicleSearchExperience({
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
-  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
   const [resultsLayoutTouched, setResultsLayoutTouched] = useState(false)
   const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>(initialPage > 1 ? 'list' : 'map')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
@@ -3794,7 +3794,7 @@ export default function VehicleSearchExperience({
 
             <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={`${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2' : ''}`}>
+                <div className={`${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2 gap-3 p-3' : ''}`}>
                     {filteredListings.map((listing) => (
                       <VehicleResultCard
                         key={listing.id}
@@ -5335,24 +5335,118 @@ function VehicleResultCard({
   const offerBadge = listingOfferBadge(locale, listing)
   const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
-  return (
-    <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
-      layout === 'desktopCard' ? 'h-full rounded-[8px] border border-[#d6dde8] px-0 pb-4 shadow-[0_1px_3px_rgba(16,24,40,.04)] hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)]' : layout === 'split' ? 'mx-0 px-2 py-3 odd:border-r sm:px-4 sm:py-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
-    }`}>
-      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
-      <div className={`pointer-events-none relative z-20 grid gap-4 ${
-        layout === 'desktopCard' ? 'grid-cols-1' : layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
-      }`}>
-        <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
-          layout === 'desktopCard' ? 'aspect-[16/10] rounded-b-none border-b border-[#e5ebf3]' : layout === 'split' ? 'aspect-[4/3] min-h-[112px] sm:min-h-[138px]' : 'h-[246px] sm:h-[174px]'
-        }`}>
+  if (layout === 'split') {
+    const headline = marketplaceCardHeadline(listing)
+    const versionLabel = marketplaceCardVersionLabel(listing, headline)
+    const details = [
+      listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
+      listing.gearbox ? translateListingVehicleValue(locale, listing.gearbox) : null,
+      listing.fuelType ? translateListingVehicleValue(locale, listing.fuelType) : null,
+    ].filter((item): item is string => Boolean(item))
+    const sellerDetail = listing.sellerIsTrader ? listing.sellerName.trim() : ''
+
+    return (
+      <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d7dee8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.10)]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
               images={listing.imageUrls}
               title={listing.title}
               href={href}
               onNavigate={onBeforeNavigate}
-              sizes={layout === 'desktopCard' ? '(min-width: 1536px) 470px, 440px' : layout === 'split' ? '(max-width: 560px) 50vw, (max-width: 1120px) 50vw, 360px' : '(max-width: 640px) 100vw, 260px'}
+              sizes="(max-width: 640px) 50vw, (max-width: 1120px) 50vw, 360px"
+              previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
+              nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
+              showDotsOnDesktop
+              showDotsOnMobile
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-[#0866ff]">
+              <AutorellCarIcon className="h-12 w-12" />
+            </div>
+          )}
+          {listing.sellerTrust === 'verified' ? (
+            <span className="absolute left-2 top-2 rounded-[6px] bg-[#0866ff] px-2 py-1 text-[10px] font-semibold text-white">
+              {sellerTrustLabel}
+            </span>
+          ) : null}
+          <div className="pointer-events-auto absolute right-2 top-2 z-30 scale-[.86] origin-top-right">
+            <SavedListingButton listingId={listing.id} />
+          </div>
+          <button
+            type="button"
+            aria-pressed={compareActive}
+            aria-label={uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onCompare()
+            }}
+            className={`absolute bottom-2 right-2 z-30 grid h-8 w-8 place-items-center rounded-full text-[#101828] transition ${
+              compareActive ? 'bg-[#0866ff] text-white' : 'bg-white hover:text-[#0866ff]'
+            }`}
+          >
+            <Scale className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div className="flex min-h-[190px] flex-1 flex-col px-3 py-3 sm:min-h-[205px] sm:px-3.5">
+          <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+            {offerBadge.label}
+          </span>
+          <Link href={href} prefetch={false} onClick={onBeforeNavigate} className="block">
+            <h2 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
+              {headline}
+            </h2>
+          </Link>
+          {versionLabel ? (
+            <p className="mt-1 line-clamp-1 text-[13px] font-normal leading-5 text-[#101828] sm:text-[14px]">
+              {versionLabel}
+            </p>
+          ) : null}
+          <p className="mt-2 text-[17px] font-semibold leading-6 text-[#050b18] no-underline [text-decoration:none] sm:text-[18px]">
+            {listing.priceLabel}
+          </p>
+          {location ? (
+            <p className="mt-1 flex min-w-0 items-center gap-1 text-[12px] font-normal leading-5 text-[#667085] sm:text-[13px]">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
+              <span className="truncate">{location}</span>
+            </p>
+          ) : null}
+          {details.length ? (
+            <p className="mt-2 line-clamp-1 text-[12px] font-normal leading-5 text-[#344054] sm:text-[13px]">
+              {details.join(' | ')}
+            </p>
+          ) : null}
+          <div className="mt-2 border-t border-[#e4e7ec]" />
+          <div className="mt-auto min-w-0 pt-2 text-[12px] font-normal leading-4 text-[#050b18]">
+            <p className="truncate">{sellerTypeLabel}</p>
+            {sellerDetail || showCountryChip ? (
+              <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                {showCountryChip ? (
+                  <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
+                ) : null}
+                {sellerDetail ? <span className="truncate">{sellerDetail}</span> : null}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </article>
+    )
+  }
+
+  return (
+    <article className="group relative mx-0 overflow-hidden border-b border-[#e5ebf3] bg-white px-4 py-5 transition hover:bg-[#fbfdff] sm:mx-6 sm:px-0">
+      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
+      <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
+        <div className="relative h-[246px] overflow-hidden rounded-[8px] bg-[#eef3f8] sm:h-[174px]">
+          {listing.imageUrls.length ? (
+            <ListingCardImageCarousel
+              images={listing.imageUrls}
+              title={listing.title}
+              href={href}
+              onNavigate={onBeforeNavigate}
+              sizes="(max-width: 640px) 100vw, 260px"
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
@@ -5386,30 +5480,29 @@ function VehicleResultCard({
           </button>
         </div>
 
-        <div className={`min-w-0 ${layout === 'desktopCard' ? 'px-4 pt-3' : ''}`}>
+        <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
             <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
               {offerBadge.label}
             </span>
-            <span className={`${layout === 'desktopCard' ? 'text-[18px]' : layout === 'split' ? 'text-[14px] sm:text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
+            <span className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline">
               {listing.title}
             </span>
-            <p className={`${layout === 'desktopCard' ? 'text-[13px] leading-5' : layout === 'split' ? 'text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} line-clamp-1 font-light text-[#667085]`}>
+            <p className="line-clamp-1 text-[14px] font-light leading-5 text-[#667085]">
               {subtitle}
             </p>
-            <p className={`${layout === 'desktopCard' ? 'text-[22px] leading-7' : layout === 'split' ? 'text-[14px] leading-5 sm:text-[17px] sm:leading-6' : 'text-[17px] leading-6'} font-semibold text-[#101828] no-underline [text-decoration:none]`}>
+            <p className="text-[17px] font-semibold leading-6 text-[#101828] no-underline [text-decoration:none]">
               {listing.priceLabel}
             </p>
             {insuranceLabel ? (
-              <span className={`${layout === 'split' ? 'text-[11px] leading-4 sm:text-[12px]' : 'text-[12px] leading-4'} inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 font-medium text-[#344054]`}>
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
                 <span className="truncate">{insuranceLabel}</span>
               </span>
             ) : null}
             <MetaSeparatorList
               items={visibleMeta}
-              compact={layout === 'split' || layout === 'desktopCard'}
-              className={`${layout === 'desktopCard' ? 'max-w-full text-[13px] leading-5' : layout === 'split' ? 'max-w-full text-[12px] leading-4 sm:text-[14px] sm:leading-5' : 'text-[14px] leading-5'} font-light text-[#101828]`}
+              className="text-[14px] font-light leading-5 text-[#101828]"
             />
             <p className="hidden">
               {listing.sellerIsTrader
@@ -5418,7 +5511,7 @@ function VehicleResultCard({
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
-            <div className={`${layout === 'split' ? 'hidden sm:flex' : 'flex'} min-w-0 flex-wrap items-center gap-1.5`}>
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               {equipmentChips.map((item) => (
                 <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
                   {item}
@@ -5446,7 +5539,7 @@ function VehicleResultCard({
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
+                  <span className="relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
                   <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                 </span>
               ) : null}
@@ -5456,6 +5549,29 @@ function VehicleResultCard({
       </div>
     </article>
   )
+}
+
+function marketplaceCardHeadline(listing: VehicleSearchListing) {
+  const generated = [listing.year, listing.make, listing.model]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(' ')
+  return generated || listing.title
+}
+
+function marketplaceCardVersionLabel(listing: VehicleSearchListing, headline: string) {
+  const title = listing.title.trim()
+  if (!title || title.toLocaleLowerCase() === headline.toLocaleLowerCase()) return null
+  const prefixParts = [listing.year, listing.make, listing.model]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+  let version = title
+  for (const part of prefixParts) {
+    if (version.toLocaleLowerCase().startsWith(part.toLocaleLowerCase())) {
+      version = version.slice(part.length).trim()
+    }
+  }
+  return version || null
 }
 
 function VehicleSearchMap({

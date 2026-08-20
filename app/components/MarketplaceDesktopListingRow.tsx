@@ -52,6 +52,8 @@ type DesktopListCopy = {
   conditionUsed: string
   conditionDefective: string
   conditionParts: string
+  showMoreEquipment: string
+  vatIncluded: string
 }
 
 export default function MarketplaceDesktopListingRow({
@@ -141,6 +143,9 @@ export default function MarketplaceDesktopListingRow({
       </div>
 
       <div className="flex min-w-0 flex-col border-r border-[#edf1f6] px-4 py-3.5 2xl:px-5">
+        <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+          {offerBadge.label}
+        </span>
         <div className="min-w-0">
           <Link
             href={href}
@@ -180,16 +185,23 @@ export default function MarketplaceDesktopListingRow({
         ) : null}
 
         {equipmentChips.length ? (
-          <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
-            {equipmentChips.slice(0, 3).map((item) => (
-              <span key={item} className="max-w-[180px] shrink truncate rounded-full bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#0757da]">
-                {item}
-              </span>
-            ))}
+          <div className="relative mt-2 min-w-0 overflow-hidden pr-16">
+            <div className="flex min-w-max gap-1.5 whitespace-nowrap">
+              {equipmentChips.map((item) => (
+                <span key={item} className="max-w-[180px] shrink-0 truncate rounded-full bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#0757da]">
+                  {item}
+                </span>
+              ))}
+            </div>
             {equipmentChips.length > 3 ? (
-              <span className="shrink-0 rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[10px] font-semibold text-[#475467]">
-                +{equipmentChips.length - 3}
-              </span>
+              <Link
+                href={href}
+                prefetch={false}
+                onClick={onBeforeNavigate}
+                className="absolute inset-y-0 right-0 z-10 inline-flex items-center bg-white/90 pl-3 text-[10px] font-semibold text-[#0757da] backdrop-blur-[3px] [box-shadow:-12px_0_16px_rgba(255,255,255,.94)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              >
+                {copy.showMoreEquipment}
+              </Link>
             ) : null}
           </div>
         ) : null}
@@ -203,9 +215,6 @@ export default function MarketplaceDesktopListingRow({
               <span className="truncate">{location}</span>
             </span>
             <span className="h-3 w-px bg-[#d0d5dd]" aria-hidden="true" />
-            <span className={`inline-flex h-5 items-center rounded-full px-2 text-[10px] font-semibold ring-1 ${offerBadge.className}`}>
-              {offerBadge.label}
-            </span>
             <span className="text-[10px] font-medium text-[#475467]">{sellerLabel}</span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -236,6 +245,7 @@ export default function MarketplaceDesktopListingRow({
           iconClassName="h-[17px] w-[17px]"
         />
         <p className="text-[22px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
+        <p className="mt-0.5 text-[10px] font-normal leading-4 text-[#667085]">{copy.vatIncluded}</p>
         <Link
           href={href}
           prefetch={false}
@@ -357,6 +367,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Used',
     conditionDefective: 'Defective',
     conditionParts: 'For parts',
+    showMoreEquipment: 'View more',
+    vatIncluded: 'incl. VAT',
   },
   sv: {
     uploadedPhotos: 'uppladdade bilder',
@@ -383,6 +395,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Begagnad',
     conditionDefective: 'Defekt',
     conditionParts: 'Reservdelsobjekt',
+    showMoreEquipment: 'Visa fler',
+    vatIncluded: 'inkl. moms',
   },
   de: {
     uploadedPhotos: 'hochgeladene Fotos',
@@ -409,6 +423,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Gebraucht',
     conditionDefective: 'Defekt',
     conditionParts: 'Ersatzteilfahrzeug',
+    showMoreEquipment: 'Mehr anzeigen',
+    vatIncluded: 'inkl. MwSt.',
   },
   at: {
     uploadedPhotos: 'hochgeladene Fotos',
@@ -435,6 +451,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Gebraucht',
     conditionDefective: 'Defekt',
     conditionParts: 'Ersatzteilfahrzeug',
+    showMoreEquipment: 'Mehr anzeigen',
+    vatIncluded: 'inkl. MwSt.',
   },
   be: {
     uploadedPhotos: "geüploade foto's",
@@ -461,6 +479,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Gebruikt',
     conditionDefective: 'Defect',
     conditionParts: 'Voor onderdelen',
+    showMoreEquipment: 'Meer tonen',
+    vatIncluded: 'incl. btw',
   },
   fr: {
     uploadedPhotos: 'photos téléchargées',
@@ -487,6 +507,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Occasion',
     conditionDefective: 'Défectueux',
     conditionParts: 'Pour pièces',
+    showMoreEquipment: 'Voir plus',
+    vatIncluded: 'TVA incluse',
   },
   es: {
     uploadedPhotos: 'fotos subidas',
@@ -513,6 +535,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Usado',
     conditionDefective: 'Defectuoso',
     conditionParts: 'Para repuestos',
+    showMoreEquipment: 'Ver más',
+    vatIncluded: 'IVA incluido',
   },
   it: {
     uploadedPhotos: 'foto caricate',
@@ -539,6 +563,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Usato',
     conditionDefective: 'Difettoso',
     conditionParts: 'Per ricambi',
+    showMoreEquipment: 'Mostra altro',
+    vatIncluded: 'IVA inclusa',
   },
   pl: {
     uploadedPhotos: 'przesłane zdjęcia',
@@ -565,6 +591,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Używany',
     conditionDefective: 'Uszkodzony',
     conditionParts: 'Na części',
+    showMoreEquipment: 'Pokaż więcej',
+    vatIncluded: 'z VAT',
   },
   nl: {
     uploadedPhotos: "geüploade foto's",
@@ -591,6 +619,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Gebruikt',
     conditionDefective: 'Defect',
     conditionParts: 'Voor onderdelen',
+    showMoreEquipment: 'Meer tonen',
+    vatIncluded: 'incl. btw',
   },
   fi: {
     uploadedPhotos: 'ladatut kuvat',
@@ -617,6 +647,8 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Käytetty',
     conditionDefective: 'Viallinen',
     conditionParts: 'Varaosiksi',
+    showMoreEquipment: 'Näytä lisää',
+    vatIncluded: 'sis. ALV',
   },
   da: {
     uploadedPhotos: 'uploadede billeder',
@@ -643,5 +675,7 @@ const desktopListCopy: Record<PublicLocale, DesktopListCopy> = {
     conditionUsed: 'Brugt',
     conditionDefective: 'Defekt',
     conditionParts: 'Til reservedele',
+    showMoreEquipment: 'Vis mere',
+    vatIncluded: 'inkl. moms',
   },
 }

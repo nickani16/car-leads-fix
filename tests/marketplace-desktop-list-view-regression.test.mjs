@@ -81,7 +81,13 @@ test('desktop list cards keep the image full-height and reserve the price column
   assert.doesNotMatch(desktopListingRowSource, /\{listing\.description\}/)
   assert.match(desktopListingRowSource, /const sellerLabel = listing\.sellerIsTrader \? copy\.businessSeller : copy\.privateSeller/)
   assert.match(desktopListingRowSource, /\{offerBadge\.label\}/)
+  assert.match(desktopListingRowSource, /\{offerBadge\.label\}[\s\S]*?<h2[\s\S]*?\{listing\.title\}/)
   assert.match(desktopListingRowSource, /\{sellerLabel\}/)
+  assert.match(desktopListingRowSource, /equipmentChips\.map/)
+  assert.doesNotMatch(desktopListingRowSource, /equipmentChips\.slice/)
+  assert.match(desktopListingRowSource, /backdrop-blur-\[3px\]/)
+  assert.match(desktopListingRowSource, /\{copy\.showMoreEquipment\}/)
+  assert.match(desktopListingRowSource, /\{copy\.vatIncluded\}/)
   assert.doesNotMatch(desktopListingRowSource, /sellerLogoUrl/)
   assert.doesNotMatch(desktopListingRowSource, /sellerRatingAverage/)
   assert.doesNotMatch(desktopListingRowSource, /location \|\| sellerLabel/)
@@ -97,6 +103,28 @@ test('desktop list cards keep the image full-height and reserve the price column
   assert.match(desktopListingRowSource, /grid-cols-\[260px_minmax\(0,1fr\)_184px\]/)
   assert.match(experienceSource, /icon=\{<Scale/)
   assert.match(experienceSource, /icon=\{<Layers/)
+})
+
+test('desktop list row provides equipment overflow and VAT copy for every public locale', () => {
+  for (const locale of ['en', 'sv', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(
+      desktopListingRowSource,
+      new RegExp(`\\n  ${locale}: \\{[\\s\\S]*?showMoreEquipment:[\\s\\S]*?vatIncluded:`),
+    )
+  }
+  for (const vatLabel of ['incl. VAT', 'inkl. moms', 'inkl. MwSt.', 'incl. btw', 'TVA incluse', 'IVA incluido', 'IVA inclusa', 'z VAT', 'sis. ALV']) {
+    assert.ok(desktopListingRowSource.includes(vatLabel), `${vatLabel} should be localized in desktop list rows`)
+  }
+})
+
+test('map and mobile split results use the same compact card structure as the homepage', () => {
+  assert.match(experienceSource, /grid grid-cols-2 gap-3 p-3/)
+  assert.match(experienceSource, /function marketplaceCardHeadline/)
+  assert.match(experienceSource, /function marketplaceCardVersionLabel/)
+  assert.match(experienceSource, /showDotsOnDesktop/)
+  assert.match(experienceSource, /rounded-\[8px\] border border-\[#d7dee8\] bg-white/)
+  assert.match(experienceSource, /details\.join\('\s\|\s'\)/)
+  assert.match(experienceSource, /sellerDetail = listing\.sellerIsTrader \? listing\.sellerName\.trim\(\) : ''/)
 })
 
 test('desktop location filtering uses the shared market hierarchy and scopes municipalities to the selected region', () => {
