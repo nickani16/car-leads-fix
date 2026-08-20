@@ -18,6 +18,10 @@ const findCarsPageSource = readFileSync(
   new URL('../app/find-cars/page.tsx', import.meta.url),
   'utf8',
 )
+const publicHeaderSource = readFileSync(
+  new URL('../app/components/PublicHeader.tsx', import.meta.url),
+  'utf8',
+)
 
 test('desktop list view keeps one listing per row and uses the current marketplace shell', () => {
   assert.match(experienceSource, /type DesktopMarketplaceView = 'map' \| 'list'/)
@@ -71,8 +75,13 @@ test('desktop list cards keep the image full-height and reserve the price column
 
   assert.match(desktopListingRowSource, /<ListingCardImageCarousel/)
   assert.match(desktopListingRowSource, /<SavedListingButton/)
-  assert.match(desktopListingRowSource, /className="absolute right-3\.5 top-3/)
+  assert.match(desktopListingRowSource, /className="absolute right-3 top-3 !h-8 !w-8/)
   assert.match(desktopListingRowSource, /className="absolute inset-0 overflow-hidden bg-white"/)
+  assert.doesNotMatch(desktopListingRowSource, /showDotsOnDesktop/)
+  assert.doesNotMatch(desktopListingRowSource, /\{listing\.description\}/)
+  assert.match(desktopListingRowSource, /const sellerLabel = listing\.sellerIsTrader \? copy\.businessSeller : copy\.privateSeller/)
+  assert.match(desktopListingRowSource, /\{offerBadge\.label\}/)
+  assert.match(desktopListingRowSource, /\{sellerLabel\}/)
   assert.doesNotMatch(desktopListingRowSource, /sellerLogoUrl/)
   assert.doesNotMatch(desktopListingRowSource, /sellerRatingAverage/)
   assert.doesNotMatch(desktopListingRowSource, /location \|\| sellerLabel/)
@@ -128,4 +137,23 @@ test('description is mapped for initial server results and subsequent API search
   assert.match(experienceSource, /description: stringOrNull\(listing\.description\)/)
   assert.match(marketplacePageSource, /description: listing\.description/)
   assert.match(findCarsPageSource, /description: listing\.description/)
+})
+
+test('desktop list search is compact and uses the short localized search label', () => {
+  assert.match(experienceSource, /renderMarketplaceSearchInput\('', true, translatePublic\(locale, 'Search'\)\)/)
+  assert.match(experienceSource, /compact \? 'min-h-\[44px\] py-1'/)
+})
+
+test('mobile bottom navigation and marketplace shortcuts do not render drop shadows', () => {
+  const shortcutBlock = experienceSource.slice(
+    experienceSource.indexOf('data-autorell-floating-shortcuts-tone'),
+    experienceSource.indexOf('{compareOpen && compareListings.length >= 2'),
+  )
+  const mobileNavBlock = publicHeaderSource.slice(
+    publicHeaderSource.indexOf('data-autorell-mobile-nav-tone'),
+    publicHeaderSource.indexOf('<MarketSelectorModal'),
+  )
+
+  assert.doesNotMatch(shortcutBlock, /shadow-\[/)
+  assert.doesNotMatch(mobileNavBlock, /shadow-\[/)
 })

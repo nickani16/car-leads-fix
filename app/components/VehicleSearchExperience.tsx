@@ -2223,10 +2223,10 @@ export default function VehicleSearchExperience({
     active: searchFocused,
   })
   const searchPlaceholder = getVehicleSearchPlaceholder(locale)
-  function renderMarketplaceSearchInput(className = '') {
+  function renderMarketplaceSearchInput(className = '', compact = false, placeholderOverride = searchPlaceholder) {
     return (
       <div className={`relative ${className}`}>
-        <div className="group relative flex min-h-[42px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-1.5 pr-10 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828] sm:min-h-[50px] sm:py-2 sm:pr-11">
+        <div className={`group relative flex items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 pr-10 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828] sm:pr-11 ${compact ? 'min-h-[44px] py-1' : 'min-h-[42px] py-1.5 sm:min-h-[50px] sm:py-2'}`}>
           <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
           {selectedSearchSuggestions.map((suggestion) => (
             <span
@@ -2266,7 +2266,7 @@ export default function VehicleSearchExperience({
             onFocus={() => setSearchFocused(true)}
             onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
             placeholder=""
-            aria-label={searchPlaceholder}
+            aria-label={placeholderOverride}
             className="vehicle-search-control h-6 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent] sm:h-7"
           />
           {searchInput || selectedSearchSuggestions.length ? null : (
@@ -2274,7 +2274,7 @@ export default function VehicleSearchExperience({
               aria-hidden="true"
               className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
             >
-              {searchPlaceholder}
+              {placeholderOverride}
             </span>
           )}
           <Search className="absolute right-3.5 top-1/2 h-[18px] w-[18px] shrink-0 -translate-y-1/2 text-[#101828] sm:right-4 sm:h-5 sm:w-5" />
@@ -3189,7 +3189,7 @@ export default function VehicleSearchExperience({
                       {desktopListText.clearAll}
                     </button>
                   </div>
-                  <div className="mt-3">{renderMarketplaceSearchInput()}</div>
+                  <div className="mt-3">{renderMarketplaceSearchInput('', true, translatePublic(locale, 'Search'))}</div>
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-1 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin]">
@@ -3917,7 +3917,7 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={() => setMobileMapOpen(true)}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] ${
                   mobileShortcutOverMedia
                     ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
                     : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
@@ -3931,7 +3931,7 @@ export default function VehicleSearchExperience({
                 type="button"
                 onClick={saveCurrentSearch}
                 disabled={savingSearch}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
                   mobileShortcutOverMedia
                     ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
                     : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'
@@ -3944,7 +3944,7 @@ export default function VehicleSearchExperience({
               <button
                 type="button"
                 onClick={focusMobileSortControl}
-                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition active:scale-[.98] ${
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-2xl transition active:scale-[.98] ${
                   mobileShortcutOverMedia
                     ? 'border border-white/10 bg-[#101828]/72 text-white supports-[backdrop-filter]:bg-[#101828]/64'
                     : 'border border-[#101828]/10 bg-white/72 text-[#111827] supports-[backdrop-filter]:bg-white/64'

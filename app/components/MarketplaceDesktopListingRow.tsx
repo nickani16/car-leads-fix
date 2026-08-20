@@ -96,6 +96,7 @@ export default function MarketplaceDesktopListingRow({
   ].filter(Boolean).join(', ')
   const metadata = listingRowMetadata(listing, locale)
   const photoLabel = `${images.length.toLocaleString(numberLocale(locale))} ${copy.uploadedPhotos}`
+  const sellerLabel = listing.sellerIsTrader ? copy.businessSeller : copy.privateSeller
 
   return (
     <article
@@ -113,7 +114,6 @@ export default function MarketplaceDesktopListingRow({
             previousLabel={copy.previousPhoto}
             nextLabel={copy.nextPhoto}
             showControlsOnDesktop
-            showDotsOnDesktop
             showDotsOnMobile={false}
             enableTouchSwipe={false}
             placeholder={(
@@ -155,9 +155,6 @@ export default function MarketplaceDesktopListingRow({
         </div>
 
         <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
-          <span className={`inline-flex h-5 items-center rounded-full px-2 text-[10px] font-semibold ring-1 ${offerBadge.className}`}>
-            {offerBadge.label}
-          </span>
           {listing.sellerTrust === 'verified' ? (
             <span className="inline-flex h-5 items-center gap-1 rounded-full bg-[#eef5ff] px-2 text-[10px] font-semibold text-[#0866ff] ring-1 ring-[#c7dbff]">
               <ShieldCheck className="h-3 w-3" aria-hidden="true" />
@@ -182,12 +179,6 @@ export default function MarketplaceDesktopListingRow({
           </dl>
         ) : null}
 
-        {listing.description ? (
-          <p className="mt-2 line-clamp-1 text-[11px] font-normal leading-[17px] text-[#667085]">
-            {listing.description}
-          </p>
-        ) : null}
-
         {equipmentChips.length ? (
           <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
             {equipmentChips.slice(0, 3).map((item) => (
@@ -204,12 +195,19 @@ export default function MarketplaceDesktopListingRow({
         ) : null}
 
         <div className="mt-auto flex min-w-0 items-center justify-between gap-3 border-t border-[#edf1f6] pt-2.5">
-          <span className="inline-flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-[#667085]">
-            {listing.country && listing.country.toUpperCase() !== marketCountryCode?.toUpperCase() ? (
-              <CountryFlag code={listing.country} className="h-3.5 w-3.5 shrink-0 rounded-full" />
-            ) : null}
-            <span className="truncate">{location}</span>
-          </span>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-[#667085]">
+              {listing.country && listing.country.toUpperCase() !== marketCountryCode?.toUpperCase() ? (
+                <CountryFlag code={listing.country} className="h-3.5 w-3.5 shrink-0 rounded-full" />
+              ) : null}
+              <span className="truncate">{location}</span>
+            </span>
+            <span className="h-3 w-px bg-[#d0d5dd]" aria-hidden="true" />
+            <span className={`inline-flex h-5 items-center rounded-full px-2 text-[10px] font-semibold ring-1 ${offerBadge.className}`}>
+              {offerBadge.label}
+            </span>
+            <span className="text-[10px] font-medium text-[#475467]">{sellerLabel}</span>
+          </div>
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
@@ -234,7 +232,8 @@ export default function MarketplaceDesktopListingRow({
           label={copy.saveListing}
           savedLabel={copy.saved}
           removeLabel={copy.removeSavedListing}
-          className="absolute right-3.5 top-3 h-9 w-9 rounded-[7px] border border-[#d0d5dd] bg-white shadow-sm"
+          className="absolute right-3 top-3 !h-8 !w-8 !rounded-[6px] border border-[#d0d5dd] bg-white !shadow-none"
+          iconClassName="h-[17px] w-[17px]"
         />
         <p className="text-[22px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
         <Link

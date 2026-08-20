@@ -2487,7 +2487,7 @@ export default function PublicHeader({
         style={{ width: 'min(960px, calc(100vw - 32px))' }}
       >
         <div
-          className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 shadow-[0_18px_46px_rgba(16,24,40,.22),0_2px_10px_rgba(16,24,40,.08)] backdrop-blur-2xl transition-colors ${
+          className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 backdrop-blur-2xl transition-colors ${
             mobileNavOverMedia
               ? 'border border-white/10 bg-[#101828]/72 supports-[backdrop-filter]:bg-[#101828]/64'
               : 'border border-[#101828]/10 bg-white/72 supports-[backdrop-filter]:bg-white/64'
