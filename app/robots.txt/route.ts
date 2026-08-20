@@ -1,6 +1,7 @@
-const canonicalSitemap = 'https://www.autorell.com/sitemap.xml'
+import { sitemapHostForRequest } from '@/lib/sitemap-utils'
 
-export function GET() {
+export function GET(request: Request) {
+  const canonicalSitemap = `${sitemapHostForRequest(request)}/sitemap.xml`
   const body = [
     'User-Agent: *',
     'Allow: /',
@@ -34,6 +35,7 @@ export function GET() {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      Vary: 'Host, X-Forwarded-Host',
     },
   })
 }

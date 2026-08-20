@@ -7,6 +7,7 @@ import {
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
 import { isSeoMarketCode, parseSeoRoute } from '@/lib/seo-routes'
+import { publicUrlForPath } from '@/lib/public-seo'
 
 type SeoPageProps = {
   params: Promise<{ market: string; slug: string[] }>
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: SeoPageProps) {
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
-    const canonical = `https://www.autorell.com${landing.canonicalPath}`
+    const canonical = publicUrlForPath(landing.canonicalPath)
     return {
       title: { absolute: landing.title },
       description: landing.description,
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: SeoPageProps) {
   if (!destination) notFound()
   return {
     robots: { index: false, follow: true },
-    alternates: { canonical: `https://www.autorell.com${destination}` },
+    alternates: { canonical: publicUrlForPath(destination) },
   }
 }
 
@@ -98,7 +99,8 @@ function marketplaceHref(route: NonNullable<ReturnType<typeof parseSeoRoute>>) {
 }
 
 function buildStructuredData(landing: NonNullable<Awaited<ReturnType<typeof resolveGeoLandingRoute>>>) {
-  const canonical = `https://www.autorell.com${landing.canonicalPath}`
+  const canonical = publicUrlForPath(landing.canonicalPath)
+  const siteHost = new URL(canonical).origin
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -109,7 +111,7 @@ function buildStructuredData(landing: NonNullable<Awaited<ReturnType<typeof reso
         name: landing.h1,
         description: landing.description,
         inLanguage: landing.locale,
-        isPartOf: { '@id': 'https://www.autorell.com/#website' },
+        isPartOf: { '@id': `${siteHost}/#website` },
       },
       {
         '@type': 'BreadcrumbList',
@@ -118,7 +120,7 @@ function buildStructuredData(landing: NonNullable<Awaited<ReturnType<typeof reso
           '@type': 'ListItem',
           position: index + 1,
           name: item.label,
-          item: `https://www.autorell.com${item.href}`,
+          item: publicUrlForPath(item.href),
         })),
       },
     ],

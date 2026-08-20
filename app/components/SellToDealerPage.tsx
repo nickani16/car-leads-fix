@@ -7,7 +7,7 @@ import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import SellToDealerLeadForm, { type SellToDealerFormCopy } from '@/app/components/SellToDealerLeadForm'
 import { cleanSeoText } from '@/lib/market-seo'
-import { getPublicLanguageAlternates } from '@/lib/public-seo'
+import { getPublicLanguageAlternates, publicUrlForPath } from '@/lib/public-seo'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -629,7 +629,7 @@ export async function generateSellToDealerMetadata({ localeOverride }: { localeO
   const canonicalPath = localeOverride ? localizePublicHref(locale, '/sell-to-dealer') : headerStore.get('x-autorell-pathname') || localizePublicHref(locale, '/sell-to-dealer')
   const title = cleanSeoText(copy.metaTitle, 55)
   const description = cleanSeoText(copy.metaDescription, 155)
-  const canonical = `https://www.autorell.com${canonicalPath}`
+  const canonical = publicUrlForPath(canonicalPath)
 
   return {
     title: { absolute: title },

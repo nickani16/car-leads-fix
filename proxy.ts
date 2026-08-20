@@ -9,30 +9,23 @@ import { isSeoVehiclePath } from '@/lib/seo-routes'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
-  'autorell.de': 'www.autorell.com',
-  'www.autorell.de': 'www.autorell.com',
+  'autorell.de': 'www.autorell.de',
   'autorell.eu': 'www.autorell.com',
   'www.autorell.eu': 'www.autorell.com',
-  'autorell.se': 'www.autorell.com',
-  'www.autorell.se': 'www.autorell.com',
-}
-
-const CANONICAL_MARKET_PATHS: Record<string, string> = {
-  'autorell.de': '/de',
-  'www.autorell.de': '/de',
-  'autorell.se': '/se',
-  'www.autorell.se': '/se',
+  'autorell.se': 'www.autorell.se',
 }
 
 const MARKET_HOSTS = {
-  sv: 'www.autorell.com',
-  de: 'www.autorell.com',
+  sv: 'www.autorell.se',
+  de: 'www.autorell.de',
   en: 'www.autorell.com',
 } as const
 
 type Market = keyof typeof MARKET_HOSTS
 
 const MARKET_BY_HOST: Record<string, Market> = {
+  'www.autorell.se': 'sv',
+  'www.autorell.de': 'de',
   'www.autorell.com': 'en',
 }
 
@@ -575,7 +568,12 @@ function redirectToMarket(request: NextRequest, market: string) {
   const hostname = getHostname(request)
   const isLocalizedMarket =
     market === 'sv' || market === 'de' || EU_BUYER_MARKET_CODES.has(market)
-  const targetHostname = MARKET_HOSTS.en
+  const targetHostname =
+    market === 'sv'
+      ? MARKET_HOSTS.sv
+      : market === 'de'
+        ? MARKET_HOSTS.de
+        : MARKET_HOSTS.en
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
   url.hostname = targetHostname
@@ -896,14 +894,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (methodCanRedirect && CANONICAL_HOSTS[hostname]) {
-    const marketPath = CANONICAL_MARKET_PATHS[hostname]
-    const shouldUseMarketPath = marketPath && (pathname === '/' || pathname === '')
-    return redirectToHost(
-      request,
-      CANONICAL_HOSTS[hostname],
-      308,
-      shouldUseMarketPath ? marketPath : undefined,
-    )
+    return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
   if (
@@ -929,8 +920,43 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  const publicPathSegments = pathname.split('/').filter(Boolean)
+  const publicPathMarket = publicPathSegments[0]
+  const publicLocaleContext = publicPathMarket
+    ? getLocaleFromPathMarket(publicPathMarket)
+    : null
+  const expectedPublicHost =
+    publicPathMarket === 'se'
+      ? MARKET_HOSTS.sv
+      : publicPathMarket === 'de'
+        ? MARKET_HOSTS.de
+        : publicLocaleContext
+          ? MARKET_HOSTS.en
+          : null
+
   if (
-    hostname === MARKET_HOSTS.en ||
+    methodCanRedirect &&
+    expectedPublicHost &&
+    hostname !== expectedPublicHost &&
+    Object.prototype.hasOwnProperty.call(MARKET_BY_HOST, hostname)
+  ) {
+    return redirectToHost(request, expectedPublicHost, 308)
+  }
+
+  const hostMarket = MARKET_BY_HOST[hostname]
+  if (
+    methodCanRedirect &&
+    (hostMarket === 'sv' || hostMarket === 'de') &&
+    !publicLocaleContext
+  ) {
+    const url = request.nextUrl.clone()
+    const marketPrefix = hostMarket === 'sv' ? '/se' : '/de'
+    url.pathname = `${marketPrefix}${pathname === '/' ? '' : pathname}`
+    return NextResponse.redirect(url, 308)
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(MARKET_BY_HOST, hostname) ||
     hostname === 'localhost' ||
     hostname === '127.0.0.1'
   ) {

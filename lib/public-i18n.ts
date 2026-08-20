@@ -197,13 +197,13 @@ export function getPublicAlternates(pathname: string) {
   const domainAlternates: Array<[string, string]> =
     normalized === ''
       ? [
-          ['sv-SE', 'https://www.autorell.com/se'],
-          ['de-DE', 'https://www.autorell.com/de'],
+          ['sv-SE', 'https://www.autorell.se/se'],
+          ['de-DE', 'https://www.autorell.de/de'],
         ]
       : normalized === '/find-cars'
         ? [
-            ['sv-SE', 'https://www.autorell.com/se/hitta-bilar'],
-            ['de-DE', 'https://www.autorell.com/de/fahrzeuge-finden'],
+            ['sv-SE', 'https://www.autorell.se/se/hitta-bilar'],
+            ['de-DE', 'https://www.autorell.de/de/fahrzeuge-finden'],
           ]
         : []
 

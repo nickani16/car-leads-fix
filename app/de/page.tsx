@@ -1,10 +1,10 @@
 import BusinessMarketplaceHome from '../components/BusinessMarketplaceHome'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
-import { getPublicLanguageAlternates } from '@/lib/public-seo'
+import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
 
 export const metadata = createSeoMetadata({
   seo: getMarketHomeSeo('de'),
-  canonical: 'https://www.autorell.com/de',
+  canonical: publicUrlForLocale('de'),
   alternates: { languages: getPublicLanguageAlternates('/') },
 })
 

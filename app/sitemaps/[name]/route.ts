@@ -14,11 +14,12 @@ import {
   marketFromSitemapName,
   popularGeoMakes,
   popularGeoModels,
+  sitemapHostForMarket,
+  sitemapMarketsForRequest,
   type SitemapMarketCode,
   xmlResponse,
 } from '@/lib/sitemap-utils'
 
-const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
@@ -37,7 +38,7 @@ const listingSitemapCountries: Record<string, string> = {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ name: string }> },
 ) {
   const { name } = await params
@@ -51,6 +52,8 @@ export async function GET(
   const marketplaceSearchMarket = marketFromPrefixedSitemapName(normalizedName, 'marketplace')
   const vehicleNewsMarket = marketFromPrefixedSitemapName(normalizedName, 'vehicle-news')
   if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !geoModelSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
+  const requestedMarket = market || staticMarket || geoSitemap?.market || geoMakeSitemap?.market || geoModelSitemap?.market || marketplaceSearchMarket || vehicleNewsMarket || marketFromCountry(listingCountry)
+  if (!requestedMarket || !isSitemapMarket(requestedMarket) || !sitemapMarketsForRequest(request).includes(requestedMarket)) notFound()
 
   const urls = staticMarket
     ? staticPublicUrls(staticMarket)
@@ -274,12 +277,19 @@ function pageFromSitemapName(name: string) {
 }
 
 function sitemapUrl(path: string, lastmod?: string, changefreq?: string, priority?: string) {
+  const market = path.split('/').filter(Boolean)[0] as SitemapMarketCode
   return {
-    loc: `${host}${path}`,
+    loc: `${sitemapHostForMarket(market)}${path}`,
     lastmod: lastmod ? new Date(lastmod).toISOString() : undefined,
     changefreq,
     priority,
   }
+}
+
+function marketFromCountry(country: string | null): SitemapMarketCode | null {
+  if (!country) return null
+  const entry = Object.entries(listingSitemapCountries).find(([, countryCode]) => countryCode === country)
+  return entry?.[0] as SitemapMarketCode | undefined || null
 }
 
 function escapeXml(value: string) {

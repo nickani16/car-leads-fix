@@ -30,6 +30,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { publicUrlForPath } from '@/lib/public-seo'
 import {
   formatListingPrice,
   marketplaceCategories as listingPriceCategories,
@@ -1480,7 +1481,7 @@ export function generatePublicInfoMetadata(page: PublicInfoPageKey) {
     const canonicalPath =
       headerStore.get('x-autorell-pathname') ||
       `${locale === 'sv' ? '/se' : locale === 'de' ? '/de' : ''}/${page}`
-    const canonical = `https://www.autorell.com${canonicalPath}`
+    const canonical = publicUrlForPath(canonicalPath)
     const title = cleanSeoText(copy.metaTitle, 65)
     const description = cleanSeoText(copy.metaDescription, 150)
     return {

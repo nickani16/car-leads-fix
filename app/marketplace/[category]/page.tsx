@@ -31,7 +31,7 @@ import {
   translatePublic,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { getPublicLanguageAlternates } from '@/lib/public-seo'
+import { getPublicLanguageAlternates, publicHostForLocale } from '@/lib/public-seo'
 import {
   normalizeSearchBounds,
   parseMarketplaceSearchState,
@@ -93,7 +93,7 @@ export async function generateMetadata({
           : requestedLanguage && isPublicLanguage(requestedLanguage)
             ? requestedLanguage
             : 'en'
-  const host = 'https://www.autorell.com'
+  const host = publicHostForLocale(locale)
   const filter = getSearchParam(resolvedSearchParams, 'filter')
   const metadataMarkets = getSearchParamList(resolvedSearchParams, 'markets')
   const metadataCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
@@ -158,6 +158,7 @@ export async function generateMetadata({
     resolvedSearchParams,
     canonicalPath,
     canonicalLanding?.canonicalPath,
+    host,
   )
   const canonical = marketplaceSeo.canonical || (
     filter
@@ -631,8 +632,8 @@ function resolveMarketplaceSeoCanonical(
   params: { [key: string]: string | string[] | undefined },
   fallbackPath: string,
   cleanSeoPath?: string | null,
+  host = 'https://www.autorell.com',
 ) {
-  const host = 'https://www.autorell.com'
   const meaningfulParams = canonicalSearchParams(params)
   if (!meaningfulParams.size) {
     return {

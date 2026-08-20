@@ -2,7 +2,30 @@ import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
 import { localePathPrefix, type PublicLocale } from './public-i18n'
 
-const siteHost = 'https://www.autorell.com'
+const defaultSiteHost = 'https://www.autorell.com'
+
+export function publicHostForLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'https://www.autorell.se'
+  if (locale === 'de') return 'https://www.autorell.de'
+  return defaultSiteHost
+}
+
+export function publicUrlForLocale(locale: PublicLocale, path = '/') {
+  const normalizedPath = path === '/' ? '' : path
+  return `${publicHostForLocale(locale)}${localePathPrefix(locale)}${normalizedPath}`
+}
+
+export function publicUrlForPath(path: string) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const market = normalizedPath.split('/').filter(Boolean)[0]
+  const host =
+    market === 'se'
+      ? 'https://www.autorell.se'
+      : market === 'de'
+        ? 'https://www.autorell.de'
+        : defaultSiteHost
+  return `${host}${normalizedPath === '/' ? '' : normalizedPath}`
+}
 
 const hreflangByLocale: Record<PublicLocale, string> = {
   sv: 'sv-SE',
@@ -24,7 +47,7 @@ export function getPublicLanguageAlternates(path: string, languagePaths?: Partia
   const localizedHref = (targetLocale: PublicLocale) => {
     const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
     const pathPart = targetPath === '/' ? '' : targetPath
-    return `${siteHost}${localePathPrefix(targetLocale)}${pathPart}`
+    return publicUrlForLocale(targetLocale, pathPart)
   }
   const alternates = Object.fromEntries(
     (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
@@ -51,7 +74,7 @@ export function createPublicMetadata({
   languagePaths?: Partial<Record<PublicLocale, string>>
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
-  const canonical = `${siteHost}${localePathPrefix(locale)}${normalizedPath}`
+  const canonical = publicUrlForLocale(locale, normalizedPath)
   const seoTitle = cleanSeoText(title, 65)
   const seoDescription = cleanSeoText(description, 150)
   const alternates = getPublicLanguageAlternates(normalizedPath, languagePaths)

@@ -8,28 +8,32 @@ import {
   allSitemapMarkets,
   popularGeoMakes,
   popularGeoModels,
+  sitemapHostForRequest,
+  sitemapMarketsForRequest,
   sitemapMarketCountries,
+  type SitemapMarketCode,
   xmlResponse,
 } from '@/lib/sitemap-utils'
 
-const host = 'https://www.autorell.com'
 const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  const staticSitemapNames = allSitemapMarkets.map((market) => `static-${market}`)
-  const seoSitemapNames = allSitemapMarkets.flatMap((market) => [
+export async function GET(request: Request) {
+  const host = sitemapHostForRequest(request)
+  const sitemapMarkets = sitemapMarketsForRequest(request)
+  const staticSitemapNames = sitemapMarkets.map((market) => `static-${market}`)
+  const seoSitemapNames = sitemapMarkets.flatMap((market) => [
     `categories-${market}`,
     `brands-${market}`,
     `models-${market}`,
   ])
-  const marketplaceSitemapNames = allSitemapMarkets.map((market) => `marketplace-${market}`)
-  const { names: listingSitemapNames, hadError: listingCountHadError } = await getListingSitemapNames()
-  const geoSitemapNames = await getGeoSitemapNames()
-  const geoMakeSitemapNames = await getGeoMakeSitemapNames()
-  const geoModelSitemapNames = await getGeoModelSitemapNames()
-  const vehicleNewsSitemapNames = allSitemapMarkets.map((market) => `vehicle-news-${market}`)
+  const marketplaceSitemapNames = sitemapMarkets.map((market) => `marketplace-${market}`)
+  const { names: listingSitemapNames, hadError: listingCountHadError } = await getListingSitemapNames(sitemapMarkets)
+  const geoSitemapNames = await getGeoSitemapNames(sitemapMarkets)
+  const geoMakeSitemapNames = await getGeoMakeSitemapNames(sitemapMarkets)
+  const geoModelSitemapNames = await getGeoModelSitemapNames(sitemapMarkets)
+  const vehicleNewsSitemapNames = sitemapMarkets.map((market) => `vehicle-news-${market}`)
   const sitemapNames = [
     ...staticSitemapNames,
     ...seoSitemapNames,
@@ -61,11 +65,11 @@ export async function GET() {
   )
 }
 
-async function getListingSitemapNames() {
+async function getListingSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
   const names: string[] = []
   let hadError = false
   await Promise.all(
-    allSitemapMarkets.map(async (market) => {
+    markets.map(async (market) => {
       try {
         const { count, error } = await createAdminClient()
           .from('marketplace_listings')
@@ -93,10 +97,10 @@ async function getListingSitemapNames() {
   return { names: names.sort(), hadError }
 }
 
-async function getGeoSitemapNames() {
+async function getGeoSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
   const names: string[] = []
   await Promise.all(
-    getGeoSitemapMarketCodes().map(async (market) => {
+    getGeoSitemapMarketCodes().filter((market): market is SitemapMarketCode => markets.includes(market as SitemapMarketCode)).map(async (market) => {
       const config = getGeoSitemapMarketConfig(market)
       if (!config) return
       const areaCount = getGeoSitemapAreaCount(config.countryCode)
@@ -111,10 +115,10 @@ async function getGeoSitemapNames() {
   return names.sort()
 }
 
-async function getGeoMakeSitemapNames() {
+async function getGeoMakeSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
   const names: string[] = []
   await Promise.all(
-    allSitemapMarkets.map(async (market) => {
+    markets.map(async (market) => {
       const config = getGeoSitemapMarketConfig(market)
       if (!config) return
       const areaCount = getGeoSitemapAreaCount(config.countryCode)
@@ -129,10 +133,10 @@ async function getGeoMakeSitemapNames() {
   return names.sort()
 }
 
-async function getGeoModelSitemapNames() {
+async function getGeoModelSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
   const names: string[] = []
   await Promise.all(
-    allSitemapMarkets.map(async (market) => {
+    markets.map(async (market) => {
       const config = getGeoSitemapMarketConfig(market)
       if (!config) return
       const areaCount = getGeoSitemapAreaCount(config.countryCode)

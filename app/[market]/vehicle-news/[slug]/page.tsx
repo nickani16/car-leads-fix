@@ -6,6 +6,7 @@ import PublicHeader from '@/app/components/PublicHeader'
 import PublicFooter from '@/app/components/PublicFooter'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
 import { articleBodyBlocks, getVehicleNewsArticle, type PublicNewsBodyBlock } from '@/lib/content/vehicle-news'
+import { publicUrlForPath } from '@/lib/public-seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export async function generateMetadata({
   return {
     title: article.seoTitle || `${article.title} | Autorell`,
     description: article.metaDescription || article.excerpt,
-    alternates: { canonical: article.canonicalUrl || `https://www.autorell.com/${market}/vehicle-news/${slug}` },
+    alternates: { canonical: publicUrlForPath(`/${market}/vehicle-news/${slug}`) },
     openGraph: { images: article.imageUrl ? [article.imageUrl] : [] },
     robots: result.preview ? { index: false, follow: false, noarchive: true } : undefined,
   }

@@ -1019,8 +1019,8 @@ export default function PublicHeader({
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
     ...([
-      ['se', 'SE', 'Sverige', 'https://www.autorell.com/se'] as const,
-      ['de', 'DE', 'Deutschland', 'https://www.autorell.com/de'] as const,
+      ['se', 'SE', 'Sverige', 'https://www.autorell.se/se'] as const,
+      ['de', 'DE', 'Deutschland', 'https://www.autorell.de/de'] as const,
       ...euBuyerMarkets
         .filter((market) => !highlightedMarketCodes.has(market.code))
         .map(

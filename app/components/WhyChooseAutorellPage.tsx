@@ -15,6 +15,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import { publicUrlForPath } from '@/lib/public-seo'
 
 export type BenefitsCopy = {
   metaTitle: string
@@ -443,7 +444,7 @@ async function buildWhyChooseAutorellMetadata(
     },
   }
   const seo = productionSeoByKind[vehicleKind][seoLocale] || sellSeoOverridesByVehicleKind[vehicleKind][seoLocale] || seoMap[seoLocale] || seoMap.en
-  const canonical = `https://www.autorell.com${localizePublicHref(locale, pagePath)}`
+  const canonical = publicUrlForPath(localizePublicHref(locale, pagePath))
   const title = cleanSeoText(seo.title, 67)
   const description = cleanSeoText(seo.description, 155)
   const imageUrl = 'https://www.autorell.com/sell-car-og.jpg'

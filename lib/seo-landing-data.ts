@@ -5,6 +5,7 @@ import { searchMarketplaceListings } from './marketplace-search-v2'
 import { formatMarketplacePrice, getMarketplaceCategory, type MarketplaceCategorySlug } from './marketplace'
 import { buildListingPath } from './listing-url'
 import type { PublicLocale } from './public-i18n'
+import { publicUrlForPath } from './public-seo'
 import {
   buildSeoPath,
   getPopularSeoLocations,
@@ -84,7 +85,7 @@ export const getSeoLandingData = unstable_cache(
       h1: labels.h1,
       description: labels.description,
       intro: labels.intro,
-      canonical: `https://www.autorell.com${canonicalPath}`,
+      canonical: publicUrlForPath(canonicalPath),
       robots: { index: indexable, follow: true },
       count,
       minIndexableCount,
@@ -113,7 +114,7 @@ export function buildSeoLandingJsonLd(data: SeoLandingData) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      item: `https://www.autorell.com${item.href}`,
+      item: publicUrlForPath(item.href),
     })),
   }
 
@@ -125,7 +126,7 @@ export function buildSeoLandingJsonLd(data: SeoLandingData) {
     itemListElement: data.listings.map((listing, index) => ({
       '@type': 'ListItem',
       position: (data.pagination.currentPage - 1) * data.pagination.pageSize + index + 1,
-      url: `https://www.autorell.com${listing.href}`,
+      url: publicUrlForPath(listing.href),
       name: listing.title,
     })),
   }
@@ -263,7 +264,7 @@ function buildAlternateLanguages(route: SeoRouteDefinition, page = 1) {
       location,
     })
     if (href) {
-      languages[seoMarkets[market].locale] = `https://www.autorell.com${pageHref(href, page)}`
+      languages[seoMarkets[market].locale] = publicUrlForPath(pageHref(href, page))
     }
   }
   return languages

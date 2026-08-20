@@ -14,14 +14,15 @@ const privacyRoute = readFileSync(new URL('../app/privacy/page.tsx', import.meta
 const reportRoute = readFileSync(new URL('../app/report/page.tsx', import.meta.url), 'utf8')
 const localizedReportRoute = readFileSync(new URL('../app/rapportera/page.tsx', import.meta.url), 'utf8')
 
-test('robots always advertises the canonical XML sitemap', () => {
-  assert.match(robots, /https:\/\/www\.autorell\.com\/sitemap\.xml/)
+test('robots advertises the canonical XML sitemap for the request host', () => {
+  assert.match(robots, /sitemapHostForRequest\(request\)/)
+  assert.match(robots, /Vary: 'Host, X-Forwarded-Host'/)
   assert.doesNotMatch(robots, /getPublicMarketConfig/)
-  assert.doesNotMatch(robots, /\$\{host\}\/sitemap\.xml/)
 })
 
 test('static sitemaps cover every active country market without removing specialist sitemaps', () => {
-  assert.match(sitemapIndex, /allSitemapMarkets\.map\(\(market\) => `static-\$\{market\}`\)/)
+  assert.match(sitemapIndex, /sitemapMarketsForRequest\(request\)/)
+  assert.match(sitemapIndex, /sitemapMarkets\.map\(\(market\) => `static-\$\{market\}`\)/)
   assert.match(sitemapIndex, /\.\.\.marketplaceSitemapNames/)
   assert.match(sitemapIndex, /\.\.\.geoSitemapNames/)
   assert.match(sitemapIndex, /\.\.\.geoMakeSitemapNames/)

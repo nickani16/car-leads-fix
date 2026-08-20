@@ -7,7 +7,7 @@ import {
 } from '@/lib/eu-buyer-markets'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { type PublicLocale } from '@/lib/public-i18n'
-import { getPublicLanguageAlternates } from '@/lib/public-seo'
+import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -31,7 +31,7 @@ export async function generateMetadata({
   if (marketCode === 'se' || marketCode === 'de') {
     return createSeoMetadata({
       seo: getMarketHomeSeo(marketCode),
-      canonical: `https://www.autorell.com/${marketCode}`,
+      canonical: publicUrlForLocale(marketCode === 'se' ? 'sv' : 'de'),
       alternates: { languages },
     })
   }

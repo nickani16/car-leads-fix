@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
-import { getPublicLanguageAlternates } from '@/lib/public-seo'
+import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
 
 async function getRootMarket() {
   const requestHeaders = await headers()
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   if (market === 'de') {
     return createSeoMetadata({
       seo: getMarketHomeSeo('de'),
-      canonical: 'https://www.autorell.com/de',
+      canonical: publicUrlForLocale('de'),
       alternates: { languages },
     })
   }
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return createSeoMetadata({
     seo: getMarketHomeSeo('se'),
-    canonical: 'https://www.autorell.com/se',
+    canonical: publicUrlForLocale('sv'),
     alternates: { languages },
   })
 }

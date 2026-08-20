@@ -42,6 +42,7 @@ import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/c
 import { getEuCountryName } from '@/lib/eu-countries'
 import { countryForLocale } from '@/lib/market-locale'
 import { buildListingPath, buildListingSlug, extractListingIdFromSlug } from '@/lib/listing-url'
+import { publicUrlForPath } from '@/lib/public-seo'
 import {
   getMarketplaceCategory,
   marketplaceLanguage,
@@ -185,7 +186,7 @@ export async function generateListingMetadata({
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const canonicalPath = buildListingPath(listing)
-  const canonical = `https://www.autorell.com${canonicalPath}`
+  const canonical = publicUrlForPath(canonicalPath)
   const location = [listing.city, getEuCountryName(listing.country_code, locale)].filter(Boolean).join(', ')
   const title = `${listing.title} | ${location} | Autorell`
   const description = [
@@ -310,7 +311,7 @@ export default async function ListingDetailPage({
       : localizedLabel(locale, 'Privat annons', 'Private listing', 'Private Anzeige')
   const sellerDisplayLabel = sellerLabel
   const publishedDate = listing.published_at || listing.created_at
-  const publicUrl = `https://www.autorell.com${canonicalPath}`
+  const publicUrl = publicUrlForPath(canonicalPath)
   const daysLeft = getDaysLeft(listing.expires_at)
   const isListingOwner = user
     ? await isUserListingOwner(listing.id, user.id)
@@ -413,7 +414,7 @@ export default async function ListingDetailPage({
     breadcrumbs: [
       ...breadcrumbItems.map((item) => ({
         label: item.label,
-        href: `https://www.autorell.com${item.href}`,
+        href: publicUrlForPath(item.href),
       })),
       { label: listing.title, href: publicUrl },
     ],
