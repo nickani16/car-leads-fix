@@ -34,7 +34,7 @@ test('domain sitemap indexes and shards cannot mix markets', () => {
 })
 
 test('shared public pages and structured data use the market domain helper', () => {
-  assert.match(publicInfoPage, /const canonical = publicUrlForPath\(canonicalPath\)/)
+  assert.match(publicInfoPage, /const canonical = publicUrlForLocale\(locale, canonicalPath\)/)
   assert.match(seoLandingData, /item: publicUrlForPath\(item\.href\)/)
   assert.match(seoLandingData, /url: publicUrlForPath\(listing\.href\)/)
 })
