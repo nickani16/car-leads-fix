@@ -38,6 +38,7 @@ import {
 } from '@/lib/seo-geo-landings'
 
 const removedPublicPages = new Set([
+  'app',
   'sell-vehicle',
   'safety-tips',
   'partners',

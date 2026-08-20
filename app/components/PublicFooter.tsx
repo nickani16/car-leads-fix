@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import {
   Check,
   ChevronDown,
-  Download,
   Globe2,
   X,
 } from 'lucide-react'
@@ -18,7 +17,6 @@ import {
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
-import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import BrandLogo from './BrandLogo'
 
 const footerCopy = {
@@ -273,6 +271,36 @@ const footerCopyright: Record<PublicLocale, string> = {
   da: 'Alle rettigheder forbeholdes.',
 }
 
+const footerLanguageNames: Record<PublicLocale, string> = {
+  sv: 'Svenska',
+  en: 'English',
+  de: 'Deutsch',
+  at: 'Deutsch',
+  be: 'Nederlands',
+  fr: 'Français',
+  es: 'Español',
+  it: 'Italiano',
+  pl: 'Polski',
+  nl: 'Nederlands',
+  fi: 'Suomi',
+  da: 'Dansk',
+}
+
+const footerCurrencyLabels: Record<PublicLocale, string> = {
+  sv: 'Valuta',
+  en: 'Currency',
+  de: 'Währung',
+  at: 'Währung',
+  be: 'Valuta',
+  fr: 'Devise',
+  es: 'Moneda',
+  it: 'Valuta',
+  pl: 'Waluta',
+  nl: 'Valuta',
+  fi: 'Valuutta',
+  da: 'Valuta',
+}
+
 const allMarkets = [
   ['EU', 'Europe', 'English'],
   ['AT', 'Austria', 'Deutsch'],
@@ -316,8 +344,6 @@ export default function PublicFooter({
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
   const withdrawalHref = localizePublicHref(locale, '/withdrawal')
   const homeHref = localizePublicHref(locale, '/')
-  const appHref = getAppDownloadHref(locale)
-  const appCopy = getAppDownloadCopy(locale)
 
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
@@ -325,9 +351,23 @@ export default function PublicFooter({
   }
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
-      <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
+    <footer className="border-t border-[#dbe3ee] bg-[#f4f6fa] px-0 pb-0 pt-10 text-[#101828] lg:pt-14">
+      <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-[1.25fr_repeat(4,minmax(0,1fr))] lg:gap-x-12">
+          <div className="col-span-2 flex max-w-[360px] flex-col items-start sm:col-span-3 lg:col-span-1">
+            <Link
+              href={homeHref}
+              aria-label="Autorell"
+              onClick={handleHomeLogoClick}
+              className="inline-flex w-[128px] sm:w-[138px]"
+            >
+              <BrandLogo underline={false} />
+            </Link>
+            <p className="mt-5 text-[13px] leading-6 text-[#475467]">{t.legalNotice}</p>
+            <div className="mt-5">
+              <SocialLinks />
+            </div>
+          </div>
           {t.columns.map((column) => (
             <FooterColumn
               key={column.title}
@@ -338,44 +378,58 @@ export default function PublicFooter({
               ])}
             />
           ))}
-          <AppDownloadLinks href={appHref} copy={appCopy} />
         </div>
 
-        <div className="my-8 h-px bg-[#dfe5ee]" />
+        <div className="my-9 h-px bg-[#d8e0eb]" />
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex max-w-[430px] flex-col gap-5">
-              <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
-                <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
-                  <BrandLogo underline={false} />
-                </Link>
-              </div>
-            </div>
-            <SocialLinks />
-          </div>
-          <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
-            <p className="text-[13px] text-[#344054]">{t.legalNotice}</p>
-          </div>
-        </div>
+        <div className="grid gap-5 pb-7 text-[13px] text-[#475467] lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
+          <p className="shrink-0">© 2026 Autorell. {footerCopyright[locale]}</p>
 
-        <div className="my-6 h-px bg-[#dfe5ee]" />
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium lg:justify-center">
+            <Link href={termsHref} className="transition hover:text-[#075fff]">
+              {t.terms}
+            </Link>
+            <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
+              {t.purchaseTerms}
+            </Link>
+            <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
+              {t.refundPolicy}
+            </Link>
+            <Link href={withdrawalHref} className="transition hover:text-[#075fff]">
+              {t.withdrawal}
+            </Link>
+            <Link href={privacyHref} className="transition hover:text-[#075fff]">
+              {t.privacy}
+            </Link>
+            <Link
+              href={localizePublicHref(locale, '/cookies')}
+              className="transition hover:text-[#075fff]"
+            >
+              {t.cookies}
+            </Link>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('autorell-open-cookie-settings'))}
+              className="text-left transition hover:text-[#075fff]"
+            >
+              {t.cookieSettings}
+            </button>
+          </nav>
 
-        <div className="flex flex-col gap-5 bg-white pb-7 text-[13px] text-[#475467]">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium sm:justify-end">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
               <button
                 type="button"
                 onClick={() => setIsMarketOpen(true)}
-                className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
+                className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
               >
                 <span className="inline-flex items-center gap-2">
                   <FlagIcon code={footerMarket.flagCode} size="sm" />
-                  {footerMarket.label}
+                  {footerLanguageNames[locale]}
                 </span>
                 <ChevronDown className="h-4 w-4" />
               </button>
               <FooterSelect
-                ariaLabel="Currency"
+                ariaLabel={footerCurrencyLabels[locale]}
                 defaultValue={footerMarket.currency}
                 options={[
                   ['eur', 'EUR'],
@@ -392,41 +446,6 @@ export default function PublicFooter({
                   ['usd', 'USD'],
                 ]}
               />
-          </div>
-
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <p className="order-2 shrink-0 lg:order-1">© 2026 Autorell. {footerCopyright[locale]}</p>
-
-            <nav className="order-1 flex flex-wrap gap-x-5 gap-y-2 font-medium lg:order-2 lg:justify-end">
-              <Link href={termsHref} className="transition hover:text-[#075fff]">
-                {t.terms}
-              </Link>
-              <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
-                {t.purchaseTerms}
-              </Link>
-              <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
-                {t.refundPolicy}
-              </Link>
-              <Link href={withdrawalHref} className="transition hover:text-[#075fff]">
-                {t.withdrawal}
-              </Link>
-              <Link href={privacyHref} className="transition hover:text-[#075fff]">
-                {t.privacy}
-              </Link>
-              <Link
-                href={localizePublicHref(locale, '/cookies')}
-                className="transition hover:text-[#075fff]"
-              >
-                {t.cookies}
-              </Link>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('autorell-open-cookie-settings'))}
-                className="text-left transition hover:text-[#075fff]"
-              >
-                {t.cookieSettings}
-              </button>
-            </nav>
           </div>
         </div>
       </div>
@@ -534,8 +553,8 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
-      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#101828]">
+      <h3 className="text-[16px] font-semibold text-[#253858]">{title}</h3>
+      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#344f7a]">
         {links.map(([label, href]) => (
           <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
             {label}
@@ -635,51 +654,17 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-11 w-11 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="grid h-9 w-9 place-items-center rounded-[7px] bg-[#0866ff] text-white transition hover:-translate-y-0.5 hover:bg-[#075be5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-5 w-5 fill-current"
+            className="h-[18px] w-[18px] fill-current"
           >
             <path d={path} />
           </svg>
         </a>
       ))}
-    </div>
-  )
-}
-
-function AppDownloadLinks({
-  href,
-  copy,
-  align = 'left',
-}: {
-  href: string
-  copy: ReturnType<typeof getAppDownloadCopy>
-  align?: 'left' | 'right'
-}) {
-  return (
-    <div className={align === 'right' ? 'sm:text-right' : ''}>
-      <h3 className="text-[15px] font-semibold text-[#101828]">{copy.footerLabel}</h3>
-      <div className={`mt-2 grid gap-2 ${align === 'right' ? 'sm:justify-items-end' : ''}`}>
-        <Link
-          href={href}
-          aria-label={copy.googlePlayAlt}
-          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <span>Google Play</span>
-          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
-        </Link>
-        <Link
-          href={href}
-          aria-label={copy.appStoreAlt}
-          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <span>App Store</span>
-          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
-        </Link>
-      </div>
     </div>
   )
 }

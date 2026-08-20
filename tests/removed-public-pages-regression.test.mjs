@@ -5,6 +5,7 @@ import test from 'node:test'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const removedPages = [
+  'app',
   'sell-vehicle',
   'safety-tips',
   'partners',
@@ -27,6 +28,9 @@ test('removed public pages no longer have route files', () => {
     assert.equal(existsSync(`${root}app/${page}/page.tsx`), false, page)
   }
   assert.equal(existsSync(`${root}app/[market]/sell-vehicle/page.tsx`), false)
+  assert.equal(existsSync(`${root}app/[market]/app/page.tsx`), false)
+  assert.equal(existsSync(`${root}app/components/AppComingSoonPage.tsx`), false)
+  assert.equal(existsSync(`${root}lib/app-download.ts`), false)
 })
 
 test('localized catch-all returns not found for removed public pages', () => {
@@ -62,12 +66,15 @@ test('public footers keep visible copyright and marketplace labels localized', (
   assert.match(vehicleSearch, /\{marketplaceFooterCopyright\[locale\]\}/)
   assert.doesNotMatch(vehicleSearch, />Marketplace<\/span>/)
   for (const removedAppDownloadSnippet of [
+    'AppDownloadLinks',
     'AppDownloadBadges',
     'MarketplaceAppBadges',
     'app-store-badge.svg',
     'google-play-badge.svg',
     'NEXT_PUBLIC_APP_STORE_URL',
     'NEXT_PUBLIC_PLAY_STORE_URL',
+    'Google Play',
+    'App Store',
   ]) {
     assert.doesNotMatch(publicFooter, new RegExp(removedAppDownloadSnippet))
     assert.doesNotMatch(vehicleSearch, new RegExp(removedAppDownloadSnippet))

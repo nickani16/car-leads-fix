@@ -48,10 +48,12 @@ test('about metadata stays concise in every intentional language', () => {
   descriptions.forEach((description) => assert.ok(description.length <= 155, `${description} exceeds 155 characters`))
 })
 
-test('download headings match the other footer headings', () => {
-  assert.match(publicFooter, /<h3 className="text-\[15px\] font-semibold text-\[#101828\]">\{copy\.footerLabel\}<\/h3>/)
-  assert.match(marketplace, /<h3 className="text-\[15px\] font-semibold text-\[#101828\]">\{copy\.footerLabel\}<\/h3>/)
-  assert.doesNotMatch(publicFooter, /<p className="text-\[13px\] font-semibold text-\[#101828\]">\{copy\.footerLabel\}<\/p>/)
+test('public and marketplace footers omit app store download promotion', () => {
+  for (const source of [publicFooter, marketplace]) {
+    assert.doesNotMatch(source, /AppDownloadLinks|MarketplaceAppDownloadLinks/)
+    assert.doesNotMatch(source, /Google Play|App Store/)
+    assert.doesNotMatch(source, /getAppDownloadCopy|getAppDownloadHref/)
+  }
 })
 
 test('marketplace filter popovers expose a visible close control and Escape handling', () => {

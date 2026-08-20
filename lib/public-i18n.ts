@@ -170,7 +170,6 @@ export const publicPagePaths = [
   '/vehicles',
   '/how-it-works',
   '/benefits',
-  '/app',
   '/sell-car',
   '/sell-to-dealer',
   '/sell-van',

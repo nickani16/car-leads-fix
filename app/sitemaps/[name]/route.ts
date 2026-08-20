@@ -188,7 +188,6 @@ function staticSeoUrls(market: SitemapMarketCode, name: string) {
 function staticPublicUrls(market: SitemapMarketCode) {
   const publicPaths = [
     '',
-    '/app',
     '/sell-car',
     '/sell-to-dealer',
     '/sell-van',

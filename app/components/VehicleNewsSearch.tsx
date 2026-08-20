@@ -46,7 +46,7 @@ export default function VehicleNewsSearch({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={copy.search}
-            className="h-12 w-full rounded-[12px] border border-[#cfd8e6] bg-white pl-4 pr-11 text-sm outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            className="h-12 w-full rounded-[12px] border border-[#cfd8e6] bg-white pl-4 pr-11 text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
           />
         </label>
       </div>

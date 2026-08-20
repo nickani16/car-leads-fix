@@ -13,7 +13,6 @@ import {
   ChevronRight,
   Check,
   Columns2,
-  Download,
   Globe2,
   Heart,
   Layers,
@@ -66,7 +65,6 @@ import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
 import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
-import { getAppDownloadCopy, getAppDownloadHref } from '@/lib/app-download'
 import { applyMarketplaceSearchModeParams } from '@/lib/marketplace-search-seo'
 import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
@@ -5043,8 +5041,6 @@ function LocationHierarchyFilter({
 
 function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   const termsHref = localizePublicHref(locale, '/terms')
-  const appHref = getAppDownloadHref(locale)
-  const appCopy = getAppDownloadCopy(locale)
   const columns = [
     {
       title: uiText(locale, 'Services', 'Tjänster', 'Dienste'),
@@ -5075,7 +5071,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
 
   return (
     <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold">{column.title}</p>
@@ -5088,7 +5084,6 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             </nav>
           </div>
         ))}
-        <MarketplaceAppDownloadLinks href={appHref} copy={appCopy} />
       </div>
       <div className="mt-8 grid gap-5 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
@@ -5125,38 +5120,6 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </nav>
       </div>
     </footer>
-  )
-}
-
-function MarketplaceAppDownloadLinks({
-  href,
-  copy,
-}: {
-  href: string
-  copy: ReturnType<typeof getAppDownloadCopy>
-}) {
-  return (
-    <div>
-      <h3 className="text-[15px] font-semibold text-[#101828]">{copy.footerLabel}</h3>
-      <div className="mt-2 grid gap-2">
-        <Link
-          href={href}
-          aria-label={copy.googlePlayAlt}
-          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <span>Google Play</span>
-          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
-        </Link>
-        <Link
-          href={href}
-          aria-label={copy.appStoreAlt}
-          className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-[#101828] transition hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-        >
-          <span>App Store</span>
-          <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} aria-hidden="true" />
-        </Link>
-      </div>
-    </div>
   )
 }
 
