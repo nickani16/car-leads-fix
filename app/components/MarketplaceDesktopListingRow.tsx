@@ -64,6 +64,7 @@ export default function MarketplaceDesktopListingRow({
   compareActive,
   onCompare,
   onBeforeNavigate,
+  marketCountryCode,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
@@ -73,6 +74,7 @@ export default function MarketplaceDesktopListingRow({
   compareActive: boolean
   onCompare: () => void
   onBeforeNavigate?: () => void
+  marketCountryCode?: string
 }) {
   const copy = desktopListCopy[locale]
   const href = buildListingPath({
@@ -102,16 +104,16 @@ export default function MarketplaceDesktopListingRow({
   return (
     <article
       data-marketplace-listing-row
-      className="group relative grid min-h-[204px] grid-cols-[248px_minmax(0,1fr)] overflow-hidden rounded-[8px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:204px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none 2xl:grid-cols-[268px_minmax(0,1fr)]"
+      className="group relative grid min-h-[194px] grid-cols-[260px_minmax(0,1fr)_184px] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:194px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none 2xl:grid-cols-[276px_minmax(0,1fr)_194px]"
     >
-      <div className="flex min-h-[204px] min-w-0 flex-col border-r border-[#e2e7ef] bg-white">
-        <div className="relative h-[148px] shrink-0 overflow-hidden border-b border-[#edf1f6] bg-white 2xl:h-[154px]">
+      <div className="flex min-h-[194px] min-w-0 flex-col border-r border-[#e2e7ef] bg-white">
+        <div className="relative h-[140px] shrink-0 overflow-hidden border-b border-[#edf1f6] bg-white 2xl:h-[146px]">
           <ListingCardImageCarousel
             images={images}
             title={listing.title}
             href={href}
             onNavigate={onBeforeNavigate}
-            sizes="(min-width: 1536px) 268px, 248px"
+            sizes="(min-width: 1536px) 276px, 260px"
             previousLabel={copy.previousPhoto}
             nextLabel={copy.nextPhoto}
             showControlsOnDesktop
@@ -119,7 +121,7 @@ export default function MarketplaceDesktopListingRow({
             showDotsOnMobile={false}
             enableTouchSwipe={false}
             placeholder={(
-              <div className="grid h-full min-h-[148px] place-items-center bg-[#f7faff] text-[#0866ff]">
+              <div className="grid h-full min-h-[140px] place-items-center bg-[#f7faff] text-[#0866ff]">
                 <div className="text-center">
                   {renderCategoryIcon(listing.category, 'mx-auto h-10 w-10')}
                   <p className="mt-1.5 text-[11px] font-semibold text-[#667085]">
@@ -140,7 +142,7 @@ export default function MarketplaceDesktopListingRow({
             </span>
           ) : null}
         </div>
-        <div className="flex min-h-[55px] min-w-0 items-center gap-2.5 px-3 py-2">
+        <div className="flex min-h-[48px] min-w-0 items-center gap-2.5 px-3 py-1.5">
           {listing.sellerIsTrader && listing.sellerLogoUrl ? (
             <span className="relative h-8 w-11 shrink-0 overflow-hidden rounded-[5px] bg-white ring-1 ring-[#e1e6ee]">
               <Image src={listing.sellerLogoUrl} alt="" fill sizes="44px" className="object-contain p-1" />
@@ -164,8 +166,8 @@ export default function MarketplaceDesktopListingRow({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-col px-4 py-3.5 2xl:px-5">
-        <div className="min-w-0 pr-12">
+      <div className="flex min-w-0 flex-col border-r border-[#edf1f6] px-4 py-3.5 2xl:px-5">
+        <div className="min-w-0">
           <Link
             href={href}
             prefetch={false}
@@ -179,7 +181,6 @@ export default function MarketplaceDesktopListingRow({
         </div>
 
         <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
-          <p className="shrink-0 text-[26px] font-semibold leading-8 text-[#101828]">{listing.priceLabel}</p>
           <span className={`inline-flex h-5 items-center rounded-full px-2 text-[10px] font-semibold ring-1 ${offerBadge.className}`}>
             {offerBadge.label}
           </span>
@@ -220,12 +221,19 @@ export default function MarketplaceDesktopListingRow({
                 {item}
               </span>
             ))}
+            {equipmentChips.length > 3 ? (
+              <span className="shrink-0 rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[10px] font-semibold text-[#475467]">
+                +{equipmentChips.length - 3}
+              </span>
+            ) : null}
           </div>
         ) : null}
 
         <div className="mt-auto flex min-w-0 items-center justify-between gap-3 border-t border-[#edf1f6] pt-2.5">
           <span className="inline-flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-[#667085]">
-            <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full" />
+            {listing.country && listing.country.toUpperCase() !== marketCountryCode?.toUpperCase() ? (
+              <CountryFlag code={listing.country} className="h-3.5 w-3.5 shrink-0 rounded-full" />
+            ) : null}
             <span className="truncate">{location || sellerLabel}</span>
           </span>
           <div className="flex shrink-0 items-center gap-2">
@@ -242,17 +250,22 @@ export default function MarketplaceDesktopListingRow({
               <Scale className="h-3 w-3" aria-hidden="true" />
               {copy.compare}
             </button>
-            <Link
-              href={href}
-              prefetch={false}
-              onClick={onBeforeNavigate}
-              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
-            >
-              {copy.viewListing}
-              <ArrowRight className="h-3 w-3" aria-hidden="true" />
-            </Link>
           </div>
         </div>
+      </div>
+
+      <div className="flex min-w-0 flex-col items-end px-3.5 pb-3.5 pt-12 text-right 2xl:px-4">
+        <p className="text-[22px] font-semibold leading-7 text-[#101828]">{listing.priceLabel}</p>
+        <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-4 text-[#667085]">{location || sellerLabel}</p>
+        <Link
+          href={href}
+          prefetch={false}
+          onClick={onBeforeNavigate}
+          className="mt-auto inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+        >
+          {copy.viewListing}
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
       </div>
 
       <SavedListingButton
@@ -303,7 +316,7 @@ function listingRowMetadata(listing: VehicleSearchListing, locale: PublicLocale)
       : null,
   ]
 
-  return candidates.filter((item): item is NonNullable<typeof item> => Boolean(item?.value)).slice(0, 8)
+  return candidates.filter((item): item is NonNullable<typeof item> => Boolean(item?.value)).slice(0, 5)
 }
 
 function listingConditionLabel(value: string, locale: PublicLocale, copy: DesktopListCopy) {

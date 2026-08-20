@@ -410,6 +410,7 @@ async function renderMarketplaceCategoryPage({
         initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
         initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment')}
         initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
+        initialPage={Math.max(1, Number.parseInt(getSearchParam(resolvedSearchParams, 'page') || '1', 10) || 1)}
         seoLanding={seoLanding ? {
           h1: seoLanding.h1,
           description: seoLanding.description,

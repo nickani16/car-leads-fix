@@ -31,6 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
 import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
@@ -1110,6 +1111,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible = false,
   initialEquipmentQuery = '',
   initialSortBy = 'published',
+  initialPage = 1,
   initialModeExplicit = false,
   disableUrlSync = false,
   seoLanding,
@@ -1153,6 +1155,7 @@ export default function VehicleSearchExperience({
   initialLeasingPossible?: boolean
   initialEquipmentQuery?: string
   initialSortBy?: string
+  initialPage?: number
   initialModeExplicit?: boolean
   disableUrlSync?: boolean
   seoLanding?: VehicleSearchSeoLanding
@@ -1254,10 +1257,11 @@ export default function VehicleSearchExperience({
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
   const [resultsLayoutTouched, setResultsLayoutTouched] = useState(false)
-  const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>('map')
+  const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>(initialPage > 1 ? 'list' : 'map')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
   const categoryRouteSyncArmedRef = useRef(false)
   const seoRouteSyncArmedRef = useRef(false)
+  const searchParamsInitializedRef = useRef(false)
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -1303,13 +1307,14 @@ export default function VehicleSearchExperience({
   const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>(initialSearchSuggestions)
   const [searchListings, setSearchListings] = useState<VehicleSearchListing[]>(listings)
   const [searchFacets, setSearchFacets] = useState<MarketplaceSearchApiResponse['facets']>({})
-  const [, setSearchTotalCount] = useState(listings.length)
-  const [searchPage, setSearchPage] = useState(1)
+  const [searchTotalCount, setSearchTotalCount] = useState(listings.length)
+  const [searchPage, setSearchPage] = useState(Math.max(1, initialPage))
   const [searchTotalPages, setSearchTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
+  const desktopResultsScrollRef = useRef<HTMLDivElement>(null)
   const mobileSortSelectRef = useRef<HTMLSelectElement>(null)
   const mobileShortcutBarRef = useRef<HTMLDivElement | null>(null)
   const [mobileShortcutOverMedia, setMobileShortcutOverMedia] = useState(false)
@@ -1571,9 +1576,38 @@ export default function VehicleSearchExperience({
   }, [disableUrlSync, locale, marketplaceSearchParams, preserveCanonicalUrl, router, searchStateReady, selectedCategories, syncCategoryRoute])
 
   useEffect(() => {
+    if (!searchParamsInitializedRef.current) {
+      searchParamsInitializedRef.current = true
+      return
+    }
     const timer = window.setTimeout(() => setSearchPage(1), 0)
     return () => window.clearTimeout(timer)
   }, [marketplaceSearchParams])
+
+  const changeSearchPage = useCallback((requestedPage: number) => {
+    const nextPage = Math.min(Math.max(1, requestedPage), Math.max(1, searchTotalPages))
+    setSearchPage(nextPage)
+    if (typeof window !== 'undefined') {
+      const nextUrl = new URL(window.location.href)
+      if (nextPage > 1) nextUrl.searchParams.set('page', String(nextPage))
+      else nextUrl.searchParams.delete('page')
+      window.history.pushState(
+        window.history.state,
+        '',
+        `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`,
+      )
+    }
+    desktopResultsScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [searchTotalPages])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const restoredPage = Number.parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10)
+      setSearchPage(Number.isFinite(restoredPage) ? Math.max(1, restoredPage) : 1)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     if (!filtersOpen) return undefined
@@ -1618,7 +1652,7 @@ export default function VehicleSearchExperience({
         params.set('markets', safeAutomaticCountry)
       }
       params.set('page', String(searchPage))
-      params.set('limit', '48')
+      params.set('limit', desktopMarketplaceView === 'list' ? '24' : '48')
       params.set('locale', locale)
       params.set('displayMarket', safeAutomaticCountry || safeInitialCountry || 'EU')
 
@@ -1630,7 +1664,7 @@ export default function VehicleSearchExperience({
         if (!response.ok) throw new Error('Search failed')
         const payload = (await response.json()) as MarketplaceSearchApiResponse
         const nextListings = payload.items.map((item) => mapApiListingToVehicleSearchListing(item, locale))
-        setSearchListings((current) => searchPage > 1 ? [...current, ...nextListings] : nextListings)
+        setSearchListings((current) => searchPage > 1 && desktopMarketplaceView !== 'list' ? [...current, ...nextListings] : nextListings)
         setSearchTotalCount(payload.totalCount ?? nextListings.length)
         setSearchTotalPages(payload.totalPages ?? 1)
         setSearchFacets(payload.facets || {})
@@ -1647,7 +1681,7 @@ export default function VehicleSearchExperience({
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [debouncedSearchInput, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
+  }, [debouncedSearchInput, desktopMarketplaceView, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
@@ -2097,7 +2131,7 @@ export default function VehicleSearchExperience({
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
   const resultCountSummary = formatSearchResultCountSummary({
     locale,
-    count: visibleCount,
+    count: searchError ? visibleCount : searchTotalCount,
     make,
     model,
     minYear,
@@ -3068,11 +3102,11 @@ export default function VehicleSearchExperience({
 
         {desktopMarketplaceView === 'map' ? renderDesktopFilterBar('desktop') : null}
 
-        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden bg-white min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'min-[1120px]:!grid-cols-1' : ''}`}>
+        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'bg-[#eef2f7] min-[1120px]:!grid-cols-1' : 'bg-white'}`}>
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter hidden min-h-0 min-w-0 grid-cols-[286px_minmax(0,1fr)] bg-[#f3f5f8] min-[1120px]:grid 2xl:grid-cols-[296px_minmax(0,1fr)]"
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1320px] grid-cols-[286px_minmax(0,1fr)] border-x border-[#d7dde7] bg-[#f3f5f8] min-[1120px]:grid"
             >
               <aside
                 data-marketplace-list-sidebar
@@ -3335,7 +3369,7 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-6 py-4 2xl:px-8">
+                <div className="border-b border-[#dfe5ee] bg-white px-5 py-3.5 2xl:px-6">
                   <div className="flex items-center justify-between gap-5">
                     <div className="min-w-0">
                       <p className="truncate text-[20px] font-semibold tracking-[-.02em] text-[#101828]">
@@ -3359,7 +3393,7 @@ export default function VehicleSearchExperience({
                         </select>
                         <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
                       </label>
-                      <button type="button" onClick={() => setDesktopMarketplaceView('map')} className="inline-flex h-9 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                      <button type="button" onClick={() => { changeSearchPage(1); setDesktopMarketplaceView('map') }} className="inline-flex h-9 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
                         <MapPin className="h-4 w-4" aria-hidden="true" />
                         {desktopListText.showMap}
                       </button>
@@ -3374,14 +3408,25 @@ export default function VehicleSearchExperience({
                   </div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-6 py-5 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-8 2xl:py-6">
+                <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-5 py-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-6 2xl:py-5">
                   {filteredListings.length ? (
-                    <ol className="mx-auto max-w-[1180px] overflow-hidden rounded-[8px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] 2xl:max-w-[1240px]">
+                    <>
+                      <MarketplacePagination
+                        locale={locale}
+                        page={searchPage}
+                        totalPages={searchTotalPages}
+                        onPageChange={changeSearchPage}
+                        className="mb-3 justify-end"
+                      />
+                    <ol className="grid gap-3">
                       {filteredListings.map((listing) => (
                         <li key={listing.id} className="min-w-0">
-                          <VehicleResultCard
+                          <MarketplaceDesktopListingRow
                             listing={listing}
                             locale={locale}
+                            offerBadge={listingOfferBadge(locale, listing)}
+                            insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)}
+                            equipmentChips={listingEquipmentChips(listing.equipment, locale)}
                             marketCountryCode={safeInitialCountry}
                             compareActive={compareIds.includes(listing.id)}
                             onCompare={() => toggleCompare(listing.id)}
@@ -3390,6 +3435,7 @@ export default function VehicleSearchExperience({
                         </li>
                       ))}
                     </ol>
+                    </>
 ) : (
                     <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" aria-label={seoLanding?.zeroResultsText || emptyStateCopy.title} data-marketplace-list-empty>
                       <div className="w-full overflow-hidden rounded-[8px] border border-[#dbe3ee] bg-white shadow-[0_10px_34px_rgba(16,24,40,.055)]">
@@ -3428,15 +3474,17 @@ export default function VehicleSearchExperience({
                       </div>
                     </div>
                   )}
-                  {filteredListings.length > 0 && searchPage < searchTotalPages ? (
-                    <div className="py-6 text-center">
-                      <button type="button" onClick={() => setSearchPage((page) => page + 1)} disabled={searchLoading} className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-[#cfd7e4] bg-white px-6 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-wait disabled:opacity-60">
-                        {searchLoading ? desktopListText.loading : desktopListText.showMore}
-                      </button>
-                    </div>
+                  {filteredListings.length ? (
+                    <MarketplacePagination
+                      locale={locale}
+                      page={searchPage}
+                      totalPages={searchTotalPages}
+                      onPageChange={changeSearchPage}
+                      className="mt-5 justify-center"
+                    />
                   ) : null}
                   {filteredListings.length ? (
-                    <div className="mx-auto mt-6 max-w-[1180px] overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                    <div className="mx-auto mt-5 overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
                   ) : null}
                 </div>
                 {compareIds.length ? (
@@ -4047,7 +4095,10 @@ export default function VehicleSearchExperience({
               smartSearchSearched={mobileMapSmartSearch.searched}
               onSearchFocusChange={setMobileMapSearchFocused}
               onSmartSearchSelect={selectMarketplaceSuggestion}
-              onShowDesktopList={() => setDesktopMarketplaceView('list')}
+              onShowDesktopList={() => {
+                changeSearchPage(1)
+                setDesktopMarketplaceView('list')
+              }}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
@@ -6099,6 +6150,91 @@ function mapApiListingToVehicleSearchListing(
 function formatApiPrice(amount: number, currency: string, locale: PublicLocale) {
   if (!Number.isFinite(amount) || amount <= 0) return uiText(locale, 'Price on request', 'Pris på begäran', 'Preis auf Anfrage')
   return `${amount.toLocaleString(countNumberLocale(locale), { maximumFractionDigits: 0 })} ${currency.toUpperCase()}`
+}
+
+function MarketplacePagination({
+  locale,
+  page,
+  totalPages,
+  onPageChange,
+  className = '',
+}: {
+  locale: PublicLocale
+  page: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  className?: string
+}) {
+  if (totalPages <= 1) return null
+  const copy = paginationCopy[locale]
+  return (
+    <nav aria-label={copy.pagination} className={`flex items-center gap-1.5 ${className}`}>
+      <button
+        type="button"
+        aria-label={copy.previous}
+        title={copy.previous}
+        disabled={page <= 1}
+        onClick={() => onPageChange(page - 1)}
+        className="grid h-8 w-8 place-items-center rounded-[6px] border border-[#cfd7e4] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {paginationItems(page, totalPages).map((item) => item.kind === 'ellipsis' ? (
+        <span key={item.key} className="grid h-8 min-w-6 place-items-center text-xs font-semibold text-[#667085]" aria-hidden="true">...</span>
+      ) : (
+        <button
+          key={item.page}
+          type="button"
+          aria-current={item.page === page ? 'page' : undefined}
+          onClick={() => onPageChange(item.page)}
+          className={`grid h-8 min-w-8 place-items-center rounded-[6px] border px-2 text-xs font-semibold transition ${
+            item.page === page
+              ? 'border-[#0866ff] bg-[#0866ff] text-white'
+              : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
+          }`}
+        >
+          {item.page}
+        </button>
+      ))}
+      <button
+        type="button"
+        aria-label={copy.next}
+        title={copy.next}
+        disabled={page >= totalPages}
+        onClick={() => onPageChange(page + 1)}
+        className="grid h-8 w-8 place-items-center rounded-[6px] border border-[#cfd7e4] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+      >
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </nav>
+  )
+}
+
+function paginationItems(page: number, totalPages: number) {
+  const pages = new Set([1, totalPages, page - 1, page, page + 1])
+  const visible = Array.from(pages).filter((item) => item >= 1 && item <= totalPages).sort((a, b) => a - b)
+  const items: Array<{ kind: 'page'; page: number } | { kind: 'ellipsis'; key: string }> = []
+  visible.forEach((visiblePage, index) => {
+    const previous = visible[index - 1]
+    if (previous && visiblePage - previous > 1) items.push({ kind: 'ellipsis', key: `${previous}-${visiblePage}` })
+    items.push({ kind: 'page', page: visiblePage })
+  })
+  return items
+}
+
+const paginationCopy: Record<PublicLocale, { pagination: string; previous: string; next: string }> = {
+  en: { pagination: 'Search result pages', previous: 'Previous page', next: 'Next page' },
+  sv: { pagination: 'Sidor med sökresultat', previous: 'Föregående sida', next: 'Nästa sida' },
+  de: { pagination: 'Suchergebnisseiten', previous: 'Vorherige Seite', next: 'Nächste Seite' },
+  at: { pagination: 'Suchergebnisseiten', previous: 'Vorherige Seite', next: 'Nächste Seite' },
+  be: { pagination: 'Pagina\'s met zoekresultaten', previous: 'Vorige pagina', next: 'Volgende pagina' },
+  nl: { pagination: 'Pagina\'s met zoekresultaten', previous: 'Vorige pagina', next: 'Volgende pagina' },
+  fr: { pagination: 'Pages de résultats', previous: 'Page précédente', next: 'Page suivante' },
+  es: { pagination: 'Páginas de resultados', previous: 'Página anterior', next: 'Página siguiente' },
+  it: { pagination: 'Pagine dei risultati', previous: 'Pagina precedente', next: 'Pagina successiva' },
+  pl: { pagination: 'Strony wyników wyszukiwania', previous: 'Poprzednia strona', next: 'Następna strona' },
+  fi: { pagination: 'Hakutulossivut', previous: 'Edellinen sivu', next: 'Seuraava sivu' },
+  da: { pagination: 'Sider med søgeresultater', previous: 'Forrige side', next: 'Næste side' },
 }
 
 function formatSearchResultCountSummary({
