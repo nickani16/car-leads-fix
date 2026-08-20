@@ -3106,7 +3106,7 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1320px] grid-cols-[286px_minmax(0,1fr)] border-x border-[#d7dde7] bg-[#f3f5f8] min-[1120px]:grid"
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1320px] grid-cols-[286px_minmax(0,1fr)] overflow-hidden rounded-[8px] border border-[#d7dde7] bg-[#f3f5f8] shadow-[0_4px_18px_rgba(16,24,40,.04)] min-[1120px]:my-4 min-[1120px]:grid"
             >
               <aside
                 data-marketplace-list-sidebar
@@ -3146,22 +3146,21 @@ export default function VehicleSearchExperience({
                     open={listOfferTypeOpen}
                     onToggle={() => setListOfferTypeOpen((open) => !open)}
                   >
-                    <div className="grid grid-cols-3 rounded-[9px] border border-[#cfd7e4] bg-[#f8fafc] p-1">
-                      {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => changeMarketplaceMode(option)}
-                          className={`min-h-9 rounded-[7px] px-2 text-[11px] font-semibold transition ${
-                            mode === option
-                              ? 'bg-[#0866ff] text-white shadow-sm'
-                              : 'text-[#475467] hover:bg-white hover:text-[#101828]'
-                          }`}
-                        >
-                          {marketplaceModeOptionLabel(locale, option)}
-                        </button>
-                      ))}
-                    </div>
+                    <label className="relative block">
+                      <span className="sr-only">{desktopListText.offerType}</span>
+                      <select
+                        value={mode}
+                        onChange={(event) => changeMarketplaceMode(event.target.value as SearchMode)}
+                        className="h-10 w-full appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-medium text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
+                      >
+                        {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
+                          <option key={option} value={option}>
+                            {marketplaceModeOptionLabel(locale, option)}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                    </label>
                   </CollapsibleFilterSection>
 
                   <CollapsibleFilterSection
@@ -3369,43 +3368,41 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-5 py-3.5 2xl:px-6">
-                  <div className="flex items-center justify-between gap-5">
-                    <div className="min-w-0">
-                      <p className="truncate text-[20px] font-semibold tracking-[-.02em] text-[#101828]">
+                <div className="border-b border-[#dfe5ee] bg-white px-4 py-2.5 2xl:px-5">
+                  <div className="flex min-h-9 items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[17px] font-semibold text-[#101828]">
                         {searchLoading && searchPage === 1
                           ? desktopListText.updatingResults
                           : searchError
                             ? desktopListText.countFailure
                             : resultCountSummary}
                       </p>
-                      <p className="mt-1 text-[12px] font-normal text-[#667085]">
-                        {desktopListText.resultsUpdate}
-                      </p>
+                      <span className="sr-only">{desktopListText.resultsUpdate}</span>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <label className="relative block">
-                        <span className="sr-only">{desktopListText.sorting}</span>
-                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-9 min-w-[160px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
-                          {sortOptions.map((option) => (
-                            <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-                      </label>
-                      <button type="button" onClick={() => { changeSearchPage(1); setDesktopMarketplaceView('map') }} className="inline-flex h-9 items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
-                        <MapPin className="h-4 w-4" aria-hidden="true" />
-                        {desktopListText.showMap}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 flex min-h-8 items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"><ActiveFilterChips filters={activeFilters} locale={locale} /></div>
-                    <button type="button" onClick={saveCurrentSearch} disabled={savingSearch} className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[8px] px-4 text-[12px] font-semibold text-white transition ${savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'} disabled:cursor-wait disabled:opacity-70`}>
+                    <label className="relative shrink-0">
+                      <span className="sr-only">{desktopListText.sorting}</span>
+                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-8 min-w-[144px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-8 text-[11px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
+                        {sortOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                    </label>
+                    <button type="button" onClick={() => { changeSearchPage(1); setDesktopMarketplaceView('map') }} className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                      <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                      {desktopListText.showMap}
+                    </button>
+                    <button type="button" onClick={saveCurrentSearch} disabled={savingSearch} className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[7px] border px-3 text-[11px] font-semibold transition ${savedSearchMessage ? 'border-[#079455] bg-[#ecfdf3] text-[#067647]' : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'} disabled:cursor-wait disabled:opacity-70`}>
                       <Bookmark className="h-4 w-4" aria-hidden="true" />
                       {saveSearchButtonLabel}
                     </button>
                   </div>
+                  {activeFilters.length ? (
+                    <div className="mt-2 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <ActiveFilterChips filters={activeFilters} locale={locale} />
+                    </div>
+                  ) : null}
                 </div>
 
                 <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-5 py-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-6 2xl:py-5">

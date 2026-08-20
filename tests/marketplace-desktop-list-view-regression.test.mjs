@@ -43,6 +43,8 @@ test('desktop list sidebar follows a flat Blocket-style filter structure', () =>
   assert.match(experienceSource, /sidebar \? 'hidden' : 'grid'/)
   assert.match(experienceSource, /summary && !sidebar/)
   assert.doesNotMatch(experienceSource, /mb-2 overflow-hidden rounded-\[8px\] border bg-white/)
+  assert.match(experienceSource, /onChange=\{\(event\) => changeMarketplaceMode\(event\.target\.value as SearchMode\)\}/)
+  assert.doesNotMatch(experienceSource, /grid grid-cols-3 rounded-\[9px\]/)
 })
 
 test('desktop list shell has explicit copy for every public locale', () => {
@@ -71,6 +73,8 @@ test('desktop list cards expose mapped vehicle, seller and action data in dense 
 
   assert.match(desktopListingRowSource, /<ListingCardImageCarousel/)
   assert.match(desktopListingRowSource, /<SavedListingButton/)
+  assert.match(desktopListingRowSource, /className="absolute right-2\.5 top-2\.5/)
+  assert.doesNotMatch(desktopListingRowSource, /className="absolute right-3 top-3/)
   assert.match(desktopListingRowSource, /aria-pressed=\{compareActive\}/)
   assert.match(desktopListingRowSource, /buildListingPath/)
   assert.match(experienceSource, /<MetaSeparatorList/)
@@ -78,6 +82,8 @@ test('desktop list cards expose mapped vehicle, seller and action data in dense 
   assert.match(experienceSource, /shouldShowListingCountryChip/)
   assert.match(experienceSource, /sm:grid-cols-\[260px_minmax\(0,1fr\)\] sm:items-start/)
   assert.match(experienceSource, /grid-cols-\[286px_minmax\(0,1fr\)\]/)
+  assert.match(experienceSource, /min-\[1120px\]:my-4/)
+  assert.match(experienceSource, /flex min-h-9 items-center gap-3/)
   assert.match(desktopListingRowSource, /grid-cols-\[260px_minmax\(0,1fr\)_184px\]/)
   assert.match(experienceSource, /icon=\{<Scale/)
   assert.match(experienceSource, /icon=\{<Layers/)

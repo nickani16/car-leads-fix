@@ -141,6 +141,13 @@ export default function MarketplaceDesktopListingRow({
               {images.length.toLocaleString(numberLocale(locale))}
             </span>
           ) : null}
+          <SavedListingButton
+            listingId={listing.id}
+            label={copy.saveListing}
+            savedLabel={copy.saved}
+            removeLabel={copy.removeSavedListing}
+            className="absolute right-2.5 top-2.5 z-20 h-9 w-9 rounded-[7px] border border-[#d0d5dd] bg-white/95 shadow-sm backdrop-blur-sm"
+          />
         </div>
         <div className="flex min-h-[48px] min-w-0 items-center gap-2.5 px-3 py-1.5">
           {listing.sellerIsTrader && listing.sellerLogoUrl ? (
@@ -268,13 +275,6 @@ export default function MarketplaceDesktopListingRow({
         </Link>
       </div>
 
-      <SavedListingButton
-        listingId={listing.id}
-        label={copy.saveListing}
-        savedLabel={copy.saved}
-        removeLabel={copy.removeSavedListing}
-        className="absolute right-3 top-3 z-20 h-8 w-8 rounded-[7px] border border-[#d0d5dd] bg-white shadow-sm"
-      />
     </article>
   )
 }
