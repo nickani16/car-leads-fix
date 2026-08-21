@@ -1117,14 +1117,12 @@ export default function HomeHeroVehicleSearch({
           ) : null}
         </div>
 
-        <div className="px-3 py-3 sm:px-5 sm:py-4 lg:px-6">
-          <div className="grid min-w-0 grid-cols-2 gap-x-2.5 gap-y-3 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,.95fr)_minmax(220px,.9fr)] lg:items-end lg:gap-x-4">
-            {(['make', 'model'] as const).map((key, index) => (
-              <div
-                key={key}
-                className={`order-0 min-w-0 lg:row-start-1 ${index === 0 ? 'lg:col-start-1' : 'lg:col-start-2'}`}
-              >
+        <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-6">
+          <div className="grid min-w-0 grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,.95fr)_minmax(220px,.9fr)] lg:items-end lg:gap-x-4">
+            <div className="relative order-0 col-span-2 grid min-w-0 grid-cols-2 gap-x-2.5 lg:col-start-1 lg:row-start-1 lg:gap-x-4">
+              {(['make', 'model'] as const).map((key) => (
                 <HomeFilterControl
+                  key={key}
                   filterKey={key}
                   label={t.fields[key]}
                   value={filters[key]}
@@ -1135,28 +1133,27 @@ export default function HomeHeroVehicleSearch({
                   disabled={key === 'model' && !filters.make}
                   onChange={(value) => updateFilter(key, value)}
                 />
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => setQuickFiltersOpen((current) => !current)}
-              aria-expanded={quickFiltersOpen}
-              aria-controls="home-search-quick-filters"
-              aria-label={t.moreFilters}
-              title={t.moreFilters}
-              className="order-1 col-span-2 mx-auto grid h-8 w-12 place-items-center rounded-full text-[#0866ff] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] lg:col-span-2 lg:col-start-1 lg:row-start-2"
-            >
-              <ChevronDown
-                className={`h-5 w-5 transition-transform duration-200 ${quickFiltersOpen ? 'rotate-180' : ''}`}
-                strokeWidth={2.2}
-                aria-hidden="true"
-              />
-            </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setQuickFiltersOpen((current) => !current)}
+                aria-expanded={quickFiltersOpen}
+                aria-controls="home-search-quick-filters"
+                aria-label={t.moreFilters}
+                title={t.moreFilters}
+                className="absolute right-0 top-0 grid h-5 w-5 place-items-center rounded-full text-[#0866ff] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${quickFiltersOpen ? 'rotate-180' : ''}`}
+                  strokeWidth={2.2}
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
 
             <div
               id="home-search-quick-filters"
-              className={`order-2 col-span-2 grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out lg:order-2 lg:col-span-4 lg:col-start-1 lg:row-start-3 ${
+              className={`order-1 col-span-2 grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out lg:col-span-4 lg:col-start-1 lg:row-start-2 ${
                 quickFiltersOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
               }`}
             >
@@ -1186,7 +1183,7 @@ export default function HomeHeroVehicleSearch({
               </div>
             </div>
 
-            <div className="order-3 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1">
+            <div className="order-2 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1">
               <LocationControl
                 label={t.location}
                 value={location}
@@ -1199,18 +1196,18 @@ export default function HomeHeroVehicleSearch({
             </div>
 
             <SearchSubmitButton
-              className="order-4 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1"
+              className="order-3 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1"
               label={countLabel}
               loading={countLoading}
               loadingLabel={t.updatingCount}
             />
           </div>
 
-          <div className="flex min-h-9 items-center justify-end gap-4">
+          <div className="mt-0.5 flex min-h-7 items-center justify-end gap-4">
             <button
               type="button"
               onClick={resetSearch}
-              className="inline-flex min-h-8 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:min-h-9 sm:gap-2 sm:text-[13px]"
+              className="inline-flex min-h-7 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:gap-2 sm:text-[13px]"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               {t.reset}
@@ -1221,7 +1218,7 @@ export default function HomeHeroVehicleSearch({
               onClick={() => setMoreFiltersOpen(true)}
               aria-expanded={moreFiltersOpen}
               aria-controls="home-search-more-filters"
-              className="inline-flex min-h-8 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:min-h-9 sm:gap-2 sm:text-[13px]"
+              className="inline-flex min-h-7 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:gap-2 sm:text-[13px]"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               {t.moreFilters}
@@ -1386,7 +1383,7 @@ function HomeSelectControl({
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="home-hero-filter-select h-12 min-h-12 w-full appearance-none rounded-[16px] border border-[#98a2b3] bg-white px-4 pr-10 text-[13px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3] sm:text-[14px]"
+          className="home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-[14px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1396,7 +1393,7 @@ function HomeSelectControl({
           ))}
         </select>
         <ChevronDown
-          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
           aria-hidden="true"
         />
       </span>
@@ -1422,7 +1419,7 @@ function PurchaseTypeControl({
       <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid h-12 grid-cols-2 gap-0.5 rounded-[16px] border border-[#98a2b3] bg-white p-0.5">
+      <div className="grid h-10 grid-cols-2 gap-0.5 rounded-[14px] border border-[#98a2b3] bg-white p-0.5">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1432,7 +1429,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[13px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
+            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[11px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
               value === option
                 ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1467,10 +1464,10 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="h-12 w-full rounded-[16px] border border-[#98a2b3] bg-white px-4 pr-10 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 sm:text-[14px]"
+          className="h-10 w-full rounded-[14px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
         />
         <MapPin
-          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
           aria-hidden="true"
         />
         <datalist id="home-search-location-options">
@@ -1497,7 +1494,7 @@ function SearchSubmitButton({
   return (
     <button
       type="submit"
-      className={`${className} min-h-12 self-end items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-center text-[14px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25`}
+      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-label={loadingLabel} />

@@ -686,7 +686,7 @@ export default async function BusinessMarketplaceHome({
         </div>
         </section>
 
-        <section className="border-y border-[#e4e9f0] bg-white py-7 sm:py-10">
+        <section className="bg-white py-7 sm:py-10">
         <div className={homeContentContainerClass}>
           <HomePopularBrandsSwitcher
             presentations={categoryPresentations}

@@ -81,9 +81,11 @@ test('homepage filter uses one compact stateful module with expandable quick fil
   assert.match(homeSearchSource, /quickFiltersOpen \? 'grid-rows-\[1fr\] opacity-100'/)
   assert.match(homeSearchSource, /\['maxPrice', 'minYear', quickUsageFilter\]/)
   assert.match(homeSearchSource, /lg:grid-cols-\[minmax\(180px,1fr\)_minmax\(180px,1fr\)_minmax\(220px,\.95fr\)_minmax\(220px,\.9fr\)\]/)
-  assert.match(homeSearchSource, /order-2 col-span-2 grid[\s\S]*lg:order-2 lg:col-span-4/)
-  assert.match(homeSearchSource, /order-3 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1/)
-  assert.match(homeSearchSource, /order-4 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1/)
+  assert.match(homeSearchSource, /absolute right-0 top-0 grid h-5 w-5[\s\S]*text-\[#0866ff\]/)
+  assert.match(homeSearchSource, /order-1 col-span-2 grid[\s\S]*lg:col-span-4/)
+  assert.match(homeSearchSource, /order-2 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1/)
+  assert.match(homeSearchSource, /order-3 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1/)
+  assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10/)
   assert.doesNotMatch(homeSearchSource, /home-search-quick-filters[\s\S]{0,700}border-t/)
   assert.match(homeSource, /browseByType=\{/)
   assert.doesNotMatch(homeSource, /<div className="mt-3">\s*<HomeBrowseByTypeSwitcher/)
@@ -114,15 +116,15 @@ test('homepage search panels and placeholder retain their accessibility behavior
   assert.doesNotMatch(homeSearchSource, /Volvo V70 diesel/)
 })
 
-test('homepage search uses larger rounded primary controls', () => {
+test('homepage search uses compact rounded primary controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
-  assert.match(homeSearchSource, /home-hero-filter-select h-12 min-h-12 w-full appearance-none rounded-\[16px\]/)
-  assert.match(homeSearchSource, /grid h-12 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
-  assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[13px\]/)
+  assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-\[14px\]/)
+  assert.match(homeSearchSource, /grid h-10 grid-cols-2 gap-0\.5 rounded-\[14px\]/)
+  assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[11px\]/)
   assert.doesNotMatch(homeSearchSource, /className=\{`min-h-8 rounded-\[14px\]/)
-  assert.match(homeSearchSource, /h-12 w-full rounded-\[16px\]/)
-  assert.match(homeSearchSource, /min-h-12 self-end items-center justify-center gap-2 rounded-full/)
-  assert.match(homeSearchSource, /right-3\.5[\s\S]*text-\[#0866ff\]/)
+  assert.match(homeSearchSource, /h-10 w-full rounded-\[14px\]/)
+  assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
+  assert.match(homeSearchSource, /right-3[\s\S]*text-\[#0866ff\]/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
 })
 
@@ -164,7 +166,7 @@ test('homepage category discovery uses a compact white panel and touch scrolling
   assert.match(categoryDiscoverySource, /w-\[106px\]/)
   assert.match(categoryDiscoverySource, /pr-10.*sm:pr-0/)
   assert.match(categoryDiscoverySource, /bg-gradient-to-l from-white to-transparent sm:hidden/)
-  assert.match(homeSource, /border-y border-\[#e4e9f0\] bg-white/)
+  assert.doesNotMatch(homeSource, /border-y border-\[#e4e9f0\] bg-white/)
 })
 
 test('homepage search overrides broken generated Finnish reset copy', () => {
