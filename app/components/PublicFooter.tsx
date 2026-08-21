@@ -432,11 +432,11 @@ export function FooterMarketCurrencyControls({
 
   return (
     <>
-      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 font-medium ${className}`}>
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] font-medium ${className}`}>
         <button
           type="button"
           onClick={() => setIsMarketOpen(true)}
-          className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left text-[13px] font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
           <span className="inline-flex items-center gap-2">
             <FlagIcon code={footerMarket.flagCode} size="sm" />
@@ -716,12 +716,12 @@ export function MarketSelectorModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#f8fbff] text-[#101828]">
+    <div className="fixed inset-0 z-[500] overflow-y-auto bg-[#f8fbff] text-[#101828]">
       <button
         type="button"
         onClick={onClose}
         aria-label={copy.close}
-        className="fixed right-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[250] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6 md:top-6"
+        className="fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[510] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6"
       >
         <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       </button>

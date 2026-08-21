@@ -151,20 +151,30 @@ export async function getSimilarListings(
   listing: InsightListingRow,
   limit = 4,
 ): Promise<InsightListingRow[]> {
+  const sourceYear = toNumber(listing.model_year)
+  const sourceMake = listing.make?.trim()
+  const sourceModel = listing.model?.trim()
+  if (!sourceMake || !sourceModel || sourceYear === null) return []
+
   try {
     const { data, error } = await admin
       .from('marketplace_listings')
       .select(marketplacePublicSelect)
       .eq('status', 'published')
       .eq('category', listing.category)
+      .eq('make', sourceMake)
+      .eq('model', sourceModel)
+      .gte('model_year', sourceYear - 5)
+      .lte('model_year', sourceYear + 5)
       .neq('id', listing.id)
       .not('published_at', 'is', null)
       .is('sold_at', null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-      .limit(80)
+      .limit(Math.max(limit * 4, 16))
 
     if (error || !data) return []
     return (data as InsightListingRow[])
+      .filter((candidate) => isStrictlySimilarListing(listing, candidate))
       .map((candidate) => ({
         candidate,
         score: similarScore(listing, candidate),
@@ -175,6 +185,18 @@ export async function getSimilarListings(
   } catch {
     return []
   }
+}
+
+export function isStrictlySimilarListing(source: InsightListingRow, candidate: InsightListingRow) {
+  const sourceYear = toNumber(source.model_year)
+  const candidateYear = toNumber(candidate.model_year)
+  return Boolean(
+    sameText(source.make, candidate.make)
+      && sameText(source.model, candidate.model)
+      && sourceYear !== null
+      && candidateYear !== null
+      && Math.abs(sourceYear - candidateYear) <= 5,
+  )
 }
 
 export async function getListingHistory(

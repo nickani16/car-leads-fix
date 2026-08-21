@@ -769,13 +769,16 @@ export default async function ListingDetailPage({
                 <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                   {copy.sellerDescription}
                 </h2>
-                <p className="mt-1.5 text-xs font-medium text-[#667085] sm:mt-2 sm:text-sm">{copy.originalLanguage}</p>
                 <SellerDescriptionClamp
                   text={publicSellerDescription}
                   readMoreLabel={localizedLabel(locale, 'Läs mer', 'Read more', 'Mehr anzeigen')}
                   showLessLabel={localizedLabel(locale, 'Visa mindre', 'Show less', 'Weniger anzeigen')}
                 />
-                <SellerDescriptionTranslationButton text={publicSellerDescription} locale={locale} />
+                <SellerDescriptionTranslationButton
+                  text={publicSellerDescription}
+                  locale={locale}
+                  sourceLanguage={listingLanguageFromCountryCode(listing.country_code)}
+                />
               </section>
             ) : null}
 
@@ -1999,7 +2002,7 @@ function getInsightsCopy(locale: PublicLocale) {
     profileMarketValue: localizedLabel(locale, '{count} jämförbara annonser i underlaget.', '{count} comparable listings in the sample.', '{count} vergleichbare Anzeigen in der Stichprobe.'),
     profileMarketLimited: localizedLabel(locale, 'Underlaget växer när fler jämförbara annonser publiceras.', 'The sample grows as more comparable listings are published.', 'Die Stichprobe wächst mit weiteren vergleichbaren Anzeigen.'),
     similarListings: localizedLabel(locale, 'Liknande fordon', 'Similar vehicles', 'Ähnliche Fahrzeuge'),
-    similarListingsIntro: localizedLabel(locale, 'Urvalet matchar kategori, märke, modell, plats och pris där data finns.', 'The selection matches category, make, model, location and price where data exists.', 'Die Auswahl passt Kategorie, Marke, Modell, Standort und Preis ab, soweit Daten vorhanden sind.'),
+    similarListingsIntro: localizedLabel(locale, 'Urvalet visar samma märke och modell med högst fem års skillnad i modellår.', 'The selection shows the same make and model within five model years.', 'Die Auswahl zeigt dieselbe Marke und dasselbe Modell mit höchstens fünf Modelljahren Unterschied.'),
     history: localizedLabel(locale, 'Annonshistorik', 'Listing history', 'Anzeigenhistorie'),
     historyLabels: {
       published: localizedLabel(locale, 'Publicerad', 'Published', 'Veröffentlicht'),
@@ -2391,7 +2394,7 @@ function formatDaysLeft(days: number | null, locale: PublicLocale) {
 
 const listingDetailCopy = {
   sv: {
-    sellerDescription: 'Säljarens information',
+    sellerDescription: 'Beskrivning',
     originalLanguage: 'Säljarens fritext visas på det språk som säljaren själv har skrivit.',
     noticeEyebrow: 'Annonsuppgifter',
     noticeTitle: 'ID och granskning',
@@ -2427,7 +2430,7 @@ const listingDetailCopy = {
       'Misstänker du att något i annonsen inte stämmer eller att information saknas? Hjälp oss att hålla Autorell tryggt och uppdaterat genom att anmäla annonsen. Vi granskar alla inkomna rapporter.',
   },
   en: {
-    sellerDescription: 'Seller information',
+    sellerDescription: 'Description',
     originalLanguage: 'The seller text is shown in the language provided by the seller.',
     noticeEyebrow: 'Listing details',
     noticeTitle: 'ID and reporting',
@@ -2463,7 +2466,7 @@ const listingDetailCopy = {
       'Do you suspect that something in the listing is incorrect or that information is missing? Help us keep Autorell safe and up to date by reporting the listing. We review every report we receive.',
   },
   de: {
-    sellerDescription: 'Information des Verkäufers',
+    sellerDescription: 'Beschreibung',
     originalLanguage: 'Freitext des Verkäufers wird in der Originalsprache angezeigt.',
     noticeEyebrow: 'Anzeigenangaben',
     noticeTitle: 'ID und Meldung',
@@ -2541,10 +2544,43 @@ function getListingDetailCopy(locale: PublicLocale) {
 
   return {
     ...translatePublicObject(locale, listingDetailCopy.en),
+    sellerDescription: localizedDescriptionHeading[locale],
     euDisclaimer: localizedReportDisclaimer[locale],
     mapLabel: localizedMapLabels[locale],
     vatInfo: localizedVatInfo[locale],
   }
+}
+
+const localizedDescriptionHeading: Record<PublicLocale, string> = {
+  sv: 'Beskrivning',
+  en: 'Description',
+  de: 'Beschreibung',
+  at: 'Beschreibung',
+  be: 'Beschrijving',
+  fr: 'Description',
+  es: 'Descripción',
+  it: 'Descrizione',
+  pl: 'Opis',
+  nl: 'Beschrijving',
+  fi: 'Kuvaus',
+  da: 'Beskrivelse',
+}
+
+function listingLanguageFromCountryCode(countryCode: string | null | undefined) {
+  const languageByCountry: Record<string, string> = {
+    SE: 'sv',
+    DE: 'de',
+    AT: 'de',
+    BE: 'nl',
+    DK: 'da',
+    FI: 'fi',
+    FR: 'fr',
+    ES: 'es',
+    IT: 'it',
+    NL: 'nl',
+    PL: 'pl',
+  }
+  return countryCode ? languageByCountry[countryCode.trim().toUpperCase()] || 'en' : null
 }
 
 const localizedMapLabels: Record<PublicLocale, string> = {
