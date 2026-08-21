@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
+import { getHomepageCategorySeo } from '@/lib/homepage-category-config'
 
 async function getRootMarket() {
   const requestHeaders = await headers()
@@ -19,7 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'de') {
     return createSeoMetadata({
-      seo: getMarketHomeSeo('de'),
+      seo: {
+        ...getMarketHomeSeo('de'),
+        ...getHomepageCategorySeo('de', 'cars', 'Deutschland'),
+      },
       canonical: publicUrlForLocale('de'),
       alternates: { languages },
     })
@@ -27,14 +31,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (market === 'en') {
     return createSeoMetadata({
-      seo: getMarketHomeSeo('eu'),
+      seo: {
+        ...getMarketHomeSeo('eu'),
+        ...getHomepageCategorySeo('en', 'cars', 'Europe'),
+      },
       canonical: 'https://www.autorell.com',
       alternates: { languages },
     })
   }
 
   return createSeoMetadata({
-    seo: getMarketHomeSeo('se'),
+    seo: {
+      ...getMarketHomeSeo('se'),
+      ...getHomepageCategorySeo('sv', 'cars', 'Sverige'),
+    },
     canonical: publicUrlForLocale('sv'),
     alternates: { languages },
   })

@@ -1,7 +1,8 @@
 'use client'
 
-import { Children, useEffect, useState, type ReactNode } from 'react'
+import { Children, type ReactNode } from 'react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import { useHomeCategory } from './HomeCategoryProvider'
 
 export default function HomeListingCategorySwitcher({
   categories,
@@ -10,32 +11,9 @@ export default function HomeListingCategorySwitcher({
   categories: MarketplaceCategorySlug[]
   children: ReactNode
 }) {
-  const [activeCategory, setActiveCategory] = useState<MarketplaceCategorySlug>('cars')
+  const { activeCategory } = useHomeCategory()
   const childArray = Children.toArray(children)
+  const activeIndex = categories.indexOf(activeCategory)
 
-  useEffect(() => {
-    const handleCategoryChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ category?: MarketplaceCategorySlug }>).detail
-      if (detail?.category && categories.includes(detail.category)) {
-        setActiveCategory(detail.category)
-      }
-    }
-
-    window.addEventListener('autorell:home-category-change', handleCategoryChange)
-    return () => window.removeEventListener('autorell:home-category-change', handleCategoryChange)
-  }, [categories])
-
-  return (
-    <>
-      {childArray.map((child, index) => {
-        const category = categories[index]
-        if (!category) return null
-        return (
-          <div key={category} hidden={category !== activeCategory}>
-            {child}
-          </div>
-        )
-      })}
-    </>
-  )
+  return activeIndex >= 0 ? childArray[activeIndex] ?? null : null
 }

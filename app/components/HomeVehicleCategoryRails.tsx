@@ -22,6 +22,7 @@ export type PopularCarCategory = {
   href: string
   image: string
   tags: string[]
+  imageFit?: 'cover' | 'contain'
 }
 
 export type SelectedVehicleCategory = {
@@ -46,7 +47,7 @@ export type PopularVehicleBrand = {
   id: string
   title: string
   href: string
-  logo: string
+  logo?: string
 }
 
 type HomeVehicleCategoryRailsProps = {
@@ -165,13 +166,19 @@ export default function HomeVehicleCategoryRails({
               data-rail-card
               className="group w-[280px] flex-none snap-start overflow-hidden rounded-[8px] border border-[#d4dbe5] bg-white transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] sm:w-[320px] lg:w-[336px]"
             >
-              <div className="relative h-[187px] overflow-hidden bg-white sm:h-[196px]">
+              <div
+                className={`relative h-[187px] overflow-hidden sm:h-[196px] ${
+                  category.imageFit === 'contain' ? 'bg-[#f4f7fb]' : 'bg-white'
+                }`}
+              >
                 <Image
                   src={category.image}
                   alt=""
                   fill
                   sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 336px"
-                  className="object-cover transition duration-300 group-hover:scale-[1.02]"
+                  className={`transition duration-300 group-hover:scale-[1.02] ${
+                    category.imageFit === 'contain' ? 'object-contain p-4' : 'object-cover'
+                  }`}
                 />
               </div>
               <div className="min-h-[104px] px-3.5 pb-3.5 pt-3">
@@ -244,14 +251,25 @@ export default function HomeVehicleCategoryRails({
               className="group flex min-h-[108px] min-w-0 flex-col items-center justify-center bg-white px-2 py-4 text-center transition hover:bg-[#f3f7fc] sm:min-h-[112px]"
             >
               <span className="flex h-12 w-full items-center justify-center">
-                <Image
-                  src={brand.logo}
-                  alt=""
-                  width={80}
-                  height={52}
-                  sizes="80px"
-                  className="max-h-11 w-auto max-w-[72px] object-contain transition duration-300 group-hover:scale-[1.06]"
-                />
+                {brand.logo ? (
+                  <Image
+                    src={brand.logo}
+                    alt=""
+                    width={80}
+                    height={52}
+                    sizes="80px"
+                    className="max-h-11 w-auto max-w-[72px] object-contain transition duration-300 group-hover:scale-[1.06]"
+                  />
+                ) : (
+                  <span className="grid h-11 w-11 place-items-center rounded-full border border-[#c8d5e6] bg-[#f3f7fc] text-[14px] font-semibold text-[#315a91] transition duration-300 group-hover:scale-[1.06]">
+                    {brand.title
+                      .split(/\s+/)
+                      .slice(0, 2)
+                      .map((part) => part[0])
+                      .join('')
+                      .toUpperCase()}
+                  </span>
+                )}
               </span>
               <span className="mt-2 block max-w-full text-[13px] font-semibold leading-[1.2] text-[#101828] sm:text-[14px]">
                 {brand.title}

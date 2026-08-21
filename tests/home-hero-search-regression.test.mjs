@@ -14,6 +14,10 @@ const homeSource = readFileSync(
   new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url),
   'utf8',
 )
+const homepageCategoryConfigSource = readFileSync(
+  new URL('../lib/homepage-category-config.ts', import.meta.url),
+  'utf8',
+)
 const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
@@ -103,7 +107,7 @@ test('public header business links are explicit in every public locale', () => {
 })
 
 test('homepage popular brands keep an even logo grid', () => {
-  assert.match(homeSource, /\['skoda', 'Skoda', '\/vehicle-brand-logos\/skoda\.svg'\]/)
+  assert.match(homepageCategoryConfigSource, /\['skoda', 'Skoda', '\/vehicle-brand-logos\/skoda\.svg'\]/)
   assert.equal(
     existsSync(new URL('../public/vehicle-brand-logos/skoda.svg', import.meta.url)),
     true,

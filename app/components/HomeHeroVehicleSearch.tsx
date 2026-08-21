@@ -33,6 +33,7 @@ import {
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
 import HomeSearchAnimatedPlaceholder from './HomeSearchAnimatedPlaceholder'
+import { useHomeCategory } from './HomeCategoryProvider'
 import {
   useVehicleSmartSearchSuggestions,
   VehicleSmartSearchSuggestionPanel,
@@ -632,9 +633,9 @@ export default function HomeHeroVehicleSearch({
   europeListingCount?: number | null
 }) {
   const router = useRouter()
+  const { activeCategory: category, setActiveCategory } = useHomeCategory()
   const t = localizedCopy(locale)
   const defaultMarket = defaultSearchCountryForLocale(locale) || 'EU'
-  const [category, setCategory] = useState<MarketplaceCategorySlug>('cars')
   const [intent, setIntent] = useState<Intent>('sale')
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
@@ -653,6 +654,7 @@ export default function HomeHeroVehicleSearch({
   const [countLoading, setCountLoading] = useState(false)
   const [countError, setCountError] = useState(false)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
+  const extraCategoryTabRef = useRef<HTMLButtonElement>(null)
   const moreFiltersTriggerRef = useRef<HTMLButtonElement>(null)
   const moreFiltersDialogRef = useRef<HTMLElement>(null)
   const moreFiltersCloseRef = useRef<HTMLButtonElement>(null)
@@ -668,6 +670,15 @@ export default function HomeHeroVehicleSearch({
   const categoryExamples =
     (t.categoryExamples as Record<MarketplaceCategorySlug, readonly string[]>)[category] ||
     copyByLocale.en.categoryExamples[category]
+
+  useEffect(() => {
+    if (!selectedExtraCategory) return
+    extraCategoryTabRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }, [selectedExtraCategory])
 
   const countParams = useMemo(
     () =>
@@ -804,8 +815,7 @@ export default function HomeHeroVehicleSearch({
   }
 
   function selectCategory(nextCategory: MarketplaceCategorySlug) {
-    window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: nextCategory } }))
-    setCategory(nextCategory)
+    setActiveCategory(nextCategory)
     setFilters(emptyFilters)
     setIntent((current) =>
       current === 'leasing' && !isLeasingMarketplaceCategory(nextCategory) ? 'sale' : current,
@@ -817,8 +827,7 @@ export default function HomeHeroVehicleSearch({
   function changeIntent(nextIntent: Intent) {
     setIntent(nextIntent)
     if (nextIntent === 'leasing' && !isLeasingMarketplaceCategory(category)) {
-      window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: 'cars' } }))
-      setCategory('cars')
+      setActiveCategory('cars')
       setFilters(emptyFilters)
       setSelectedSuggestions([])
     }
@@ -832,7 +841,7 @@ export default function HomeHeroVehicleSearch({
     setFilters(emptyFilters)
     setVerifiedOnly(false)
     setMarket(defaultMarket)
-    window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: 'cars' } }))
+    setActiveCategory('cars')
     setSelectedSuggestions([])
     setMoreFiltersOpen(false)
   }
@@ -852,8 +861,7 @@ export default function HomeHeroVehicleSearch({
       const nextCategories = params.get('categories')?.split(',').filter(Boolean) || []
       const nextCategory = nextCategories[0] as MarketplaceCategorySlug | undefined
       if (nextCategory && categoryDefinitions.some((item) => item.slug === nextCategory)) {
-        window.dispatchEvent(new CustomEvent('autorell:home-category-change', { detail: { category: nextCategory } }))
-        setCategory(nextCategory)
+        setActiveCategory(nextCategory)
       }
       const nextMarket = params.get('markets')?.split(',').filter(Boolean)[0]
       if (nextMarket) setMarket(nextMarket)
@@ -1015,6 +1023,7 @@ export default function HomeHeroVehicleSearch({
                 )
               })}
               <button
+                ref={extraCategoryTabRef}
                 type="button"
                 role="tab"
                 aria-selected={Boolean(selectedExtraCategory)}
@@ -1042,7 +1051,7 @@ export default function HomeHeroVehicleSearch({
               role="dialog"
               aria-modal="false"
               aria-labelledby="home-search-category-title"
-              className="fixed inset-x-3 bottom-3 z-[130] border border-[#cfd8e4] bg-white p-4 shadow-[0_20px_50px_rgba(15,23,42,.24)] sm:left-1/2 sm:right-auto sm:w-[540px] sm:-translate-x-1/2 sm:rounded-[8px] lg:absolute lg:bottom-auto lg:left-auto lg:right-3 lg:top-[calc(100%+8px)] lg:w-[520px] lg:translate-x-0"
+              className="fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[130] border border-[#cfd8e4] bg-white p-4 shadow-[0_20px_50px_rgba(15,23,42,.24)] sm:left-1/2 sm:right-auto sm:w-[540px] sm:-translate-x-1/2 sm:rounded-[8px] lg:absolute lg:bottom-auto lg:left-auto lg:right-3 lg:top-[calc(100%+8px)] lg:w-[520px] lg:translate-x-0"
             >
               <div className="flex items-center justify-between gap-4">
                 <h2 id="home-search-category-title" className="text-[17px] font-semibold text-[#101828]">

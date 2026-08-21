@@ -4,12 +4,8 @@ import { ArrowRight, Check, MapPin } from 'lucide-react'
 import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
-import HomeVehicleCategoryRails, {
-  type PopularCarCategory,
-  type PopularVehicleBrand,
-  type SelectedVehicleCategory,
-  type VehicleBodyCategory,
-} from './HomeVehicleCategoryRails'
+import HomeCategoryProvider from './HomeCategoryProvider'
+import HomeVehicleCategoryRailsSwitcher from './HomeVehicleCategoryRailsSwitcher'
 import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import HomeLocationConsentPrompt from './HomeLocationConsentPrompt'
@@ -38,6 +34,7 @@ import {
 import { countryForLocale } from '@/lib/market-locale'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import { getHomepageCategoryPresentations } from '@/lib/homepage-category-config'
 
 const homeContentContainerClass =
   'mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8'
@@ -54,6 +51,7 @@ const homeListingCategories: MarketplaceCategorySlug[] = [
   'agriculture',
   'electric-bikes',
 ]
+const carHomepageCategories: MarketplaceCategorySlug[] = ['cars']
 
 const homeCopy = {
   sv: {
@@ -537,6 +535,9 @@ type HomeListingSectionData = {
   id: string
   title: string
   emptyText: string
+  emptyCta: string
+  emptyHref: string
+  marketplaceHref: string
   items: HomeListingCardItem[]
   kind: 'top' | 'latest'
   marketLabel: string
@@ -557,6 +558,10 @@ export default async function BusinessMarketplaceHome({
       ? 'Europe'
       : getEuCountryName(localMarketCode, locale)
   const displayCurrency = displayCurrencyForMarket(localMarketCode)
+  const categoryPresentations = getHomepageCategoryPresentations(locale, localMarketLabel)
+  const metadataByCategory = Object.fromEntries(
+    homeListingCategories.map((category) => [category, categoryPresentations[category].seo]),
+  ) as Record<MarketplaceCategorySlug, (typeof categoryPresentations)[MarketplaceCategorySlug]['seo']>
   const [
     categoryListingGroups,
     localListingCount,
@@ -577,10 +582,6 @@ export default async function BusinessMarketplaceHome({
     getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
   ])
   const newsCards = vehicleNews.articles.slice(0, 3)
-  const selectedVehicleCategories = getSelectedVehicleCategories(locale)
-  const popularCarCategories = getPopularCarCategories(locale)
-  const vehicleBodyCategories = getVehicleBodyCategories(locale)
-  const popularVehicleBrands = getPopularVehicleBrands(locale)
   const allHomeListings = categoryListingGroups.flatMap(({ top, latest }) => [
     ...top,
     ...latest,
@@ -599,16 +600,22 @@ export default async function BusinessMarketplaceHome({
         {
           top: {
             id: `${category}-top`,
-            title: homeListingSectionTitle(locale, 'top', localMarketLabel, category),
-            emptyText: homeEmptyListingText(locale),
+            title: categoryPresentations[category].topTitle,
+            emptyText: categoryPresentations[category].emptyText,
+            emptyCta: categoryPresentations[category].emptyCta,
+            emptyHref: categoryPresentations[category].sell.privateHref,
+            marketplaceHref: categoryPresentations[category].marketplaceHref,
             kind: 'top' as const,
             marketLabel: localMarketLabel,
             items: await Promise.all(top.map(toHomeCard)),
           },
           latest: {
             id: `${category}-latest`,
-            title: homeListingSectionTitle(locale, 'latest', localMarketLabel, category),
-            emptyText: homeEmptyListingText(locale),
+            title: categoryPresentations[category].latestTitle,
+            emptyText: categoryPresentations[category].emptyText,
+            emptyCta: categoryPresentations[category].emptyCta,
+            emptyHref: categoryPresentations[category].sell.privateHref,
+            marketplaceHref: categoryPresentations[category].marketplaceHref,
             kind: 'latest' as const,
             marketLabel: localMarketLabel,
             items: await Promise.all(latest.map(toHomeCard)),
@@ -623,7 +630,8 @@ export default async function BusinessMarketplaceHome({
       <PublicHeader locale={locale} marketCode={marketCode} />
       <HomeLocationConsentPrompt locale={locale} />
 
-      <section className="-mt-[2px] bg-[#e9eef4] pt-0">
+      <HomeCategoryProvider metadataByCategory={metadataByCategory}>
+        <section className="-mt-[2px] bg-[#e9eef4] pt-0">
         <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
           <Image
             src="/autorell-home-mobile-market-hero.png"
@@ -665,9 +673,9 @@ export default async function BusinessMarketplaceHome({
             />
           </div>
         </div>
-      </section>
+        </section>
 
-      <section className="bg-white py-10 sm:py-14">
+        <section className="bg-white py-10 sm:py-14">
         <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
           <HomeListingCategorySwitcher categories={homeListingCategories}>
             {homeListingCategories.map((category) => {
@@ -676,31 +684,19 @@ export default async function BusinessMarketplaceHome({
             })}
           </HomeListingCategorySwitcher>
         </div>
-      </section>
+        </section>
 
-      <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
+        <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
-          <HomeVehicleCategoryRails
-            selectedTitle={t.selectedCategoriesTitle}
-            selectedScrollLabel={t.selectedCategoriesScrollLabel}
-            selectedCategories={selectedVehicleCategories}
-            popularTitle={t.popularCategoriesTitle}
-            popularScrollLabel={t.popularCategoriesScrollLabel}
-            popularCategories={popularCarCategories}
-            vehicleTypesTitle={t.vehicleTypesTitle}
-            vehicleTypesScrollLabel={t.vehicleTypesScrollLabel}
-            vehicleTypes={vehicleBodyCategories}
-            vehicleTypesAllLabel={t.vehicleTypesAll}
-            vehicleTypesAllHref={marketplaceCategoryHref(locale, 'cars')}
-            popularBrandsTitle={t.popularBrandsTitle}
-            popularBrands={popularVehicleBrands}
+          <HomeVehicleCategoryRailsSwitcher
+            presentations={categoryPresentations}
             previousLabel={t.carouselPreviousLabel}
             nextLabel={t.carouselNextLabel}
           />
         </div>
-      </section>
+        </section>
 
-      <section className="bg-white py-10 sm:py-16">
+        <section className="bg-white py-10 sm:py-16">
         <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
           <HomeListingCategorySwitcher categories={homeListingCategories}>
             {homeListingCategories.map((category) => {
@@ -709,13 +705,28 @@ export default async function BusinessMarketplaceHome({
             })}
           </HomeListingCategorySwitcher>
         </div>
-      </section>
+        </section>
 
-      <HomeSellOptionsSection
-        copy={localizedSellOptionsCopy[locale]}
-        currency={displayCurrency}
-        locale={locale}
-      />
+        <HomeListingCategorySwitcher categories={homeListingCategories}>
+          {homeListingCategories.map((category) => {
+            const sell = categoryPresentations[category].sell
+            return (
+              <HomeSellOptionsSection
+                key={`${category}-sell`}
+                copy={localizedSellOptionsCopy[locale]}
+                currency={displayCurrency}
+                locale={locale}
+                title={sell.title}
+                image={sell.image}
+                imageAlt={sell.imageAlt}
+                dealerCta={sell.dealerCta}
+                privateCta={sell.privateCta}
+                dealerHref={sell.dealerHref}
+                privateHref={sell.privateHref}
+              />
+            )
+          })}
+        </HomeListingCategorySwitcher>
 
       <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
@@ -746,9 +757,12 @@ export default async function BusinessMarketplaceHome({
 
       <section className="bg-[#e9eef4] pb-5 pt-0 sm:pb-12">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
-          <HomeVehicleLinkDirectory locale={locale} />
+          <HomeListingCategorySwitcher categories={carHomepageCategories}>
+            <HomeVehicleLinkDirectory locale={locale} />
+          </HomeListingCategorySwitcher>
         </div>
       </section>
+      </HomeCategoryProvider>
 
       <PublicFooter locale={locale} />
     </main>
@@ -843,31 +857,42 @@ function HomeSellOptionsSection({
   copy,
   currency,
   locale,
+  title,
+  image,
+  imageAlt,
+  dealerCta,
+  privateCta,
+  dealerHref,
+  privateHref,
 }: {
   copy: (typeof localizedSellOptionsCopy)[PublicLocale]
   currency: string
   locale: PublicLocale
+  title: string
+  image: string
+  imageAlt: string
+  dealerCta: string
+  privateCta: string
+  dealerHref: string
+  privateHref: string
 }) {
   const offerAmounts = sellOptionOfferAmounts(currency)
   const offerLabels = offerAmounts.map((amount) => ({
     amount,
     label: formatSellOptionPrice(amount, currency, locale),
   }))
-  const dealerHref = localizePublicHref(locale, '/sell-to-dealer')
-  const privateHref = localizePublicHref(locale, '/account/listings/new')
-
   return (
     <section className="bg-[#f4f4f5] py-9 sm:py-12">
       <div className={homeContentContainerClass}>
         <div className="grid items-center gap-5 lg:grid-cols-[0.95fr_1.75fr] xl:gap-6">
           <div className="relative min-h-[280px] overflow-hidden rounded-[10px] bg-[#f4f4f5] px-1 pb-2 pt-1 sm:min-h-[330px] lg:rounded-none">
             <h2 className="relative z-10 max-w-[500px] text-[32px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#20242d] sm:text-[40px] lg:text-[44px]">
-              {copy.title}
+              {title}
             </h2>
             <div className="relative mt-4 h-[210px] sm:mt-4 sm:h-[255px]">
               <Image
-                src="/autorell-sell-options-wagon.png"
-                alt=""
+                src={image}
+                alt={imageAlt}
                 fill
                 sizes="(max-width: 1024px) 90vw, 520px"
                 className="object-contain object-bottom"
@@ -897,7 +922,7 @@ function HomeSellOptionsSection({
             <SellOptionCard
               title={copy.dealerTitle}
               benefits={copy.dealerBenefits}
-              cta={copy.dealerCta}
+              cta={dealerCta}
               href={dealerHref}
               variant="primary"
               badge={copy.fastestOption}
@@ -905,7 +930,7 @@ function HomeSellOptionsSection({
             <SellOptionCard
               title={copy.privateTitle}
               benefits={copy.privateBenefits}
-              cta={copy.privateCta}
+              cta={privateCta}
               href={privateHref}
               variant="secondary"
             />
@@ -1055,305 +1080,6 @@ function currencyBubbleMark(currency: string) {
   return currency
 }
 
-function localizedVehicleCategoryLabel(
-  locale: PublicLocale,
-  sv: string,
-  en: string,
-  de: string,
-) {
-  return locale === 'sv'
-    ? sv
-    : locale === 'de'
-      ? de
-      : locale === 'en'
-        ? en
-        : translatePublic(locale, en)
-}
-
-function marketplaceCategoryHref(
-  locale: PublicLocale,
-  category: 'cars' | 'vans' | 'electric-bikes',
-  filters: Record<string, string> = {},
-) {
-  const mode = filters.mode === 'leasing' ? 'leasing' : 'sale'
-  const params = new URLSearchParams({
-    categories: category,
-    mode,
-    offerType: mode === 'leasing' ? 'lease' : 'sale',
-    ...filters,
-  })
-  return localizePublicHref(locale, `/marketplace/${category}?${params.toString()}`)
-}
-
-function getSelectedVehicleCategories(locale: PublicLocale): SelectedVehicleCategory[] {
-  const label = (sv: string, en: string, de: string) =>
-    localizedVehicleCategoryLabel(locale, sv, en, de)
-
-  return [
-    {
-      id: 'electric',
-      title: label('Elbilar', 'Electric cars', 'Elektroautos'),
-      subtitle: label('Miljömedvetet', 'Lower-emission driving', 'Umweltbewusst'),
-      href: marketplaceCategoryHref(locale, 'cars', { fuel: 'El' }),
-      image: '/vehicle-category-rails/electric-hatchback-v1.webp',
-      icon: 'electric',
-      highlighted: true,
-    },
-    {
-      id: 'leasing',
-      title: label('Leasing', 'Leasing', 'Leasing'),
-      subtitle: label('Flexibelt bilägande', 'Flexible ownership', 'Flexibel fahren'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        mode: 'leasing',
-        offerType: 'lease',
-      }),
-      image: '/vehicle-category-rails/estate-v1.webp',
-      icon: 'leasing',
-    },
-    {
-      id: 'newer',
-      title: label('Nyare bilar', 'Newer cars', 'Neuere Autos'),
-      subtitle: label('Fräscha & moderna', 'Fresh & modern', 'Frisch & modern'),
-      href: marketplaceCategoryHref(locale, 'cars', { minYear: '2022', sort: 'published' }),
-      image: '/vehicle-category-rails/sedan-v1.webp',
-      icon: 'newer',
-    },
-    {
-      id: 'ebikes',
-      title: label('Elcyklar', 'E-bikes', 'E-Bikes'),
-      subtitle: label('Mer rörelse', 'More mobility', 'Mehr Bewegung'),
-      href: marketplaceCategoryHref(locale, 'electric-bikes'),
-      image: '/vehicle-category-rails/ebike-v1.webp',
-      icon: 'ebike',
-      highlighted: true,
-    },
-    {
-      id: 'vans',
-      title: label('Transportbilar', 'Vans', 'Transporter'),
-      subtitle: label('För jobb & vardag', 'Work-ready', 'Für Arbeit & Alltag'),
-      href: marketplaceCategoryHref(locale, 'vans'),
-      image: '/vehicle-category-rails/cargo-van-v1.webp',
-      icon: 'utility',
-    },
-    {
-      id: 'sports',
-      title: label('Sportbilar', 'Sports cars', 'Sportwagen'),
-      subtitle: label('Prestanda & körglädje', 'Performance & fun', 'Leistung & Fahrspaß'),
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Coupé' }),
-      image: '/vehicle-category-rails/coupe-v1.webp',
-      icon: 'sport',
-    },
-    {
-      id: 'family',
-      title: label('Familjebilar', 'Family cars', 'Familienautos'),
-      subtitle: label('Plats för vardagen', 'Room for everyday life', 'Platz für den Alltag'),
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'SUV' }),
-      image: '/vehicle-category-rails/suv-v1.webp',
-      icon: 'newer',
-    },
-    {
-      id: 'pickups',
-      title: label('Pickuper', 'Pickups', 'Pickups'),
-      subtitle: label('Redo för uppdrag', 'Ready for the job', 'Einsatzbereit'),
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Pickup' }),
-      image: '/vehicle-category-rails/pickup-v1.webp',
-      icon: 'utility',
-    },
-  ]
-}
-
-function getVehicleBodyCategories(locale: PublicLocale): VehicleBodyCategory[] {
-  const label = (sv: string, en: string, de: string) =>
-    localizedVehicleCategoryLabel(locale, sv, en, de)
-  const subtitle = label('Visa bilar', 'View cars', 'Autos anzeigen')
-
-  return [
-    {
-      id: 'estate',
-      title: label('Kombi', 'Estate', 'Kombi'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Kombi' }),
-      image: '/vehicle-category-rails/estate-v1.webp',
-    },
-    {
-      id: 'sedan',
-      title: label('Sedan', 'Sedan', 'Limousine'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Sedan' }),
-      image: '/vehicle-category-rails/sedan-v1.webp',
-    },
-    {
-      id: 'convertible',
-      title: label('Cabriolet', 'Convertible', 'Cabrio/Roadster'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Cabriolet' }),
-      image: '/vehicle-category-rails/convertible-v1.webp',
-    },
-    {
-      id: 'suv',
-      title: label('SUV', 'SUV', 'SUV/Geländewagen'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'SUV' }),
-      image: '/vehicle-category-rails/suv-v1.webp',
-    },
-    {
-      id: 'coupe',
-      title: label('Coupé', 'Coupe', 'Coupé'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Coupé' }),
-      image: '/vehicle-category-rails/coupe-v1.webp',
-    },
-    {
-      id: 'pickup',
-      title: label('Pickup', 'Pickup', 'Pickup'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Pickup' }),
-      image: '/vehicle-category-rails/pickup-v1.webp',
-    },
-    {
-      id: 'hatchback',
-      title: label('Halvkombi', 'Hatchback', 'Schrägheck'),
-      subtitle,
-      href: marketplaceCategoryHref(locale, 'cars', { bodyType: 'Halvkombi' }),
-      image: '/vehicle-category-rails/electric-hatchback-v1.webp',
-    },
-    {
-      id: 'van',
-      title: label('Transportbil', 'Van', 'Transporter'),
-      subtitle: label('Visa fordon', 'View vehicles', 'Fahrzeuge anzeigen'),
-      href: marketplaceCategoryHref(locale, 'vans'),
-      image: '/vehicle-category-rails/cargo-van-v1.webp',
-    },
-  ]
-}
-
-function getPopularVehicleBrands(locale: PublicLocale): PopularVehicleBrand[] {
-  const brands = [
-    ['audi', 'Audi', '/vehicle-brand-logos/audi.png'],
-    ['bmw', 'BMW', '/vehicle-brand-logos/bmw.png'],
-    ['cupra', 'Cupra', '/vehicle-brand-logos/cupra.webp'],
-    ['ford', 'Ford', '/vehicle-brand-logos/ford.png'],
-    ['mercedes-benz', 'Mercedes-Benz', '/vehicle-brand-logos/mercedes-benz.png'],
-    ['opel', 'Opel', '/vehicle-brand-logos/opel.png'],
-    ['renault', 'Renault', '/vehicle-brand-logos/renault.png'],
-    ['skoda', 'Skoda', '/vehicle-brand-logos/skoda.svg'],
-    ['tesla', 'Tesla', '/vehicle-brand-logos/tesla.png'],
-    ['toyota', 'Toyota', '/vehicle-brand-logos/toyota.png'],
-    ['volvo', 'Volvo', '/vehicle-brand-logos/volvo.png'],
-    ['volkswagen', 'Volkswagen', '/vehicle-brand-logos/volkswagen.png'],
-  ] as const
-
-  return brands.map(([id, title, logo]) => ({
-    id,
-    title,
-    logo,
-    href: marketplaceCategoryHref(locale, 'cars', { make: title, q: title }),
-  }))
-}
-
-function getPopularCarCategories(locale: PublicLocale): PopularCarCategory[] {
-  const label = (sv: string, en: string, de: string) =>
-    localizedVehicleCategoryLabel(locale, sv, en, de)
-  const tags = (items: Array<[string, string, string]>) =>
-    items.map(([sv, en, de]) => label(sv, en, de))
-  const swedishMarket = locale === 'sv'
-
-  return [
-    {
-      id: 'family',
-      title: label('Familjebilar', 'Family cars', 'Familienautos'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        bodyType: 'SUV',
-        minYear: '2016',
-        maxMileage: '150000',
-        maxPrice: swedishMarket ? '500000' : '50000',
-      }),
-      image: '/popular-car-categories/family-cars-v2.webp',
-      tags: tags([
-        ['från 2016', 'from 2016', 'ab 2016'],
-        ['upp till 15 000 mil', 'up to 150,000 km', 'bis 150.000 km'],
-        ['4/5 dörrar', '4/5 doors', '4/5 Türen'],
-        ['upp till 500 000 kr', 'up to €50,000', 'bis 50.000 €'],
-      ]),
-    },
-    {
-      id: 'first',
-      title: label('Första bilen', 'First car', 'Erstes Auto'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        bodyType: 'Halvkombi',
-        minYear: '2010',
-        minMileage: '150000',
-        maxPrice: swedishMarket ? '80000' : '7000',
-      }),
-      image: '/popular-car-categories/first-car-v2.webp',
-      tags: tags([
-        ['från 2010', 'from 2010', 'ab 2010'],
-        ['från 15 000 mil', 'from 150,000 km', 'ab 150.000 km'],
-        ['servicehistorik', 'service history', 'Scheckheftgepflegt'],
-        ['upp till 80 000 kr', 'up to €7,000', 'bis 7.000 €'],
-      ]),
-    },
-    {
-      id: 'premium',
-      title: label('Premium', 'Premium', 'Premium'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        bodyType: 'Coupé',
-        minYear: '2018',
-        minPrice: swedishMarket ? '400000' : '35000',
-        maxMileage: '80000',
-      }),
-      image: '/popular-car-categories/premium-cars-v2.webp',
-      tags: tags([
-        ['från 2018', 'from 2018', 'ab 2018'],
-        ['från 400 000 kr', 'from €35,000', 'ab 35.000 €'],
-        ['upp till 8 000 mil', 'up to 80,000 km', 'bis 80.000 km'],
-        ['kamera', 'camera', 'Kamera'],
-        ['+18', '+18', '+18'],
-      ]),
-    },
-    {
-      id: 'city',
-      title: label('Stadsbilar', 'City cars', 'Stadtautos'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        bodyType: 'Halvkombi',
-        gearbox: 'Automat',
-        maxPrice: swedishMarket ? '175000' : '15000',
-      }),
-      image: '/popular-car-categories/city-cars-v2.webp',
-      tags: tags([
-        ['liten bil', 'compact size', 'kompakt'],
-        ['automat', 'automatic', 'Automatik'],
-        ['upp till 175 000 kr', 'up to €15,000', 'bis 15.000 €'],
-      ]),
-    },
-    {
-      id: 'commuter',
-      title: label('Pendling', 'Commuter', 'Pendler'),
-      href: marketplaceCategoryHref(locale, 'cars', {
-        bodyType: 'Kombi',
-        equipment: 'dragkrok',
-      }),
-      image: '/popular-car-categories/commuter-cars-v2.webp',
-      tags: tags([
-        ['låg förbrukning', 'low consumption', 'niedriger Verbrauch'],
-        ['kombi', 'estate', 'Kombi'],
-        ['dragkrok', 'tow bar', 'Anhängerkupplung'],
-      ]),
-    },
-    {
-      id: 'eco',
-      title: label('El & hybrid', 'Electric & hybrid', 'Elektro & Hybrid'),
-      href: marketplaceCategoryHref(locale, 'cars', { fuel: 'El', maxMileage: '60000' }),
-      image: '/popular-car-categories/electric-hybrid-v2.webp',
-      tags: tags([
-        ['elbil', 'electric', 'Elektro'],
-        ['snabbladdning', 'fast charging', 'Schnellladen'],
-        ['upp till 6 000 mil', 'up to 60,000 km', 'bis 60.000 km'],
-      ]),
-    },
-  ]
-}
-
 function VehicleNewsCard({
   item,
   category,
@@ -1454,7 +1180,7 @@ function HomeListingSection({
           {section.title}
         </h2>
         <Link
-          href={localizePublicHref(locale, '/marketplace')}
+          href={section.marketplaceHref}
           className="hidden items-center gap-2 text-sm font-semibold text-[#0866ff] sm:inline-flex"
         >
           {homeViewListingsLabel(locale)}
@@ -1476,7 +1202,7 @@ function HomeListingSection({
           {hasMoreListings ? (
             <div className="mt-7 flex justify-center">
               <Link
-                href={localizePublicHref(locale, '/marketplace')}
+                href={section.marketplaceHref}
                 className="inline-flex h-11 items-center justify-center rounded-full border border-[#cbd5e1] bg-white px-5 text-sm font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 {homeLoadMoreListingsLabel(locale)}
@@ -1485,8 +1211,14 @@ function HomeListingSection({
           ) : null}
         </>
       ) : (
-        <div className="mt-5 rounded-[12px] border border-[#d8e0ec] bg-[#f8fbff] px-5 py-7 text-sm font-medium text-[#667085]">
-          {section.emptyText}
+        <div className="mt-5 flex flex-col items-start gap-4 rounded-[8px] border border-[#d8e0ec] bg-[#f8fbff] px-5 py-7 text-sm font-medium text-[#667085] sm:flex-row sm:items-center sm:justify-between">
+          <p>{section.emptyText}</p>
+          <Link
+            href={section.emptyHref}
+            className="inline-flex min-h-10 flex-none items-center justify-center rounded-full bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#075bd8]"
+          >
+            {section.emptyCta}
+          </Link>
         </div>
       )}
     </section>
@@ -1582,114 +1314,6 @@ function HomeListingCard({
   )
 }
 
-function homeListingSectionTitle(
-  locale: PublicLocale,
-  kind: 'top' | 'latest',
-  marketLabel: string,
-  category?: MarketplaceCategorySlug,
-) {
-  const categoryLabel = category && category !== 'cars'
-    ? homeListingCategoryLabels(locale)[category]
-    : ''
-
-  if (categoryLabel) {
-    return homeListingCategoryTitleTemplates(locale)[kind]
-      .replace('{category}', categoryLabel)
-      .replace('{market}', marketLabel)
-  }
-
-  if (kind === 'latest') {
-    if (locale === 'sv') return `Senaste annonser i ${marketLabel}`
-    if (locale === 'de') return `Neueste Anzeigen in ${marketLabel}`
-    if (locale === 'en') return `Latest listings in ${marketLabel}`
-    return `${translatePublic(locale, 'Latest listings in')} ${marketLabel}`
-  }
-
-  if (locale === 'sv') return `Topplistan i ${marketLabel}`
-  if (locale === 'de') return `Top-Anzeigen in ${marketLabel}`
-  if (locale === 'en') return `Top listings in ${marketLabel}`
-  return `${translatePublic(locale, 'Top listings in')} ${marketLabel}`
-}
-
-function homeListingCategoryLabels(locale: PublicLocale): Partial<Record<MarketplaceCategorySlug, string>> {
-  const labels: Partial<Record<PublicLocale, Partial<Record<MarketplaceCategorySlug, string>>>> = {
-    sv: { cars: 'bilar', vans: 'transportbilar', trucks: 'lastbilar', motorcycles: 'motorcyklar', construction: 'entreprenadmaskiner', motorhomes: 'husbilar', caravans: 'husvagnar', agriculture: 'lantbruksmaskiner', 'electric-bikes': 'elcyklar' },
-    en: { cars: 'cars', vans: 'vans', trucks: 'trucks', motorcycles: 'motorcycles', construction: 'construction machinery', motorhomes: 'motorhomes', caravans: 'caravans', agriculture: 'agricultural machinery', 'electric-bikes': 'e-bikes' },
-    de: { cars: 'Autos', vans: 'Transporter', trucks: 'Lkw', motorcycles: 'Motorräder', construction: 'Baumaschinen', motorhomes: 'Wohnmobile', caravans: 'Wohnwagen', agriculture: 'Landmaschinen', 'electric-bikes': 'E-Bikes' },
-    at: { cars: 'Autos', vans: 'Transporter', trucks: 'Lkw', motorcycles: 'Motorräder', construction: 'Baumaschinen', motorhomes: 'Wohnmobile', caravans: 'Wohnwagen', agriculture: 'Landmaschinen', 'electric-bikes': 'E-Bikes' },
-    be: { cars: 'auto’s', vans: 'bestelwagens', trucks: 'vrachtwagens', motorcycles: 'motorfietsen', construction: 'bouwmachines', motorhomes: 'campers', caravans: 'caravans', agriculture: 'landbouwmachines', 'electric-bikes': 'e-bikes' },
-    fr: { cars: 'voitures', vans: 'utilitaires', trucks: 'camions', motorcycles: 'motos', construction: 'engins de chantier', motorhomes: 'camping-cars', caravans: 'caravanes', agriculture: 'machines agricoles', 'electric-bikes': 'vélos électriques' },
-    es: { cars: 'coches', vans: 'furgonetas', trucks: 'camiones', motorcycles: 'motos', construction: 'maquinaria de construcción', motorhomes: 'autocaravanas', caravans: 'caravanas', agriculture: 'maquinaria agrícola', 'electric-bikes': 'bicicletas eléctricas' },
-    it: { cars: 'auto', vans: 'furgoni', trucks: 'camion', motorcycles: 'moto', construction: 'macchine edili', motorhomes: 'camper', caravans: 'roulotte', agriculture: 'macchine agricole', 'electric-bikes': 'e-bike' },
-    pl: { cars: 'samochody', vans: 'samochody dostawcze', trucks: 'ciężarówki', motorcycles: 'motocykle', construction: 'maszyny budowlane', motorhomes: 'kampery', caravans: 'przyczepy kempingowe', agriculture: 'maszyny rolnicze', 'electric-bikes': 'rowery elektryczne' },
-    nl: { cars: 'auto’s', vans: 'bestelwagens', trucks: 'vrachtwagens', motorcycles: 'motorfietsen', construction: 'bouwmachines', motorhomes: 'campers', caravans: 'caravans', agriculture: 'landbouwmachines', 'electric-bikes': 'e-bikes' },
-    fi: { cars: 'autot', vans: 'pakettiautot', trucks: 'kuorma-autot', motorcycles: 'moottoripyörät', construction: 'maanrakennuskoneet', motorhomes: 'matkailuautot', caravans: 'asuntovaunut', agriculture: 'maatalouskoneet', 'electric-bikes': 'sähköpyörät' },
-    da: { cars: 'biler', vans: 'varebiler', trucks: 'lastbiler', motorcycles: 'motorcykler', construction: 'entreprenørmaskiner', motorhomes: 'autocampere', caravans: 'campingvogne', agriculture: 'landbrugsmaskiner', 'electric-bikes': 'elcykler' },
-  }
-  return labels[locale] || labels.en || {}
-}
-
-function homeListingCategoryTitleTemplates(locale: PublicLocale) {
-  if (locale === 'sv') {
-    return {
-      latest: 'Senaste annonser för {category} i {market}',
-      top: 'Topplistan för {category} i {market}',
-    }
-  }
-  if (locale === 'de' || locale === 'at') {
-    return {
-      latest: 'Neueste Anzeigen für {category} in {market}',
-      top: 'Top-Anzeigen für {category} in {market}',
-    }
-  }
-  if (locale === 'fr') {
-    return {
-      latest: 'Dernières annonces de {category} en {market}',
-      top: 'Meilleures annonces de {category} en {market}',
-    }
-  }
-  if (locale === 'es') {
-    return {
-      latest: 'Últimos anuncios de {category} en {market}',
-      top: 'Anuncios destacados de {category} en {market}',
-    }
-  }
-  if (locale === 'it') {
-    return {
-      latest: 'Ultimi annunci di {category} in {market}',
-      top: 'Annunci in evidenza di {category} in {market}',
-    }
-  }
-  if (locale === 'pl') {
-    return {
-      latest: 'Najnowsze ogłoszenia: {category} w {market}',
-      top: 'Top ogłoszenia: {category} w {market}',
-    }
-  }
-  if (locale === 'nl' || locale === 'be') {
-    return {
-      latest: 'Nieuwste advertenties voor {category} in {market}',
-      top: 'Topadvertenties voor {category} in {market}',
-    }
-  }
-  if (locale === 'fi') {
-    return {
-      latest: 'Uusimmat ilmoitukset: {category} maassa {market}',
-      top: 'Suosituimmat ilmoitukset: {category} maassa {market}',
-    }
-  }
-  if (locale === 'da') {
-    return {
-      latest: 'Seneste annoncer for {category} i {market}',
-      top: 'Topannoncer for {category} i {market}',
-    }
-  }
-  return {
-    latest: 'Latest {category} listings in {market}',
-    top: 'Top {category} listings in {market}',
-  }
-}
-
 function featuredListingLabel(locale: PublicLocale) {
   if (locale === 'sv') return 'Utvald'
   if (locale === 'de') return 'Ausgewählt'
@@ -1702,16 +1326,6 @@ function topListingLabel(locale: PublicLocale) {
   if (locale === 'de') return 'Top-Anzeige'
   if (locale === 'en') return 'Sponsored'
   return translatePublic(locale, 'Sponsored')
-}
-
-function homeEmptyListingText(locale: PublicLocale) {
-  const english = 'Listings will appear here when vehicles are published in this market.'
-  if (locale === 'sv') return 'Annonser visas här när fordon publiceras på den här marknaden.'
-  if (locale === 'de') {
-    return 'Anzeigen erscheinen hier, wenn Fahrzeuge in diesem Markt veröffentlicht werden.'
-  }
-  if (locale === 'en') return english
-  return translatePublic(locale, english)
 }
 
 function homeViewListingsLabel(locale: PublicLocale) {

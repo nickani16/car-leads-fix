@@ -8,6 +8,7 @@ import {
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { type PublicLocale } from '@/lib/public-i18n'
 import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
+import { getHomepageCategorySeo } from '@/lib/homepage-category-config'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
@@ -29,8 +30,13 @@ export async function generateMetadata({
   const languages = getPublicLanguageAlternates('/')
 
   if (marketCode === 'se' || marketCode === 'de') {
+    const locale = marketCode === 'se' ? 'sv' : 'de'
+    const marketLabel = marketCode === 'se' ? 'Sverige' : 'Deutschland'
     return createSeoMetadata({
-      seo: getMarketHomeSeo(marketCode),
+      seo: {
+        ...getMarketHomeSeo(marketCode),
+        ...getHomepageCategorySeo(locale, 'cars', marketLabel),
+      },
       canonical: publicUrlForLocale(marketCode === 'se' ? 'sv' : 'de'),
       alternates: { languages },
     })
@@ -40,8 +46,12 @@ export async function generateMetadata({
   if (!market) return {}
 
   const canonical = `https://www.autorell.com/${market.code}`
+  const locale = marketLocale(market.code, market.language)
   return createSeoMetadata({
-    seo: getMarketHomeSeo(market.code),
+    seo: {
+      ...getMarketHomeSeo(market.code),
+      ...getHomepageCategorySeo(locale, 'cars', market.countryLocal || market.country),
+    },
     canonical,
     alternates: { languages },
   })
