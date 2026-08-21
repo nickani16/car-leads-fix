@@ -6,6 +6,7 @@ import {
   ArrowRight,
   BarChart3,
   Check,
+  ChevronRight,
   FileSpreadsheet,
   Globe2,
   Layers3,
@@ -329,7 +330,7 @@ export default async function BusinessPage() {
   return (
     <main className="overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
-      <AppleHero copy={copy} registerHref={registerHref} pricingHref={pricingHref} />
+      <AppleHero copy={copy} locale={locale} registerHref={registerHref} pricingHref={pricingHref} />
       <BusinessInsights copy={copy} />
       <NextStep copy={copy} planCopy={getBusinessPlanCopy(locale)} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
       {pilotEnabled ? (
@@ -347,16 +348,31 @@ export default async function BusinessPage() {
 
 function AppleHero({
   copy,
+  locale,
   registerHref,
   pricingHref,
 }: {
   copy: BusinessCopy
+  locale: PublicLocale
   registerHref: string
   pricingHref: string
 }) {
   return (
     <section className="overflow-hidden border-b border-[#e5e7eb] bg-white px-5 py-8 sm:px-8 lg:py-12">
       <div className="mx-auto w-full max-w-[1120px]">
+        <nav
+          aria-label={getBreadcrumbLabel(locale)}
+          className="mb-4 flex items-center gap-1.5 text-sm text-[#667085]"
+        >
+          <Link
+            href={localizePublicHref(locale, '/')}
+            className="transition-colors hover:text-[#0866ff]"
+          >
+            Autorell
+          </Link>
+          <ChevronRight aria-hidden="true" className="h-4 w-4 text-[#98a2b3]" strokeWidth={1.8} />
+          <span aria-current="page" className="font-medium text-[#344054]">Business</span>
+        </nav>
         <div className="relative isolate grid min-h-[500px] w-full overflow-hidden rounded-[16px] border border-[#d8e5f6] bg-[#eef6ff] lg:grid-cols-[0.82fr_1.18fr]">
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
             <div className="inline-flex w-max flex-col items-end">
@@ -395,17 +411,35 @@ function AppleHero({
 
 function HeroImageSlot() {
   return (
-    <div className="relative min-h-[260px] min-w-0 overflow-hidden sm:min-h-[330px] lg:min-h-[520px]">
+    <div className="relative min-h-[280px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[520px]">
       <Image
-        src="/business-responsive-mockup.webp"
+        src="/business-hero-devices.webp"
         alt=""
-        width={1920}
-        height={1080}
+        fill
         priority
-        className="relative left-1/2 mt-2 w-[455px] max-w-none -translate-x-1/2 object-contain min-[430px]:w-[520px] sm:w-[640px] lg:absolute lg:bottom-[-76px] lg:left-auto lg:right-[-230px] lg:top-auto lg:mt-0 lg:w-[980px] lg:translate-x-0 xl:right-[-260px] xl:w-[1040px]"
+        sizes="(max-width: 1023px) 100vw, 58vw"
+        className="object-contain object-bottom px-2 py-3 sm:px-5 sm:py-4 lg:px-0 lg:py-3"
       />
     </div>
   )
+}
+
+function getBreadcrumbLabel(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Brödsmulor',
+    de: 'Brotkrümelnavigation',
+    at: 'Brotkrümelnavigation',
+    fr: 'Fil d’Ariane',
+    es: 'Ruta de navegación',
+    it: 'Percorso di navigazione',
+    nl: 'Broodkruimelnavigatie',
+    be: 'Broodkruimelnavigatie',
+    pl: 'Nawigacja okruszkowa',
+    fi: 'Murupolku',
+    da: 'Brødkrummenavigation',
+  }
+
+  return labels[locale] || 'Breadcrumbs'
 }
 
 function BusinessInsights({ copy }: { copy: BusinessCopy }) {
