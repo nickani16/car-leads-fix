@@ -18,8 +18,8 @@ const listingSwitcherSource = readFileSync(
   new URL('../app/components/HomeListingCategorySwitcher.tsx', import.meta.url),
   'utf8',
 )
-const railsSwitcherSource = readFileSync(
-  new URL('../app/components/HomeVehicleCategoryRailsSwitcher.tsx', import.meta.url),
+const discoverySource = readFileSync(
+  new URL('../app/components/HomeCategoryDiscovery.tsx', import.meta.url),
   'utf8',
 )
 
@@ -83,26 +83,31 @@ test('category labels and SEO are explicit for every public locale', () => {
   assert.match(configSource, /locale === 'fi'.*normalizedMarket === 'suomi'.*'Suomessa'/)
   assert.doesNotMatch(configSource, /markkinalta \{m\}|markkinalla \{m\}/)
   assert.doesNotMatch(configSource, /const seoTemplates/)
+  assert.match(configSource, /'Crew van': label\('Dubbelhytt', 'Crew van'/)
+  assert.match(configSource, /'Box van': label\('Volymskåp', 'Box van'/)
 })
 
 test('shared category state swaps only the active homepage content', () => {
   assert.match(homeSource, /<HomeCategoryProvider metadataByCategory=\{metadataByCategory\}>/)
-  assert.match(homeSource, /<HomeVehicleCategoryRailsSwitcher/)
+  assert.match(homeSource, /<HomeBrowseByTypeSwitcher/)
+  assert.match(homeSource, /<HomePopularBrandsSwitcher/)
   assert.match(homeSource, /<HomeListingCategorySwitcher categories=\{homeListingCategories\}>/)
   assert.match(providerSource, /useState<MarketplaceCategorySlug>\(initialCategory\)/)
   assert.match(providerSource, /document\.title = metadata\.title/)
   assert.match(listingSwitcherSource, /childArray\[activeIndex\] \?\? null/)
   assert.doesNotMatch(listingSwitcherSource, /display:\s*none|hidden/)
-  assert.match(railsSwitcherSource, /presentations\[activeCategory\] \|\| presentations\.cars/)
+  assert.match(discoverySource, /presentations\[activeCategory\] \|\| presentations\.cars/)
+  assert.doesNotMatch(homeSource, /<HomeVehicleCategoryRailsSwitcher/)
 })
 
-test('every configured category image exists locally', () => {
+test('new category discovery and sell images exist locally', () => {
   const paths = new Set(
-    [...configSource.matchAll(/['"](\/(?:category-types|home-categories|popular-car-categories)\/[^'"]+)['"]/g)]
+    [...configSource.matchAll(/['"](\/homepage-discovery\/(?:types|sell)\/[^'"]+)['"]/g)]
       .map((match) => match[1]),
   )
 
-  assert.ok(paths.size > 30)
+  assert.equal(paths.size, 80)
+  assert.doesNotMatch(configSource, /type\([^\n]+\/category-types\//)
   for (const path of paths) {
     assert.equal(
       existsSync(new URL(`../public${path}`, import.meta.url)),
@@ -110,6 +115,29 @@ test('every configured category image exists locally', () => {
       `Missing homepage category asset: ${path}`,
     )
   }
+})
+
+test('discovery, brands, and selling render before listing feeds', () => {
+  const browseIndex = homeSource.indexOf('<HomeBrowseByTypeSwitcher')
+  const brandsIndex = homeSource.indexOf('<HomePopularBrandsSwitcher')
+  const sellIndex = homeSource.indexOf('<HomeSellOptionsSection')
+  const latestIndex = homeSource.indexOf('?.latest')
+  const topIndex = homeSource.indexOf('?.top')
+
+  assert.ok(browseIndex > -1)
+  assert.ok(browseIndex < brandsIndex)
+  assert.ok(brandsIndex < sellIndex)
+  assert.ok(sellIndex < latestIndex)
+  assert.ok(latestIndex < topIndex)
+})
+
+test('new discovery remains swipeable and uses generated transparent assets', () => {
+  assert.match(discoverySource, /snap-x snap-mandatory/)
+  assert.match(discoverySource, /overflow-x-auto/)
+  assert.match(discoverySource, /data-discovery-item/)
+  assert.match(configSource, /\/homepage-discovery\/types\/cars-hatchback\.webp/)
+  assert.match(configSource, /\/homepage-discovery\/types\/construction-excavator\.webp/)
+  assert.match(configSource, /\/homepage-discovery\/sell\/electric-bikes\.webp/)
 })
 
 test('non-car brands use the intentional fallback instead of invented logos', () => {

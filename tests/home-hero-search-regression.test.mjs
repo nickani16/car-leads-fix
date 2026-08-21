@@ -22,8 +22,8 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
-const categoryRailsSource = readFileSync(
-  new URL('../app/components/HomeVehicleCategoryRails.tsx', import.meta.url),
+const categoryDiscoverySource = readFileSync(
+  new URL('../app/components/HomeCategoryDiscovery.tsx', import.meta.url),
   'utf8',
 )
 const headingSliderSource = readFileSync(
@@ -112,17 +112,14 @@ test('homepage popular brands keep an even logo grid', () => {
     existsSync(new URL('../public/vehicle-brand-logos/skoda.svg', import.meta.url)),
     true,
   )
-  assert.doesNotMatch(categoryRailsSource, /last:col-span-2/)
+  assert.doesNotMatch(categoryDiscoverySource, /last:col-span-2/)
 })
 
-test('homepage vehicle rails use white bordered cards while preserving highlighted blue cards', () => {
-  assert.match(categoryRailsSource, /\? 'bg-\[#b8d3ff\] hover:bg-\[#adcbfc\]'/)
-  assert.match(
-    categoryRailsSource,
-    /border border-\[#d4dbe5\] bg-white hover:border-\[#b8c6d8\] hover:bg-\[#f8fbff\]/,
-  )
-  assert.match(categoryRailsSource, /bg-\[#edf4ff\] text-\[#5269b0\]/)
-  assert.doesNotMatch(categoryRailsSource, /bg-\[#e4e9f0\]/)
+test('homepage category discovery uses a compact white panel and touch scrolling', () => {
+  assert.match(categoryDiscoverySource, /border border-\[#d4dbe5\] bg-white/)
+  assert.match(categoryDiscoverySource, /overflow-x-auto/)
+  assert.match(categoryDiscoverySource, /sm:hidden|hidden.*sm:grid/)
+  assert.doesNotMatch(categoryDiscoverySource, /bg-\[#b8d3ff\]/)
 })
 
 test('homepage search overrides broken generated Finnish reset copy', () => {

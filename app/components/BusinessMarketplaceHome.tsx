@@ -5,7 +5,10 @@ import HomeHeroVehicleSearch from './HomeHeroVehicleSearch'
 import HomeAnimatedViewsBadge from './HomeAnimatedViewsBadge'
 import HomeMarketHeadingSlider from './HomeMarketHeadingSlider'
 import HomeCategoryProvider from './HomeCategoryProvider'
-import HomeVehicleCategoryRailsSwitcher from './HomeVehicleCategoryRailsSwitcher'
+import {
+  HomeBrowseByTypeSwitcher,
+  HomePopularBrandsSwitcher,
+} from './HomeCategoryDiscovery'
 import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
 import HomeLocationConsentPrompt from './HomeLocationConsentPrompt'
@@ -671,39 +674,24 @@ export default async function BusinessMarketplaceHome({
               localListingCount={localListingCount}
               europeListingCount={europeListingCount}
             />
+            <div className="mt-3">
+              <HomeBrowseByTypeSwitcher
+                presentations={categoryPresentations}
+                previousLabel={t.carouselPreviousLabel}
+                nextLabel={t.carouselNextLabel}
+              />
+            </div>
           </div>
-        </div>
-        </section>
-
-        <section className="bg-white py-10 sm:py-14">
-        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
-          <HomeListingCategorySwitcher categories={homeListingCategories}>
-            {homeListingCategories.map((category) => {
-              const section = localListingSectionsByCategory.get(category)?.latest
-              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
-            })}
-          </HomeListingCategorySwitcher>
         </div>
         </section>
 
         <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
-          <HomeVehicleCategoryRailsSwitcher
+          <HomePopularBrandsSwitcher
             presentations={categoryPresentations}
             previousLabel={t.carouselPreviousLabel}
             nextLabel={t.carouselNextLabel}
           />
-        </div>
-        </section>
-
-        <section className="bg-white py-10 sm:py-16">
-        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
-          <HomeListingCategorySwitcher categories={homeListingCategories}>
-            {homeListingCategories.map((category) => {
-              const section = localListingSectionsByCategory.get(category)?.top
-              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
-            })}
-          </HomeListingCategorySwitcher>
         </div>
         </section>
 
@@ -727,6 +715,28 @@ export default async function BusinessMarketplaceHome({
             )
           })}
         </HomeListingCategorySwitcher>
+
+        <section className="bg-white py-10 sm:py-14">
+        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => {
+              const section = localListingSectionsByCategory.get(category)?.latest
+              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
+            })}
+          </HomeListingCategorySwitcher>
+        </div>
+        </section>
+
+        <section className="bg-white py-10 sm:py-16">
+        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => {
+              const section = localListingSectionsByCategory.get(category)?.top
+              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
+            })}
+          </HomeListingCategorySwitcher>
+        </div>
+        </section>
 
       <section className="bg-[#fbfcfe] py-9 sm:py-16">
         <div className={homeContentContainerClass}>
