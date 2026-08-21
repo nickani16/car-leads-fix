@@ -22,6 +22,10 @@ const publicHeaderSource = readFileSync(
   new URL('../app/components/PublicHeader.tsx', import.meta.url),
   'utf8',
 )
+const categoryProviderSource = readFileSync(
+  new URL('../app/components/HomeCategoryProvider.tsx', import.meta.url),
+  'utf8',
+)
 const categoryDiscoverySource = readFileSync(
   new URL('../app/components/HomeCategoryDiscovery.tsx', import.meta.url),
   'utf8',
@@ -64,6 +68,27 @@ test('homepage search keeps category-specific filters and the real count API', (
   assert.match(homeSearchSource, /params\.set\('mode', intent\)/)
   assert.match(homeSearchSource, /setNonEmptyParam\(params, 'q', queryValue\)/)
   assert.match(homeSearchSource, /params\.set\('municipality', locationValue\)/)
+  assert.match(homeSearchSource, /const moreFilterKeys = useMemo/)
+  assert.match(homeSearchSource, /\.\.\.categoryLayout\.top/)
+  assert.match(homeSearchSource, /\.\.\.categoryLayout\.bottom\.filter/)
+  assert.match(homeSearchSource, /\.\.\.categoryLayout\.advanced/)
+})
+
+test('homepage filter uses one compact stateful module with expandable quick filters', () => {
+  assert.match(homeSearchSource, /browseByType\?: ReactNode/)
+  assert.match(homeSearchSource, /id="home-search-quick-filters"/)
+  assert.match(homeSearchSource, /aria-controls="home-search-quick-filters"/)
+  assert.match(homeSearchSource, /quickFiltersOpen \? 'mt-3 grid-rows-\[1fr\]/)
+  assert.match(homeSearchSource, /\['maxPrice', 'minYear', quickUsageFilter\]/)
+  assert.match(homeSearchSource, /lg:grid-cols-\[minmax\(0,1\.55fr\)_minmax\(220px,\.8fr\)_minmax\(220px,\.72fr\)\]/)
+  assert.match(homeSource, /browseByType=\{/)
+  assert.doesNotMatch(homeSource, /<div className="mt-3">\s*<HomeBrowseByTypeSwitcher/)
+})
+
+test('direct homepage loads default to cars without persisted category state', () => {
+  assert.match(categoryProviderSource, /initialCategory = 'cars'/)
+  assert.match(categoryProviderSource, /useState<MarketplaceCategorySlug>\(initialCategory\)/)
+  assert.doesNotMatch(categoryProviderSource, /localStorage|sessionStorage/)
 })
 
 test('homepage search panels and placeholder retain their accessibility behavior', () => {
@@ -120,6 +145,11 @@ test('homepage category discovery uses a compact white panel and touch scrolling
   assert.match(categoryDiscoverySource, /overflow-x-auto/)
   assert.match(categoryDiscoverySource, /sm:hidden|hidden.*sm:grid/)
   assert.doesNotMatch(categoryDiscoverySource, /bg-\[#b8d3ff\]/)
+  assert.match(categoryDiscoverySource, /plain=\{props\.integrated\}/)
+  assert.match(categoryDiscoverySource, /w-\[106px\]/)
+  assert.match(categoryDiscoverySource, /pr-10.*sm:pr-0/)
+  assert.match(categoryDiscoverySource, /bg-gradient-to-l from-white to-transparent sm:hidden/)
+  assert.match(homeSource, /border-y border-\[#e4e9f0\] bg-white/)
 })
 
 test('homepage search overrides broken generated Finnish reset copy', () => {

@@ -673,20 +673,21 @@ export default async function BusinessMarketplaceHome({
               locale={locale}
               localListingCount={localListingCount}
               europeListingCount={europeListingCount}
+              browseByType={
+                <HomeBrowseByTypeSwitcher
+                  integrated
+                  presentations={categoryPresentations}
+                  previousLabel={t.carouselPreviousLabel}
+                  nextLabel={t.carouselNextLabel}
+                />
+              }
             />
-            <div className="mt-3">
-              <HomeBrowseByTypeSwitcher
-                presentations={categoryPresentations}
-                previousLabel={t.carouselPreviousLabel}
-                nextLabel={t.carouselNextLabel}
-              />
-            </div>
           </div>
         </div>
         </section>
 
-        <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
-        <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
+        <section className="border-y border-[#e4e9f0] bg-white py-7 sm:py-10">
+        <div className={homeContentContainerClass}>
           <HomePopularBrandsSwitcher
             presentations={categoryPresentations}
             previousLabel={t.carouselPreviousLabel}

@@ -3,6 +3,7 @@
 import {
   type ComponentType,
   type FormEvent,
+  type ReactNode,
   type SVGProps,
   useEffect,
   useMemo,
@@ -627,10 +628,12 @@ export default function HomeHeroVehicleSearch({
   locale,
   localListingCount,
   europeListingCount,
+  browseByType,
 }: {
   locale: PublicLocale
   localListingCount?: number | null
   europeListingCount?: number | null
+  browseByType?: ReactNode
 }) {
   const router = useRouter()
   const { activeCategory: category, setActiveCategory } = useHomeCategory()
@@ -644,6 +647,7 @@ export default function HomeHeroVehicleSearch({
   const [filters, setFilters] = useState<HomeSearchFilters>(emptyFilters)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
+  const [quickFiltersOpen, setQuickFiltersOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<SelectedSearchSuggestion[]>([])
@@ -660,6 +664,29 @@ export default function HomeHeroVehicleSearch({
   const moreFiltersCloseRef = useRef<HTMLButtonElement>(null)
 
   const categoryLayout = categoryLayouts[category]
+  const quickUsageFilter: HomeSearchFilterKey =
+    category === 'construction' || category === 'agriculture'
+      ? 'maxOperatingHours'
+      : category === 'caravans'
+        ? 'technical_totalWeightKg'
+        : 'maxMileage'
+  const moreFilterKeys = useMemo(() => {
+    const quickKeys = new Set<HomeSearchFilterKey>([
+      'make',
+      'model',
+      'minYear',
+      'maxPrice',
+      quickUsageFilter,
+    ])
+    const categoryKeys = [
+      ...categoryLayout.top,
+      ...categoryLayout.bottom.filter(
+        (slot): slot is HomeSearchFilterKey => slot !== 'mode' && slot !== 'location',
+      ),
+      ...categoryLayout.advanced,
+    ]
+    return [...new Set(categoryKeys)].filter((key) => !quickKeys.has(key))
+  }, [categoryLayout, quickUsageFilter])
   const visibleCategories = categoryDefinitions.filter(({ slug }) =>
     intent === 'leasing' ? isLeasingMarketplaceCategory(slug) : true,
   )
@@ -1090,78 +1117,99 @@ export default function HomeHeroVehicleSearch({
           ) : null}
         </div>
 
-        <div className="px-3 py-2 sm:px-5 sm:py-3 lg:px-6">
-          <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-4 lg:gap-x-4">
-            {categoryLayout.top.map((key) => (
-              <HomeFilterControl
-                key={key}
-                filterKey={key}
-                label={t.fields[key]}
-                value={filters[key]}
-                options={filterOptions(key, category, facets, market)}
-                allLabel={t.all}
-                locale={locale}
-                market={market}
-                disabled={key === 'model' && !filters.make}
-                onChange={(value) => updateFilter(key, value)}
-              />
-            ))}
-          </div>
+        <div className="px-3 py-3 sm:px-5 sm:py-4 lg:px-6">
+          <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.55fr)_minmax(220px,.8fr)_minmax(220px,.72fr)] lg:items-end lg:gap-4">
+            <div className="min-w-0">
+              <div className="mb-1.5 flex min-h-5 items-center justify-between gap-3">
+                <span className="text-[12px] font-medium leading-4 text-[#344054] sm:text-[13px]">
+                  {t.fields.make} &amp; {t.fields.model}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuickFiltersOpen((current) => !current)}
+                  aria-expanded={quickFiltersOpen}
+                  aria-controls="home-search-quick-filters"
+                  aria-label={t.moreFilters}
+                  title={t.moreFilters}
+                  className="grid h-9 w-9 flex-none place-items-center rounded-full text-[#475467] transition hover:bg-[#f2f4f7] hover:text-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                >
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-200 ${quickFiltersOpen ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <div className="grid min-w-0 grid-cols-2 gap-2.5">
+                {(['make', 'model'] as const).map((key) => (
+                  <HomeFilterControl
+                    key={key}
+                    filterKey={key}
+                    label={t.fields[key]}
+                    value={filters[key]}
+                    options={filterOptions(key, category, facets, market)}
+                    allLabel={t.all}
+                    locale={locale}
+                    market={market}
+                    disabled={key === 'model' && !filters.make}
+                    hideLabel
+                    onChange={(value) => updateFilter(key, value)}
+                  />
+                ))}
+              </div>
+            </div>
 
-          <div className="mt-2 grid grid-cols-2 gap-x-2.5 gap-y-2 lg:mt-2.5 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-2.5">
-            {categoryLayout.bottom.map((slot) => {
-              if (slot === 'mode') {
-                return (
-                  <PurchaseTypeControl
-                    key={slot}
-                    label={t.purchaseType}
-                    buyLabel={t.buy}
-                    leasingLabel={t.leasing}
-                    value={intent}
-                    onChange={changeIntent}
-                  />
-                )
-              }
-              if (slot === 'location') {
-                return (
-                  <LocationControl
-                    key={slot}
-                    label={t.location}
-                    value={location}
-                    suggestions={facetValues(facets.municipalities)}
-                    onChange={(value) => {
-                      setLocation(value)
-                      setGeoAreaId('')
-                    }}
-                  />
-                )
-              }
-              return (
-                <HomeFilterControl
-                  key={slot}
-                  filterKey={slot}
-                  label={t.fields[slot]}
-                  value={filters[slot]}
-                  options={filterOptions(slot, category, facets, market)}
-                  allLabel={t.all}
-                  locale={locale}
-                  market={market}
-                  onChange={(value) => updateFilter(slot, value)}
-                />
-              )
-            })}
+            <LocationControl
+              label={t.location}
+              value={location}
+              suggestions={facetValues(facets.municipalities)}
+              onChange={(value) => {
+                setLocation(value)
+                setGeoAreaId('')
+              }}
+            />
 
             <SearchSubmitButton
-              className="hidden lg:flex"
+              className="flex w-full"
               label={countLabel}
               loading={countLoading}
               loadingLabel={t.updatingCount}
             />
           </div>
 
-          <div className="mt-2 flex items-center justify-end gap-4 sm:mt-2.5">
+          <div
+            id="home-search-quick-filters"
+            className={`grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out ${
+              quickFiltersOpen ? 'mt-3 grid-rows-[1fr] opacity-100' : 'mt-0 grid-rows-[0fr] opacity-0'
+            }`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 border-t border-[#e4e9f0] pt-3 lg:grid-cols-4 lg:gap-x-4">
+                <PurchaseTypeControl
+                  label={t.purchaseType}
+                  buyLabel={t.buy}
+                  leasingLabel={t.leasing}
+                  value={intent}
+                  onChange={changeIntent}
+                />
+                {(['maxPrice', 'minYear', quickUsageFilter] as HomeSearchFilterKey[]).map((key) => (
+                  <HomeFilterControl
+                    key={key}
+                    filterKey={key}
+                    label={t.fields[key]}
+                    value={filters[key]}
+                    options={filterOptions(key, category, facets, market)}
+                    allLabel={t.all}
+                    locale={locale}
+                    market={market}
+                    onChange={(value) => updateFilter(key, value)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-2 flex min-h-9 items-center justify-end gap-4 sm:mt-2.5">
             <button
-              ref={moreFiltersTriggerRef}
               type="button"
               onClick={resetSearch}
               className="inline-flex min-h-8 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:min-h-9 sm:gap-2 sm:text-[13px]"
@@ -1170,6 +1218,7 @@ export default function HomeHeroVehicleSearch({
               {t.reset}
             </button>
             <button
+              ref={moreFiltersTriggerRef}
               type="button"
               onClick={() => setMoreFiltersOpen(true)}
               aria-expanded={moreFiltersOpen}
@@ -1180,14 +1229,13 @@ export default function HomeHeroVehicleSearch({
               {t.moreFilters}
             </button>
           </div>
-
-          <SearchSubmitButton
-            className="mt-2 flex w-full sm:mt-2.5 lg:hidden"
-            label={countLabel}
-            loading={countLoading}
-            loadingLabel={t.updatingCount}
-          />
         </div>
+
+        {browseByType ? (
+          <div className="border-t border-[#d8e0ea] px-3 py-4 sm:px-5 sm:py-5 lg:px-6">
+            {browseByType}
+          </div>
+        ) : null}
       </section>
 
       {moreFiltersOpen ? (
@@ -1221,7 +1269,7 @@ export default function HomeHeroVehicleSearch({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
-              {categoryLayout.advanced.map((key) => (
+              {moreFilterKeys.map((key) => (
                 <HomeFilterControl
                   key={key}
                   filterKey={key}
@@ -1279,6 +1327,7 @@ function HomeFilterControl({
   locale,
   market,
   disabled = false,
+  hideLabel = false,
   onChange,
 }: {
   filterKey: HomeSearchFilterKey
@@ -1289,6 +1338,7 @@ function HomeFilterControl({
   locale: PublicLocale
   market: string
   disabled?: boolean
+  hideLabel?: boolean
   onChange: (value: string) => void
 }) {
   return (
@@ -1297,6 +1347,7 @@ function HomeFilterControl({
       label={label}
       value={value}
       disabled={disabled}
+      hideLabel={hideLabel}
       options={uniqueOptions([value, ...options]).map((option) => ({
         value: option,
         label: filterOptionLabel({ key: filterKey, value: option, locale, market }),
@@ -1314,6 +1365,7 @@ function HomeSelectControl({
   options,
   placeholder,
   disabled = false,
+  hideLabel = false,
   onChange,
 }: {
   id: string
@@ -1322,11 +1374,14 @@ function HomeSelectControl({
   options: Array<{ value: string; label: string }>
   placeholder?: string
   disabled?: boolean
+  hideLabel?: boolean
   onChange: (value: string) => void
 }) {
   return (
     <label htmlFor={id} className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
-      <span className="flex min-h-5 items-end pb-0.5 sm:min-h-6">{label}</span>
+      <span className={hideLabel ? 'sr-only' : 'flex min-h-5 items-end pb-0.5 sm:min-h-6'}>
+        {label}
+      </span>
       <span className="relative block">
         <select
           id={id}
@@ -1405,7 +1460,7 @@ function LocationControl({
   onChange: (value: string) => void
 }) {
   return (
-    <label htmlFor="home-search-location" className="col-span-2 min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px] lg:col-span-1">
+    <label htmlFor="home-search-location" className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
       <span className="flex min-h-5 items-end pb-0.5 sm:min-h-6">{label}</span>
       <span className="relative block">
         <input
