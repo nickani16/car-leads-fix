@@ -78,17 +78,17 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
             href={brand.href}
             prefetch={false}
             data-discovery-item
-            className="group flex w-[128px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[142px] lg:w-[152px]"
+            className="group flex w-[116px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[142px] lg:w-[152px]"
           >
-            <span className="flex h-[66px] w-full items-center justify-center sm:h-[62px]">
+            <span className="flex h-[78px] w-full items-center justify-center sm:h-[62px]">
               {brand.logo ? (
                 <Image
                   src={brand.logo}
                   alt=""
-                  width={112}
-                  height={64}
-                  sizes="112px"
-                  className="max-h-[60px] w-auto max-w-[116px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:max-h-[56px]"
+                  width={132}
+                  height={76}
+                  sizes="(max-width: 640px) 112px, 116px"
+                  className="max-h-[72px] w-auto max-w-[112px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:max-h-[56px] sm:max-w-[116px]"
                 />
               ) : (
                 <span className="grid h-14 w-14 place-items-center rounded-full bg-[#f5f8fc] text-[15px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04]">

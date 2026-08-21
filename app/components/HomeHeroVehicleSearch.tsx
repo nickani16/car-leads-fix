@@ -647,7 +647,6 @@ export default function HomeHeroVehicleSearch({
   const [filters, setFilters] = useState<HomeSearchFilters>(emptyFilters)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
-  const [quickFiltersOpen, setQuickFiltersOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<SelectedSearchSuggestion[]>([])
@@ -1119,7 +1118,7 @@ export default function HomeHeroVehicleSearch({
 
         <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-6">
           <div className="grid min-w-0 grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,.95fr)_minmax(220px,.9fr)] lg:items-end lg:gap-x-4">
-            <div className="relative order-0 col-span-2 grid min-w-0 grid-cols-2 gap-x-2.5 lg:col-start-1 lg:row-start-1 lg:gap-x-4">
+            <div className="order-0 col-span-2 grid min-w-0 grid-cols-2 gap-x-2.5 lg:col-start-1 lg:row-start-1 lg:gap-x-4">
               {(['make', 'model'] as const).map((key) => (
                 <HomeFilterControl
                   key={key}
@@ -1131,56 +1130,10 @@ export default function HomeHeroVehicleSearch({
                   locale={locale}
                   market={market}
                   disabled={key === 'model' && !filters.make}
+                  hideLabel
                   onChange={(value) => updateFilter(key, value)}
                 />
               ))}
-              <button
-                type="button"
-                onClick={() => setQuickFiltersOpen((current) => !current)}
-                aria-expanded={quickFiltersOpen}
-                aria-controls="home-search-quick-filters"
-                aria-label={t.moreFilters}
-                title={t.moreFilters}
-                className="absolute right-0 top-0 grid h-5 w-5 place-items-center rounded-full text-[#0866ff] transition hover:bg-[#eef5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
-              >
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-200 ${quickFiltersOpen ? 'rotate-180' : ''}`}
-                  strokeWidth={2.2}
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
-
-            <div
-              id="home-search-quick-filters"
-              className={`order-1 col-span-2 grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out lg:col-span-4 lg:col-start-1 lg:row-start-2 ${
-                quickFiltersOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-              }`}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <div className="grid grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-4 lg:gap-x-4">
-                  <PurchaseTypeControl
-                    label={t.purchaseType}
-                    buyLabel={t.buy}
-                    leasingLabel={t.leasing}
-                    value={intent}
-                    onChange={changeIntent}
-                  />
-                  {(['maxPrice', 'minYear', quickUsageFilter] as HomeSearchFilterKey[]).map((key) => (
-                    <HomeFilterControl
-                      key={key}
-                      filterKey={key}
-                      label={t.fields[key]}
-                      value={filters[key]}
-                      options={filterOptions(key, category, facets, market)}
-                      allLabel={t.all}
-                      locale={locale}
-                      market={market}
-                      onChange={(value) => updateFilter(key, value)}
-                    />
-                  ))}
-                </div>
-              </div>
             </div>
 
             <div className="order-2 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1">
@@ -1188,6 +1141,7 @@ export default function HomeHeroVehicleSearch({
                 label={t.location}
                 value={location}
                 suggestions={facetValues(facets.municipalities)}
+                hideLabel
                 onChange={(value) => {
                   setLocation(value)
                   setGeoAreaId('')
@@ -1264,6 +1218,13 @@ export default function HomeHeroVehicleSearch({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
+              <PurchaseTypeControl
+                label={t.purchaseType}
+                buyLabel={t.buy}
+                leasingLabel={t.leasing}
+                value={intent}
+                onChange={changeIntent}
+              />
               {moreFilterKeys.map((key) => (
                 <HomeFilterControl
                   key={key}
@@ -1347,7 +1308,7 @@ function HomeFilterControl({
         value: option,
         label: filterOptionLabel({ key: filterKey, value: option, locale, market }),
       }))}
-      placeholder={allLabel}
+      placeholder={hideLabel ? label : allLabel}
       onChange={onChange}
     />
   )
@@ -1383,7 +1344,8 @@ function HomeSelectControl({
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-[14px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+          data-placeholder={value ? undefined : 'true'}
+          className="home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
           {options.map((option) => (
@@ -1419,7 +1381,7 @@ function PurchaseTypeControl({
       <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid h-10 grid-cols-2 gap-0.5 rounded-[14px] border border-[#98a2b3] bg-white p-0.5">
+      <div className="grid h-10 grid-cols-2 gap-0.5 rounded-[12px] border border-[#98a2b3] bg-white p-0.5">
         {([
           ['sale', buyLabel],
           ['leasing', leasingLabel],
@@ -1429,7 +1391,7 @@ function PurchaseTypeControl({
             type="button"
             aria-pressed={value === option}
             onClick={() => onChange(option)}
-            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[11px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
+            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[9px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
               value === option
                 ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
                 : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
@@ -1447,16 +1409,18 @@ function LocationControl({
   label,
   value,
   suggestions,
+  hideLabel = false,
   onChange,
 }: {
   label: string
   value: string
   suggestions: string[]
+  hideLabel?: boolean
   onChange: (value: string) => void
 }) {
   return (
     <label htmlFor="home-search-location" className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
-      <span className="flex min-h-5 items-end pb-0.5 sm:min-h-6">{label}</span>
+      <span className={hideLabel ? 'sr-only' : 'flex min-h-5 items-end pb-0.5 sm:min-h-6'}>{label}</span>
       <span className="relative block">
         <input
           id="home-search-location"
@@ -1464,7 +1428,8 @@ function LocationControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
-          className="h-10 w-full rounded-[14px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+          placeholder={label}
+          className="h-10 w-full rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#667085] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
         />
         <MapPin
           className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"

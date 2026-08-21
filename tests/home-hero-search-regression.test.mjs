@@ -74,19 +74,17 @@ test('homepage search keeps category-specific filters and the real count API', (
   assert.match(homeSearchSource, /\.\.\.categoryLayout\.advanced/)
 })
 
-test('homepage filter uses one compact stateful module with expandable quick filters', () => {
+test('homepage filter keeps a compact primary row and advanced controls in the dialog', () => {
   assert.match(homeSearchSource, /browseByType\?: ReactNode/)
-  assert.match(homeSearchSource, /id="home-search-quick-filters"/)
-  assert.match(homeSearchSource, /aria-controls="home-search-quick-filters"/)
-  assert.match(homeSearchSource, /quickFiltersOpen \? 'grid-rows-\[1fr\] opacity-100'/)
-  assert.match(homeSearchSource, /\['maxPrice', 'minYear', quickUsageFilter\]/)
+  assert.doesNotMatch(homeSearchSource, /home-search-quick-filters/)
+  assert.doesNotMatch(homeSearchSource, /quickFiltersOpen/)
   assert.match(homeSearchSource, /lg:grid-cols-\[minmax\(180px,1fr\)_minmax\(180px,1fr\)_minmax\(220px,\.95fr\)_minmax\(220px,\.9fr\)\]/)
-  assert.match(homeSearchSource, /absolute right-0 top-0 grid h-5 w-5[\s\S]*text-\[#0866ff\]/)
-  assert.match(homeSearchSource, /order-1 col-span-2 grid[\s\S]*lg:col-span-4/)
+  assert.match(homeSearchSource, /disabled=\{key === 'model' && !filters\.make\}[\s\S]*hideLabel/)
+  assert.match(homeSearchSource, /placeholder=\{hideLabel \? label : allLabel\}/)
   assert.match(homeSearchSource, /order-2 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1/)
   assert.match(homeSearchSource, /order-3 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1/)
+  assert.match(homeSearchSource, /<PurchaseTypeControl[\s\S]*moreFilterKeys\.map/)
   assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10/)
-  assert.doesNotMatch(homeSearchSource, /home-search-quick-filters[\s\S]{0,700}border-t/)
   assert.match(homeSource, /browseByType=\{/)
   assert.doesNotMatch(homeSource, /<div className="mt-3">\s*<HomeBrowseByTypeSwitcher/)
 })
@@ -118,11 +116,12 @@ test('homepage search panels and placeholder retain their accessibility behavior
 
 test('homepage search uses compact rounded primary controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
-  assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-\[14px\]/)
-  assert.match(homeSearchSource, /grid h-10 grid-cols-2 gap-0\.5 rounded-\[14px\]/)
-  assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[11px\]/)
+  assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-\[12px\]/)
+  assert.match(homeSearchSource, /grid h-10 grid-cols-2 gap-0\.5 rounded-\[12px\]/)
+  assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[9px\]/)
   assert.doesNotMatch(homeSearchSource, /className=\{`min-h-8 rounded-\[14px\]/)
-  assert.match(homeSearchSource, /h-10 w-full rounded-\[14px\]/)
+  assert.match(homeSearchSource, /placeholder=\{label\}/)
+  assert.match(homeSearchSource, /h-10 w-full rounded-\[12px\]/)
   assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
   assert.match(homeSearchSource, /right-3[\s\S]*text-\[#0866ff\]/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
@@ -155,6 +154,7 @@ test('homepage popular brands keep an even logo grid', () => {
     true,
   )
   assert.doesNotMatch(categoryDiscoverySource, /last:col-span-2/)
+  assert.match(categoryDiscoverySource, /h-\[78px\][\s\S]*max-h-\[72px\]/)
 })
 
 test('homepage category discovery uses a compact white panel and touch scrolling', () => {

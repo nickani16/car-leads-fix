@@ -522,6 +522,11 @@ input, textarea, select {
   opacity: 1 !important;
 }
 
+.home-hero-filter-select[data-placeholder='true'] {
+  color: #667085 !important;
+  -webkit-text-fill-color: #667085 !important;
+}
+
 @media (max-width: 767px) {
   input,
   textarea,
