@@ -29,6 +29,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
+import { FooterMarketCurrencyControls } from './PublicFooter'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
 import { createCategoryMapMarker } from './MapCategoryMarker'
@@ -197,7 +198,11 @@ type SavedVehicleSearch = {
   }
 }
 
-type MarketplaceReturnSearchState = SavedVehicleSearch['filters']
+type MarketplaceReturnSearchState = SavedVehicleSearch['filters'] & {
+  __windowScrollY?: number
+  __desktopResultsScrollTop?: number
+  __desktopMarketplaceView?: DesktopMarketplaceView
+}
 
 export type VehicleSearchListing = {
   id: string
@@ -1299,6 +1304,7 @@ export default function VehicleSearchExperience({
   const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
   const desktopFilterBarRef = useRef<HTMLDivElement>(null)
   const desktopResultsScrollRef = useRef<HTMLDivElement>(null)
+  const pendingMarketplaceRestoreRef = useRef<MarketplaceReturnSearchState | null>(null)
   const mobileSortSelectRef = useRef<HTMLSelectElement>(null)
   const mobileShortcutBarRef = useRef<HTMLDivElement | null>(null)
   const [mobileShortcutOverMedia, setMobileShortcutOverMedia] = useState(false)
@@ -1447,20 +1453,27 @@ export default function VehicleSearchExperience({
   }, [mode])
 
   useEffect(() => {
-    if (hasExplicitInitialFilters) {
+    const returnState = readMarketplaceReturnSearchState(locale)
+    if (hasExplicitInitialFilters && !returnState) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
       return () => window.clearTimeout(timer)
     }
     const restored =
-      readMarketplaceReturnSearchState(locale) ||
-      readPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
+      returnState ||
+      (!hasExplicitInitialFilters
+        ? readPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
+        : null)
     if (!restored) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
       return () => window.clearTimeout(timer)
     }
 
     const timer = window.setTimeout(() => {
+      pendingMarketplaceRestoreRef.current = restored
       const restoredMode = normalizeSearchMode(restored.mode)
+      if (restored.__desktopMarketplaceView) {
+        setDesktopMarketplaceView(restored.__desktopMarketplaceView)
+      }
       setMode(restoredMode)
       setSelectedSearchSuggestions([])
       setSearchInput(restored.query || '')
@@ -1512,6 +1525,31 @@ export default function VehicleSearchExperience({
     }, 0)
     return () => window.clearTimeout(timer)
   }, [hasExplicitInitialFilters, locale, safeAutomaticCountry])
+
+  useEffect(() => {
+    if (!searchStateReady || searchLoading) return
+    const restored = pendingMarketplaceRestoreRef.current
+    if (!restored) return
+
+    const restorePosition = () => {
+      if (typeof restored.__windowScrollY === 'number') {
+        window.scrollTo({ top: restored.__windowScrollY, behavior: 'instant' })
+      }
+      if (desktopResultsScrollRef.current && typeof restored.__desktopResultsScrollTop === 'number') {
+        desktopResultsScrollRef.current.scrollTop = restored.__desktopResultsScrollTop
+      }
+    }
+    const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(restorePosition))
+    const settleTimer = window.setTimeout(() => {
+      restorePosition()
+      pendingMarketplaceRestoreRef.current = null
+    }, 420)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(settleTimer)
+    }
+  }, [desktopMarketplaceView, searchListings.length, searchLoading, searchStateReady])
 
   useEffect(() => {
     if (!searchStateReady) return
@@ -2105,7 +2143,12 @@ export default function VehicleSearchExperience({
   }
 
   function rememberSearchBeforeListingNavigation() {
-    writeMarketplaceReturnSearchState(locale, currentSearchState)
+    writeMarketplaceReturnSearchState(locale, {
+      ...currentSearchState,
+      __windowScrollY: window.scrollY,
+      __desktopResultsScrollTop: desktopResultsScrollRef.current?.scrollTop || 0,
+      __desktopMarketplaceView: desktopMarketplaceView,
+    })
   }
 
   const toggleCompare = (listingId: string) => {
@@ -2587,7 +2630,13 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function renderDesktopFilterPopover(placement: QuickFilterPlacement, menu: Exclude<DesktopFilterMenu, null>, children: ReactNode, width = 'w-[420px]') {
+  function renderDesktopFilterPopover(
+    placement: QuickFilterPlacement,
+    menu: Exclude<DesktopFilterMenu, null>,
+    title: string,
+    children: ReactNode,
+    width = 'w-[420px]',
+  ) {
     if (desktopFilterMenu !== menu || quickFilterPlacement !== placement) return null
     return (
       <>
@@ -2601,14 +2650,17 @@ export default function VehicleSearchExperience({
           data-marketplace-filter-surface
           role="dialog"
           aria-modal="true"
-          aria-label={filterDialogCopy[locale].label}
+          aria-label={title}
           style={{
             left: desktopFilterPopoverPosition?.left ?? 16,
             top: desktopFilterPopoverPosition?.top ?? 112,
           }}
-          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} rounded-[14px] border border-[#d0d5dd] bg-white p-4 shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:rounded-[18px] max-sm:p-4`}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} overflow-hidden rounded-[14px] border border-[#d0d5dd] bg-white shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overscroll-contain max-sm:rounded-[18px]`}
         >
-          <div className="mb-2 flex justify-end">
+          <div className="flex min-h-16 items-center justify-between gap-4 border-b border-[#e4e7ec] px-4 py-3 sm:px-5">
+            <h2 className="min-w-0 text-[16px] font-semibold leading-6 text-[#101828] sm:text-[17px]">
+              {title}
+            </h2>
             <button
               type="button"
               aria-label={filterDialogCopy[locale].close}
@@ -2619,7 +2671,7 @@ export default function VehicleSearchExperience({
               <X className="h-4.5 w-4.5" aria-hidden="true" />
             </button>
           </div>
-          <div>{children}</div>
+          <div className="max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 sm:p-5">{children}</div>
         </div>
       </>
     )
@@ -2734,7 +2786,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-10 shrink-0">
             {desktopMenuButton(placement, 'mode', modeLabel, false)}
-            {renderDesktopFilterPopover(placement, 'mode', (
+            {renderDesktopFilterPopover(placement, 'mode', desktopListText.offerType, (
               <div className="space-y-1">
                 {[
                   { value: 'all' as SearchMode, label: marketplaceModeOptionLabel(locale, 'all') },
@@ -2759,7 +2811,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-50 shrink-0">
             {desktopMenuButton(placement, 'price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
-            {renderDesktopFilterPopover(placement, 'price', (
+            {renderDesktopFilterPopover(placement, 'price', uiText(locale, 'Price', 'Pris', 'Preis'), (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2782,7 +2834,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-60 shrink-0">
             {desktopMenuButton(placement, 'year', minYear || maxYear ? `${translatePublic(locale, 'Model year')}: ${minYear || '1950'}-${maxYear || 'max'}` : translatePublic(locale, 'Model year'), Boolean(minYear || maxYear))}
-            {renderDesktopFilterPopover(placement, 'year', (
+            {renderDesktopFilterPopover(placement, 'year', translatePublic(locale, 'Model year'), (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2806,7 +2858,7 @@ export default function VehicleSearchExperience({
           {showMileageMenu ? (
           <div className="relative order-70 shrink-0">
             {desktopMenuButton(placement, 'mileage', minMileage || maxMileage ? `${mileageFilterLabel}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : mileageFilterLabel, Boolean(minMileage || maxMileage))}
-            {renderDesktopFilterPopover(placement, 'mileage', (
+            {renderDesktopFilterPopover(placement, 'mileage', mileageFilterLabel, (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2831,7 +2883,7 @@ export default function VehicleSearchExperience({
           {showOperatingHoursMenu ? (
           <div className="relative order-70 shrink-0">
             {desktopMenuButton(placement, 'operatingHours', minOperatingHours || maxOperatingHours ? `${operatingHoursFilterLabel}: ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}` : operatingHoursFilterLabel, Boolean(minOperatingHours || maxOperatingHours))}
-            {renderDesktopFilterPopover(placement, 'operatingHours', (
+            {renderDesktopFilterPopover(placement, 'operatingHours', operatingHoursFilterLabel, (
               <div className="space-y-4">
                 <RangeFilter
                   locale={locale}
@@ -2855,7 +2907,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-20 shrink-0">
             {desktopMenuButton(placement, 'category', categoryLabel, false)}
-            {renderDesktopFilterPopover(placement, 'category', (
+            {renderDesktopFilterPopover(placement, 'category', desktopListText.vehicleCategory, (
               <div className="grid max-h-[420px] gap-1 overflow-y-auto">
                 {visibleSelectableCategories.map((item) => {
                   const Icon = item.icon
@@ -2883,7 +2935,7 @@ export default function VehicleSearchExperience({
           {showBodyTypeMenu ? (
           <div className="relative order-30 shrink-0">
             {desktopMenuButton(placement, 'bodyType', bodyTypeLabel, Boolean(bodyType))}
-            {renderDesktopFilterPopover(placement, 'bodyType', (
+            {renderDesktopFilterPopover(placement, 'bodyType', bodyTypeFilterLabel, (
               <div className="space-y-3">
                 <div className="grid max-h-[360px] gap-1 overflow-y-auto">
                   {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
@@ -2927,7 +2979,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-80 shrink-0">
             {desktopMenuButton(placement, 'market', marketLabel, selectedMarketCodes.length > 1)}
-            {renderDesktopFilterPopover(placement, 'market', (
+            {renderDesktopFilterPopover(placement, 'market', uiText(locale, 'Market', 'Marknad', 'Markt'), (
               <div className="space-y-3">
                 <div className="grid max-h-[360px] gap-1 overflow-y-auto">
                   {marketOptions.map((option) => {
@@ -2973,7 +3025,7 @@ export default function VehicleSearchExperience({
 
           <div className="relative order-40 shrink-0">
             {desktopMenuButton(placement, 'model', modelLabel, Boolean(make || model))}
-            {renderDesktopFilterPopover(placement, 'model', (
+            {renderDesktopFilterPopover(placement, 'model', uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell'), (
               <div className="space-y-4">
                 <MakeModelFilter
                   locale={locale}
@@ -5061,9 +5113,11 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         </div>
         <MarketplaceSocialLinks />
       </div>
-      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:items-end">
-        <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
-        <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
+      <div className="mt-6 grid gap-4 border-t border-[#eef2f6] pt-5 min-[720px]:grid-cols-[auto_minmax(0,1fr)] min-[720px]:items-end">
+        <FooterMarketCurrencyControls locale={locale} className="min-[720px]:self-end" />
+        <div className="flex flex-col gap-3 min-[720px]:items-end">
+          <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467] min-[720px]:justify-end">
           <Link href={termsHref} className="hover:text-[#0866ff]">
             {uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}
           </Link>
@@ -5079,7 +5133,8 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">
             {uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}
           </Link>
-        </nav>
+          </nav>
+        </div>
       </div>
     </footer>
   )
@@ -5319,7 +5374,7 @@ function VehicleResultCard({
           <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
             {offerBadge.label}
           </span>
-          <Link href={href} prefetch={false} onClick={onBeforeNavigate} className="block">
+          <Link href={href} prefetch onClick={onBeforeNavigate} className="block">
             <h2 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
               {headline}
             </h2>

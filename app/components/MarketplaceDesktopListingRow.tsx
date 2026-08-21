@@ -149,7 +149,7 @@ export default function MarketplaceDesktopListingRow({
         <div className="min-w-0">
           <Link
             href={href}
-            prefetch={false}
+            prefetch
             onClick={onBeforeNavigate}
             className="block rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
           >
@@ -196,7 +196,7 @@ export default function MarketplaceDesktopListingRow({
             {equipmentChips.length > 3 ? (
               <Link
                 href={href}
-                prefetch={false}
+                prefetch
                 onClick={onBeforeNavigate}
                 className="absolute inset-y-0 right-0 z-10 inline-flex items-center bg-white/90 pl-3 text-[10px] font-semibold text-[#0757da] backdrop-blur-[3px] [box-shadow:-12px_0_16px_rgba(255,255,255,.94)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
               >
@@ -248,7 +248,7 @@ export default function MarketplaceDesktopListingRow({
         <p className="mt-0.5 text-[10px] font-normal leading-4 text-[#667085]">{copy.vatIncluded}</p>
         <Link
           href={href}
-          prefetch={false}
+          prefetch
           onClick={onBeforeNavigate}
           className="mt-auto inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
         >

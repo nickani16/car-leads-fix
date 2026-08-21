@@ -324,13 +324,6 @@ export default function PublicFooter({
 }) {
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
-  const activePathMarket = pathname.split('/').filter(Boolean)[0]
-  const footerMarket = getFooterMarket(activePathMarket, locale)
-  const [isMarketOpen, setIsMarketOpen] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.location.hash === '#market-selector',
-  )
   const t =
     locale === 'sv'
       ? footerCopy.sv
@@ -416,45 +409,66 @@ export default function PublicFooter({
             </button>
           </nav>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
-            <button
-              type="button"
-              onClick={() => setIsMarketOpen(true)}
-              className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
-            >
-              <span className="inline-flex items-center gap-2">
-                <FlagIcon code={footerMarket.flagCode} size="sm" />
-                {footerLanguageNames[locale]}
-              </span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <FooterSelect
-              ariaLabel={footerCurrencyLabels[locale]}
-              defaultValue={footerMarket.currency}
-              options={[
-                  ['eur', 'EUR'],
-                  ['sek', 'SEK'],
-                  ['dkk', 'DKK'],
-                  ['pln', 'PLN'],
-                  ['czk', 'CZK'],
-                  ['huf', 'HUF'],
-                  ['ron', 'RON'],
-                  ['bgn', 'BGN'],
-                  ['nok', 'NOK'],
-                  ['chf', 'CHF'],
-                  ['gbp', 'GBP'],
-                  ['usd', 'USD'],
-              ]}
-            />
-          </div>
+          <FooterMarketCurrencyControls locale={locale} className="lg:justify-end" />
         </div>
+      </div>
+    </footer>
+  )
+}
+
+export function FooterMarketCurrencyControls({
+  locale,
+  className = '',
+}: {
+  locale: PublicLocale
+  className?: string
+}) {
+  const pathname = usePathname()
+  const activePathMarket = pathname.split('/').filter(Boolean)[0]
+  const footerMarket = getFooterMarket(activePathMarket, locale)
+  const [isMarketOpen, setIsMarketOpen] = useState(
+    () => typeof window !== 'undefined' && window.location.hash === '#market-selector',
+  )
+
+  return (
+    <>
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 font-medium ${className}`}>
+        <button
+          type="button"
+          onClick={() => setIsMarketOpen(true)}
+          className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <span className="inline-flex items-center gap-2">
+            <FlagIcon code={footerMarket.flagCode} size="sm" />
+            {footerLanguageNames[locale]}
+          </span>
+          <ChevronDown className="h-4 w-4" />
+        </button>
+        <FooterSelect
+          ariaLabel={footerCurrencyLabels[locale]}
+          defaultValue={footerMarket.currency}
+          options={[
+            ['eur', 'EUR'],
+            ['sek', 'SEK'],
+            ['dkk', 'DKK'],
+            ['pln', 'PLN'],
+            ['czk', 'CZK'],
+            ['huf', 'HUF'],
+            ['ron', 'RON'],
+            ['bgn', 'BGN'],
+            ['nok', 'NOK'],
+            ['chf', 'CHF'],
+            ['gbp', 'GBP'],
+            ['usd', 'USD'],
+          ]}
+        />
       </div>
       <MarketSelectorModal
         isOpen={isMarketOpen}
         onClose={() => setIsMarketOpen(false)}
         locale={locale}
       />
-    </footer>
+    </>
   )
 }
 

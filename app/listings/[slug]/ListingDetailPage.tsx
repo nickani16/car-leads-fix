@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
+import { ViewTransition, type ReactNode } from 'react'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -447,7 +447,8 @@ export default async function ListingDetailPage({
   ])
 
   return (
-    <main className="min-h-screen bg-white text-[#101828]">
+    <ViewTransition enter="autorell-listing-enter" exit="autorell-listing-exit" default="none">
+      <main className="min-h-screen bg-white text-[#101828]">
       <ListingPageTopReset />
       {listing.status === 'published' ? <ListingViewTracker listingId={listing.id} /> : null}
       <PublicHeader
@@ -1026,7 +1027,8 @@ export default async function ListingDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: sanitizeJsonLd(listingJsonLd) }}
       />
-    </main>
+      </main>
+    </ViewTransition>
   )
 }
 

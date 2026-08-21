@@ -1519,3 +1519,40 @@ select:-webkit-autofill {
     break-inside: avoid;
   }
 }
+::view-transition-old(.autorell-listing-exit) {
+  animation: 170ms cubic-bezier(0.4, 0, 1, 1) both autorell-listing-page-out;
+}
+
+::view-transition-new(.autorell-listing-enter) {
+  animation: 240ms cubic-bezier(0.16, 1, 0.3, 1) both autorell-listing-page-in;
+}
+
+@keyframes autorell-listing-page-in {
+  from {
+    opacity: 0.72;
+    translate: min(6vw, 56px) 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes autorell-listing-page-out {
+  from {
+    opacity: 1;
+    translate: 0 0;
+  }
+  to {
+    opacity: 0.78;
+    translate: min(5vw, 48px) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.autorell-listing-exit),
+  ::view-transition-new(.autorell-listing-enter) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

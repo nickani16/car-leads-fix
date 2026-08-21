@@ -8,6 +8,9 @@ const sharpRuntimeFiles = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    viewTransition: true,
+  },
   serverExternalPackages: ['sharp'],
   turbopack: {
     root: process.cwd(),
