@@ -11,6 +11,8 @@ const footer = readFileSync(new URL('../app/components/PublicFooter.tsx', import
 const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const publicInfoPage = readFileSync(new URL('../app/components/PublicInfoPage.tsx', import.meta.url), 'utf8')
 const seoLandingData = readFileSync(new URL('../lib/seo-landing-data.ts', import.meta.url), 'utf8')
+const listingUrl = readFileSync(new URL('../lib/listing-url.ts', import.meta.url), 'utf8')
+const listingDetail = readFileSync(new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url), 'utf8')
 
 test('Swedish and German markets use their own canonical domains', () => {
   assert.match(proxy, /sv: 'www\.autorell\.se'/)
@@ -38,6 +40,15 @@ test('country-domain account and advertising links have no duplicate market pref
     /activeMarketCode === 'eu' \|\| activeMarketCode === 'se' \|\| activeMarketCode === 'de'/,
   )
   assert.match(header, /localizePublicHref\(locale, '\/account\/listings\/new'\)/)
+})
+
+test('country-domain listing pages compare and redirect against root paths', () => {
+  assert.match(listingUrl, /normalizedHost === 'autorell\.se'.*\? '\/se'/s)
+  assert.match(listingUrl, /normalizedHost === 'autorell\.de'.*\? '\/de'/s)
+  assert.match(listingUrl, /path\.slice\(countryPrefix\.length\)/)
+  assert.match(listingDetail, /const canonicalRequestPath = listingPathForHostname/)
+  assert.match(listingDetail, /normalizePathname\(canonicalRequestPath\)/)
+  assert.match(listingDetail, /permanentRedirect\(canonicalRequestPath\)/)
 })
 
 test('an explicit market selection is handled before country-domain routing', () => {

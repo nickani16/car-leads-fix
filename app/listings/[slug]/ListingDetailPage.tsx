@@ -41,7 +41,7 @@ import ShareListingButton from '@/app/components/ShareListingButton'
 import { displayCurrencyForMarket, formatMarketplacePriceDisplay } from '@/lib/currency-rates'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { countryForLocale } from '@/lib/market-locale'
-import { buildListingPath, buildListingSlug, extractListingIdFromSlug } from '@/lib/listing-url'
+import { buildListingPath, buildListingSlug, extractListingIdFromSlug, listingPathForHostname } from '@/lib/listing-url'
 import { publicUrlForPath } from '@/lib/public-seo'
 import {
   getMarketplaceCategory,
@@ -246,13 +246,17 @@ export default async function ListingDetailPage({
   } = await supabase.auth.getUser()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const canonicalPath = buildListingPath(listing, locale)
+  const canonicalRequestPath = listingPathForHostname(
+    canonicalPath,
+    requestHeaders.get('x-forwarded-host') || requestHeaders.get('host'),
+  )
   const requestPathname = requestHeaders.get('x-autorell-pathname') || ''
   if (
     slug !== buildListingSlug(listing) ||
     requestPathname.includes('/listings/') ||
-    (requestPathname && normalizePathname(requestPathname) !== normalizePathname(canonicalPath))
+    (requestPathname && normalizePathname(requestPathname) !== normalizePathname(canonicalRequestPath))
   ) {
-    permanentRedirect(canonicalPath)
+    permanentRedirect(canonicalRequestPath)
   }
   const isSold = listing.status === 'sold'
 
