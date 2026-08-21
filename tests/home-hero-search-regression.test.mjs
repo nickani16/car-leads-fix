@@ -78,9 +78,13 @@ test('homepage filter uses one compact stateful module with expandable quick fil
   assert.match(homeSearchSource, /browseByType\?: ReactNode/)
   assert.match(homeSearchSource, /id="home-search-quick-filters"/)
   assert.match(homeSearchSource, /aria-controls="home-search-quick-filters"/)
-  assert.match(homeSearchSource, /quickFiltersOpen \? 'mt-3 grid-rows-\[1fr\]/)
+  assert.match(homeSearchSource, /quickFiltersOpen \? 'grid-rows-\[1fr\] opacity-100'/)
   assert.match(homeSearchSource, /\['maxPrice', 'minYear', quickUsageFilter\]/)
-  assert.match(homeSearchSource, /lg:grid-cols-\[minmax\(0,1\.55fr\)_minmax\(220px,\.8fr\)_minmax\(220px,\.72fr\)\]/)
+  assert.match(homeSearchSource, /lg:grid-cols-\[minmax\(180px,1fr\)_minmax\(180px,1fr\)_minmax\(220px,\.95fr\)_minmax\(220px,\.9fr\)\]/)
+  assert.match(homeSearchSource, /order-2 col-span-2 grid[\s\S]*lg:order-2 lg:col-span-4/)
+  assert.match(homeSearchSource, /order-3 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1/)
+  assert.match(homeSearchSource, /order-4 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1/)
+  assert.doesNotMatch(homeSearchSource, /home-search-quick-filters[\s\S]{0,700}border-t/)
   assert.match(homeSource, /browseByType=\{/)
   assert.doesNotMatch(homeSource, /<div className="mt-3">\s*<HomeBrowseByTypeSwitcher/)
 })
@@ -110,15 +114,26 @@ test('homepage search panels and placeholder retain their accessibility behavior
   assert.doesNotMatch(homeSearchSource, /Volvo V70 diesel/)
 })
 
-test('homepage search keeps compact rounded filter controls', () => {
+test('homepage search uses larger rounded primary controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
-  assert.match(homeSearchSource, /home-hero-filter-select h-9 min-h-9 w-full appearance-none rounded-\[14px\]/)
-  assert.match(homeSearchSource, /grid h-9 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
+  assert.match(homeSearchSource, /home-hero-filter-select h-12 min-h-12 w-full appearance-none rounded-\[16px\]/)
+  assert.match(homeSearchSource, /grid h-12 grid-cols-2 gap-0\.5 rounded-\[16px\]/)
   assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[13px\]/)
   assert.doesNotMatch(homeSearchSource, /className=\{`min-h-8 rounded-\[14px\]/)
-  assert.match(homeSearchSource, /h-10 w-full rounded-\[14px\].*lg:h-9/)
-  assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
+  assert.match(homeSearchSource, /h-12 w-full rounded-\[16px\]/)
+  assert.match(homeSearchSource, /min-h-12 self-end items-center justify-center gap-2 rounded-full/)
+  assert.match(homeSearchSource, /right-3\.5[\s\S]*text-\[#0866ff\]/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
+test('homepage discovery uses matching regenerated pickup and electric cutouts on white sections', () => {
+  assert.match(homepageCategoryConfigSource, /cars-pickup-v2\.webp/)
+  assert.match(homepageCategoryConfigSource, /cars-electric-v2\.webp/)
+  assert.ok(existsSync(new URL('../public/homepage-discovery/types/cars-pickup-v2.webp', import.meta.url)))
+  assert.ok(existsSync(new URL('../public/homepage-discovery/types/cars-electric-v2.webp', import.meta.url)))
+  assert.doesNotMatch(homeSource, /bg-\[#e9eef4\]/)
+  assert.doesNotMatch(homeSource, /bg-\[#fbfcfe\]/)
+  assert.doesNotMatch(homeSource, /bg-\[#f4f4f5\]/)
 })
 
 test('public header business links are explicit in every public locale', () => {

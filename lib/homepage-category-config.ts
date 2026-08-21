@@ -192,8 +192,8 @@ const homepageCategoryDefinitions: Record<MarketplaceCategorySlug, HomepageCateg
       type('estate', 'Kombi', '/homepage-discovery/types/cars-estate.webp'),
       type('coupe', 'Coupé', '/homepage-discovery/types/cars-coupe.webp'),
       type('convertible', 'Cabriolet', '/homepage-discovery/types/cars-convertible.webp'),
-      type('pickup', 'Pickup', '/homepage-discovery/types/cars-pickup.webp'),
-      type('electric-car', 'Elbil', '/homepage-discovery/types/cars-electric.webp'),
+      type('pickup', 'Pickup', '/homepage-discovery/types/cars-pickup-v2.webp'),
+      type('electric-car', 'Elbil', '/homepage-discovery/types/cars-electric-v2.webp'),
     ],
     selected: [
       { id: 'electric', label: vehicleTypeLabels.Elbil, filters: { fuel: 'El' }, image: '/category-types/cars-electric.png', icon: 'electric', highlighted: true },

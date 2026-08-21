@@ -634,7 +634,7 @@ export default async function BusinessMarketplaceHome({
       <HomeLocationConsentPrompt locale={locale} />
 
       <HomeCategoryProvider metadataByCategory={metadataByCategory}>
-        <section className="-mt-[2px] bg-[#e9eef4] pt-0">
+        <section className="-mt-[2px] bg-white pt-0">
         <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
           <Image
             src="/autorell-home-mobile-market-hero.png"
@@ -739,7 +739,7 @@ export default async function BusinessMarketplaceHome({
         </div>
         </section>
 
-      <section className="bg-[#fbfcfe] py-9 sm:py-16">
+      <section className="bg-white py-9 sm:py-16">
         <div className={homeContentContainerClass}>
           <HomeVehicleNewsScroller
             title={t.vehicleNewsTitle}
@@ -760,13 +760,13 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="border-y border-[#d8e0ea] bg-[#e9eef4] py-4 sm:py-10">
+      <section className="border-y border-[#d8e0ea] bg-white py-4 sm:py-10">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
           <NewsletterSignup locale={locale} category="home" variant="home" />
         </div>
       </section>
 
-      <section className="bg-[#e9eef4] pb-5 pt-0 sm:pb-12">
+      <section className="bg-white pb-5 pt-0 sm:pb-12">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
           <HomeListingCategorySwitcher categories={carHomepageCategories}>
             <HomeVehicleLinkDirectory locale={locale} />
@@ -893,10 +893,10 @@ function HomeSellOptionsSection({
     label: formatSellOptionPrice(amount, currency, locale),
   }))
   return (
-    <section className="bg-[#f4f4f5] py-9 sm:py-12">
+    <section className="bg-white py-9 sm:py-12">
       <div className={homeContentContainerClass}>
         <div className="grid items-center gap-5 lg:grid-cols-[0.95fr_1.75fr] xl:gap-6">
-          <div className="relative min-h-[280px] overflow-hidden rounded-[10px] bg-[#f4f4f5] px-1 pb-2 pt-1 sm:min-h-[330px] lg:rounded-none">
+          <div className="relative min-h-[280px] overflow-hidden rounded-[10px] bg-white px-1 pb-2 pt-1 sm:min-h-[330px] lg:rounded-none">
             <h2 className="relative z-10 max-w-[500px] text-[32px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#20242d] sm:text-[40px] lg:text-[44px]">
               {title}
             </h2>
