@@ -509,10 +509,10 @@ function getFooterMarket(pathMarket: string, locale: PublicLocale) {
     }
   }
 
-  if (pathMarket === 'se' || (!pathMarket && locale === 'sv')) {
+  if (pathMarket === 'se' || locale === 'sv') {
     return { flagCode: 'SE', label: 'Sverige', currency: 'sek' }
   }
-  if (pathMarket === 'de' || (!pathMarket && locale === 'de')) {
+  if (pathMarket === 'de' || locale === 'de') {
     return { flagCode: 'DE', label: 'Deutschland', currency: 'eur' }
   }
 
@@ -522,6 +522,15 @@ function getFooterMarket(pathMarket: string, locale: PublicLocale) {
       flagCode: market.code.toUpperCase(),
       label: market.countryLocal,
       currency: currencyByMarketCode(market.code),
+    }
+  }
+
+  const localeMarket = euBuyerMarkets.find((item) => item.language === locale)
+  if (localeMarket) {
+    return {
+      flagCode: localeMarket.code.toUpperCase(),
+      label: localeMarket.countryLocal,
+      currency: currencyByMarketCode(localeMarket.code),
     }
   }
 
