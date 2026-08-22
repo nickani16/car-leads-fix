@@ -1190,7 +1190,7 @@ export default function HomeHeroVehicleSearch({
       {moreFiltersOpen ? (
         <div
           id="home-search-more-filters"
-          className="fixed inset-0 z-[150] flex items-end justify-center bg-[#101828]/55 sm:items-center sm:p-6"
+          className="fixed inset-0 z-[260] flex items-end justify-center bg-[#101828]/55 sm:items-center sm:p-6"
           onPointerDown={(event) => {
             if (event.target === event.currentTarget) setMoreFiltersOpen(false)
           }}
@@ -1200,9 +1200,9 @@ export default function HomeHeroVehicleSearch({
             role="dialog"
             aria-modal="true"
             aria-labelledby="home-search-more-filters-title"
-            className="max-h-[88dvh] w-full overflow-y-auto rounded-t-[8px] bg-white px-4 pb-5 pt-4 shadow-[0_24px_64px_rgba(15,23,42,.28)] sm:max-w-[760px] sm:rounded-[8px] sm:px-6 sm:pb-6"
+            className="flex max-h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-t-[8px] bg-white pt-4 shadow-[0_24px_64px_rgba(15,23,42,.28)] sm:max-h-[88dvh] sm:max-w-[760px] sm:rounded-[8px] sm:pt-5"
           >
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex shrink-0 items-center justify-between gap-4 px-4 sm:px-6">
               <h2 id="home-search-more-filters-title" className="text-[20px] font-semibold text-[#101828]">
                 {t.moreFiltersTitle}
               </h2>
@@ -1217,56 +1217,60 @@ export default function HomeHeroVehicleSearch({
               </button>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
-              <PurchaseTypeControl
-                label={t.purchaseType}
-                buyLabel={t.buy}
-                leasingLabel={t.leasing}
-                value={intent}
-                onChange={changeIntent}
-              />
-              {moreFilterKeys.map((key) => (
-                <HomeFilterControl
-                  key={key}
-                  filterKey={key}
-                  label={t.fields[key]}
-                  value={filters[key]}
-                  options={filterOptions(key, category, facets, market)}
-                  allLabel={t.all}
-                  locale={locale}
-                  market={market}
-                  onChange={(value) => updateFilter(key, value)}
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 sm:px-6">
+              <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
+                <PurchaseTypeControl
+                  label={t.purchaseType}
+                  buyLabel={t.buy}
+                  leasingLabel={t.leasing}
+                  value={intent}
+                  onChange={changeIntent}
                 />
-              ))}
-              <HomeSelectControl
-                id="home-search-market"
-                label={t.market}
-                value={market}
-                options={marketOptions.map((code) => ({
-                  value: code,
-                  label: marketLabel(code, locale, t.allEurope),
-                }))}
-                onChange={setMarket}
-              />
+                {moreFilterKeys.map((key) => (
+                  <HomeFilterControl
+                    key={key}
+                    filterKey={key}
+                    label={t.fields[key]}
+                    value={filters[key]}
+                    options={filterOptions(key, category, facets, market)}
+                    allLabel={t.all}
+                    locale={locale}
+                    market={market}
+                    onChange={(value) => updateFilter(key, value)}
+                  />
+                ))}
+                <HomeSelectControl
+                  id="home-search-market"
+                  label={t.market}
+                  value={market}
+                  options={marketOptions.map((code) => ({
+                    value: code,
+                    label: marketLabel(code, locale, t.allEurope),
+                  }))}
+                  onChange={setMarket}
+                />
+              </div>
+
+              <label className="mt-5 flex min-h-11 cursor-pointer items-center gap-3 text-[14px] font-medium text-[#344054]">
+                <input
+                  type="checkbox"
+                  checked={verifiedOnly}
+                  onChange={(event) => setVerifiedOnly(event.target.checked)}
+                  className="h-5 w-5 rounded-[4px] border-[#98a2b3] accent-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                />
+                {t.verified}
+              </label>
             </div>
 
-            <label className="mt-5 flex min-h-11 cursor-pointer items-center gap-3 text-[14px] font-medium text-[#344054]">
-              <input
-                type="checkbox"
-                checked={verifiedOnly}
-                onChange={(event) => setVerifiedOnly(event.target.checked)}
-                className="h-5 w-5 rounded-[4px] border-[#98a2b3] accent-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
-              />
-              {t.verified}
-            </label>
-
-            <button
-              type="button"
-              onClick={() => setMoreFiltersOpen(false)}
-              className="mt-5 min-h-11 w-full rounded-[12px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
-            >
-              {t.applyFilters}
-            </button>
+            <div className="shrink-0 border-t border-[#edf1f6] bg-white px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-6">
+              <button
+                type="button"
+                onClick={() => setMoreFiltersOpen(false)}
+                className="min-h-12 w-full rounded-[12px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
+              >
+                {t.applyFilters}
+              </button>
+            </div>
           </section>
         </div>
       ) : null}
