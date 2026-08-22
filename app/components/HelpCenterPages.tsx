@@ -90,7 +90,7 @@ export function HelpCenterArticlePage({
         </article>
 
         <aside className="rounded-[10px] border border-[#e0e7f1] bg-white p-5 shadow-[0_14px_34px_rgba(16,24,40,.045)]">
-          <h2 className="text-base font-semibold text-[#101828]">{t(locale, 'Relaterade artiklar', 'Related articles', 'Ähnliche Artikel')}</h2>
+          <h2 className="text-base font-semibold text-[#101828]">{t(locale, 'Relaterade svar', 'Related answers', 'Ähnliche Antworten')}</h2>
           <div className="mt-4 grid gap-3">
             {related.map((item) => {
               const relatedCategory = helpCenterCategories.find((candidate) => candidate.id === item.category)
@@ -162,7 +162,7 @@ function HelpSearch({ locale }: { locale: PublicLocale }) {
       <input
         name="q"
         placeholder={t(locale, 'Sök bland frågor...', 'Search questions...', 'Fragen durchsuchen...')}
-        className="h-12 w-full bg-transparent text-[#101828] outline-none placeholder:!text-[#98a2b3]"
+        className="autorell-help-search-input h-12 w-full bg-transparent text-[#101828] outline-none"
       />
       <button type="submit" className="hidden min-h-9 rounded-[8px] bg-[#0866ff] px-5 text-xs font-semibold text-white sm:inline-flex sm:items-center">
         {t(locale, 'Sök', 'Search', 'Suchen')}

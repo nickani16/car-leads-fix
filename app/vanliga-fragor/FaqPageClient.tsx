@@ -92,7 +92,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={translate('Sök bland frågor...', 'Search questions...', 'Fragen durchsuchen...')}
-            className="h-13 w-full min-w-0 bg-transparent text-[#101828] outline-none placeholder:!text-[#98a2b3] [&::placeholder]:!text-[#98a2b3]"
+            className="autorell-help-search-input h-13 w-full min-w-0 bg-transparent text-[#101828] outline-none"
           />
           <button type="submit" className="hidden min-h-9 rounded-[8px] bg-[#0866ff] px-5 text-xs font-semibold text-white transition hover:bg-[#0054d8] sm:inline-flex sm:items-center">
             {translate('Sök', 'Search', 'Suchen')}
@@ -175,7 +175,7 @@ export default function FaqPageClient({ locale: providedLocale }: { locale?: Pub
                     <p className="text-sm leading-7 text-[#566174]">{localizedText(locale, article.summary)}</p>
                     {category ? (
                       <Link href={helpCenterHref(locale, category.slug, article.slug)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0866ff]">
-                        {translate('Läs hela artikeln', 'Read the full article', 'Ganzen Artikel lesen')} <ArrowRight className="h-4 w-4" />
+                        {translate('Läs hela svaret', 'Read the full answer', 'Ganze Antwort lesen')} <ArrowRight className="h-4 w-4" />
                       </Link>
                     ) : null}
                   </div>

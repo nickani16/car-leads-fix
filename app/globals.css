@@ -27,6 +27,12 @@ body {
   opacity: 1 !important;
 }
 
+.autorell-help-search-input::placeholder {
+  color: #98a2b3 !important;
+  -webkit-text-fill-color: #98a2b3 !important;
+  opacity: 1 !important;
+}
+
 .autorell-range {
   appearance: none;
   background: transparent;
