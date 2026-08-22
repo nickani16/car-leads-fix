@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Mail } from 'lucide-react'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 const newsletterCopy = {
@@ -131,13 +132,27 @@ const newsletterCopy = {
 
 type NewsletterLanguage = keyof typeof newsletterCopy
 
+const homeNewsletterImages: Record<MarketplaceCategorySlug, string> = {
+  cars: '/newsletter-categories/cars.webp',
+  vans: '/newsletter-categories/vans.webp',
+  trucks: '/newsletter-categories/trucks.webp',
+  motorcycles: '/newsletter-categories/motorcycles.webp',
+  construction: '/newsletter-categories/construction.webp',
+  motorhomes: '/newsletter-categories/motorhomes.webp',
+  caravans: '/newsletter-categories/caravans.webp',
+  agriculture: '/newsletter-categories/agriculture.webp',
+  'electric-bikes': '/newsletter-categories/electric-bikes.webp',
+}
+
 export default function NewsletterSignup({
   locale,
   category = 'footer',
+  imageCategory = 'cars',
   variant = 'section',
 }: {
   locale: PublicLocale
   category?: string
+  imageCategory?: MarketplaceCategorySlug
   variant?: 'section' | 'footer' | 'home'
 }) {
   const language = newsletterLanguage(locale)
@@ -175,6 +190,8 @@ export default function NewsletterSignup({
   }
 
   if (variant === 'home') {
+    const imageSrc = homeNewsletterImages[imageCategory] || homeNewsletterImages.cars
+
     return (
       <div className="overflow-hidden border-y border-[#cfd8e4] bg-white px-5 py-8 sm:rounded-[8px] sm:border sm:px-7 sm:py-9">
         <p className="text-[12px] font-semibold uppercase text-[#0866ff]">{copy.eyebrow}</p>
@@ -189,7 +206,7 @@ export default function NewsletterSignup({
             </p>
             <div className="absolute inset-x-0 bottom-1 h-[142px] sm:h-[154px]">
               <Image
-                src="/autorell-newsletter-cars-v2.webp"
+                src={imageSrc}
                 alt=""
                 fill
                 sizes="(max-width: 1024px) 100vw, 480px"

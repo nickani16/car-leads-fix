@@ -760,9 +760,19 @@ export default async function BusinessMarketplaceHome({
         </div>
       </section>
 
-      <section className="border-y border-[#d8e0ea] bg-white py-4 sm:py-10">
+      <section className="bg-white py-4 sm:py-10">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
-          <NewsletterSignup locale={locale} category="home" variant="home" />
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => (
+              <NewsletterSignup
+                key={`${category}-newsletter`}
+                locale={locale}
+                category={`home-${category}`}
+                imageCategory={category}
+                variant="home"
+              />
+            ))}
+          </HomeListingCategorySwitcher>
         </div>
       </section>
 
