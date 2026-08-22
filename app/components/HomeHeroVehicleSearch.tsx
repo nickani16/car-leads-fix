@@ -1019,7 +1019,7 @@ export default function HomeHeroVehicleSearch({
         </div>
       </section>
 
-      <section className="relative mx-auto mt-2 w-full max-w-none overflow-hidden rounded-[14px] border border-[#cfd8e4] bg-white sm:mt-3 sm:max-w-[1120px] sm:rounded-[14px]">
+      <section className="relative mx-auto mt-2 w-full max-w-none overflow-hidden rounded-[14px] border border-[#cfd8e4] bg-white sm:mt-3 sm:max-w-[var(--autorell-page-max)] sm:rounded-[14px]">
         <div ref={categoryMenuRef} className="relative border-b border-[#d8e0ea]">
           <div
             role="tablist"
@@ -1116,7 +1116,7 @@ export default function HomeHeroVehicleSearch({
           ) : null}
         </div>
 
-        <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-6">
+        <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-7 lg:pb-3 lg:pt-5">
           <div className="grid min-w-0 grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,.95fr)_minmax(220px,.9fr)] lg:items-end lg:gap-x-4">
             <div className="order-0 col-span-2 grid min-w-0 grid-cols-2 gap-x-2.5 lg:col-start-1 lg:row-start-1 lg:gap-x-4">
               {(['make', 'model'] as const).map((key) => (
@@ -1181,7 +1181,7 @@ export default function HomeHeroVehicleSearch({
         </div>
 
         {browseByType ? (
-          <div className="px-3 pb-4 pt-2 sm:px-5 sm:pb-5 sm:pt-3 lg:px-6">
+          <div className="px-3 pb-4 pt-2 sm:px-5 sm:pb-5 sm:pt-3 lg:px-7">
             {browseByType}
           </div>
         ) : null}
@@ -1429,7 +1429,7 @@ function LocationControl({
           onChange={(event) => onChange(event.target.value)}
           autoComplete="address-level2"
           placeholder={label}
-          className="h-10 w-full rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#667085] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+          className="home-hero-location-input h-10 w-full rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#667085] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
         />
         <MapPin
           className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"

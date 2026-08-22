@@ -527,6 +527,12 @@ input, textarea, select {
   -webkit-text-fill-color: #667085 !important;
 }
 
+.home-hero-location-input::placeholder {
+  color: #667085 !important;
+  -webkit-text-fill-color: #667085 !important;
+  opacity: 1 !important;
+}
+
 @media (max-width: 767px) {
   input,
   textarea,
