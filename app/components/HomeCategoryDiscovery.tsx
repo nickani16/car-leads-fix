@@ -87,11 +87,11 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
                   alt=""
                   width={180}
                   height={120}
-                  sizes="(max-width: 640px) 118px, (max-width: 1024px) 120px, 156px"
-                  className="h-[76px] w-[118px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:h-[72px] sm:w-[120px] lg:h-[82px] lg:w-[156px]"
+                  sizes="(max-width: 640px) 98px, (max-width: 1024px) 104px, 132px"
+                  className="h-[62px] w-[98px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:h-[64px] sm:w-[104px] lg:h-[70px] lg:w-[132px]"
                 />
               ) : (
-                <span className="grid h-16 w-16 place-items-center rounded-full bg-[#f5f8fc] text-[16px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04] sm:h-[72px] sm:w-[72px]">
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-[#f5f8fc] text-[15px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04] sm:h-16 sm:w-16">
                   {brandInitials(brand.title)}
                 </span>
               )}
