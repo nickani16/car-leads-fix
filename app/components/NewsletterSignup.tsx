@@ -145,14 +145,15 @@ const homeNewsletterImages: Record<MarketplaceCategorySlug, string> = {
 }
 
 const homeNewsletterImageLayout: Partial<Record<MarketplaceCategorySlug, { scale: number; x?: number; y?: number }>> = {
-  vans: { scale: 1.14 },
+  cars: { scale: 0.94 },
+  vans: { scale: 1.1 },
   trucks: { scale: 1.18 },
-  motorcycles: { scale: 1.28 },
-  construction: { scale: 1.22 },
-  motorhomes: { scale: 1.12 },
-  caravans: { scale: 1.04 },
-  agriculture: { scale: 1.22 },
-  'electric-bikes': { scale: 1.24 },
+  motorcycles: { scale: 1.16 },
+  construction: { scale: 1.2 },
+  motorhomes: { scale: 1.08 },
+  caravans: { scale: 0.98 },
+  agriculture: { scale: 1.12 },
+  'electric-bikes': { scale: 1.08 },
 }
 
 export default function NewsletterSignup({
@@ -217,7 +218,7 @@ export default function NewsletterSignup({
             <p className="relative z-10 max-w-[390px] text-[15px] font-medium leading-6 text-[#1d2939] sm:text-[16px]">
               {copy.text}
             </p>
-            <div className="absolute -inset-x-5 -bottom-3 h-[164px] sm:-inset-x-6 sm:-bottom-4 sm:h-[184px]">
+            <div className="absolute inset-x-0 bottom-0 h-[176px] sm:h-[190px]">
               <Image
                 src={imageSrc}
                 alt=""
