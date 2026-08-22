@@ -78,17 +78,17 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
             href={brand.href}
             prefetch={false}
             data-discovery-item
-            className="group flex w-[134px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[166px] lg:w-[180px]"
+            className="group flex w-[132px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[166px] lg:w-[180px]"
           >
-            <span className="flex h-[96px] w-full items-center justify-center sm:h-[86px]">
+            <span className="flex h-[84px] w-full items-center justify-center overflow-visible sm:h-[90px] lg:h-[96px]">
               {brand.logo ? (
                 <Image
                   src={brand.logo}
                   alt=""
-                  width={156}
-                  height={92}
-                  sizes="(max-width: 640px) 132px, (max-width: 1024px) 148px, 156px"
-                  className="max-h-[88px] w-auto max-w-[132px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:max-h-[76px] sm:max-w-[148px] lg:max-h-[80px] lg:max-w-[156px]"
+                  width={180}
+                  height={120}
+                  sizes="(max-width: 640px) 118px, (max-width: 1024px) 120px, 156px"
+                  className="h-[76px] w-[118px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:h-[72px] sm:w-[120px] lg:h-[82px] lg:w-[156px]"
                 />
               ) : (
                 <span className="grid h-16 w-16 place-items-center rounded-full bg-[#f5f8fc] text-[16px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04] sm:h-[72px] sm:w-[72px]">
@@ -96,7 +96,7 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
                 </span>
               )}
             </span>
-            <span className="mt-2 max-w-full text-[13px] font-semibold leading-5 text-[#101828] sm:text-[14px]">
+            <span className="mt-1.5 max-w-full text-[13px] font-semibold leading-5 text-[#101828] sm:mt-2 sm:text-[14px]">
               {brand.title}
             </span>
           </Link>

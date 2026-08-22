@@ -165,13 +165,16 @@ test('homepage popular brands keep an even logo grid', () => {
   assert.doesNotMatch(categoryDiscoverySource, /last:col-span-2/)
   assert.match(categoryDiscoverySource, /titleSize="large"/)
   assert.match(categoryDiscoverySource, /text-\[28px\][\s\S]*sm:text-\[30px\]/)
-  assert.match(categoryDiscoverySource, /w-\[134px\][\s\S]*lg:w-\[180px\]/)
-  assert.match(categoryDiscoverySource, /h-\[96px\][\s\S]*max-h-\[88px\]/)
+  assert.match(categoryDiscoverySource, /w-\[132px\][\s\S]*lg:w-\[180px\]/)
+  assert.match(categoryDiscoverySource, /h-\[84px\][\s\S]*lg:h-\[96px\]/)
+  assert.match(categoryDiscoverySource, /h-\[76px\] w-\[118px\][\s\S]*lg:h-\[82px\] lg:w-\[156px\]/)
 })
 
 test('homepage sell cards scroll on mobile and iPad while remaining a desktop grid', () => {
-  assert.match(homeSource, /flex snap-x snap-mandatory[\s\S]*overflow-x-auto[\s\S]*xl:grid xl:grid-cols-2/)
+  assert.match(homeSource, /flex snap-x snap-mandatory[\s\S]*overflow-x-auto[\s\S]*pt-7[\s\S]*xl:grid xl:grid-cols-2/)
   assert.match(homeSource, /w-\[82vw\][\s\S]*flex-none snap-start[\s\S]*sm:w-\[520px\][\s\S]*md:w-\[560px\][\s\S]*lg:w-\[600px\][\s\S]*xl:w-auto/)
+  assert.match(homeSource, /flex-none snap-start flex-col overflow-visible/)
+  assert.match(homeSource, /top-0 z-20 -translate-x-1\/2 -translate-y-1\/2/)
 })
 
 test('homepage category discovery uses a compact white panel and touch scrolling', () => {
