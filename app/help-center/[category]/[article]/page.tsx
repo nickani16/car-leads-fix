@@ -15,10 +15,12 @@ export async function generateMetadata({
   const { category, article: articleSlug } = await params
   const article = getHelpCenterArticle(category, articleSlug)
   if (!article) return {}
+  const { locale } = await publicRequestContext()
   return createPublicMetadata({
-    title: `${localizedText('sv', article.title)} - Autorell Hjälpcenter`,
-    description: localizedText('sv', article.summary),
+    title: `${localizedText(locale, article.title)} - Autorell`,
+    description: localizedText(locale, article.summary),
     path: `/help-center/${category}/${article.slug}`,
+    locale,
   })
 }
 

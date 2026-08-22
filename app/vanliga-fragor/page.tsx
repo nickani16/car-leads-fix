@@ -5,23 +5,74 @@ import PublicFooter from '../components/PublicFooter'
 import PublicHeader from '../components/PublicHeader'
 import FaqPageClient from './FaqPageClient'
 
-export const metadata = createPublicMetadata({
-  title: 'Hjälpcenter för Autorell marketplace',
-  description:
-    'Svar om konton, annonser, fordonsköp, export, import, transport, registrering, priser, meddelanden och trygghet på Autorell.',
-  path: '/help-center',
-})
+const helpCenterMeta: Record<PublicLocale, { title: string; description: string }> = {
+  sv: {
+    title: 'Autorell hjälpcenter',
+    description: 'Hitta svar om konto, annonser, köp, betalning, företag, export, transport och trygghet på Autorell.',
+  },
+  de: {
+    title: 'Autorell Hilfe-Center',
+    description: 'Antworten zu Konto, Anzeigen, Kauf, Zahlung, Unternehmen, Export, Transport und Sicherheit bei Autorell.',
+  },
+  en: {
+    title: 'Autorell help center',
+    description: 'Find answers about accounts, listings, buying, payment, business, export, transport and safety on Autorell.',
+  },
+  at: {
+    title: 'Autorell Hilfe-Center',
+    description: 'Antworten zu Konto, Anzeigen, Kauf, Zahlung, Unternehmen, Export, Transport und Sicherheit bei Autorell.',
+  },
+  be: {
+    title: 'Autorell helpcentrum',
+    description: 'Vind antwoorden over accounts, advertenties, kopen, betaling, bedrijven, export, transport en veiligheid.',
+  },
+  fr: {
+    title: 'Centre d’aide Autorell',
+    description: 'Trouvez des réponses sur compte, annonces, achat, paiement, entreprises, export, transport et sécurité.',
+  },
+  es: {
+    title: 'Centro de ayuda Autorell',
+    description: 'Respuestas sobre cuenta, anuncios, compra, pago, empresas, exportación, transporte y seguridad.',
+  },
+  it: {
+    title: 'Centro assistenza Autorell',
+    description: 'Risposte su account, annunci, acquisto, pagamenti, aziende, export, trasporto e sicurezza.',
+  },
+  pl: {
+    title: 'Centrum pomocy Autorell',
+    description: 'Odpowiedzi o koncie, ogłoszeniach, zakupie, płatnościach, firmach, eksporcie, transporcie i bezpieczeństwie.',
+  },
+  nl: {
+    title: 'Autorell helpcentrum',
+    description: 'Vind antwoorden over accounts, advertenties, kopen, betaling, bedrijven, export, transport en veiligheid.',
+  },
+  fi: {
+    title: 'Autorell ohjekeskus',
+    description: 'Vastauksia tileistä, ilmoituksista, ostamisesta, maksuista, yrityksistä, viennistä, kuljetuksesta ja turvallisuudesta.',
+  },
+  da: {
+    title: 'Autorell hjælpecenter',
+    description: 'Find svar om konto, annoncer, køb, betaling, virksomheder, eksport, transport og sikkerhed på Autorell.',
+  },
+}
+
+export async function generateMetadata() {
+  const headerStore = await headers()
+  const locale = normalizePublicLocale(headerStore.get('x-autorell-language') || 'sv')
+  const meta = helpCenterMeta[locale] || helpCenterMeta.en
+  return createPublicMetadata({
+    title: meta.title,
+    description: meta.description,
+    path: '/help-center',
+    locale,
+  })
+}
 
 export default async function FaqPage() {
   const headerStore = await headers()
   const requestedLocale = headerStore.get('x-autorell-language') || 'sv'
   const marketCode = headerStore.get('x-autorell-market') || undefined
-  const locale: PublicLocale =
-    requestedLocale === 'sv' ||
-    requestedLocale === 'de' ||
-    isPublicLanguage(requestedLocale)
-      ? requestedLocale
-      : 'sv'
+  const locale = normalizePublicLocale(requestedLocale)
 
   return (
     <main className="overflow-x-hidden bg-white text-[#101828]">
@@ -34,4 +85,8 @@ export default async function FaqPage() {
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function normalizePublicLocale(value: string): PublicLocale {
+  return value === 'sv' || value === 'de' || isPublicLanguage(value) ? value : 'sv'
 }

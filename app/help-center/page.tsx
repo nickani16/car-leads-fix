@@ -1,1 +1,1 @@
-export { metadata, default } from '../hjalpcenter/page'
+export { generateMetadata, default } from '../hjalpcenter/page'

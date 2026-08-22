@@ -11,10 +11,13 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
   const { category: categorySlug } = await params
   const category = getHelpCenterCategory(categorySlug)
   if (!category) return {}
+  const { locale } = await publicRequestContext()
+  const categoryTitle = localizedText(locale, category.title)
   return createPublicMetadata({
-    title: `${localizedText('sv', category.title)} - Autorell Hjälpcenter`,
-    description: localizedText('sv', category.description),
+    title: `${categoryTitle} - Autorell`,
+    description: localizedText(locale, category.description),
     path: `/help-center/${category.slug}`,
+    locale,
   })
 }
 
