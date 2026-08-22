@@ -204,7 +204,7 @@ export default function NewsletterSignup({
             <p className="relative z-10 max-w-[390px] text-[15px] font-medium leading-6 text-[#1d2939] sm:text-[16px]">
               {copy.text}
             </p>
-            <div className="absolute inset-x-0 bottom-1 h-[142px] sm:h-[154px]">
+            <div className="absolute -inset-x-5 -bottom-3 h-[164px] sm:-inset-x-6 sm:-bottom-4 sm:h-[184px]">
               <Image
                 src={imageSrc}
                 alt=""
