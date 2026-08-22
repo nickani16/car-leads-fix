@@ -66,7 +66,7 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
   const presentation = useActivePresentation(props.presentations)
 
   return (
-    <DiscoveryPanel title={presentation.popularBrandsTitle} plain>
+    <DiscoveryPanel title={presentation.popularBrandsTitle} titleSize="large" plain>
       <HorizontalScroller
         label={presentation.popularBrandsTitle}
         previousLabel={props.previousLabel}
@@ -78,20 +78,20 @@ export function HomePopularBrandsSwitcher(props: HomeCategoryDiscoveryProps) {
             href={brand.href}
             prefetch={false}
             data-discovery-item
-            className="group flex w-[116px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[142px] lg:w-[152px]"
+            className="group flex w-[134px] flex-none snap-start flex-col items-center justify-center text-center sm:w-[166px] lg:w-[180px]"
           >
-            <span className="flex h-[78px] w-full items-center justify-center sm:h-[62px]">
+            <span className="flex h-[96px] w-full items-center justify-center sm:h-[86px]">
               {brand.logo ? (
                 <Image
                   src={brand.logo}
                   alt=""
-                  width={132}
-                  height={76}
-                  sizes="(max-width: 640px) 112px, 116px"
-                  className="max-h-[72px] w-auto max-w-[112px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:max-h-[56px] sm:max-w-[116px]"
+                  width={156}
+                  height={92}
+                  sizes="(max-width: 640px) 132px, (max-width: 1024px) 148px, 156px"
+                  className="max-h-[88px] w-auto max-w-[132px] object-contain transition-transform duration-200 group-hover:scale-[1.04] sm:max-h-[76px] sm:max-w-[148px] lg:max-h-[80px] lg:max-w-[156px]"
                 />
               ) : (
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-[#f5f8fc] text-[15px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04]">
+                <span className="grid h-16 w-16 place-items-center rounded-full bg-[#f5f8fc] text-[16px] font-semibold text-[#315a91] transition-transform duration-200 group-hover:scale-[1.04] sm:h-[72px] sm:w-[72px]">
                   {brandInitials(brand.title)}
                 </span>
               )}
@@ -118,12 +118,14 @@ function DiscoveryPanel({
   action,
   compact = false,
   plain = false,
+  titleSize = 'default',
   children,
 }: {
   title: string
   action?: { label: string; href: string }
   compact?: boolean
   plain?: boolean
+  titleSize?: 'default' | 'large'
   children: ReactNode
 }) {
   return (
@@ -139,7 +141,9 @@ function DiscoveryPanel({
       <div className="flex items-center justify-between gap-4">
         <h2
           className={
-            plain && compact
+            titleSize === 'large'
+              ? 'text-[28px] font-semibold leading-tight text-[#101828] sm:text-[30px]'
+              : plain && compact
               ? 'text-[15px] font-semibold leading-5 text-[#101828] sm:text-[17px]'
               : 'text-[22px] font-semibold leading-tight text-[#101828] sm:text-[26px]'
           }

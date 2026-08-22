@@ -545,6 +545,10 @@ input, textarea, select {
   .home-hero-filter-select {
     font-size: 14px !important;
   }
+
+  .home-hero-location-input::placeholder {
+    font-size: 14px !important;
+  }
 }
 
 .market-blob {

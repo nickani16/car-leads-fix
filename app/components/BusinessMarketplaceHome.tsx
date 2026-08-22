@@ -929,7 +929,7 @@ function HomeSellOptionsSection({
             </div>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] xl:mx-0 xl:grid xl:grid-cols-2 xl:overflow-visible xl:px-0 xl:pb-0 [&::-webkit-scrollbar]:hidden">
             <SellOptionCard
               title={copy.dealerTitle}
               benefits={copy.dealerBenefits}
@@ -992,7 +992,7 @@ function SellOptionCard({
   badge?: string
 }) {
   return (
-    <article className={`relative flex min-h-[292px] flex-col rounded-[10px] border border-[#dedfe4] bg-white px-5 py-6 shadow-sm sm:min-h-[312px] sm:px-7 sm:py-7 ${variant === 'primary' ? 'border-t-[5px] border-t-[#0866ff]' : ''}`}>
+    <article className={`relative flex min-h-[292px] w-[82vw] max-w-[390px] flex-none snap-start flex-col rounded-[10px] border border-[#dedfe4] bg-white px-5 py-6 shadow-sm sm:min-h-[312px] sm:w-[520px] sm:max-w-none sm:px-7 sm:py-7 md:w-[560px] lg:w-[600px] xl:w-auto xl:max-w-none ${variant === 'primary' ? 'border-t-[5px] border-t-[#0866ff]' : ''}`}>
       {badge ? (
         <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#24272d] px-5 py-1.5 text-[12px] font-bold text-white shadow-[0_10px_24px_rgba(16,24,40,.18)]">
           {badge}

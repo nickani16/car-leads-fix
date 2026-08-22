@@ -129,6 +129,13 @@ test('homepage search uses compact rounded primary controls', () => {
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
 })
 
+test('homepage location placeholder keeps the mobile filter text size', () => {
+  assert.match(
+    globalCssSource,
+    /@media \(max-width: 767px\)[\s\S]*\.home-hero-location-input::placeholder[\s\S]*font-size: 14px !important/,
+  )
+})
+
 test('homepage discovery uses matching regenerated pickup and electric cutouts on white sections', () => {
   assert.match(homepageCategoryConfigSource, /cars-pickup-v2\.webp/)
   assert.match(homepageCategoryConfigSource, /cars-electric-v2\.webp/)
@@ -156,7 +163,15 @@ test('homepage popular brands keep an even logo grid', () => {
     true,
   )
   assert.doesNotMatch(categoryDiscoverySource, /last:col-span-2/)
-  assert.match(categoryDiscoverySource, /h-\[78px\][\s\S]*max-h-\[72px\]/)
+  assert.match(categoryDiscoverySource, /titleSize="large"/)
+  assert.match(categoryDiscoverySource, /text-\[28px\][\s\S]*sm:text-\[30px\]/)
+  assert.match(categoryDiscoverySource, /w-\[134px\][\s\S]*lg:w-\[180px\]/)
+  assert.match(categoryDiscoverySource, /h-\[96px\][\s\S]*max-h-\[88px\]/)
+})
+
+test('homepage sell cards scroll on mobile and iPad while remaining a desktop grid', () => {
+  assert.match(homeSource, /flex snap-x snap-mandatory[\s\S]*overflow-x-auto[\s\S]*xl:grid xl:grid-cols-2/)
+  assert.match(homeSource, /w-\[82vw\][\s\S]*flex-none snap-start[\s\S]*sm:w-\[520px\][\s\S]*md:w-\[560px\][\s\S]*lg:w-\[600px\][\s\S]*xl:w-auto/)
 })
 
 test('homepage category discovery uses a compact white panel and touch scrolling', () => {
