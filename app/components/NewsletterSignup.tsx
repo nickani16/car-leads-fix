@@ -295,7 +295,7 @@ function NewsletterForm({
           type="submit"
           disabled={status === 'loading'}
           className={compact
-            ? 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.18)] transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'
+            ? 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'
             : 'inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'}
         >
           {copy.button}

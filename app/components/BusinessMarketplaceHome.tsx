@@ -36,7 +36,7 @@ import {
 } from '@/lib/public-i18n'
 import { countryForLocale } from '@/lib/market-locale'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
-import type { MarketplaceCategorySlug } from '@/lib/marketplace'
+import { formatMarketplacePrice, type MarketplaceCategorySlug } from '@/lib/marketplace'
 import { getHomepageCategoryPresentations } from '@/lib/homepage-category-config'
 
 const homeContentContainerClass =
@@ -54,7 +54,6 @@ const homeListingCategories: MarketplaceCategorySlug[] = [
   'agriculture',
   'electric-bikes',
 ]
-const carHomepageCategories: MarketplaceCategorySlug[] = ['cars']
 
 const homeCopy = {
   sv: {
@@ -702,6 +701,7 @@ export default async function BusinessMarketplaceHome({
             return (
               <HomeSellOptionsSection
                 key={`${category}-sell`}
+                category={category}
                 copy={localizedSellOptionsCopy[locale]}
                 currency={displayCurrency}
                 locale={locale}
@@ -768,8 +768,14 @@ export default async function BusinessMarketplaceHome({
 
       <section className="bg-white pb-5 pt-0 sm:pb-12">
         <div className={`${homeContentContainerClass} max-sm:max-w-none max-sm:px-0`}>
-          <HomeListingCategorySwitcher categories={carHomepageCategories}>
-            <HomeVehicleLinkDirectory locale={locale} />
+          <HomeListingCategorySwitcher categories={homeListingCategories}>
+            {homeListingCategories.map((category) => (
+              <HomeVehicleLinkDirectory
+                key={`${category}-link-directory`}
+                locale={locale}
+                presentation={categoryPresentations[category]}
+              />
+            ))}
           </HomeListingCategorySwitcher>
         </div>
       </section>
@@ -865,6 +871,7 @@ export function HomeSellerAudienceSection({
 }
 
 function HomeSellOptionsSection({
+  category,
   copy,
   currency,
   locale,
@@ -876,6 +883,7 @@ function HomeSellOptionsSection({
   dealerHref,
   privateHref,
 }: {
+  category: MarketplaceCategorySlug
   copy: (typeof localizedSellOptionsCopy)[PublicLocale]
   currency: string
   locale: PublicLocale
@@ -887,7 +895,7 @@ function HomeSellOptionsSection({
   dealerHref: string
   privateHref: string
 }) {
-  const offerAmounts = sellOptionOfferAmounts(currency)
+  const offerAmounts = sellOptionOfferAmounts(category, currency)
   const offerLabels = offerAmounts.map((amount) => ({
     amount,
     label: formatSellOptionPrice(amount, currency, locale),
@@ -1025,62 +1033,38 @@ function SellOptionCard({
   )
 }
 
-function sellOptionOfferAmounts(currency: string) {
-  const amounts: Record<string, [number, number, number]> = {
-    SEK: [295000, 319900, 321500],
-    DKK: [189500, 205000, 206500],
-    PLN: [109900, 119500, 120900],
-    EUR: [25900, 27900, 28500],
-  }
-  return amounts[currency] || amounts.EUR
+const sellOptionBaseAmountsEur: Record<MarketplaceCategorySlug, [number, number, number]> = {
+  cars: [25900, 27900, 28500],
+  vans: [34900, 38900, 42500],
+  trucks: [89000, 119000, 149000],
+  motorcycles: [7900, 10900, 13900],
+  construction: [78000, 125000, 175000],
+  motorhomes: [54900, 69900, 84900],
+  caravans: [18900, 24900, 32900],
+  agriculture: [59000, 89000, 129000],
+  'electric-bikes': [1900, 2900, 3900],
+}
+
+const sellOptionCurrencyMultipliers: Record<string, number> = {
+  EUR: 1,
+  SEK: 11.2,
+  DKK: 7.46,
+  PLN: 4.3,
+}
+
+function sellOptionOfferAmounts(category: MarketplaceCategorySlug, currency: string) {
+  const baseAmounts = sellOptionBaseAmountsEur[category] || sellOptionBaseAmountsEur.cars
+  const multiplier = sellOptionCurrencyMultipliers[currency] || 1
+  return baseAmounts.map((amount) => roundSellOptionAmount(amount * multiplier, currency)) as [number, number, number]
+}
+
+function roundSellOptionAmount(value: number, currency: string) {
+  const step = currency === 'EUR' ? 500 : currency === 'PLN' ? 1000 : 5000
+  return Math.round(value / step) * step
 }
 
 function formatSellOptionPrice(value: number, currency: string, locale: PublicLocale) {
-  if (currency === 'SEK') return `${formatSellOptionNumber(value, locale)} SEK`
-  if (currency === 'DKK') return `${formatSellOptionNumber(value, locale)} DKK`
-  if (currency === 'PLN') return `${formatSellOptionNumber(value, locale)} PLN`
-
-  const localeMap: Record<PublicLocale, string> = {
-    sv: 'sv-SE',
-    en: 'en-GB',
-    de: 'de-DE',
-    at: 'de-AT',
-    be: 'nl-BE',
-    fr: 'fr-FR',
-    es: 'es-ES',
-    it: 'it-IT',
-    pl: 'pl-PL',
-    nl: 'nl-NL',
-    fi: 'fi-FI',
-    da: 'da-DK',
-  }
-
-  return new Intl.NumberFormat(localeMap[locale] || 'en-GB', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function formatSellOptionNumber(value: number, locale: PublicLocale) {
-  const localeMap: Record<PublicLocale, string> = {
-    sv: 'sv-SE',
-    en: 'en-GB',
-    de: 'de-DE',
-    at: 'de-AT',
-    be: 'nl-BE',
-    fr: 'fr-FR',
-    es: 'es-ES',
-    it: 'it-IT',
-    pl: 'pl-PL',
-    nl: 'nl-NL',
-    fi: 'fi-FI',
-    da: 'da-DK',
-  }
-
-  return new Intl.NumberFormat(localeMap[locale] || 'en-GB', {
-    maximumFractionDigits: 0,
-  }).format(value)
+  return formatMarketplacePrice(value, currency, locale)
 }
 
 function currencyBubbleMark(currency: string) {

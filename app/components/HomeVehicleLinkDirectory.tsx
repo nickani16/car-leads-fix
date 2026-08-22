@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import { homepageMarketplaceHref, type HomepageCategoryPresentation } from '@/lib/homepage-category-config'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type DirectoryLink = { label: string; href: string }
@@ -112,53 +114,24 @@ const models = {
   eClass: bmwSeries('E-Class', { sv: 'E-klass', en: 'E-Class', de: 'E-Klasse', nl: 'E-klasse', fr: 'Classe E', es: 'Clase E', it: 'Classe E', pl: 'Klasa E', fi: 'E-sarja', da: 'E-klasse' }),
 }
 
-export default function HomeVehicleLinkDirectory({ locale }: { locale: PublicLocale }) {
+export default function HomeVehicleLinkDirectory({
+  locale,
+  presentation,
+}: {
+  locale: PublicLocale
+  presentation: HomepageCategoryPresentation
+}) {
   const language = directoryLanguage(locale)
   const copy = directoryCopy[language]
-  const groups: DirectoryGroup[] = [
-    modelGroup(locale, language, copy, 'Audi', ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5']),
-    modelGroup(locale, language, copy, 'BMW', [models.bmw1, models.bmw3, models.bmw5, 'X1', 'X3', 'X5']),
-    modelGroup(locale, language, copy, 'Mercedes-Benz', [models.aClass, models.cClass, models.eClass, 'GLC', 'GLE', 'Sprinter']),
-    modelGroup(locale, language, copy, 'Volkswagen', ['Golf', 'Passat', 'Polo', 'Tiguan', 'T-Roc', 'ID.4']),
-    modelGroup(locale, language, copy, 'Volvo', ['V40', 'V60', 'V90', 'XC40', 'XC60', 'XC90']),
-    modelGroup(locale, language, copy, 'Toyota', ['Corolla', 'Yaris', 'C-HR', 'RAV4', 'Prius', 'Land Cruiser']),
-    modelGroup(locale, language, copy, 'Ford', ['Fiesta', 'Focus', 'Kuga', 'Mustang', 'Puma', 'Ranger']),
-    modelGroup(locale, language, copy, 'Tesla', ['Model 3', 'Model Y', 'Model S', 'Model X', 'Cybertruck', 'Roadster']),
-    {
-      title: copy.moreBrands,
-      links: ['Cupra', 'Opel', 'Renault', 'Peugeot', 'Kia', 'Hyundai'].map((make) => ({ label: make, href: marketplaceHref(locale, { make, q: make }) })),
-    },
-    {
-      title: copy.vehicleTypes,
-      links: copy.bodyTypes.map((item, index) => filterLink(locale, item, { bodyType: ['Kombi', 'SUV', 'Sedan', 'Halvkombi', 'Pickup', 'Cabriolet'][index] })),
-    },
-    {
-      title: copy.powertrains,
-      links: [
-        filterLink(locale, copy.fuels[0], { fuel: 'El' }),
-        filterLink(locale, copy.fuels[1], { fuel: 'Hybrid' }),
-        filterLink(locale, copy.fuels[2], { fuel: 'Bensin' }),
-        filterLink(locale, copy.fuels[3], { fuel: 'Diesel' }),
-        filterLink(locale, copy.fuels[4], { gearbox: 'Automat' }),
-        filterLink(locale, copy.fuels[5], { mode: 'leasing', offerType: 'lease' }),
-      ],
-    },
-    {
-      title: copy.guides,
-      links: [
-        directLink(locale, copy.guideLinks[0], '/buying-guide'),
-        directLink(locale, copy.guideLinks[1], '/compare-vehicles'),
-        directLink(locale, copy.guideLinks[2], '/vehicle-history'),
-        directLink(locale, copy.guideLinks[3], '/saved-searches'),
-        directLink(locale, copy.guideLinks[4], '/safety-tips'),
-        directLink(locale, copy.guideLinks[5], '/vehicle-news'),
-      ],
-    },
-  ]
+  const groups =
+    presentation.slug === 'cars'
+      ? carDirectoryGroups(locale, language, copy)
+      : categoryDirectoryGroups(locale, presentation, copy)
+  const heading = presentation.slug === 'cars' ? copy.heading : presentation.popularBrandsTitle
 
   return (
     <section className="overflow-hidden border-y border-[#cfd8e4] bg-white px-5 py-8 sm:rounded-[8px] sm:border sm:px-7 sm:py-9">
-      <h2 className="max-w-[920px] text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">{copy.heading}</h2>
+      <h2 className="max-w-[920px] text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">{heading}</h2>
       <div className="mt-7 grid grid-cols-2 gap-x-5 gap-y-8 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-9">
         {groups.map((group) => (
           <div key={group.title} className="min-w-0">
@@ -180,34 +153,100 @@ export default function HomeVehicleLinkDirectory({ locale }: { locale: PublicLoc
   )
 }
 
+function carDirectoryGroups(locale: PublicLocale, language: DirectoryLanguage, copy: DirectoryCopy): DirectoryGroup[] {
+  return [
+    modelGroup(locale, language, copy, 'Audi', ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5']),
+    modelGroup(locale, language, copy, 'BMW', [models.bmw1, models.bmw3, models.bmw5, 'X1', 'X3', 'X5']),
+    modelGroup(locale, language, copy, 'Mercedes-Benz', [models.aClass, models.cClass, models.eClass, 'GLC', 'GLE', 'Sprinter']),
+    modelGroup(locale, language, copy, 'Volkswagen', ['Golf', 'Passat', 'Polo', 'Tiguan', 'T-Roc', 'ID.4']),
+    modelGroup(locale, language, copy, 'Volvo', ['V40', 'V60', 'V90', 'XC40', 'XC60', 'XC90']),
+    modelGroup(locale, language, copy, 'Toyota', ['Corolla', 'Yaris', 'C-HR', 'RAV4', 'Prius', 'Land Cruiser']),
+    modelGroup(locale, language, copy, 'Ford', ['Fiesta', 'Focus', 'Kuga', 'Mustang', 'Puma', 'Ranger']),
+    modelGroup(locale, language, copy, 'Tesla', ['Model 3', 'Model Y', 'Model S', 'Model X', 'Cybertruck', 'Roadster']),
+    {
+      title: copy.moreBrands,
+      links: ['Cupra', 'Opel', 'Renault', 'Peugeot', 'Kia', 'Hyundai'].map((make) => ({ label: make, href: marketplaceHref(locale, 'cars', { make, q: make }) })),
+    },
+    {
+      title: copy.vehicleTypes,
+      links: copy.bodyTypes.map((item, index) => filterLink(locale, 'cars', item, { bodyType: ['Kombi', 'SUV', 'Sedan', 'Halvkombi', 'Pickup', 'Cabriolet'][index] })),
+    },
+    {
+      title: copy.powertrains,
+      links: [
+        filterLink(locale, 'cars', copy.fuels[0], { fuel: 'El' }),
+        filterLink(locale, 'cars', copy.fuels[1], { fuel: 'Hybrid' }),
+        filterLink(locale, 'cars', copy.fuels[2], { fuel: 'Bensin' }),
+        filterLink(locale, 'cars', copy.fuels[3], { fuel: 'Diesel' }),
+        filterLink(locale, 'cars', copy.fuels[4], { gearbox: 'Automat' }),
+        filterLink(locale, 'cars', copy.fuels[5], { mode: 'leasing', offerType: 'lease' }),
+      ],
+    },
+    {
+      title: copy.guides,
+      links: [
+        directLink(locale, copy.guideLinks[0], '/buying-guide'),
+        directLink(locale, copy.guideLinks[1], '/compare-vehicles'),
+        directLink(locale, copy.guideLinks[2], '/vehicle-history'),
+        directLink(locale, copy.guideLinks[3], '/saved-searches'),
+        directLink(locale, copy.guideLinks[4], '/safety-tips'),
+        directLink(locale, copy.guideLinks[5], '/vehicle-news'),
+      ],
+    },
+  ]
+}
+
+function categoryDirectoryGroups(locale: PublicLocale, presentation: HomepageCategoryPresentation, copy: DirectoryCopy): DirectoryGroup[] {
+  const groups: DirectoryGroup[] = [
+    {
+      title: presentation.popularBrandsTitle,
+      links: presentation.popularBrands.slice(0, 8).map(({ title, href }) => ({ label: title, href })),
+    },
+    {
+      title: presentation.vehicleTypesTitle,
+      links: presentation.vehicleTypes.slice(0, 8).map(({ title, href }) => ({ label: title, href })),
+    },
+    {
+      title: presentation.popularTitle,
+      links: presentation.popularCategories.slice(0, 6).map(({ title, href }) => ({ label: title, href })),
+    },
+    {
+      title: copy.guides,
+      links: [
+        { label: presentation.vehicleTypesAllLabel, href: presentation.marketplaceHref },
+        directLink(locale, copy.guideLinks[0], '/buying-guide'),
+        directLink(locale, copy.guideLinks[1], '/compare-vehicles'),
+        directLink(locale, copy.guideLinks[3], '/saved-searches'),
+        directLink(locale, copy.guideLinks[4], '/safety-tips'),
+        directLink(locale, copy.guideLinks[5], '/vehicle-news'),
+      ],
+    },
+  ]
+
+  return groups.filter((group) => group.links.length > 0)
+}
+
 function modelGroup(locale: PublicLocale, language: DirectoryLanguage, copy: DirectoryCopy, make: string, definitions: ModelDefinition[]): DirectoryGroup {
   return {
     title: copy.used.replace('{make}', make),
     links: definitions.map((definition) => {
       const value = typeof definition === 'string' ? definition : definition.value
       const modelLabel = typeof definition === 'string' ? definition : definition.labels[language]
-      return { label: `${make} ${modelLabel}`, href: marketplaceHref(locale, { make, model: value, q: `${make} ${value}` }) }
+      return { label: `${make} ${modelLabel}`, href: marketplaceHref(locale, 'cars', { make, model: value, q: `${make} ${value}` }) }
     }),
   }
 }
 
-function filterLink(locale: PublicLocale, label: string, filters: Record<string, string>): DirectoryLink {
-  return { label, href: marketplaceHref(locale, filters) }
+function filterLink(locale: PublicLocale, category: MarketplaceCategorySlug, label: string, filters: Record<string, string>): DirectoryLink {
+  return { label, href: marketplaceHref(locale, category, filters) }
 }
 
 function directLink(locale: PublicLocale, label: string, href: string): DirectoryLink {
   return { label, href: localizePublicHref(locale, href) }
 }
 
-function marketplaceHref(locale: PublicLocale, filters: Record<string, string>) {
-  const mode = filters.mode === 'leasing' ? 'leasing' : 'sale'
-  const params = new URLSearchParams({
-    categories: 'cars',
-    mode,
-    offerType: mode === 'leasing' ? 'lease' : 'sale',
-    ...filters,
-  })
-  return localizePublicHref(locale, `/marketplace/cars?${params.toString()}`)
+function marketplaceHref(locale: PublicLocale, category: MarketplaceCategorySlug, filters: Record<string, string>) {
+  return homepageMarketplaceHref(locale, category, filters)
 }
 
 function directoryLanguage(locale: PublicLocale): DirectoryLanguage {
