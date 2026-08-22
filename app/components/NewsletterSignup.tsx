@@ -144,13 +144,15 @@ const homeNewsletterImages: Record<MarketplaceCategorySlug, string> = {
   'electric-bikes': '/newsletter-categories/electric-bikes.webp',
 }
 
-const homeNewsletterImageScale: Partial<Record<MarketplaceCategorySlug, number>> = {
-  vans: 1.18,
-  trucks: 1.28,
-  construction: 1.36,
-  motorhomes: 1.18,
-  caravans: 1.08,
-  'electric-bikes': 1.32,
+const homeNewsletterImageLayout: Partial<Record<MarketplaceCategorySlug, { scale: number; x?: number; y?: number }>> = {
+  vans: { scale: 1.14 },
+  trucks: { scale: 1.18 },
+  motorcycles: { scale: 1.28 },
+  construction: { scale: 1.22 },
+  motorhomes: { scale: 1.12 },
+  caravans: { scale: 1.04 },
+  agriculture: { scale: 1.22 },
+  'electric-bikes': { scale: 1.24 },
 }
 
 export default function NewsletterSignup({
@@ -200,7 +202,8 @@ export default function NewsletterSignup({
 
   if (variant === 'home') {
     const imageSrc = homeNewsletterImages[imageCategory] || homeNewsletterImages.cars
-    const imageScale = homeNewsletterImageScale[imageCategory] || 1
+    const imageLayout = homeNewsletterImageLayout[imageCategory] || { scale: 1 }
+    const imageTransform = `translate(${imageLayout.x || 0}px, ${imageLayout.y || 0}px) scale(${imageLayout.scale})`
 
     return (
       <div className="overflow-hidden border-y border-[#cfd8e4] bg-white px-5 py-8 sm:rounded-[8px] sm:border sm:px-7 sm:py-9">
@@ -221,7 +224,7 @@ export default function NewsletterSignup({
                 fill
                 sizes="(max-width: 1024px) 100vw, 480px"
                 className="object-contain object-bottom drop-shadow-[0_14px_16px_rgba(16,24,40,.16)]"
-                style={{ transform: `scale(${imageScale})`, transformOrigin: 'bottom center' }}
+                style={{ transform: imageTransform, transformOrigin: 'bottom center' }}
               />
             </div>
           </div>
