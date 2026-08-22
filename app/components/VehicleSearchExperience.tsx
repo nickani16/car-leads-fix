@@ -981,7 +981,7 @@ function getMarketplaceEmptySubject({
 }) {
   const makeModel = [make, model].filter(Boolean).join(' ').trim()
   if (makeModel) return makeModel
-  if (bodyType) return translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType).toLocaleLowerCase(emptyStateLocale(locale))
+  if (bodyType) return translateListingVehicleValue(locale, bodyType).toLocaleLowerCase(emptyStateLocale(locale))
   const category = selectedCategoryItems.length === 1 ? selectedCategoryItems[0] : null
   if (category && category.key !== 'all') return categoryText(category, locale, true).toLocaleLowerCase(emptyStateLocale(locale))
   return ''
@@ -2361,17 +2361,20 @@ export default function VehicleSearchExperience({
 
   function categoryScopedOptions(categoryKey: string, field: 'fuelType' | 'gearbox' | 'bodyType' | 'condition' | 'color') {
     const facetKey = field === 'fuelType' ? 'fuels' : field === 'gearbox' ? 'gearboxes' : field === 'bodyType' ? 'bodyTypes' : null
+    const optionLabel = (value: string) => field === 'bodyType' ? translateListingVehicleValue(locale, value) : value
     const dynamicValues = facetKey
       ? (searchFacets?.[facetKey] || []).map((item) => typeof item === 'string'
-        ? { value: item, label: item }
-        : { value: item.value, label: `${item.value} (${item.count})` })
+        ? { value: item, label: optionLabel(item) }
+        : { value: item.value, label: `${optionLabel(item.value)} (${item.count})` })
       : []
     if (dynamicValues.length) return dynamicValues
     const values = optionListings
       .filter((listing) => !categoryKey || listing.category === categoryKey)
       .map((listing) => listing[field])
       .filter((value): value is string => Boolean(value))
-    return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
+    return [...new Set(values)]
+      .sort((a, b) => optionLabel(a).localeCompare(optionLabel(b), 'sv-SE'))
+      .map((value) => ({ value, label: optionLabel(value) }))
   }
 
   function technicalFacetLabel(key: string) {
@@ -2706,7 +2709,7 @@ export default function VehicleSearchExperience({
       ? filterLabel(bodyTypeFilterDefinition, locale)
       : translatePublic(locale, 'Body type')
     const bodyTypeLabel = bodyType
-      ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType)
+      ? translateListingVehicleValue(locale, bodyType)
       : bodyTypeFilterLabel
     const mileageFilterLabel = mileageFilterDefinition
       ? filterLabel(mileageFilterDefinition, locale)
@@ -2939,7 +2942,7 @@ export default function VehicleSearchExperience({
               <div className="space-y-3">
                 <div className="grid max-h-[360px] gap-1 overflow-y-auto">
                   {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
-                    const label = translatePublic(locale, vehicleValueInEnglish(option) || option)
+                    const label = translateListingVehicleValue(locale, option)
                     return (
                       <button
                         key={option}
@@ -3089,7 +3092,7 @@ export default function VehicleSearchExperience({
     municipality ? { key: 'municipality', label: municipality, onRemove: () => setMunicipality('') } : null,
     fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
     gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
-    bodyType ? { key: 'bodyType', label: translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType), onRemove: () => setBodyType('') } : null,
+    bodyType ? { key: 'bodyType', label: translateListingVehicleValue(locale, bodyType), onRemove: () => setBodyType('') } : null,
     condition ? { key: 'condition', label: condition, onRemove: () => setCondition('') } : null,
     color ? { key: 'color', label: color, onRemove: () => setColor('') } : null,
     sellerType !== 'all'
@@ -3373,7 +3376,7 @@ export default function VehicleSearchExperience({
                     density="sidebar"
                     icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
                     title={uiText(locale, 'Fuel, body and gearbox', 'Drivmedel, biltyp och växellåda', 'Kraftstoff, Karosserie und Getriebe')}
-                    summary={[fuel, bodyType ? translatePublic(locale, vehicleValueInEnglish(bodyType) || bodyType) : '', gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    summary={[fuel, bodyType ? translateListingVehicleValue(locale, bodyType) : '', gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
                     open={listSpecsOpen}
                     onToggle={() => setListSpecsOpen((open) => !open)}
                   >
@@ -5145,22 +5148,22 @@ function MarketplaceSocialLinks() {
     {
       label: 'Facebook',
       href: 'https://www.facebook.com/autorell',
-      path: 'M14 8.5h3V5h-3c-3.4 0-5.5 2.1-5.5 5.7V13H6v3.5h2.5V23h4v-6.5h3.2l.6-3.5h-3.8v-2c0-1.7.5-2.5 1.5-2.5Z',
+      path: 'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.762 0 2.077.149 2.612.298v3.325a15.39 15.39 0 0 0-1.55-.075c-1.969 0-2.731.745-2.731 2.683v1.327h3.922l-.674 3.667H13.29v7.98H9.101Z',
     },
     {
       label: 'Instagram',
-      href: 'https://www.instagram.com/autorellgroup/',
-      path: 'M12 7.8A4.2 4.2 0 1 0 12 16.2 4.2 4.2 0 0 0 12 7.8Zm0 6.9a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Zm5.4-7.1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM20.2 8c-.1-1.5-.4-2.7-1.5-3.7S16.5 2.9 15 2.8c-1.5-.1-6.5-.1-8 0-1.5.1-2.7.4-3.7 1.5S1.9 6.5 1.8 8c-.1 1.5-.1 6.5 0 8 .1 1.5.4 2.7 1.5 3.7s2.2 1.4 3.7 1.5c1.5.1 6.5.1 8 0 1.5-.1 2.7-.4 3.7-1.5s1.4-2.2 1.5-3.7c.1-1.5.1-6.5 0-8Zm-1.9 9.6c-.3.8-.9 1.4-1.7 1.7-1.2.5-4 .4-4.6.4s-3.4.1-4.6-.4a3 3 0 0 1-1.7-1.7c-.5-1.2-.4-4-.4-4.6s-.1-3.4.4-4.6A3 3 0 0 1 7.4 6.7c1.2-.5 4-.4 4.6-.4s3.4-.1 4.6.4a3 3 0 0 1 1.7 1.7c.5 1.2.4 4 .4 4.6s.1 3.4-.4 4.6Z',
+      href: 'https://www.instagram.com/autorell',
+      path: 'M7.8 2h8.4A5.806 5.806 0 0 1 22 7.8v8.4a5.806 5.806 0 0 1-5.8 5.8H7.8A5.806 5.806 0 0 1 2 16.2V7.8A5.806 5.806 0 0 1 7.8 2Zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8A3.6 3.6 0 0 0 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6A3.6 3.6 0 0 0 16.4 4H7.6Zm9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM12 7.25A4.75 4.75 0 1 1 12 16.75 4.75 4.75 0 0 1 12 7.25Zm0 2A2.75 2.75 0 1 0 12 14.75 2.75 2.75 0 0 0 12 9.25Z',
     },
     {
       label: 'LinkedIn',
       href: 'https://www.linkedin.com/company/autorell',
-      path: 'M5.3 7.6A2.3 2.3 0 1 0 5.3 3a2.3 2.3 0 0 0 0 4.6ZM3.4 9.3h3.8V21H3.4V9.3Zm6.1 0h3.6v1.6h.1c.5-1 1.8-2 3.6-2 3.9 0 4.6 2.5 4.6 5.9V21h-3.8v-5.5c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V21H9.5V9.3Z',
+      path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.554V9h3.565v11.452ZM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003Z',
     },
   ]
 
   return (
-    <nav className="flex items-center gap-3 lg:justify-end" aria-label="Social media">
+    <nav className="flex items-center gap-2.5 lg:justify-end" aria-label="Social media">
       {links.map((link) => (
         <a
           key={link.label}
@@ -5168,9 +5171,9 @@ function MarketplaceSocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={link.label}
-          className="grid h-9 w-9 place-items-center rounded-[7px] bg-[#0866ff] text-white transition hover:-translate-y-0.5 hover:bg-[#075be5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="grid h-9 w-9 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[18px] w-[18px] fill-current">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
             <path d={link.path} />
           </svg>
         </a>
