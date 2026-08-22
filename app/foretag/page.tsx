@@ -156,13 +156,39 @@ const businessPageCopy = {
   },
 } as const
 
-type BusinessCopy = (typeof businessPageCopy)[keyof typeof businessPageCopy]
+type BusinessInfoCard = readonly [string, string]
+type BusinessPlanTeaser = readonly [string, string, string]
+type BusinessCopy = {
+  metaTitle: string
+  metaDescription: string
+  heroEyebrow: string
+  heroTitle: string
+  heroIntro: string
+  primaryCta: string
+  secondaryCta: string
+  learnMoreCta: string
+  discoverTitle: string
+  discoverIntro: string
+  globeTitle: string
+  globeText: string
+  stepTitle: string
+  faqTitle: string
+  allMarkets: string
+  liveListings: string
+  companyPage: string
+  cards: readonly BusinessInfoCard[]
+  plans: readonly BusinessPlanTeaser[]
+  faqs: readonly BusinessInfoCard[]
+}
 type BusinessCopyTextKey = {
   [Key in keyof BusinessCopy]: BusinessCopy[Key] extends string ? Key : never
 }[keyof BusinessCopy]
+type BusinessCopyOverride = Partial<Record<BusinessCopyTextKey, string>> & {
+  faqs?: BusinessCopy['faqs']
+}
 
 const businessCopyOverrides: Partial<
-  Record<PublicLocale, Partial<Record<BusinessCopyTextKey, string>>>
+  Record<PublicLocale, BusinessCopyOverride>
 > = {
   fr: {
     metaTitle: 'Solutions pour professionnels de l’automobile | Autorell',
@@ -182,6 +208,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 marchés',
     liveListings: 'Annonces',
     companyPage: 'Solutions professionnelles',
+    faqs: [
+      ['Que comprennent les solutions professionnelles ?', 'Elles affichent votre logo, adresse, site web, contacts principaux et toutes vos annonces publiées sur une page entreprise claire.'],
+      ['Les vendeurs peuvent-ils avoir leurs propres coordonnées ?', 'Oui. Les annonces peuvent afficher le contact direct du vendeur, tandis que la page entreprise conserve les coordonnées générales.'],
+      ['Autorell fonctionne-t-il sur plusieurs marchés ?', 'Oui. Autorell prend en charge onze marchés avec des liens, langues et devises adaptés lorsque nécessaire.'],
+      ['Peut-on commencer simplement ?', 'Oui. Commencez avec une formule de base et passez à une formule supérieure lorsque le volume, l’équipe ou l’import augmente.'],
+    ],
   },
   es: {
     metaTitle: 'Soluciones para empresas de vehículos | Autorell',
@@ -201,6 +233,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 mercados',
     liveListings: 'Anuncios',
     companyPage: 'Soluciones profesionales',
+    faqs: [
+      ['¿Qué incluyen las soluciones para empresas?', 'Muestran el logotipo, la dirección, el sitio web, los datos de contacto principales y todos los anuncios publicados en una página de empresa clara.'],
+      ['¿Los vendedores pueden usar sus propios datos de contacto?', 'Sí. Los anuncios pueden mostrar el contacto directo del vendedor, mientras que la página de empresa mantiene los datos generales.'],
+      ['¿Autorell funciona en varios mercados?', 'Sí. Autorell admite once mercados con enlaces, idiomas y monedas localizados cuando hace falta.'],
+      ['¿Podemos empezar de forma sencilla?', 'Sí. Empezad con una fórmula básica y ampliadla cuando crezcan el volumen, el equipo o las necesidades de importación.'],
+    ],
   },
   it: {
     metaTitle: 'Soluzioni per aziende di veicoli | Autorell',
@@ -220,6 +258,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 mercati',
     liveListings: 'Annunci',
     companyPage: 'Soluzioni professionali',
+    faqs: [
+      ['Cosa includono le soluzioni aziendali?', 'Mostrano logo, indirizzo, sito web, contatti principali e tutti gli annunci pubblicati in una pagina aziendale chiara.'],
+      ['I venditori possono usare i propri contatti?', 'Sì. Gli annunci possono mostrare il contatto diretto del venditore, mentre la pagina aziendale mantiene i dati generali.'],
+      ['Autorell funziona su più mercati?', 'Sì. Autorell supporta undici mercati con link, lingue e valute localizzati quando necessario.'],
+      ['Possiamo iniziare in modo semplice?', 'Sì. Iniziate con un piano base e passate a un piano superiore quando crescono volume, team o importazioni.'],
+    ],
   },
   pl: {
     metaTitle: 'Rozwiązania dla firm motoryzacyjnych | Autorell',
@@ -239,6 +283,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 rynków',
     liveListings: 'Ogłoszenia',
     companyPage: 'Rozwiązania dla firm',
+    faqs: [
+      ['Co obejmują rozwiązania dla firm?', 'Pokazują logo, adres, stronę internetową, główne dane kontaktowe i wszystkie opublikowane ogłoszenia na czytelnej stronie firmy.'],
+      ['Czy sprzedawcy mogą mieć własne dane kontaktowe?', 'Tak. Ogłoszenia mogą pokazywać bezpośredni kontakt do sprzedawcy, a strona firmy zachowuje dane ogólne.'],
+      ['Czy Autorell działa na wielu rynkach?', 'Tak. Autorell obsługuje jedenaście rynków z lokalnymi linkami, językami i walutami tam, gdzie to potrzebne.'],
+      ['Czy możemy zacząć prosto?', 'Tak. Zacznijcie od podstawowego planu i przejdźcie wyżej, gdy wzrośnie liczba ogłoszeń, zespół lub potrzeby importu.'],
+    ],
   },
   nl: {
     metaTitle: 'Oplossingen voor voertuigbedrijven | Autorell',
@@ -258,6 +308,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 markten',
     liveListings: 'Advertenties',
     companyPage: 'Zakelijke oplossingen',
+    faqs: [
+      ['Wat omvatten de zakelijke oplossingen?', 'Ze tonen logo, adres, website, algemene contactgegevens en alle gepubliceerde advertenties op één duidelijke bedrijfspagina.'],
+      ['Kunnen verkopers eigen contactgegevens gebruiken?', 'Ja. Advertenties kunnen het directe verkoperscontact tonen, terwijl de bedrijfspagina de algemene gegevens behoudt.'],
+      ['Werkt Autorell in meerdere markten?', 'Ja. Autorell ondersteunt elf markten met lokale links, talen en valuta waar dat nodig is.'],
+      ['Kunnen we eenvoudig beginnen?', 'Ja. Begin met een basisformule en schaal op wanneer voorraad, team of importbehoefte groeit.'],
+    ],
   },
   fi: {
     metaTitle: 'Ratkaisut ajoneuvoalan yrityksille | Autorell',
@@ -277,6 +333,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 markkinaa',
     liveListings: 'Ilmoitukset',
     companyPage: 'Yritysratkaisut',
+    faqs: [
+      ['Mitä yritysratkaisut sisältävät?', 'Ne näyttävät logon, osoitteen, verkkosivun, yleiset yhteystiedot ja kaikki julkaistut ilmoitukset selkeällä yrityssivulla.'],
+      ['Voivatko myyjät käyttää omia yhteystietojaan?', 'Kyllä. Ilmoituksissa voidaan näyttää myyjän suora yhteystieto, kun yrityssivu säilyttää yleiset tiedot.'],
+      ['Toimiiko Autorell useilla markkinoilla?', 'Kyllä. Autorell tukee yhtätoista markkinaa paikallisilla linkeillä, kielillä ja valuutoilla tarvittaessa.'],
+      ['Voimmeko aloittaa yksinkertaisesti?', 'Kyllä. Aloittakaa peruspaketilla ja laajentakaa, kun varasto, tiimi tai tuontitarve kasvaa.'],
+    ],
   },
   da: {
     metaTitle: 'Løsninger til køretøjsvirksomheder | Autorell',
@@ -296,6 +358,12 @@ const businessCopyOverrides: Partial<
     allMarkets: '11 markeder',
     liveListings: 'Annoncer',
     companyPage: 'Virksomhedsløsninger',
+    faqs: [
+      ['Hvad indeholder virksomhedsløsningerne?', 'De viser logo, adresse, hjemmeside, generelle kontaktoplysninger og alle offentliggjorte annoncer på én tydelig virksomhedsside.'],
+      ['Kan sælgere bruge egne kontaktoplysninger?', 'Ja. Annoncer kan vise sælgerens direkte kontakt, mens virksomhedssiden beholder de generelle kontaktoplysninger.'],
+      ['Fungerer Autorell på flere markeder?', 'Ja. Autorell understøtter elleve markeder med lokale links, sprog og valuta, hvor det er nødvendigt.'],
+      ['Kan vi starte enkelt?', 'Ja. Start med en basisplan og skaler op, når lager, team eller importbehov vokser.'],
+    ],
   },
 }
 
@@ -340,7 +408,7 @@ export default async function BusinessPage() {
           inventoryHref={inventoryImportHref}
         />
       ) : null}
-      <BusinessFaq copy={copy} planCopy={getBusinessPlanCopy(locale)} />
+      <BusinessFaq copy={copy} locale={locale} planCopy={getBusinessPlanCopy(locale)} />
       <PublicFooter locale={locale} />
     </main>
   )
@@ -373,7 +441,7 @@ function AppleHero({
           <ChevronRight aria-hidden="true" className="h-4 w-4 text-[#98a2b3]" strokeWidth={1.8} />
           <span aria-current="page" className="font-medium text-[#344054]">Business</span>
         </nav>
-        <div className="relative isolate grid min-h-[500px] w-full overflow-hidden rounded-[16px] border border-[#d8e5f6] bg-[#eef6ff] lg:grid-cols-[0.82fr_1.18fr]">
+        <div className="relative isolate grid min-h-[500px] w-full overflow-hidden rounded-[16px] border border-[#d8e5f6] bg-white lg:grid-cols-[0.82fr_1.18fr]">
           <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
             <div className="inline-flex w-max flex-col items-end">
               <BrandLogo underline={false} />
@@ -460,7 +528,7 @@ function BusinessInsights({ copy }: { copy: BusinessCopy }) {
             return (
               <article
                 key={title}
-                className="group flex min-h-[260px] min-w-0 snap-start flex-col rounded-[10px] border border-[#e1e7f0] bg-[#f5f8fc] p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#eef6ff]"
+                className="group flex min-h-[260px] min-w-0 snap-start flex-col rounded-[10px] border border-[#e1e7f0] bg-white p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-white"
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-[9px] bg-white text-[#0866ff] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
                   <Icon className="h-6 w-6" strokeWidth={1.8} />
@@ -505,7 +573,7 @@ function NextStep({
               key={plan.name}
               href={hrefByKind[plan.hrefKind]}
               className={`group flex min-h-[430px] min-w-0 snap-start flex-col rounded-[10px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] ${
-                plan.recommended ? 'border-[#0866ff] bg-[#f4f8ff]' : 'border-[#e1e7f0] bg-[#f5f5f7]'
+                plan.recommended ? 'border-[#0866ff] bg-white' : 'border-[#e1e7f0] bg-white'
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -546,19 +614,38 @@ function NextStep({
   )
 }
 
-function BusinessFaq({ copy, planCopy }: { copy: BusinessCopy; planCopy: BusinessPlanCopy }) {
+function BusinessFaq({ copy, locale, planCopy }: { copy: BusinessCopy; locale: PublicLocale; planCopy: BusinessPlanCopy }) {
   const extendedFaqs = [
     ...copy.faqs,
     ...planCopy.faqs,
   ] as const
 
   return (
-    <section className="w-screen max-w-full overflow-hidden border-t border-[#e5e7eb] bg-[#f5f5f7] px-5 py-20 sm:px-8 sm:py-28">
-      <div className="mx-auto w-full max-w-[1260px]">
-        <BusinessFaqClient title={copy.faqTitle} items={extendedFaqs} />
+    <section className="w-screen max-w-full overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <BusinessFaqClient title={copy.faqTitle} items={extendedFaqs} labels={getBusinessFaqLabels(locale)} />
       </div>
     </section>
   )
+}
+
+function getBusinessFaqLabels(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, { expandAll: string; collapseAll: string }>> = {
+    sv: { expandAll: 'Visa alla svar', collapseAll: 'Stäng alla svar' },
+    en: { expandAll: 'Show all answers', collapseAll: 'Close all answers' },
+    de: { expandAll: 'Alle Antworten anzeigen', collapseAll: 'Alle Antworten schließen' },
+    at: { expandAll: 'Alle Antworten anzeigen', collapseAll: 'Alle Antworten schließen' },
+    fr: { expandAll: 'Afficher toutes les réponses', collapseAll: 'Fermer toutes les réponses' },
+    es: { expandAll: 'Mostrar todas las respuestas', collapseAll: 'Cerrar todas las respuestas' },
+    it: { expandAll: 'Mostra tutte le risposte', collapseAll: 'Chiudi tutte le risposte' },
+    pl: { expandAll: 'Pokaż wszystkie odpowiedzi', collapseAll: 'Zamknij wszystkie odpowiedzi' },
+    nl: { expandAll: 'Toon alle antwoorden', collapseAll: 'Sluit alle antwoorden' },
+    be: { expandAll: 'Toon alle antwoorden', collapseAll: 'Sluit alle antwoorden' },
+    fi: { expandAll: 'Näytä kaikki vastaukset', collapseAll: 'Sulje kaikki vastaukset' },
+    da: { expandAll: 'Vis alle svar', collapseAll: 'Luk alle svar' },
+  }
+
+  return labels[locale] || labels.en!
 }
 
 function getBusinessCopy(locale: PublicLocale): BusinessCopy {

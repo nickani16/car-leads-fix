@@ -1,44 +1,78 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, HelpCircle } from 'lucide-react'
 
 type FaqItem = readonly [string, string]
 
 export default function BusinessFaqClient({
   title,
   items,
+  labels,
 }: {
   title: string
   items: readonly FaqItem[]
+  labels: {
+    expandAll: string
+    collapseAll: string
+  }
 }) {
-  const [expanded, setExpanded] = useState(false)
-  const toggleLabel = expanded ? 'Stäng alla' : 'Expandera alla'
+  const [openItems, setOpenItems] = useState<ReadonlySet<string>>(() => new Set([items[0]?.[0]].filter(Boolean)))
+  const allExpanded = openItems.size === items.length
+
+  function toggleItem(question: string) {
+    setOpenItems((current) => {
+      const next = new Set(current)
+      if (next.has(question)) {
+        next.delete(question)
+      } else {
+        next.add(question)
+      }
+      return next
+    })
+  }
+
+  function toggleAll() {
+    setOpenItems(allExpanded ? new Set() : new Set(items.map(([question]) => question)))
+  }
 
   return (
-    <div className="min-w-0" style={{ width: 'min(100%, calc(100vw - 40px))' }}>
-      <div className="flex w-full min-w-0 flex-col justify-between gap-8 sm:flex-row sm:items-end sm:gap-6">
-        <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
-        <div className="flex w-full justify-start pl-48 sm:w-auto sm:justify-end sm:pl-0">
+    <div className="min-w-0">
+      <div className="flex w-full min-w-0 flex-col justify-between gap-6 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] border border-[#d8e3f2] bg-white text-[#0866ff]">
+            <HelpCircle className="h-5 w-5" strokeWidth={1.8} />
+          </div>
+          <h2 className="min-w-0 text-4xl font-semibold tracking-[-.02em] text-[#101828] sm:text-5xl">{title}</h2>
+        </div>
+        <div className="flex w-full justify-start sm:w-auto sm:justify-end">
           <button
             type="button"
-            onClick={() => setExpanded((current) => !current)}
-            className="inline-flex min-h-9 max-w-full items-center gap-px rounded-full px-0 text-[17px] font-normal leading-none text-[#0866ff] transition hover:text-[#0057df] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0866ff]"
+            onClick={toggleAll}
+            className="inline-flex min-h-10 max-w-full items-center justify-center rounded-[10px] border border-[#c9d5e6] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f7fbff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0866ff]"
           >
-            {toggleLabel}
-            <ChevronDown className={`h-4 w-4 transition ${expanded ? 'rotate-180' : ''}`} />
+            {allExpanded ? labels.collapseAll : labels.expandAll}
           </button>
         </div>
       </div>
-      <div className="mt-10 divide-y divide-[#d0d5dd] sm:mt-14">
+      <div className="mt-9 grid gap-3 sm:mt-12">
         {items.map(([question, answer]) => (
-          <details key={question} className="group" open={expanded ? true : undefined}>
-            <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-7 text-xl font-semibold tracking-[-.012em] text-[#1d1d1f] sm:flex sm:justify-between sm:gap-6 sm:text-2xl">
+          <article key={question} className="rounded-[10px] border border-[#d8e3f2] bg-white">
+            <button
+              type="button"
+              aria-expanded={openItems.has(question)}
+              onClick={() => toggleItem(question)}
+              className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-5 text-left text-lg font-semibold tracking-[-.012em] text-[#101828] transition hover:bg-[#f7fbff] sm:px-6 sm:py-6 sm:text-xl"
+            >
               <span className="min-w-0">{question}</span>
-              <ChevronDown className="h-7 w-7 shrink-0 text-[#86868b] transition group-open:rotate-180" />
-            </summary>
-            <p className="max-w-[920px] pb-8 text-base leading-8 text-[#515966] sm:text-lg">{answer}</p>
-          </details>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#d8e3f2] bg-white text-[#667085]">
+                <ChevronDown className={`h-5 w-5 transition ${openItems.has(question) ? 'rotate-180 text-[#0866ff]' : ''}`} />
+              </span>
+            </button>
+            {openItems.has(question) ? (
+              <p className="max-w-[920px] px-5 pb-6 text-base leading-7 text-[#515966] sm:px-6 sm:pb-7">{answer}</p>
+            ) : null}
+          </article>
         ))}
       </div>
     </div>
