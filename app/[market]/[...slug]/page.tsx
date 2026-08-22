@@ -1,6 +1,10 @@
 import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
+import { HelpCenterArticlePage, HelpCenterCategory } from '@/app/components/HelpCenterPages'
 import PricingPage from '@/app/components/PricingPage'
+import PublicFooter from '@/app/components/PublicFooter'
+import PublicHeader from '@/app/components/PublicHeader'
+import FaqPageClient from '@/app/vanliga-fragor/FaqPageClient'
 import BusinessPage from '@/app/foretag/page'
 import BusinessPilotPage, { generateMetadata as generateBusinessPilotMetadata } from '@/app/business/pilot/page'
 import InventoryImportPage, { generateMetadata as generateInventoryImportMetadata } from '@/app/business/inventory-import/page'
@@ -36,6 +40,7 @@ import {
   isGeoLandingCandidate,
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
+import { getHelpCenterArticle, getHelpCenterCategory } from '@/lib/help-center'
 
 const removedPublicPages = new Set([
   'app',
@@ -119,6 +124,44 @@ export default async function LocalizedMarketPage({
   const slugPath = slug.join('/')
   if (removedPublicPages.has(slugPath)) {
     notFound()
+  }
+
+  const helpCenterRoute = resolveHelpCenterRoute(slug)
+  if (helpCenterRoute) {
+    if (helpCenterRoute.type === 'home') {
+      return (
+        <main className="overflow-x-hidden bg-white text-[#101828]">
+          <PublicHeader locale={locale} marketCode={normalizedMarket.toUpperCase()} />
+          <section className="border-b border-[#dfe6f2] bg-white">
+            <div className="mx-auto w-full max-w-[var(--autorell-page-max)] px-5 py-10 sm:px-8 sm:py-14">
+              <FaqPageClient locale={locale} />
+            </div>
+          </section>
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+    if (helpCenterRoute.type === 'category') {
+      return (
+        <main className="overflow-x-hidden bg-white text-[#101828]">
+          <PublicHeader locale={locale} marketCode={normalizedMarket.toUpperCase()} />
+          <HelpCenterCategory locale={locale} marketCode={normalizedMarket.toUpperCase()} categorySlug={helpCenterRoute.categorySlug} />
+          <PublicFooter locale={locale} />
+        </main>
+      )
+    }
+    return (
+      <main className="overflow-x-hidden bg-white text-[#101828]">
+        <PublicHeader locale={locale} marketCode={normalizedMarket.toUpperCase()} />
+        <HelpCenterArticlePage
+          locale={locale}
+          marketCode={normalizedMarket.toUpperCase()}
+          categorySlug={helpCenterRoute.categorySlug}
+          articleSlug={helpCenterRoute.articleSlug}
+        />
+        <PublicFooter locale={locale} />
+      </main>
+    )
   }
 
   const listingParams = localizedListingParams({ market: marketCode, slug })
@@ -296,6 +339,18 @@ function resolveMarketLocale(code: string): PublicLocale | null {
   const market = getEuBuyerMarket(code)
   if (!market) return null
   return marketLocale(market.code, market.language)
+}
+
+function resolveHelpCenterRoute(slug: string[]) {
+  const [root, categorySlug, articleSlug] = slug
+  if (root !== 'help-center' && root !== 'hjalpcenter' && root !== 'vanliga-fragor') return null
+  if (!categorySlug) return { type: 'home' as const }
+  const category = getHelpCenterCategory(categorySlug)
+  if (!category) return null
+  if (!articleSlug) return { type: 'category' as const, categorySlug: category.slug }
+  const article = getHelpCenterArticle(category.slug, articleSlug)
+  if (!article) return null
+  return { type: 'article' as const, categorySlug: category.slug, articleSlug: article.slug }
 }
 
 function marketLocale(code: string, language: string): PublicLocale {

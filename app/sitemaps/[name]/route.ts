@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { buildListingPath, listingMarketPath } from '@/lib/listing-url'
+import { helpCenterArticles, helpCenterCategories } from '@/lib/help-center'
 import {
   buildSeoMarketplacePath,
   getGeoSitemapMarketConfig,
@@ -206,7 +207,17 @@ function staticPublicUrls(market: SitemapMarketCode) {
     '/withdrawal',
     '/report',
   ]
-  const paths = [...publicPaths.map((path) => `/${market}${path}`), `/${market}/marketplace`]
+  const helpCenterPaths = helpCenterCategories.flatMap((category) => [
+    `/help-center/${category.slug}`,
+    ...helpCenterArticles
+      .filter((article) => article.category === category.id)
+      .map((article) => `/help-center/${category.slug}/${article.slug}`),
+  ])
+  const paths = [
+    ...publicPaths.map((path) => `/${market}${path}`),
+    ...helpCenterPaths.map((path) => `/${market}${path}`),
+    `/${market}/marketplace`,
+  ]
 
   return [...new Set(paths)].map((path) => sitemapUrl(path, undefined, 'weekly', '0.8'))
 }

@@ -5072,7 +5072,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
       links: [
         [uiText(locale, 'Create listing', 'Skapa annons', 'Anzeige erstellen'), '/account/listings/new'],
         [uiText(locale, 'For businesses', 'Företag', 'Für Unternehmen'), '/business'],
-        [uiText(locale, 'Pricing', 'Priser', 'Preise'), '/pricing'],
+        [uiText(locale, 'Pricing', 'Priser', 'Preise'), '/help-center/payment/private-listing-prices'],
       ],
     },
     {

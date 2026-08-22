@@ -425,17 +425,17 @@ const copy = {
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
     { href: '/account/listings/new', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront, requiresLogin: true },
-    { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
+    { href: '/help-center/payment/private-listing-prices', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
     { href: '/help-center', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
   ],
   en: [
     { href: '/account/listings/new', label: 'Advertise vehicles on Autorell', description: 'Free to start for private and business sellers.', icon: CarFront, requiresLogin: true },
-    { href: '/pricing', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
+    { href: '/help-center/payment/private-listing-prices', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
     { href: '/help-center', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
     { href: '/account/listings/new', label: 'Fahrzeug auf Autorell inserieren', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront, requiresLogin: true },
-    { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
+    { href: '/help-center/payment/private-listing-prices', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
     { href: '/help-center', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
 }
