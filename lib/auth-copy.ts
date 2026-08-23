@@ -53,12 +53,12 @@ export type AuthModalCopy = {
   connectionError: string
   chooseMarket: string
   continueWithGoogle: string
-  continueWithApple: string
   continueWithMicrosoft: string
   continueWithFacebook: string
   socialSeparator: string
   socialLoading: string
   socialError: string
+  providerUnavailable: string
   oauthCancelled: string
   oauthFailed: string
 }
@@ -708,123 +708,123 @@ const socialCopy: Record<
   Pick<
     AuthModalCopy,
     | 'continueWithGoogle'
-    | 'continueWithApple'
     | 'continueWithMicrosoft'
     | 'continueWithFacebook'
     | 'socialSeparator'
     | 'socialLoading'
     | 'socialError'
+    | 'providerUnavailable'
     | 'oauthCancelled'
     | 'oauthFailed'
   >
 > = {
   en: {
     continueWithGoogle: 'Continue with Google',
-    continueWithApple: 'Continue with Apple',
     continueWithMicrosoft: 'Continue with Microsoft',
     continueWithFacebook: 'Continue with Facebook',
     socialSeparator: 'or',
     socialLoading: 'Opening secure login...',
     socialError: 'The social login could not be started. Try again or use email instead.',
+    providerUnavailable: 'This login option is temporarily unavailable. Choose another option or use email.',
     oauthCancelled: 'Login was cancelled. Choose a provider or use email instead.',
     oauthFailed: 'The social login failed. Try again or use email instead.',
   },
   sv: {
     continueWithGoogle: 'Fortsätt med Google',
-    continueWithApple: 'Fortsätt med Apple',
     continueWithMicrosoft: 'Fortsätt med Microsoft',
     continueWithFacebook: 'Fortsätt med Facebook',
     socialSeparator: 'eller',
     socialLoading: 'Öppnar säker inloggning...',
     socialError: 'Det gick inte att starta social inloggning. Försök igen eller använd e-post.',
+    providerUnavailable: 'Det här inloggningsalternativet är tillfälligt otillgängligt. Välj ett annat eller använd e-post.',
     oauthCancelled: 'Inloggningen avbröts. Välj en leverantör eller använd e-post.',
     oauthFailed: 'Social inloggning misslyckades. Försök igen eller använd e-post.',
   },
   de: {
     continueWithGoogle: 'Weiter mit Google',
-    continueWithApple: 'Weiter mit Apple',
     continueWithMicrosoft: 'Weiter mit Microsoft',
     continueWithFacebook: 'Weiter mit Facebook',
     socialSeparator: 'oder',
     socialLoading: 'Sichere Anmeldung wird geöffnet...',
     socialError: 'Die soziale Anmeldung konnte nicht gestartet werden. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
+    providerUnavailable: 'Diese Anmeldeoption ist vorübergehend nicht verfügbar. Wählen Sie eine andere Option oder E-Mail.',
     oauthCancelled: 'Die Anmeldung wurde abgebrochen. Wählen Sie einen Anbieter oder nutzen Sie E-Mail.',
     oauthFailed: 'Die soziale Anmeldung ist fehlgeschlagen. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
   },
   fr: {
     continueWithGoogle: 'Continuer avec Google',
-    continueWithApple: 'Continuer avec Apple',
     continueWithMicrosoft: 'Continuer avec Microsoft',
     continueWithFacebook: 'Continuer avec Facebook',
     socialSeparator: 'ou',
     socialLoading: 'Ouverture de la connexion sécurisée...',
     socialError: 'La connexion sociale n’a pas pu démarrer. Réessayez ou utilisez l’e-mail.',
+    providerUnavailable: 'Cette option de connexion est temporairement indisponible. Choisissez-en une autre ou utilisez l’e-mail.',
     oauthCancelled: 'La connexion a été annulée. Choisissez un fournisseur ou utilisez l’e-mail.',
     oauthFailed: 'La connexion sociale a échoué. Réessayez ou utilisez l’e-mail.',
   },
   es: {
     continueWithGoogle: 'Continuar con Google',
-    continueWithApple: 'Continuar con Apple',
     continueWithMicrosoft: 'Continuar con Microsoft',
     continueWithFacebook: 'Continuar con Facebook',
     socialSeparator: 'o',
     socialLoading: 'Abriendo inicio de sesión seguro...',
     socialError: 'No se pudo iniciar el acceso social. Inténtalo de nuevo o usa el correo.',
+    providerUnavailable: 'Esta opción de acceso no está disponible temporalmente. Elige otra opción o usa el correo.',
     oauthCancelled: 'El inicio de sesión se canceló. Elige un proveedor o usa el correo.',
     oauthFailed: 'El acceso social falló. Inténtalo de nuevo o usa el correo.',
   },
   it: {
     continueWithGoogle: 'Continua con Google',
-    continueWithApple: 'Continua con Apple',
     continueWithMicrosoft: 'Continua con Microsoft',
     continueWithFacebook: 'Continua con Facebook',
     socialSeparator: 'oppure',
     socialLoading: 'Apertura accesso sicuro...',
     socialError: 'Impossibile avviare l’accesso social. Riprova o usa l’e-mail.',
+    providerUnavailable: 'Questa opzione di accesso non è temporaneamente disponibile. Scegline un’altra o usa l’e-mail.',
     oauthCancelled: 'Accesso annullato. Scegli un provider o usa l’e-mail.',
     oauthFailed: 'Accesso social non riuscito. Riprova o usa l’e-mail.',
   },
   pl: {
     continueWithGoogle: 'Kontynuuj z Google',
-    continueWithApple: 'Kontynuuj z Apple',
     continueWithMicrosoft: 'Kontynuuj z Microsoft',
     continueWithFacebook: 'Kontynuuj z Facebook',
     socialSeparator: 'lub',
     socialLoading: 'Otwieranie bezpiecznego logowania...',
     socialError: 'Nie udało się uruchomić logowania społecznościowego. Spróbuj ponownie albo użyj e-maila.',
+    providerUnavailable: 'Ta opcja logowania jest tymczasowo niedostępna. Wybierz inną albo użyj e-maila.',
     oauthCancelled: 'Logowanie zostało anulowane. Wybierz dostawcę albo użyj e-maila.',
     oauthFailed: 'Logowanie społecznościowe nie powiodło się. Spróbuj ponownie albo użyj e-maila.',
   },
   nl: {
     continueWithGoogle: 'Doorgaan met Google',
-    continueWithApple: 'Doorgaan met Apple',
     continueWithMicrosoft: 'Doorgaan met Microsoft',
     continueWithFacebook: 'Doorgaan met Facebook',
     socialSeparator: 'of',
     socialLoading: 'Veilige login openen...',
     socialError: 'Sociaal inloggen kon niet worden gestart. Probeer opnieuw of gebruik e-mail.',
+    providerUnavailable: 'Deze inlogoptie is tijdelijk niet beschikbaar. Kies een andere optie of gebruik e-mail.',
     oauthCancelled: 'Inloggen is geannuleerd. Kies een provider of gebruik e-mail.',
     oauthFailed: 'Sociaal inloggen is mislukt. Probeer opnieuw of gebruik e-mail.',
   },
   fi: {
     continueWithGoogle: 'Jatka Googlella',
-    continueWithApple: 'Jatka Applella',
     continueWithMicrosoft: 'Jatka Microsoftilla',
     continueWithFacebook: 'Jatka Facebookilla',
     socialSeparator: 'tai',
     socialLoading: 'Avataan turvallinen kirjautuminen...',
     socialError: 'Sosiaalista kirjautumista ei voitu käynnistää. Yritä uudelleen tai käytä sähköpostia.',
+    providerUnavailable: 'Tämä kirjautumistapa ei ole tilapäisesti käytettävissä. Valitse toinen tapa tai käytä sähköpostia.',
     oauthCancelled: 'Kirjautuminen peruttiin. Valitse palvelu tai käytä sähköpostia.',
     oauthFailed: 'Sosiaalinen kirjautuminen epäonnistui. Yritä uudelleen tai käytä sähköpostia.',
   },
   da: {
     continueWithGoogle: 'Fortsæt med Google',
-    continueWithApple: 'Fortsæt med Apple',
     continueWithMicrosoft: 'Fortsæt med Microsoft',
     continueWithFacebook: 'Fortsæt med Facebook',
     socialSeparator: 'eller',
     socialLoading: 'Åbner sikker login...',
     socialError: 'Social login kunne ikke startes. Prøv igen eller brug e-mail.',
+    providerUnavailable: 'Denne loginmulighed er midlertidigt utilgængelig. Vælg en anden mulighed eller brug e-mail.',
     oauthCancelled: 'Login blev annulleret. Vælg en udbyder eller brug e-mail.',
     oauthFailed: 'Social login mislykkedes. Prøv igen eller brug e-mail.',
   },
@@ -891,12 +891,12 @@ export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, 
     connectionError: source.connectionError,
     chooseMarket: source.chooseMarket,
     continueWithGoogle: social.continueWithGoogle,
-    continueWithApple: social.continueWithApple,
     continueWithMicrosoft: social.continueWithMicrosoft,
     continueWithFacebook: social.continueWithFacebook,
     socialSeparator: social.socialSeparator,
     socialLoading: social.socialLoading,
     socialError: social.socialError,
+    providerUnavailable: social.providerUnavailable,
     oauthCancelled: social.oauthCancelled,
     oauthFailed: social.oauthFailed,
   }
@@ -904,6 +904,55 @@ export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, 
 
 export function getAuthSpamHintCopy(locale: PublicLocale) {
   return modalBase[copyKey(locale)].spamHint
+}
+
+type AuthSeoMode = 'login' | 'register'
+
+const authSeoCopy: Record<ModalBaseKey, Record<AuthSeoMode, { title: string; description: string }>> = {
+  en: {
+    login: { title: 'Log in to Autorell', description: 'Log in to manage your vehicles, saved listings, searches, messages and Autorell account.' },
+    register: { title: 'Create an Autorell account', description: 'Create your Autorell account to advertise vehicles, save listings and contact sellers across Europe.' },
+  },
+  sv: {
+    login: { title: 'Logga in på Autorell', description: 'Logga in för att hantera fordon, sparade annonser, sökningar, meddelanden och ditt Autorell-konto.' },
+    register: { title: 'Skapa konto på Autorell', description: 'Skapa ett Autorell-konto för att annonsera fordon, spara annonser och kontakta säljare i Europa.' },
+  },
+  de: {
+    login: { title: 'Bei Autorell anmelden', description: 'Melden Sie sich an, um Fahrzeuge, gespeicherte Anzeigen, Suchen, Nachrichten und Ihr Autorell-Konto zu verwalten.' },
+    register: { title: 'Autorell-Konto erstellen', description: 'Erstellen Sie ein Autorell-Konto, um Fahrzeuge anzubieten, Anzeigen zu speichern und Verkäufer in Europa zu kontaktieren.' },
+  },
+  fr: {
+    login: { title: 'Se connecter à Autorell', description: 'Connectez-vous pour gérer vos véhicules, annonces enregistrées, recherches, messages et votre compte Autorell.' },
+    register: { title: 'Créer un compte Autorell', description: 'Créez un compte Autorell pour publier des véhicules, enregistrer des annonces et contacter des vendeurs en Europe.' },
+  },
+  es: {
+    login: { title: 'Iniciar sesión en Autorell', description: 'Inicia sesión para gestionar vehículos, anuncios guardados, búsquedas, mensajes y tu cuenta de Autorell.' },
+    register: { title: 'Crear una cuenta de Autorell', description: 'Crea una cuenta de Autorell para anunciar vehículos, guardar anuncios y contactar con vendedores de Europa.' },
+  },
+  it: {
+    login: { title: 'Accedi ad Autorell', description: 'Accedi per gestire veicoli, annunci salvati, ricerche, messaggi e il tuo account Autorell.' },
+    register: { title: 'Crea un account Autorell', description: 'Crea un account Autorell per pubblicare veicoli, salvare annunci e contattare venditori in Europa.' },
+  },
+  pl: {
+    login: { title: 'Zaloguj się do Autorell', description: 'Zaloguj się, aby zarządzać pojazdami, zapisanymi ogłoszeniami, wyszukiwaniami, wiadomościami i kontem Autorell.' },
+    register: { title: 'Utwórz konto Autorell', description: 'Utwórz konto Autorell, aby ogłaszać pojazdy, zapisywać oferty i kontaktować się ze sprzedawcami w Europie.' },
+  },
+  nl: {
+    login: { title: 'Inloggen bij Autorell', description: 'Log in om voertuigen, opgeslagen advertenties, zoekopdrachten, berichten en je Autorell-account te beheren.' },
+    register: { title: 'Maak een Autorell-account', description: 'Maak een Autorell-account om voertuigen te adverteren, advertenties op te slaan en verkopers in Europa te benaderen.' },
+  },
+  fi: {
+    login: { title: 'Kirjaudu Autorelliin', description: 'Kirjaudu hallitaksesi ajoneuvoja, tallennettuja ilmoituksia, hakuja, viestejä ja Autorell-tiliäsi.' },
+    register: { title: 'Luo Autorell-tili', description: 'Luo Autorell-tili, jotta voit ilmoittaa ajoneuvoja, tallentaa ilmoituksia ja ottaa yhteyttä myyjiin Euroopassa.' },
+  },
+  da: {
+    login: { title: 'Log ind på Autorell', description: 'Log ind for at administrere køretøjer, gemte annoncer, søgninger, beskeder og din Autorell-konto.' },
+    register: { title: 'Opret en Autorell-konto', description: 'Opret en Autorell-konto for at annoncere køretøjer, gemme annoncer og kontakte sælgere i Europa.' },
+  },
+}
+
+export function getAuthSeoCopy(locale: PublicLocale, mode: AuthSeoMode) {
+  return authSeoCopy[copyKey(locale)][mode]
 }
 
 export function getAuthApiCopy(locale: PublicLocale): AuthApiCopy {

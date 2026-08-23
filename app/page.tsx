@@ -4,6 +4,11 @@ import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
 import { getHomepageCategorySeo } from '@/lib/homepage-category-config'
+import { getAuthSeoCopy } from '@/lib/auth-copy'
+
+type HomePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
 
 async function getRootMarket() {
   const requestHeaders = await headers()
@@ -14,8 +19,18 @@ async function getRootMarket() {
   return 'en'
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
   const market = await getRootMarket()
+  const query = await searchParams
+  const auth = Array.isArray(query.auth) ? query.auth[0] : query.auth
+  if (auth === 'login' || auth === 'register') {
+    const seo = getAuthSeoCopy(market, auth)
+    return {
+      title: { absolute: seo.title },
+      description: seo.description,
+      robots: { index: false, follow: true },
+    }
+  }
   const languages = getPublicLanguageAlternates('/')
 
   if (market === 'de') {

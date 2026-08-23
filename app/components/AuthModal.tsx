@@ -15,18 +15,65 @@ const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'
-type SocialProvider = 'google' | 'apple' | 'azure' | 'facebook'
+type SocialProvider = 'google' | 'azure' | 'facebook'
 
 const socialProviders: Array<{
   provider: SocialProvider
-  labelKey: 'continueWithGoogle' | 'continueWithApple' | 'continueWithMicrosoft' | 'continueWithFacebook'
-  mark: string
+  labelKey: 'continueWithGoogle' | 'continueWithMicrosoft' | 'continueWithFacebook'
 }> = [
-  { provider: 'google', labelKey: 'continueWithGoogle', mark: 'G' },
-  { provider: 'apple', labelKey: 'continueWithApple', mark: 'A' },
-  { provider: 'azure', labelKey: 'continueWithMicrosoft', mark: 'M' },
-  { provider: 'facebook', labelKey: 'continueWithFacebook', mark: 'f' },
+  { provider: 'google', labelKey: 'continueWithGoogle' },
+  { provider: 'azure', labelKey: 'continueWithMicrosoft' },
+  { provider: 'facebook', labelKey: 'continueWithFacebook' },
 ]
+
+function SocialProviderLogo({ provider }: { provider: SocialProvider }) {
+  if (provider === 'google') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+        <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.63-2.43l-3.24-2.54c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
+        <path fill="#FBBC05" d="M6.39 13.86A6.03 6.03 0 0 1 6.07 12c0-.65.11-1.28.32-1.86V7.52H3.04A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.48l3.35-2.62Z" />
+        <path fill="#EA4335" d="M12 6.01c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.52l3.35 2.62C7.18 7.77 9.39 6.01 12 6.01Z" />
+      </svg>
+    )
+  }
+
+  if (provider === 'azure') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path fill="#F25022" d="M2 2h9.5v9.5H2z" />
+        <path fill="#7FBA00" d="M12.5 2H22v9.5h-9.5z" />
+        <path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
+        <path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <circle cx="12" cy="12" r="11" fill="#1877F2" />
+      <path fill="#fff" d="M15.8 12.7h-2.4V21h-3.5v-8.3H8.2V9.8h1.7V8c0-2.3 1.1-4.6 4.8-4.6 1.1 0 1.9.1 1.9.1l-.1 3h-1.8c-1.2 0-1.3.6-1.3 1.6v1.7h3.2l-.8 2.9Z" />
+    </svg>
+  )
+}
+
+async function socialProviderIsEnabled(provider: SocialProvider) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !anonKey) return true
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+      cache: 'no-store',
+      headers: { apikey: anonKey },
+    })
+    if (!response.ok) return true
+    const settings = await response.json() as { external?: Partial<Record<SocialProvider, boolean>> }
+    return settings.external?.[provider] === true
+  } catch {
+    return true
+  }
+}
 
 type AuthModalProps = {
   isOpen: boolean
@@ -175,9 +222,15 @@ export default function AuthModal({
     setNotice('')
     setSocialLoading(provider)
     try {
+      if (!(await socialProviderIsEnabled(provider))) {
+        setError(copy.providerUnavailable)
+        setSocialLoading(null)
+        return
+      }
       const redirectTo = new URL('/auth/callback', window.location.origin)
       redirectTo.searchParams.set('next', oauthDestination())
       redirectTo.searchParams.set('mode', mode)
+      redirectTo.searchParams.set('flow', 'oauth')
       const queryParams =
         provider === 'google' || provider === 'azure'
           ? { prompt: 'select_account' }
@@ -188,6 +241,7 @@ export default function AuthModal({
         options: {
           redirectTo: redirectTo.toString(),
           queryParams,
+          scopes: provider === 'azure' ? 'email' : undefined,
         },
       })
       if (oauthError) {
@@ -583,7 +637,7 @@ export default function AuthModal({
           ) : step === 'email' ? (
             <>
             <div className="mt-6 grid gap-2.5">
-              {socialProviders.map(({ provider, labelKey, mark }) => (
+              {socialProviders.map(({ provider, labelKey }) => (
                 <button
                   key={provider}
                   type="button"
@@ -591,8 +645,8 @@ export default function AuthModal({
                   onClick={() => void startSocialLogin(provider)}
                   className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-[11px] border border-[#d5dde8] bg-white px-4 text-sm font-[600] text-[#101828] transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] disabled:opacity-60"
                 >
-                  <span className="grid h-6 w-6 place-items-center rounded-full border border-[#d7e0ec] text-[12px] font-[700] text-[#101828]">
-                    {mark}
+                  <span className="grid h-6 w-6 place-items-center">
+                    <SocialProviderLogo provider={provider} />
                   </span>
                   {socialLoading === provider ? copy.socialLoading : copy[labelKey]}
                 </button>

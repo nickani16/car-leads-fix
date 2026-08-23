@@ -9,9 +9,11 @@ import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
 import { type PublicLocale } from '@/lib/public-i18n'
 import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
 import { getHomepageCategorySeo } from '@/lib/homepage-category-config'
+import { getAuthSeoCopy } from '@/lib/auth-copy'
 
 type MarketPageProps = {
   params: Promise<{ market: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export const dynamicParams = false
@@ -25,8 +27,27 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: MarketPageProps): Promise<Metadata> {
   const { market: marketCode } = await params
+  const query = await searchParams
+  const auth = Array.isArray(query.auth) ? query.auth[0] : query.auth
+  if (auth === 'login' || auth === 'register') {
+    const market = getEuBuyerMarket(marketCode)
+    const locale = marketCode === 'se'
+      ? 'sv'
+      : marketCode === 'de'
+        ? 'de'
+        : market
+          ? marketLocale(market.code, market.language)
+          : 'en'
+    const seo = getAuthSeoCopy(locale, auth)
+    return {
+      title: { absolute: seo.title },
+      description: seo.description,
+      robots: { index: false, follow: true },
+    }
+  }
   const languages = getPublicLanguageAlternates('/')
 
   if (marketCode === 'se' || marketCode === 'de') {

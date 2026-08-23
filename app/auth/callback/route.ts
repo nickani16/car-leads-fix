@@ -9,23 +9,29 @@ export async function GET(request: Request) {
   const mode = requestUrl.searchParams.get('mode') === 'register' ? 'register' : 'login'
   const oauthError = requestUrl.searchParams.get('error')
   const oauthErrorCode = requestUrl.searchParams.get('error_code')
+  const isOauthFlow = requestUrl.searchParams.get('flow') === 'oauth'
   const next = requestUrl.searchParams.get('next') || '/account'
   const safeNext =
     next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
       ? next
       : '/account'
+  const localePrefix = safeNext.match(/^\/(at|be|fr|es|it|pl|nl|fi|dk)(?:\/|$)/)?.[1]
+  const authEntryPath = localePrefix ? `/${localePrefix}` : '/'
+
+  const oauthFailureRedirect = (status: 'oauth-cancelled' | 'oauth-error') => {
+    const destination = new URL(authEntryPath, requestUrl.origin)
+    destination.searchParams.set('auth', mode)
+    destination.searchParams.set('status', status)
+    destination.searchParams.set('next', safeNext)
+    return NextResponse.redirect(destination)
+  }
 
   if (oauthError || oauthErrorCode) {
-    const destination = new URL('/', requestUrl.origin)
-    destination.searchParams.set('auth', mode)
-    destination.searchParams.set(
-      'status',
+    return oauthFailureRedirect(
       oauthError === 'access_denied' || oauthErrorCode === 'access_denied'
         ? 'oauth-cancelled'
         : 'oauth-error',
     )
-    destination.searchParams.set('next', safeNext)
-    return NextResponse.redirect(destination)
   }
 
   const supabase = await createClient()
@@ -56,15 +62,17 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) {
+        return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+      }
+      await supabase.auth.signOut()
     }
 
-    const destination = new URL('/', requestUrl.origin)
-    destination.searchParams.set('auth', mode)
-    destination.searchParams.set('status', 'oauth-error')
-    destination.searchParams.set('next', safeNext)
-    return NextResponse.redirect(destination)
+    return oauthFailureRedirect('oauth-error')
   }
+
+  if (isOauthFlow) return oauthFailureRedirect('oauth-error')
 
   return NextResponse.redirect(
     new URL('/?auth=forgot-password&status=invalid-link', requestUrl.origin)

@@ -2430,6 +2430,19 @@ export default function PublicHeader({
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
+            {!headerAccount.authenticated ? (
+              <Link
+                href={createListingHref}
+                onClick={closeMobile}
+                className="mb-4 flex min-h-[58px] w-full items-center justify-center gap-2.5 rounded-[8px] bg-[#00b969] px-5 text-[16px] font-semibold text-white transition hover:bg-[#009f5a] active:scale-[.99]"
+              >
+                <span className="grid h-5 w-5 place-items-center rounded-[3px] border-2 border-white">
+                  <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </span>
+                {accountMenuCopy.create}
+              </Link>
+            ) : null}
+
             <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
               {headerAccount.authenticated ? (
                 <Link
