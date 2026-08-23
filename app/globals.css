@@ -64,6 +64,38 @@ body {
   }
 }
 
+.marketplace-scrollbar {
+  scrollbar-color: #0866ff #ffffff;
+  scrollbar-width: thin;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-track,
+.marketplace-scrollbar::-webkit-scrollbar-corner {
+  background: #ffffff;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 32px;
+  border: 0;
+  border-radius: 0;
+  background: #0866ff;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0755d9;
+}
+
+.marketplace-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 .autorell-edit-listing-form input::placeholder,
 .autorell-edit-listing-form textarea::placeholder {
   color: #98a2b3 !important;

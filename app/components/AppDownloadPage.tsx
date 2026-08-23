@@ -264,7 +264,7 @@ export default function AppDownloadPage({
             <h1 className="mt-4 text-[38px] font-semibold leading-[1.08] sm:text-[54px]">{copy.title}</h1>
             <p className="mt-5 max-w-[530px] text-[17px] leading-8 text-[#475467]">{copy.intro}</p>
             <div className="mt-7">
-              <AppInstallAction label={copy.install} installedLabel={copy.installed} />
+              <AppInstallAction label={copy.install} installedLabel={copy.installed} locale={locale} />
             </div>
           </div>
 
@@ -317,7 +317,7 @@ export default function AppDownloadPage({
             <h2 className="mt-4 text-[32px] font-semibold leading-[1.12] sm:text-[44px]">{copy.secondTitle}</h2>
             <p className="mt-5 text-[16px] leading-8 text-[#475467]">{copy.secondText}</p>
             <div className="mt-7">
-              <AppInstallAction label={copy.install} installedLabel={copy.installed} />
+              <AppInstallAction label={copy.install} installedLabel={copy.installed} locale={locale} />
             </div>
             <p className="mt-3 text-[12px] text-[#667085]">{copy.browserNote}</p>
 

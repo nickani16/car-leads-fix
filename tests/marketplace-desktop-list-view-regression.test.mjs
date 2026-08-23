@@ -33,15 +33,15 @@ test('desktop list view keeps one listing per row and uses the current marketpla
   assert.match(experienceSource, /<MarketplaceDesktopListingRow/)
   assert.doesNotMatch(experienceSource, /layout="desktopCard"/)
   assert.doesNotMatch(experienceSource, /grid max-w-\[920px\] grid-cols-2/)
-  assert.match(experienceSource, /max-w-\[1320px\]/)
+  assert.match(experienceSource, /max-w-\[1680px\]/)
   assert.match(experienceSource, /onShowDesktopList=\{\(\) => \{/)
   assert.match(experienceSource, /setDesktopMarketplaceView\('map'\)/)
   assert.match(experienceSource, /min-\[1120px\]:!hidden/)
   assert.doesNotMatch(experienceSource, /setFullscreen|<Expand|translatePublic\(locale, 'Fullscreen'\)/)
 })
 
-test('desktop list sidebar follows a flat Blocket-style filter structure', () => {
-  assert.match(experienceSource, /className="flex min-h-0 flex-col border-r border-\[#d7dde7\] bg-white"/)
+test('desktop list sidebar follows a flat filter structure', () => {
+  assert.match(experienceSource, /className="flex min-h-0 self-start flex-col overflow-hidden rounded-\[7px\] border border-\[#d7dde7\] bg-white"/)
   assert.match(experienceSource, /sidebar\s*\? 'border-b border-\[#e4e7ec\] bg-white last:border-b-0'/)
   assert.match(experienceSource, /sidebar \? 'min-h-\[48px\] px-1 py-2'/)
   assert.match(experienceSource, /sidebar \? 'hidden' : 'grid'/)
@@ -61,7 +61,7 @@ test('desktop list shell has explicit copy for every public locale', () => {
   assert.match(experienceSource, /showMap: 'Afficher la carte'/)
 })
 
-test('desktop list cards keep the image full-height and reserve the price column for price and save action', () => {
+test('desktop list cards use a wide image, seller row and listing actions', () => {
   for (const field of [
     'listing.title',
     'listing.priceLabel',
@@ -75,20 +75,22 @@ test('desktop list cards keep the image full-height and reserve the price column
 
   assert.match(desktopListingRowSource, /<ListingCardImageCarousel/)
   assert.match(desktopListingRowSource, /<SavedListingButton/)
-  assert.match(desktopListingRowSource, /className="absolute right-3 top-3 !h-8 !w-8/)
+  assert.match(desktopListingRowSource, /className="absolute right-4 top-4 !h-10 !w-10/)
   assert.match(desktopListingRowSource, /className="absolute inset-0 overflow-hidden bg-white"/)
   assert.doesNotMatch(desktopListingRowSource, /showDotsOnDesktop/)
   assert.doesNotMatch(desktopListingRowSource, /\{listing\.description\}/)
   assert.match(desktopListingRowSource, /const sellerLabel = listing\.sellerIsTrader \? copy\.businessSeller : copy\.privateSeller/)
   assert.match(desktopListingRowSource, /\{offerBadge\.label\}/)
-  assert.match(desktopListingRowSource, /\{offerBadge\.label\}[\s\S]*?<h2[\s\S]*?\{listing\.title\}/)
-  assert.match(desktopListingRowSource, /\{sellerLabel\}/)
+  assert.match(desktopListingRowSource, /<h2[\s\S]*?\{listing\.title\}[\s\S]*?\{offerBadge\.label\}/)
+  assert.match(desktopListingRowSource, /listing\.sellerName \|\| sellerLabel/)
   assert.match(desktopListingRowSource, /equipmentChips\.map/)
   assert.doesNotMatch(desktopListingRowSource, /equipmentChips\.slice/)
   assert.match(desktopListingRowSource, /backdrop-blur-\[3px\]/)
   assert.match(desktopListingRowSource, /\{copy\.showMoreEquipment\}/)
   assert.match(desktopListingRowSource, /\{copy\.vatIncluded\}/)
-  assert.doesNotMatch(desktopListingRowSource, /sellerLogoUrl/)
+  assert.match(desktopListingRowSource, /sellerLogoUrl/)
+  assert.match(desktopListingRowSource, /listing\.sellerName/)
+  assert.match(desktopListingRowSource, /contactListingLabel/)
   assert.doesNotMatch(desktopListingRowSource, /sellerRatingAverage/)
   assert.doesNotMatch(desktopListingRowSource, /location \|\| sellerLabel/)
   assert.match(desktopListingRowSource, /aria-pressed=\{compareActive\}/)
@@ -97,12 +99,19 @@ test('desktop list cards keep the image full-height and reserve the price column
   assert.match(experienceSource, /sellerTypeLabel/)
   assert.match(experienceSource, /shouldShowListingCountryChip/)
   assert.match(experienceSource, /sm:grid-cols-\[260px_minmax\(0,1fr\)\] sm:items-start/)
-  assert.match(experienceSource, /grid-cols-\[286px_minmax\(0,1fr\)\]/)
-  assert.match(experienceSource, /min-\[1120px\]:my-4/)
+  assert.match(experienceSource, /grid-cols-\[320px_minmax\(0,1fr\)\]/)
+  assert.match(experienceSource, /min-\[1120px\]:overflow-visible/)
   assert.match(experienceSource, /flex min-h-9 items-center gap-3/)
-  assert.match(desktopListingRowSource, /grid-cols-\[260px_minmax\(0,1fr\)_184px\]/)
+  assert.match(desktopListingRowSource, /grid-cols-\[minmax\(320px,37%\)_minmax\(0,1fr\)\]/)
   assert.match(experienceSource, /icon=\{<Scale/)
   assert.match(experienceSource, /icon=\{<Layers/)
+})
+
+test('marketplace dialogs keep one blue scroll container and align the desktop filter rail', () => {
+  assert.match(experienceSource, /marketplace-scrollbar max-h-\[calc\(min\(74vh,560px\)-65px\)\] overflow-y-auto/)
+  assert.doesNotMatch(experienceSource, /grid max-h-\[(?:420|360)px\] gap-1 overflow-y-auto/)
+  assert.match(experienceSource, /placement === 'mobile' \? 'relative top-\[3px\] items-center' : 'items-start'/)
+  assert.match(experienceSource, /'marketplace-scrollbar min-w-0 flex-1 overflow-x-auto/)
 })
 
 test('desktop list row provides equipment overflow and VAT copy for every public locale', () => {

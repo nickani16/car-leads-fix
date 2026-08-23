@@ -1628,8 +1628,12 @@ export default function VehicleSearchExperience({
         `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`,
       )
     }
-    desktopResultsScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [searchTotalPages])
+    if (desktopMarketplaceView === 'list') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      desktopResultsScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [desktopMarketplaceView, searchTotalPages])
 
   useEffect(() => {
     const handlePopState = () => {
@@ -2675,7 +2679,7 @@ export default function VehicleSearchExperience({
               <X className="h-4.5 w-4.5" aria-hidden="true" />
             </button>
           </div>
-          <div className="max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 sm:p-5">{children}</div>
+          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 sm:p-5">{children}</div>
         </div>
       </>
     )
@@ -2747,7 +2751,7 @@ export default function VehicleSearchExperience({
         data-marketplace-filter-surface
         className={wrapperClassName}
       >
-        <div className={`flex h-full min-w-0 items-center gap-2 ${placement === 'mobile' ? 'relative top-[3px]' : ''}`}>
+        <div className={`flex h-full min-w-0 gap-2 ${placement === 'mobile' ? 'relative top-[3px] items-center' : 'items-start'}`}>
           <div data-marketplace-filter-trigger className="relative z-20 shrink-0 bg-white">
             <button
               type="button"
@@ -2783,7 +2787,7 @@ export default function VehicleSearchExperience({
 
           <div
             data-marketplace-filter-rail
-            className={`${placement === 'desktop' ? 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1 [scrollbar-width:thin]' : 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
+            className={`${placement === 'desktop' ? 'marketplace-scrollbar min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1' : 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
             onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
             onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
           >
@@ -2912,7 +2916,7 @@ export default function VehicleSearchExperience({
           <div className="relative order-20 shrink-0">
             {desktopMenuButton(placement, 'category', categoryLabel, false)}
             {renderDesktopFilterPopover(placement, 'category', desktopListText.vehicleCategory, (
-              <div className="grid max-h-[420px] gap-1 overflow-y-auto">
+              <div className="grid gap-1">
                 {visibleSelectableCategories.map((item) => {
                   const Icon = item.icon
                   return (
@@ -2941,7 +2945,7 @@ export default function VehicleSearchExperience({
             {desktopMenuButton(placement, 'bodyType', bodyTypeLabel, Boolean(bodyType))}
             {renderDesktopFilterPopover(placement, 'bodyType', bodyTypeFilterLabel, (
               <div className="space-y-3">
-                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                <div className="grid gap-1">
                   {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
                     const label = translateListingVehicleValue(locale, option)
                     return (
@@ -2985,7 +2989,7 @@ export default function VehicleSearchExperience({
             {desktopMenuButton(placement, 'market', marketLabel, selectedMarketCodes.length > 1)}
             {renderDesktopFilterPopover(placement, 'market', uiText(locale, 'Market', 'Marknad', 'Markt'), (
               <div className="space-y-3">
-                <div className="grid max-h-[360px] gap-1 overflow-y-auto">
+                <div className="grid gap-1">
                   {marketOptions.map((option) => {
                     const selected = option.value
                       ? selectedMarketCodes.includes(option.value)
@@ -3140,8 +3144,8 @@ export default function VehicleSearchExperience({
   }, [])
 
   return (
-    <main className="min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:!h-[calc(100dvh-62px)] min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
-      <div className="flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:!h-full min-[1120px]:!min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
+    <main className={`min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:w-full min-[1120px]:pb-0 ${desktopMarketplaceView === 'map' ? 'min-[1120px]:!h-[calc(100dvh-62px)] min-[1120px]:!min-h-0 min-[1120px]:overflow-hidden' : 'min-[1120px]:overflow-visible'}`}>
+      <div className={`flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:w-full ${desktopMarketplaceView === 'map' ? 'min-[1120px]:!h-full min-[1120px]:!min-h-0 min-[1120px]:overflow-hidden' : 'min-[1120px]:overflow-visible'}`}>
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
@@ -3173,16 +3177,16 @@ export default function VehicleSearchExperience({
 
         {desktopMarketplaceView === 'map' ? renderDesktopFilterBar('desktop') : null}
 
-        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden min-[1120px]:overflow-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'bg-[#eef2f7] min-[1120px]:!grid-cols-1' : 'bg-white'}`}>
+        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'bg-white min-[1120px]:!grid-cols-1 min-[1120px]:overflow-visible' : 'bg-white min-[1120px]:overflow-hidden'}`}>
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1320px] grid-cols-[286px_minmax(0,1fr)] overflow-hidden rounded-[8px] border border-[#d7dde7] bg-[#f3f5f8] shadow-[0_4px_18px_rgba(16,24,40,.04)] min-[1120px]:my-4 min-[1120px]:grid"
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1680px] grid-cols-[320px_minmax(0,1fr)] gap-8 bg-white px-6 py-8 min-[1120px]:grid 2xl:px-8"
             >
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
-                className="flex min-h-0 flex-col border-r border-[#d7dde7] bg-white"
+                className="flex min-h-0 self-start flex-col overflow-hidden rounded-[7px] border border-[#d7dde7] bg-white"
               >
                 <div className="border-b border-[#e4e7ec] bg-white px-3 pb-3 pt-3">
                   <div className="flex items-center justify-between gap-3">
@@ -3208,7 +3212,7 @@ export default function VehicleSearchExperience({
                   <div className="mt-3">{renderMarketplaceSearchInput('', true, translatePublic(locale, 'Search'))}</div>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-1 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin]">
+                <div className="min-h-0 flex-1 px-2 py-1">
                   <CollapsibleFilterSection
                     density="sidebar"
                     icon={<Scale className="h-4 w-4" aria-hidden="true" />}
@@ -3447,7 +3451,7 @@ export default function VehicleSearchExperience({
               </aside>
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
-                <div className="border-b border-[#dfe5ee] bg-white px-4 py-2.5 2xl:px-5">
+                <div className="border-b border-[#dfe5ee] bg-white px-0 pb-4 pt-1">
                   <div className="flex min-h-9 items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[17px] font-semibold text-[#101828]">
@@ -3484,7 +3488,7 @@ export default function VehicleSearchExperience({
                   ) : null}
                 </div>
 
-                <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#f4f6f9] px-5 py-4 [scrollbar-color:#c7d2e2_transparent] [scrollbar-width:thin] 2xl:px-6 2xl:py-5">
+                <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 bg-white pt-5">
                   {filteredListings.length ? (
                     <>
                       <MarketplacePagination
