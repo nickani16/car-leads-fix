@@ -52,7 +52,7 @@ export default async function RegisterPage({
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#101828]">
-      <PublicHeader locale={locale} marketCode={marketCode} />
+      <PublicHeader locale={locale} marketCode={marketCode} hideMobileBottomNav />
       <section className="border-b border-[#e4eaf3] bg-white">
         <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-12">
           <div className="lg:sticky lg:top-28">

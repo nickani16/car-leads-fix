@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
+
+const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
+const notificationCenter = readFileSync(new URL('../app/components/HeaderNotificationCenter.tsx', import.meta.url), 'utf8')
+const installButton = readFileSync(new URL('../app/components/InstallAutorellButton.tsx', import.meta.url), 'utf8')
+const footer = readFileSync(new URL('../app/components/PublicFooter.tsx', import.meta.url), 'utf8')
+const locationPrompt = readFileSync(new URL('../app/components/HomeLocationConsentPrompt.tsx', import.meta.url), 'utf8')
+const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.meta.url), 'utf8')
+const layout = readFileSync(new URL('../app/layout.tsx', import.meta.url), 'utf8')
+const serviceWorker = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
+const globals = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
+
+const locales = ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']
+
+test('location sharing remains mobile-only and registration hides the mobile bottom navigation', () => {
+  assert.match(locationPrompt, /min-\[1120px\]:hidden/)
+  assert.match(registerPage, /<PublicHeader locale=\{locale\} marketCode=\{marketCode\} hideMobileBottomNav \/>/)
+  assert.match(header, /hideMobileBottomNav \|\| authModalOpen \? 'hidden' : ''/)
+})
+
+test('desktop create listing CTA is only rendered for signed-out visitors', () => {
+  assert.match(header, /headerAccountResolved && !headerAccount\.authenticated \? \([\s\S]*href=\{createListingHref\}[\s\S]*accountMenuCopy\.create[\s\S]*\) : null/)
+})
+
+test('notification center is localized and links existing reminders and messages', () => {
+  for (const locale of locales) assert.match(notificationCenter, new RegExp(`\\n  ${locale}: \\{`))
+  assert.match(notificationCenter, /Notification\.requestPermission\(\)/)
+  assert.match(notificationCenter, /registration\.showNotification\('Autorell'/)
+  assert.match(notificationCenter, /href=\{messagesHref\}/)
+  assert.match(notificationCenter, /href=\{savedSearchesHref\}/)
+  assert.match(header, /<HeaderNotificationCenter/)
+})
+
+test('footer exposes localized device-aware PWA installation', () => {
+  for (const locale of locales) assert.match(installButton, new RegExp(`\\n  ${locale}: \\{`))
+  assert.match(installButton, /beforeinstallprompt/)
+  assert.match(installButton, /display-mode: standalone/)
+  assert.match(footer, /<InstallAutorellButton locale=\{locale\} \/>/)
+  assert.match(layout, /<PwaRegistration \/>/)
+  assert.match(serviceWorker, /self\.clients\.claim\(\)/)
+})
+
+test('custom primary-color scrollbar is limited to desktop pointer layouts', () => {
+  assert.match(globals, /@media \(min-width: 1120px\) and \(hover: hover\)/)
+  assert.match(globals, /scrollbar-color: #0866ff #edf2f7/)
+  assert.match(globals, /html::-webkit-scrollbar-thumb/)
+})

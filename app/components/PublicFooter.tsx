@@ -18,6 +18,7 @@ import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
 import BrandLogo from './BrandLogo'
+import InstallAutorellButton from './InstallAutorellButton'
 
 const footerCopy = {
   sv: {
@@ -361,6 +362,9 @@ export default function PublicFooter({
             </p>
             <div className="mt-5">
               <SocialLinks />
+            </div>
+            <div className="mt-4">
+              <InstallAutorellButton locale={locale} />
             </div>
           </div>
           {t.columns.map((column) => (

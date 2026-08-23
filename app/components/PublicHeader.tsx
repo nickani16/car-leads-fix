@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
-  Bell,
   Bookmark,
   Building2,
   CarFront,
@@ -72,6 +71,7 @@ import {
 } from '@/lib/saved-searches'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
+import HeaderNotificationCenter from './HeaderNotificationCenter'
 
 type AuthView = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -696,6 +696,7 @@ export default function PublicHeader({
   const [authInitialView, setAuthInitialView] = useState<AuthView>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
+  const [headerAccountResolved, setHeaderAccountResolved] = useState(false)
   const [activePathname, setActivePathname] = useState('')
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [savedSearchCount, setSavedSearchCount] = useState(0)
@@ -888,6 +889,8 @@ export default function PublicHeader({
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: fallback }),
       )
+    } finally {
+      setHeaderAccountResolved(true)
     }
   }, [])
 
@@ -1891,14 +1894,16 @@ export default function PublicHeader({
             </nav>
 
             <div className="ml-auto hidden h-full shrink-0 items-center gap-3 min-[1120px]:flex xl:gap-4">
-              <Link
-                href={createListingHref}
-                onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b55e] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
-              >
-                <Plus className="h-4 w-4" strokeWidth={2.2} />
-                <span>{accountMenuCopy.create}</span>
-              </Link>
+              {headerAccountResolved && !headerAccount.authenticated ? (
+                <Link
+                  href={createListingHref}
+                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b55e] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
+                >
+                  <Plus className="h-4 w-4" strokeWidth={2.2} />
+                  <span>{accountMenuCopy.create}</span>
+                </Link>
+              ) : null}
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
@@ -1924,6 +1929,15 @@ export default function PublicHeader({
                       <span>{label}</span>
                     </Link>
                   ))}
+                  <HeaderNotificationCenter
+                    locale={locale}
+                    authenticated
+                    unreadMessages={headerAccount.unreadMessages}
+                    savedSearchCount={savedSearchCount}
+                    messagesHref={accountMessagesHref}
+                    savedSearchesHref={savedSearchesHref}
+                    onRequireAuth={() => openAuthModal('login')}
+                  />
                   <div ref={profileMenuRef} className="relative flex h-full items-center">
                     <button
                       type="button"
@@ -1983,21 +1997,15 @@ export default function PublicHeader({
                       ) : null}
                     </span>
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('login', savedSearchesHref)}
-                    aria-label={translatePublic(locale, 'Saved searches')}
-                    className="inline-grid h-10 w-10 place-items-center rounded-full text-[#101828] transition hover:bg-[#f2f6ff] hover:text-[#0866ff]"
-                  >
-                    <span className="relative">
-                      <Bell className="h-5 w-5" strokeWidth={1.9} />
-                      {savedSearchBadge ? (
-                        <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                          {savedSearchBadge}
-                        </span>
-                      ) : null}
-                    </span>
-                  </button>
+                  <HeaderNotificationCenter
+                    locale={locale}
+                    authenticated={false}
+                    unreadMessages={0}
+                    savedSearchCount={savedSearchCount}
+                    messagesHref={accountMessagesHref}
+                    savedSearchesHref={savedSearchesHref}
+                    onRequireAuth={() => openAuthModal('login', savedSearchesHref)}
+                  />
                   <button
                     type="button"
                     onClick={() => openAuthModal('login')}
@@ -2644,7 +2652,7 @@ export default function PublicHeader({
       ) : null}
       <nav
         ref={mobileBottomNavRef}
-        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,20px)] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav ? 'hidden' : ''} ${
+        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,20px)] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav || authModalOpen ? 'hidden' : ''} ${
           keepMobileBottomNavVisible || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
         aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}

@@ -158,7 +158,7 @@ export default function HomeLocationConsentPrompt({ locale }: { locale: PublicLo
   }
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-[420px] rounded-[18px] border border-[#d9e2ef] bg-white/95 p-4 text-[#101828] shadow-[0_18px_50px_rgba(16,24,40,.18)] backdrop-blur sm:bottom-6">
+    <div className="fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[80] mx-auto max-w-[420px] rounded-[18px] border border-[#d9e2ef] bg-white/95 p-4 text-[#101828] shadow-[0_18px_50px_rgba(16,24,40,.18)] backdrop-blur min-[1120px]:hidden">
       <button
         type="button"
         onClick={() => close('declined')}

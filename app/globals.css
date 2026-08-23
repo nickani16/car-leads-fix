@@ -20,6 +20,32 @@ body {
   font-weight: 400;
 }
 
+@media (min-width: 1120px) and (hover: hover) {
+  html {
+    scrollbar-color: #0866ff #edf2f7;
+    scrollbar-width: thin;
+  }
+
+  html::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: #edf2f7;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 2px solid #edf2f7;
+    border-radius: 999px;
+    background: #0866ff;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: #0755d9;
+  }
+}
+
 .autorell-edit-listing-form input::placeholder,
 .autorell-edit-listing-form textarea::placeholder {
   color: #98a2b3 !important;

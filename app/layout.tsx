@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { Geist } from 'next/font/google'
 import CookieConsent from './components/CookieConsent'
 import ConsentManagedTelemetry from './components/ConsentManagedTelemetry'
+import PwaRegistration from './components/PwaRegistration'
 import './globals.css'
 
 const geist = Geist({
@@ -125,6 +126,7 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
+        <PwaRegistration />
         <CookieConsent />
         <ConsentManagedTelemetry />
       </body>
