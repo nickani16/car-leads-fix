@@ -5,6 +5,7 @@ import test from 'node:test'
 const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const notificationCenter = readFileSync(new URL('../app/components/HeaderNotificationCenter.tsx', import.meta.url), 'utf8')
 const installButton = readFileSync(new URL('../app/components/InstallAutorellButton.tsx', import.meta.url), 'utf8')
+const pwaRegistration = readFileSync(new URL('../app/components/PwaRegistration.tsx', import.meta.url), 'utf8')
 const footer = readFileSync(new URL('../app/components/PublicFooter.tsx', import.meta.url), 'utf8')
 const locationPrompt = readFileSync(new URL('../app/components/HomeLocationConsentPrompt.tsx', import.meta.url), 'utf8')
 const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.meta.url), 'utf8')
@@ -35,8 +36,10 @@ test('notification center is localized and links existing reminders and messages
 
 test('footer exposes localized device-aware PWA installation', () => {
   for (const locale of locales) assert.match(installButton, new RegExp(`\\n  ${locale}: \\{`))
-  assert.match(installButton, /beforeinstallprompt/)
+  assert.match(pwaRegistration, /beforeinstallprompt/)
   assert.match(installButton, /display-mode: standalone/)
+  assert.match(installButton, /navigator\.share/)
+  assert.doesNotMatch(installButton, /role="dialog"/)
   assert.match(footer, /<InstallAutorellButton locale=\{locale\} \/>/)
   assert.match(layout, /<PwaRegistration \/>/)
   assert.match(serviceWorker, /self\.clients\.claim\(\)/)
@@ -44,6 +47,7 @@ test('footer exposes localized device-aware PWA installation', () => {
 
 test('custom primary-color scrollbar is limited to desktop pointer layouts', () => {
   assert.match(globals, /@media \(min-width: 1120px\) and \(hover: hover\)/)
-  assert.match(globals, /scrollbar-color: #0866ff #edf2f7/)
+  assert.match(globals, /scrollbar-color: #0866ff #ffffff/)
   assert.match(globals, /html::-webkit-scrollbar-thumb/)
+  assert.match(globals, /html::-webkit-scrollbar-button/)
 })

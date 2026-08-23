@@ -22,7 +22,7 @@ body {
 
 @media (min-width: 1120px) and (hover: hover) {
   html {
-    scrollbar-color: #0866ff #edf2f7;
+    scrollbar-color: #0866ff #ffffff;
     scrollbar-width: thin;
   }
 
@@ -31,18 +31,27 @@ body {
   }
 
   html::-webkit-scrollbar-track {
-    background: #edf2f7;
+    background: #ffffff;
   }
 
   html::-webkit-scrollbar-thumb {
     min-height: 48px;
-    border: 2px solid #edf2f7;
+    border: 2px solid #ffffff;
     border-radius: 999px;
     background: #0866ff;
   }
 
   html::-webkit-scrollbar-thumb:hover {
     background: #0755d9;
+  }
+
+  html::-webkit-scrollbar-button,
+  html::-webkit-scrollbar-button:single-button,
+  html::-webkit-scrollbar-button:vertical:start:decrement,
+  html::-webkit-scrollbar-button:vertical:end:increment {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
