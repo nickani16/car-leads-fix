@@ -31,29 +31,23 @@ const copyByLocale: Record<PublicLocale, InstallCopy> = {
 export default function InstallAutorellButton({ locale }: { locale: PublicLocale }) {
   const copy = copyByLocale[locale] || copyByLocale.en
   const [deferredPrompt, setDeferredPrompt] = useState<InstallPromptEvent | null>(null)
-  const [available, setAvailable] = useState(false)
   const [installed, setInstalled] = useState(false)
 
   useEffect(() => {
-    const userAgent = navigator.userAgent
-    const isIos = /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     const timer = window.setTimeout(() => {
       const isInstalled = window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
       const storedPrompt = (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt || null
       setInstalled(isInstalled)
       setDeferredPrompt(storedPrompt)
-      setAvailable(!isInstalled && Boolean(storedPrompt || (isIos && navigator.share)))
     }, 0)
 
     const handleInstalled = () => {
       setInstalled(true)
       setDeferredPrompt(null)
-      setAvailable(false)
     }
     const handleAvailable = () => {
       const prompt = (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt || null
       setDeferredPrompt(prompt)
-      setAvailable(Boolean(prompt))
     }
     window.addEventListener('autorell:install-available', handleAvailable)
     window.addEventListener('autorell:app-installed', handleInstalled)
@@ -72,7 +66,6 @@ export default function InstallAutorellButton({ locale }: { locale: PublicLocale
       if (choice.outcome === 'accepted') setInstalled(true)
       delete (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt
       setDeferredPrompt(null)
-      setAvailable(false)
       return
     }
 
@@ -81,7 +74,7 @@ export default function InstallAutorellButton({ locale }: { locale: PublicLocale
     }
   }
 
-  if (installed || !available) return null
+  if (installed) return null
 
   return (
     <button

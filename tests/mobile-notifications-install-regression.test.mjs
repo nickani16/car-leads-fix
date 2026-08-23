@@ -40,6 +40,7 @@ test('footer exposes localized device-aware PWA installation', () => {
   assert.match(installButton, /display-mode: standalone/)
   assert.match(installButton, /navigator\.share/)
   assert.doesNotMatch(installButton, /role="dialog"/)
+  assert.doesNotMatch(installButton, /!available/)
   assert.match(footer, /<InstallAutorellButton locale=\{locale\} \/>/)
   assert.match(layout, /<PwaRegistration \/>/)
   assert.match(serviceWorker, /self\.clients\.claim\(\)/)
@@ -47,7 +48,10 @@ test('footer exposes localized device-aware PWA installation', () => {
 
 test('custom primary-color scrollbar is limited to desktop pointer layouts', () => {
   assert.match(globals, /@media \(min-width: 1120px\) and \(hover: hover\)/)
+  assert.match(globals, /@supports not selector\(::-webkit-scrollbar\)/)
   assert.match(globals, /scrollbar-color: #0866ff #ffffff/)
-  assert.match(globals, /html::-webkit-scrollbar-thumb/)
-  assert.match(globals, /html::-webkit-scrollbar-button/)
+  assert.match(globals, /\*::-webkit-scrollbar \{[\s\S]*width: 5px/)
+  assert.match(globals, /\*::-webkit-scrollbar-thumb/)
+  assert.match(globals, /border-radius: 0/)
+  assert.match(globals, /\*::-webkit-scrollbar-button/)
 })
