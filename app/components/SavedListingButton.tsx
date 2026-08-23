@@ -4,8 +4,10 @@ import { Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   fetchSavedListingIds,
+  removeGuestListingId,
   removeSavedListingId,
   readSavedListingIds,
+  saveGuestListingId,
   saveListingId,
   SAVED_LISTINGS_EVENT,
 } from '@/lib/saved-listings'
@@ -82,20 +84,14 @@ export default function SavedListingButton({
           return
         }
       } catch {
-        // Fall through to the auth prompt below.
+        // Guest saving is local only, so a temporary API issue should not block the buyer.
       } finally {
         setBusy(false)
       }
-      const firstSegment = window.location.pathname.split('/').filter(Boolean)[0]
-      const prefix =
-        firstSegment && /^[a-z]{2}$/.test(firstSegment) && firstSegment !== 'en' && firstSegment !== 'eu'
-          ? `/${firstSegment}`
-          : ''
-      window.dispatchEvent(
-        new CustomEvent('autorell:open-auth', {
-          detail: { mode: 'login', destination: `${prefix}/saved` },
-        }),
-      )
+      const nextSaved = !readSavedListingIds().includes(listingId)
+      if (nextSaved) saveGuestListingId(listingId)
+      else removeGuestListingId(listingId)
+      setSaved(nextSaved)
       return
     }
     const nextSaved = !saved

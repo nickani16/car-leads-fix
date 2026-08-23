@@ -922,7 +922,11 @@ export default function PublicHeader({
     }
     const timer = window.setTimeout(() => {
       syncSaved()
-      void fetchSavedListingIds().then((result) => setSavedListingCount(result.ids.length)).catch(() => undefined)
+      void fetchSavedListingIds()
+        .then((result) => {
+          if (result.authenticated) setSavedListingCount(result.ids.length)
+        })
+        .catch(() => undefined)
     }, 0)
     window.addEventListener('autorell:saved-listings', syncSaved)
     window.addEventListener(SAVED_SEARCHES_EVENT, syncSaved)
@@ -1888,6 +1892,14 @@ export default function PublicHeader({
             </nav>
 
             <div className="ml-auto hidden h-full shrink-0 items-center gap-3 min-[1120px]:flex xl:gap-4">
+              <Link
+                href={createListingHref}
+                onClick={(event) => handleInternalNavigation(event, createListingHref)}
+                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b969] px-4 text-[14px] font-semibold text-white transition hover:bg-[#009f5a]"
+              >
+                <Plus className="h-4 w-4" strokeWidth={2.2} />
+                <span>{accountMenuCopy.create}</span>
+              </Link>
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
@@ -1956,14 +1968,32 @@ export default function PublicHeader({
                   </div>
                 </>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => openAuthModal('login')}
-                  className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
-                >
-                  <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={2} />
-                  <span>{t.signIn}</span>
-                </button>
+                <>
+                  <Link
+                    href={savedHref}
+                    onClick={(event) => handleInternalNavigation(event, savedHref)}
+                    aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
+                    className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                  >
+                    <span className="relative">
+                      <Heart className="h-5 w-5" strokeWidth={1.9} />
+                      {savedListingBadge ? (
+                        <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                          {savedListingBadge}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span>{publicLabel(t.saved, 'Sparade annonser', t.saved)}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login')}
+                    className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                  >
+                    <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={2} />
+                    <span>{t.signIn}</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -2161,9 +2191,9 @@ export default function PublicHeader({
             <Link
               href={createListingHref}
               onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#00b969] px-5 text-base font-semibold text-white transition hover:bg-[#009f5a]"
             >
-              {t.mobileCta}
+              {accountMenuCopy.create}
               <ArrowRight className="h-5 w-5" />
             </Link>
 
@@ -2280,14 +2310,21 @@ export default function PublicHeader({
               </span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedSearchesHref)}
-              aria-label={translatePublic(locale, 'Saved searches')}
-              className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+            <Link
+              href={savedHref}
+              onClick={closeMobile}
+              aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
+              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            </button>
+              <span className="relative">
+                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                {savedListingBadge ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedListingBadge}
+                  </span>
+                ) : null}
+              </span>
+            </Link>
           )}
           {headerAccount.authenticated ? (
             <Link
@@ -2659,14 +2696,21 @@ export default function PublicHeader({
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedHref)}
+            <Link
+              href={savedHref}
+              onClick={closeMobile}
               className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
-              <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
+              <span className="relative">
+                <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                {savedListingCount ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedListingBadge}
+                  </span>
+                ) : null}
+              </span>
               <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
-            </button>
+            </Link>
           )}
           {headerAccount.authenticated ? (
             <Link

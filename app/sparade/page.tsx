@@ -2,10 +2,8 @@ import SavedListingsClient from '@/app/components/SavedListingsClient'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
-import { createClient } from '@/lib/supabase/server'
+import { type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 
 export const generateMetadata = generateAccountMetadata('saved-listings')
@@ -14,11 +12,6 @@ export default async function SavedListingsPage() {
   const locale = await getRequestLocale()
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect(localizePublicHref(locale, '/'))
   const copy = savedListingsPageCopy(locale)
 
   return (

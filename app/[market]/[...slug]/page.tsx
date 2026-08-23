@@ -13,6 +13,7 @@ import { renderNewListingPage } from '@/app/konto/annonser/ny/page'
 import AccountListingsPage from '@/app/konto/annonser/page'
 import ListingCreatedPage from '@/app/account/listings/created/page'
 import AccountSavedListingsPage from '@/app/account/saved-listings/page'
+import SavedListingsPage from '@/app/sparade/page'
 import AccountSavedSearchesPage from '@/app/account/saved-searches/page'
 import PrivateProfilePage from '@/app/account/profile/page'
 import PrivateSettingsPage from '@/app/account/settings/page'
@@ -293,8 +294,12 @@ export default async function LocalizedMarketPage({
     return <PaymentsPage />
   }
 
-  if (slugPath === 'account/saved-listings' || slugPath === 'saved' || slugPath === 'sparade') {
+  if (slugPath === 'account/saved-listings') {
     return <AccountSavedListingsPage />
+  }
+
+  if (slugPath === 'saved' || slugPath === 'sparade') {
+    return <SavedListingsPage />
   }
 
   if (slugPath === 'account/saved-searches' || slugPath === 'saved-searches') {
