@@ -69,6 +69,15 @@ export async function GET(request: Request) {
       await supabase.auth.signOut()
     }
 
+    if (error) {
+      console.error('OAuth callback exchange failed', {
+        name: error.name,
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      })
+    }
+
     return oauthFailureRedirect('oauth-error')
   }
 
