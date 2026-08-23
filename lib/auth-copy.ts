@@ -52,6 +52,15 @@ export type AuthModalCopy = {
   codeError: string
   connectionError: string
   chooseMarket: string
+  continueWithGoogle: string
+  continueWithApple: string
+  continueWithMicrosoft: string
+  continueWithFacebook: string
+  socialSeparator: string
+  socialLoading: string
+  socialError: string
+  oauthCancelled: string
+  oauthFailed: string
 }
 
 export type AuthApiCopy = Pick<
@@ -694,6 +703,133 @@ const modalBase = {
   },
 } as const
 
+const socialCopy: Record<
+  string,
+  Pick<
+    AuthModalCopy,
+    | 'continueWithGoogle'
+    | 'continueWithApple'
+    | 'continueWithMicrosoft'
+    | 'continueWithFacebook'
+    | 'socialSeparator'
+    | 'socialLoading'
+    | 'socialError'
+    | 'oauthCancelled'
+    | 'oauthFailed'
+  >
+> = {
+  en: {
+    continueWithGoogle: 'Continue with Google',
+    continueWithApple: 'Continue with Apple',
+    continueWithMicrosoft: 'Continue with Microsoft',
+    continueWithFacebook: 'Continue with Facebook',
+    socialSeparator: 'or',
+    socialLoading: 'Opening secure login...',
+    socialError: 'The social login could not be started. Try again or use email instead.',
+    oauthCancelled: 'Login was cancelled. Choose a provider or use email instead.',
+    oauthFailed: 'The social login failed. Try again or use email instead.',
+  },
+  sv: {
+    continueWithGoogle: 'Fortsätt med Google',
+    continueWithApple: 'Fortsätt med Apple',
+    continueWithMicrosoft: 'Fortsätt med Microsoft',
+    continueWithFacebook: 'Fortsätt med Facebook',
+    socialSeparator: 'eller',
+    socialLoading: 'Öppnar säker inloggning...',
+    socialError: 'Det gick inte att starta social inloggning. Försök igen eller använd e-post.',
+    oauthCancelled: 'Inloggningen avbröts. Välj en leverantör eller använd e-post.',
+    oauthFailed: 'Social inloggning misslyckades. Försök igen eller använd e-post.',
+  },
+  de: {
+    continueWithGoogle: 'Weiter mit Google',
+    continueWithApple: 'Weiter mit Apple',
+    continueWithMicrosoft: 'Weiter mit Microsoft',
+    continueWithFacebook: 'Weiter mit Facebook',
+    socialSeparator: 'oder',
+    socialLoading: 'Sichere Anmeldung wird geöffnet...',
+    socialError: 'Die soziale Anmeldung konnte nicht gestartet werden. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
+    oauthCancelled: 'Die Anmeldung wurde abgebrochen. Wählen Sie einen Anbieter oder nutzen Sie E-Mail.',
+    oauthFailed: 'Die soziale Anmeldung ist fehlgeschlagen. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
+  },
+  fr: {
+    continueWithGoogle: 'Continuer avec Google',
+    continueWithApple: 'Continuer avec Apple',
+    continueWithMicrosoft: 'Continuer avec Microsoft',
+    continueWithFacebook: 'Continuer avec Facebook',
+    socialSeparator: 'ou',
+    socialLoading: 'Ouverture de la connexion sécurisée...',
+    socialError: 'La connexion sociale n’a pas pu démarrer. Réessayez ou utilisez l’e-mail.',
+    oauthCancelled: 'La connexion a été annulée. Choisissez un fournisseur ou utilisez l’e-mail.',
+    oauthFailed: 'La connexion sociale a échoué. Réessayez ou utilisez l’e-mail.',
+  },
+  es: {
+    continueWithGoogle: 'Continuar con Google',
+    continueWithApple: 'Continuar con Apple',
+    continueWithMicrosoft: 'Continuar con Microsoft',
+    continueWithFacebook: 'Continuar con Facebook',
+    socialSeparator: 'o',
+    socialLoading: 'Abriendo inicio de sesión seguro...',
+    socialError: 'No se pudo iniciar el acceso social. Inténtalo de nuevo o usa el correo.',
+    oauthCancelled: 'El inicio de sesión se canceló. Elige un proveedor o usa el correo.',
+    oauthFailed: 'El acceso social falló. Inténtalo de nuevo o usa el correo.',
+  },
+  it: {
+    continueWithGoogle: 'Continua con Google',
+    continueWithApple: 'Continua con Apple',
+    continueWithMicrosoft: 'Continua con Microsoft',
+    continueWithFacebook: 'Continua con Facebook',
+    socialSeparator: 'oppure',
+    socialLoading: 'Apertura accesso sicuro...',
+    socialError: 'Impossibile avviare l’accesso social. Riprova o usa l’e-mail.',
+    oauthCancelled: 'Accesso annullato. Scegli un provider o usa l’e-mail.',
+    oauthFailed: 'Accesso social non riuscito. Riprova o usa l’e-mail.',
+  },
+  pl: {
+    continueWithGoogle: 'Kontynuuj z Google',
+    continueWithApple: 'Kontynuuj z Apple',
+    continueWithMicrosoft: 'Kontynuuj z Microsoft',
+    continueWithFacebook: 'Kontynuuj z Facebook',
+    socialSeparator: 'lub',
+    socialLoading: 'Otwieranie bezpiecznego logowania...',
+    socialError: 'Nie udało się uruchomić logowania społecznościowego. Spróbuj ponownie albo użyj e-maila.',
+    oauthCancelled: 'Logowanie zostało anulowane. Wybierz dostawcę albo użyj e-maila.',
+    oauthFailed: 'Logowanie społecznościowe nie powiodło się. Spróbuj ponownie albo użyj e-maila.',
+  },
+  nl: {
+    continueWithGoogle: 'Doorgaan met Google',
+    continueWithApple: 'Doorgaan met Apple',
+    continueWithMicrosoft: 'Doorgaan met Microsoft',
+    continueWithFacebook: 'Doorgaan met Facebook',
+    socialSeparator: 'of',
+    socialLoading: 'Veilige login openen...',
+    socialError: 'Sociaal inloggen kon niet worden gestart. Probeer opnieuw of gebruik e-mail.',
+    oauthCancelled: 'Inloggen is geannuleerd. Kies een provider of gebruik e-mail.',
+    oauthFailed: 'Sociaal inloggen is mislukt. Probeer opnieuw of gebruik e-mail.',
+  },
+  fi: {
+    continueWithGoogle: 'Jatka Googlella',
+    continueWithApple: 'Jatka Applella',
+    continueWithMicrosoft: 'Jatka Microsoftilla',
+    continueWithFacebook: 'Jatka Facebookilla',
+    socialSeparator: 'tai',
+    socialLoading: 'Avataan turvallinen kirjautuminen...',
+    socialError: 'Sosiaalista kirjautumista ei voitu käynnistää. Yritä uudelleen tai käytä sähköpostia.',
+    oauthCancelled: 'Kirjautuminen peruttiin. Valitse palvelu tai käytä sähköpostia.',
+    oauthFailed: 'Sosiaalinen kirjautuminen epäonnistui. Yritä uudelleen tai käytä sähköpostia.',
+  },
+  da: {
+    continueWithGoogle: 'Fortsæt med Google',
+    continueWithApple: 'Fortsæt med Apple',
+    continueWithMicrosoft: 'Fortsæt med Microsoft',
+    continueWithFacebook: 'Fortsæt med Facebook',
+    socialSeparator: 'eller',
+    socialLoading: 'Åbner sikker login...',
+    socialError: 'Social login kunne ikke startes. Prøv igen eller brug e-mail.',
+    oauthCancelled: 'Login blev annulleret. Vælg en udbyder eller brug e-mail.',
+    oauthFailed: 'Social login mislykkedes. Prøv igen eller brug e-mail.',
+  },
+}
+
 type ModalBaseKey = keyof typeof modalBase
 
 function copyKey(locale: PublicLocale): ModalBaseKey {
@@ -702,7 +838,9 @@ function copyKey(locale: PublicLocale): ModalBaseKey {
 }
 
 export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, view: AuthView = mode): AuthModalCopy {
-  const source = modalBase[copyKey(locale)]
+  const key = copyKey(locale)
+  const source = modalBase[key]
+  const social = socialCopy[key] || socialCopy.en
   return {
     loginTab: source.loginTab,
     registerTab: source.registerTab,
@@ -752,6 +890,15 @@ export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, 
     codeError: source.codeError,
     connectionError: source.connectionError,
     chooseMarket: source.chooseMarket,
+    continueWithGoogle: social.continueWithGoogle,
+    continueWithApple: social.continueWithApple,
+    continueWithMicrosoft: social.continueWithMicrosoft,
+    continueWithFacebook: social.continueWithFacebook,
+    socialSeparator: social.socialSeparator,
+    socialLoading: social.socialLoading,
+    socialError: social.socialError,
+    oauthCancelled: social.oauthCancelled,
+    oauthFailed: social.oauthFailed,
   }
 }
 

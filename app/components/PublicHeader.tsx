@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
+  Bell,
   Bookmark,
   Building2,
   CarFront,
@@ -14,7 +15,6 @@ import {
   FilePlus2,
   Heart,
   Handshake,
-  LogIn,
   LogOut,
   Mail,
   MessageSquareText,
@@ -24,7 +24,6 @@ import {
   Settings,
   ShieldCheck,
   Store,
-  UserPlus,
   UserRound,
   X,
   type LucideIcon,
@@ -1342,20 +1341,20 @@ export default function PublicHeader({
   const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
   const accountMenuCopyByLocale: Record<
     PublicLocale,
-    { pages: string; create: string; listings: string; settings: string; signOut: string; privateAccount: string; businessAccount: string }
+    { pages: string; create: string; listings: string; settings: string; signOut: string; privateAccount: string; businessAccount: string; newHere: string; startHere: string }
   > = {
-    sv: { pages: 'Mina sidor', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto' },
-    de: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto' },
-    en: { pages: 'My pages', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out', privateAccount: 'Private account', businessAccount: 'Business account' },
-    at: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto' },
-    be: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount' },
-    fr: { pages: 'Mes pages', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion', privateAccount: 'Compte particulier', businessAccount: 'Compte professionnel' },
-    es: { pages: 'Mis páginas', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión', privateAccount: 'Cuenta particular', businessAccount: 'Cuenta de empresa' },
-    it: { pages: 'Le mie pagine', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci', privateAccount: 'Account privato', businessAccount: 'Account aziendale' },
-    pl: { pages: 'Moje strony', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj', privateAccount: 'Konto prywatne', businessAccount: 'Konto firmowe' },
-    nl: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount' },
-    fi: { pages: 'Omat sivut', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos', privateAccount: 'Yksityistili', businessAccount: 'Yritystili' },
-    da: { pages: 'Mine sider', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud', privateAccount: 'Privatkonto', businessAccount: 'Firmakonto' },
+    sv: { pages: 'Mina sidor', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto', newHere: 'Ny på webbplatsen?', startHere: 'Börja här' },
+    de: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto', newHere: 'Neu auf der Website?', startHere: 'Hier starten' },
+    en: { pages: 'My pages', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out', privateAccount: 'Private account', businessAccount: 'Business account', newHere: 'New on the website?', startHere: 'Start here' },
+    at: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto', newHere: 'Neu auf der Website?', startHere: 'Hier starten' },
+    be: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount', newHere: 'Nieuw op de website?', startHere: 'Begin hier' },
+    fr: { pages: 'Mes pages', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion', privateAccount: 'Compte particulier', businessAccount: 'Compte professionnel', newHere: 'Nouveau sur le site ?', startHere: 'Commencer ici' },
+    es: { pages: 'Mis páginas', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión', privateAccount: 'Cuenta particular', businessAccount: 'Cuenta de empresa', newHere: '¿Nuevo en el sitio?', startHere: 'Empieza aquí' },
+    it: { pages: 'Le mie pagine', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci', privateAccount: 'Account privato', businessAccount: 'Account aziendale', newHere: 'Nuovo sul sito?', startHere: 'Inizia qui' },
+    pl: { pages: 'Moje strony', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj', privateAccount: 'Konto prywatne', businessAccount: 'Konto firmowe', newHere: 'Nowy na stronie?', startHere: 'Zacznij tutaj' },
+    nl: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount', newHere: 'Nieuw op de website?', startHere: 'Begin hier' },
+    fi: { pages: 'Omat sivut', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos', privateAccount: 'Yksityistili', businessAccount: 'Yritystili', newHere: 'Uusi sivustolla?', startHere: 'Aloita tästä' },
+    da: { pages: 'Mine sider', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud', privateAccount: 'Privatkonto', businessAccount: 'Firmakonto', newHere: 'Ny på websitet?', startHere: 'Start her' },
   }
   const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
   const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
@@ -1973,7 +1972,7 @@ export default function PublicHeader({
                     href={savedHref}
                     onClick={(event) => handleInternalNavigation(event, savedHref)}
                     aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
-                    className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                    className="inline-grid h-10 w-10 place-items-center rounded-full text-[#101828] transition hover:bg-[#f2f6ff] hover:text-[#0866ff]"
                   >
                     <span className="relative">
                       <Heart className="h-5 w-5" strokeWidth={1.9} />
@@ -1983,8 +1982,22 @@ export default function PublicHeader({
                         </span>
                       ) : null}
                     </span>
-                    <span>{publicLabel(t.saved, 'Sparade annonser', t.saved)}</span>
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login', savedSearchesHref)}
+                    aria-label={translatePublic(locale, 'Saved searches')}
+                    className="inline-grid h-10 w-10 place-items-center rounded-full text-[#101828] transition hover:bg-[#f2f6ff] hover:text-[#0866ff]"
+                  >
+                    <span className="relative">
+                      <Bell className="h-5 w-5" strokeWidth={1.9} />
+                      {savedSearchBadge ? (
+                        <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                          {savedSearchBadge}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => openAuthModal('login')}
@@ -2230,15 +2243,27 @@ export default function PublicHeader({
                   </Link>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => openAuthModal('register')} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-left text-sm font-medium text-white">
-                    <UserPlus size={17} />
-                    {t.createAccount}
-                  </button>
-                  <button type="button" onClick={() => openAuthModal('login')} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-left text-sm text-white">
-                    <LogIn size={17} />
-                    {t.signIn}
-                  </button>
+                <div className="mt-4 flex items-center gap-4">
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#101828]" strokeWidth={1.8} />
+                  <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login')}
+                      className="block text-left text-base font-semibold text-[#101828]"
+                    >
+                      {t.signIn}
+                    </button>
+                    <p className="mt-0.5 text-sm leading-5 text-[#475467]">
+                      {accountMenuCopy.newHere}{' '}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('register')}
+                        className="font-semibold text-[#0866ff]"
+                      >
+                        {accountMenuCopy.startHere}
+                      </button>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -2310,21 +2335,38 @@ export default function PublicHeader({
               </span>
             </Link>
           ) : (
-            <Link
-              href={savedHref}
-              onClick={closeMobile}
-              aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
-              className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-            >
-              <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                {savedListingBadge ? (
-                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                    {savedListingBadge}
-                  </span>
-                ) : null}
-              </span>
-            </Link>
+            <>
+              <Link
+                href={savedHref}
+                onClick={closeMobile}
+                aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
+                className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+              >
+                <span className="relative">
+                  <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                  {savedListingBadge ? (
+                    <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                      {savedListingBadge}
+                    </span>
+                  ) : null}
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => openAuthModal('login', savedSearchesHref)}
+                aria-label={translatePublic(locale, 'Saved searches')}
+                className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
+              >
+                <span className="relative">
+                  <Bell className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                  {savedSearchBadge ? (
+                    <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                      {savedSearchBadge}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            </>
           )}
           {headerAccount.authenticated ? (
             <Link

@@ -15,6 +15,18 @@ const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'
+type SocialProvider = 'google' | 'apple' | 'azure' | 'facebook'
+
+const socialProviders: Array<{
+  provider: SocialProvider
+  labelKey: 'continueWithGoogle' | 'continueWithApple' | 'continueWithMicrosoft' | 'continueWithFacebook'
+  mark: string
+}> = [
+  { provider: 'google', labelKey: 'continueWithGoogle', mark: 'G' },
+  { provider: 'apple', labelKey: 'continueWithApple', mark: 'A' },
+  { provider: 'azure', labelKey: 'continueWithMicrosoft', mark: 'M' },
+  { provider: 'facebook', labelKey: 'continueWithFacebook', mark: 'f' },
+]
 
 type AuthModalProps = {
   isOpen: boolean
@@ -53,11 +65,22 @@ export default function AuthModal({
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null)
+  const [callbackStatus, setCallbackStatus] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('status'),
+  )
   const [retryAfter, setRetryAfter] = useState(0)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
   const onCloseRef = useRef(onClose)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
+  const callbackError =
+    !error && isOpen && callbackStatus === 'oauth-cancelled'
+      ? copy.oauthCancelled
+      : !error && isOpen && callbackStatus === 'oauth-error'
+        ? copy.oauthFailed
+        : ''
+  const displayedError = error || callbackError
 
   useEffect(() => {
     onCloseRef.current = onClose
@@ -89,6 +112,7 @@ export default function AuthModal({
   }, [retryAfter])
 
   function switchMode(nextMode: AuthMode) {
+    setCallbackStatus(null)
     setMode(nextMode)
     setView(nextMode)
     setStep('email')
@@ -102,6 +126,7 @@ export default function AuthModal({
   }
 
   function switchView(nextView: AuthView) {
+    setCallbackStatus(null)
     setView(nextView)
     if (nextView === 'login' || nextView === 'register') setMode(nextView)
     setStep('email')
@@ -116,6 +141,12 @@ export default function AuthModal({
 
   function accountDestination() {
     return localizePublicHref(locale, '/account')
+  }
+
+  function oauthDestination() {
+    return mode === 'register'
+      ? registerDestination()
+      : postLoginDestination || accountDestination()
   }
 
   function registerDestination() {
@@ -138,8 +169,40 @@ export default function AuthModal({
     router.refresh()
   }
 
+  async function startSocialLogin(provider: SocialProvider) {
+    setCallbackStatus(null)
+    setError('')
+    setNotice('')
+    setSocialLoading(provider)
+    try {
+      const redirectTo = new URL('/auth/callback', window.location.origin)
+      redirectTo.searchParams.set('next', oauthDestination())
+      redirectTo.searchParams.set('mode', mode)
+      const queryParams =
+        provider === 'google' || provider === 'azure'
+          ? { prompt: 'select_account' }
+          : undefined
+      const supabase = createClient()
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectTo.toString(),
+          queryParams,
+        },
+      })
+      if (oauthError) {
+        setError(copy.socialError)
+        setSocialLoading(null)
+      }
+    } catch {
+      setError(copy.socialError)
+      setSocialLoading(null)
+    }
+  }
+
   async function submitPassword(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     const cleanEmail = email.trim()
@@ -223,6 +286,7 @@ export default function AuthModal({
 
   async function requestPasswordReset(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     const cleanEmail = email.trim()
@@ -249,6 +313,7 @@ export default function AuthModal({
 
   async function updateRecoveredPassword(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     if (!isStrongPassword(password)) {
@@ -286,6 +351,7 @@ export default function AuthModal({
 
   async function requestCode(event?: FormEvent) {
     event?.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setLoading(true)
     try {
@@ -454,7 +520,7 @@ export default function AuthModal({
                   )}
                 </div>
               </label>
-              {error ? <AuthError message={error} /> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
@@ -504,7 +570,7 @@ export default function AuthModal({
                 </div>
               </label>
               <p className="mt-3 text-xs leading-5 text-[#667085]">{copy.passwordRequirement}</p>
-              {error ? <AuthError message={error} /> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
@@ -515,7 +581,29 @@ export default function AuthModal({
               </button>
             </form>
           ) : step === 'email' ? (
-            <form onSubmit={authMethod === 'password' ? submitPassword : requestCode} className="mt-6">
+            <>
+            <div className="mt-6 grid gap-2.5">
+              {socialProviders.map(({ provider, labelKey, mark }) => (
+                <button
+                  key={provider}
+                  type="button"
+                  disabled={loading || Boolean(socialLoading)}
+                  onClick={() => void startSocialLogin(provider)}
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-[11px] border border-[#d5dde8] bg-white px-4 text-sm font-[600] text-[#101828] transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] disabled:opacity-60"
+                >
+                  <span className="grid h-6 w-6 place-items-center rounded-full border border-[#d7e0ec] text-[12px] font-[700] text-[#101828]">
+                    {mark}
+                  </span>
+                  {socialLoading === provider ? copy.socialLoading : copy[labelKey]}
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center gap-3 text-xs font-[600] text-[#98a2b3]">
+              <span className="h-px flex-1 bg-[#edf1f6]" />
+              <span>{copy.socialSeparator}</span>
+              <span className="h-px flex-1 bg-[#edf1f6]" />
+            </div>
+            <form onSubmit={authMethod === 'password' ? submitPassword : requestCode} className="mt-5">
               <label className="block text-xs font-[600] text-[#344054]">
                 {copy.email}
                 <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
@@ -616,11 +704,11 @@ export default function AuthModal({
                 </span>
               </button>
 
-              {error ? <AuthError message={error} /> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
               {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
 
               <button
-                disabled={loading}
+                disabled={loading || Boolean(socialLoading)}
                 className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? (authMethod === 'password' ? copy.passwordLoading : copy.sending) : (authMethod === 'password' ? copy.passwordSubmit : copy.continue)}
@@ -638,6 +726,7 @@ export default function AuthModal({
                 {authMethod === 'password' ? copy.useCodeInstead : copy.usePasswordInstead}
               </button>
             </form>
+            </>
           ) : (
             <div className="mt-6">
               <div
@@ -669,7 +758,7 @@ export default function AuthModal({
                 ))}
               </div>
 
-              {error ? <AuthError message={error} /> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
 
               <button
                 type="button"
