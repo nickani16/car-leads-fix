@@ -30,6 +30,8 @@ test('mobile menus keep category links without create-listing or offer-type cont
   assert.equal((header.match(/searchIntentOptions\.map/g) || []).length, 1)
   assert.doesNotMatch(header, /mx-1 mb-4 flex h-12[\s\S]*accountMenuCopy\.create/)
   assert.doesNotMatch(header, /mt-6 flex min-h-14[\s\S]*accountMenuCopy\.create/)
+  assert.match(header, /-mx-4 -mt-5 mb-4 h-px bg-\[#e4e7ec\]/)
+  assert.match(header, /setMobileMoreOpen\(false\)[\s\S]*setMarketSelectorOpen\(true\)[\s\S]*<FlagIcon code=\{activeMarket\[1\]\} size="sm" \/>/)
 })
 
 test('notification center is localized and links existing reminders and messages', () => {
@@ -57,12 +59,14 @@ test('footer exposes localized device-aware PWA installation', () => {
   assert.match(serviceWorker, /self\.clients\.claim\(\)/)
 })
 
-test('custom primary-color scrollbar is limited to desktop pointer layouts', () => {
-  assert.match(globals, /@media \(min-width: 1120px\) and \(hover: hover\)/)
+test('custom primary-color scrollbar is square and consistent across scroll surfaces', () => {
+  assert.match(globals, /@supports selector\(::-webkit-scrollbar\)/)
   assert.match(globals, /@supports not selector\(::-webkit-scrollbar\)/)
   assert.match(globals, /scrollbar-color: #0866ff #ffffff/)
   assert.match(globals, /\*::-webkit-scrollbar \{[\s\S]*width: 5px/)
+  assert.match(globals, /height: 5px/)
   assert.match(globals, /\*::-webkit-scrollbar-thumb/)
   assert.match(globals, /border-radius: 0/)
   assert.match(globals, /\*::-webkit-scrollbar-button/)
+  assert.match(globals, /scrollbar-color: auto !important/)
 })

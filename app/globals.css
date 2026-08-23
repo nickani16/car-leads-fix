@@ -20,12 +20,17 @@ body {
   font-weight: 400;
 }
 
-@media (min-width: 1120px) and (hover: hover) {
-  @supports not selector(::-webkit-scrollbar) {
-    * {
-      scrollbar-color: #0866ff #ffffff;
-      scrollbar-width: thin;
-    }
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: #0866ff #ffffff;
+    scrollbar-width: thin;
+  }
+}
+
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: auto !important;
+    scrollbar-width: auto !important;
   }
 
   *::-webkit-scrollbar {
@@ -40,6 +45,7 @@ body {
 
   *::-webkit-scrollbar-thumb {
     min-height: 32px;
+    min-width: 32px;
     border: 0;
     border-radius: 0;
     background: #0866ff;
@@ -60,13 +66,9 @@ body {
     height: 0 !important;
     border: 0 !important;
     background: transparent !important;
+    -webkit-appearance: none;
     appearance: none;
   }
-}
-
-.marketplace-scrollbar {
-  scrollbar-color: #0866ff #ffffff;
-  scrollbar-width: thin;
 }
 
 .marketplace-scrollbar::-webkit-scrollbar {
@@ -81,6 +83,7 @@ body {
 
 .marketplace-scrollbar::-webkit-scrollbar-thumb {
   min-height: 32px;
+  min-width: 32px;
   border: 0;
   border-radius: 0;
   background: #0866ff;
@@ -94,6 +97,8 @@ body {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .autorell-edit-listing-form input::placeholder,

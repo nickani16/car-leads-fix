@@ -2391,6 +2391,7 @@ export default function PublicHeader({
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <Link
@@ -2564,6 +2565,25 @@ export default function PublicHeader({
                   </div>
                 )})}
               </div>
+            </section>
+
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
+            <section className="pb-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMoreOpen(false)
+                  setMarketSelectorOpen(true)
+                }}
+                aria-label={t.chooseLanguage}
+                className="flex min-h-12 w-full items-center justify-between px-1 text-left text-[15px] font-semibold text-[#101828] transition-colors hover:text-[#0866ff]"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <FlagIcon code={activeMarket[1]} size="sm" />
+                  <span className="truncate">{activeMarket[2]}</span>
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-[#667085]" />
+              </button>
             </section>
 
           </div>
