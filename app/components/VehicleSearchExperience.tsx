@@ -3181,7 +3181,7 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1680px] grid-cols-[320px_minmax(0,1fr)] gap-8 bg-white px-6 py-8 min-[1120px]:grid 2xl:px-8"
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1170px] grid-cols-[320px_minmax(0,1fr)] gap-8 bg-white px-6 py-8 min-[1120px]:grid 2xl:max-w-[1320px] 2xl:px-8"
             >
               <aside
                 data-marketplace-list-sidebar
