@@ -186,6 +186,17 @@ test('description is mapped for initial server results and subsequent API search
 test('desktop list search is compact and uses the short localized search label', () => {
   assert.match(experienceSource, /renderMarketplaceSearchInput\('', true, translatePublic\(locale, 'Search'\)\)/)
   assert.match(experienceSource, /compact \? 'min-h-\[44px\] py-1'/)
+  assert.match(experienceSource, /placeholder:font-normal placeholder:text-\[#767676\]/)
+  assert.match(experienceSource, /placeholder:font-normal placeholder:text-\[#98a2b3\]/)
+})
+
+test('desktop list controls remain legible across translated labels', () => {
+  assert.match(experienceSource, /locale === 'de' \|\| locale === 'at'/)
+  assert.match(experienceSource, /flex h-9 min-w-\[250px\] shrink-0 items-center/)
+  assert.match(experienceSource, /style=\{\{ gridTemplateColumns: 'minmax\(0, 1fr\)' \}\}/)
+  assert.match(experienceSource, /data-marketplace-list-year-filter/)
+  assert.match(experienceSource, /grid min-w-0 w-full grid-cols-1 gap-2/)
+  assert.doesNotMatch(experienceSource, /pl-\[68px\]/)
 })
 
 test('mobile bottom navigation and marketplace shortcuts do not render drop shadows', () => {

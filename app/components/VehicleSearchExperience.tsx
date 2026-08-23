@@ -468,7 +468,7 @@ const categoryEnglishLabels: Record<string, string> = {
 
 function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
   if (locale === 'sv') return repairMojibakeText(sv)
-  if (locale === 'de') return repairMojibakeText(de || en)
+  if (locale === 'de' || locale === 'at') return repairMojibakeText(de || en)
   return locale === 'en' ? repairMojibakeText(en) : translatePublic(locale, en)
 }
 
@@ -2316,7 +2316,7 @@ export default function VehicleSearchExperience({
             onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
             placeholder=""
             aria-label={placeholderOverride}
-            className="vehicle-search-control h-6 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent] sm:h-7"
+            className="vehicle-search-control h-6 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#767676] [background:transparent] sm:h-7"
           />
           {searchInput || selectedSearchSuggestions.length ? null : (
             <span
@@ -3399,7 +3399,10 @@ export default function VehicleSearchExperience({
                     open={listVehicleOpen}
                     onToggle={() => setListVehicleOpen((open) => !open)}
                   >
-                    <div className="grid gap-3">
+                    <div
+                      className="grid min-w-0 gap-4 [&>*]:min-w-0"
+                      style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}
+                    >
                       <SearchableSidebarOptions
                         locale={locale}
                         searchLabel={listExtraText.searchByMake}
@@ -3424,18 +3427,20 @@ export default function VehicleSearchExperience({
                         }}
                         options={makeModelOptions.models.map((option) => ({ value: option.value, label: `${option.label} (${option.count})` }))}
                       />
-                      <RangeFilter
-                        locale={locale}
-                        title={translatePublic(locale, 'Model year')}
-                        minValue={minYear}
-                        maxValue={maxYear}
-                        onMinChange={setMinYear}
-                        onMaxChange={setMaxYear}
-                        minLimit={1950}
-                        maxLimit={new Date().getFullYear() + 1}
-                        step={1}
-                        startLabel={desktopListText.before1950}
-                      />
+                      <div className="min-w-0" data-marketplace-list-year-filter>
+                        <RangeFilter
+                          locale={locale}
+                          title={translatePublic(locale, 'Model year')}
+                          minValue={minYear}
+                          maxValue={maxYear}
+                          onMinChange={setMinYear}
+                          onMaxChange={setMaxYear}
+                          minLimit={1950}
+                          maxLimit={new Date().getFullYear() + 1}
+                          step={1}
+                          startLabel={desktopListText.before1950}
+                        />
+                      </div>
                     </div>
                   </CollapsibleFilterSection>
 
@@ -3597,15 +3602,17 @@ export default function VehicleSearchExperience({
                       </p>
                       <span className="sr-only">{desktopListText.resultsUpdate}</span>
                     </div>
-                    <label className="relative shrink-0">
+                    <label className="flex h-9 min-w-[250px] shrink-0 items-center rounded-[7px] border border-[#cfd7e4] bg-white transition focus-within:border-[#0866ff] focus-within:ring-2 focus-within:ring-[#0866ff]/15">
                       <span className="sr-only">{desktopListText.sorting}</span>
-                      <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[11px] font-medium text-[#667085]">{listExtraText.sortBy}:</span>
-                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-9 min-w-[205px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white pl-[68px] pr-8 text-[11px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
-                        {sortOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                      <span className="shrink-0 pl-3 text-[11px] font-normal text-[#667085]">{listExtraText.sortBy}:</span>
+                      <span className="relative min-w-0 flex-1">
+                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-8 w-full appearance-none border-0 bg-transparent pl-1.5 pr-8 text-[11px] font-semibold text-[#344054] outline-none">
+                          {sortOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                      </span>
                     </label>
                     <button type="button" onClick={() => { changeSearchPage(1); setDesktopMarketplaceView('map') }} className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
                       <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
@@ -4516,15 +4523,15 @@ function SearchableSidebarOptions({
   onSelect: (value: string) => void
 }) {
   return (
-    <div className="grid gap-2">
-      <label className="relative block">
+    <div className="grid min-w-0 w-full grid-cols-1 gap-2">
+      <label className="relative block min-w-0 w-full">
         <span className="sr-only">{searchLabel}</span>
         <input
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder={translatePublic(locale, 'Search')}
-          className="h-9 w-full rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
+          className="h-9 min-w-0 w-full rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-normal text-[#344054] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
         />
         <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#344054]" aria-hidden="true" />
       </label>
