@@ -1894,7 +1894,7 @@ export default function PublicHeader({
               <Link
                 href={createListingHref}
                 onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#087A4B] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
+                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b55e] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
               >
                 <Plus className="h-4 w-4" strokeWidth={2.2} />
                 <span>{accountMenuCopy.create}</span>
@@ -2204,7 +2204,7 @@ export default function PublicHeader({
             <Link
               href={createListingHref}
               onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#087A4B] px-5 text-base font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#00b55e] px-5 text-base font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
             >
               {accountMenuCopy.create}
               <ArrowRight className="h-5 w-5" />
@@ -2431,17 +2431,20 @@ export default function PublicHeader({
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             {!headerAccount.authenticated ? (
-              <Link
-                href={createListingHref}
-                onClick={closeMobile}
-                className="mb-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#087A4B] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
-              >
-                <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
-                {accountMenuCopy.create}
-              </Link>
+              <>
+                <Link
+                  href={createListingHref}
+                  onClick={closeMobile}
+                  className="mb-5 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#00b55e] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
+                >
+                  <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
+                  {accountMenuCopy.create}
+                </Link>
+                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
+              </>
             ) : null}
 
-            <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
+            <section className="mb-5 rounded-[24px] bg-[#f6f6f4] p-5">
               {headerAccount.authenticated ? (
                 <Link
                   href={accountHref}
@@ -2494,8 +2497,9 @@ export default function PublicHeader({
                 </div>
               )}
             </section>
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
 
-            <section className="mb-7">
+            <section className="mb-5">
               <div className="mb-3 grid grid-cols-3 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
                 {searchIntentOptions.map((option) => {
                   const selected = searchMenuIntent === option.key
@@ -2536,6 +2540,7 @@ export default function PublicHeader({
                 })}
               </div>
             </section>
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
 
             <section className="mb-7">
               <div className="grid gap-2">

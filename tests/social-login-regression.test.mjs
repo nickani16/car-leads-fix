@@ -42,18 +42,19 @@ test('OAuth callback preserves safe destinations and localized market paths', ()
   assert.match(authCallback, /if \(isOauthFlow\) return oauthFailureRedirect\('oauth-error'\)/)
 })
 
-test('mobile more menu adds only the localized listing CTA above the existing login section', () => {
+test('mobile more menu adds the localized listing CTA and section dividers', () => {
   const moreMenu = publicHeader.slice(publicHeader.indexOf('{mobileMoreOpen ? ('))
   const ctaIndex = moreMenu.indexOf('accountMenuCopy.create')
-  const accountSectionIndex = moreMenu.indexOf('<section className="mb-6 rounded-[24px]')
+  const accountSectionIndex = moreMenu.indexOf('<section className="mb-5 rounded-[24px]')
   assert.ok(ctaIndex >= 0)
   assert.ok(accountSectionIndex > ctaIndex)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /bg-\[#087A4B\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /hover:bg-\[#066A42\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /active:bg-\[#05613D\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /bg-\[#00b55e\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /hover:bg-\[#009b51\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /active:bg-\[#008547\]/)
   assert.match(moreMenu.slice(0, accountSectionIndex), /rounded-\[10px\]/)
   assert.match(moreMenu.slice(0, accountSectionIndex), /<FilePlus2/)
   assert.match(moreMenu.slice(0, accountSectionIndex), /!headerAccount\.authenticated/)
+  assert.equal((moreMenu.match(/data-mobile-menu-divider/g) || []).length, 3)
 })
 
 test('login and registration metadata is localized and stays within requested limits', () => {
