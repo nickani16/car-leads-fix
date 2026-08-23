@@ -49,6 +49,8 @@ test('mobile more menu adds only the localized listing CTA above the existing lo
   assert.ok(ctaIndex >= 0)
   assert.ok(accountSectionIndex > ctaIndex)
   assert.match(moreMenu.slice(0, accountSectionIndex), /bg-\[#00b969\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /rounded-\[10px\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /<FilePlus2/)
   assert.match(moreMenu.slice(0, accountSectionIndex), /!headerAccount\.authenticated/)
 })
 

@@ -2434,11 +2434,9 @@ export default function PublicHeader({
               <Link
                 href={createListingHref}
                 onClick={closeMobile}
-                className="mb-4 flex min-h-[58px] w-full items-center justify-center gap-2.5 rounded-[8px] bg-[#00b969] px-5 text-[16px] font-semibold text-white transition hover:bg-[#009f5a] active:scale-[.99]"
+                className="mb-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#00b969] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#009f5a] active:bg-[#008e50]"
               >
-                <span className="grid h-5 w-5 place-items-center rounded-[3px] border-2 border-white">
-                  <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                </span>
+                <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
                 {accountMenuCopy.create}
               </Link>
             ) : null}
