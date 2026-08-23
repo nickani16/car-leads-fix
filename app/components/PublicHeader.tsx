@@ -1894,7 +1894,7 @@ export default function PublicHeader({
               <Link
                 href={createListingHref}
                 onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b969] px-4 text-[14px] font-semibold text-white transition hover:bg-[#009f5a]"
+                className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#087A4B] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
               >
                 <Plus className="h-4 w-4" strokeWidth={2.2} />
                 <span>{accountMenuCopy.create}</span>
@@ -2204,7 +2204,7 @@ export default function PublicHeader({
             <Link
               href={createListingHref}
               onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#00b969] px-5 text-base font-semibold text-white transition hover:bg-[#009f5a]"
+              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#087A4B] px-5 text-base font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
             >
               {accountMenuCopy.create}
               <ArrowRight className="h-5 w-5" />
@@ -2434,7 +2434,7 @@ export default function PublicHeader({
               <Link
                 href={createListingHref}
                 onClick={closeMobile}
-                className="mb-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#00b969] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#009f5a] active:bg-[#008e50]"
+                className="mb-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#087A4B] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#066A42] active:bg-[#05613D]"
               >
                 <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
                 {accountMenuCopy.create}
