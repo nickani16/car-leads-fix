@@ -26,6 +26,12 @@ test('desktop create listing CTA is only rendered for signed-out visitors', () =
   assert.match(header, /headerAccountResolved && !headerAccount\.authenticated \? \([\s\S]*href=\{createListingHref\}[\s\S]*accountMenuCopy\.create[\s\S]*\) : null/)
 })
 
+test('mobile menus keep category links without create-listing or offer-type controls', () => {
+  assert.equal((header.match(/searchIntentOptions\.map/g) || []).length, 1)
+  assert.doesNotMatch(header, /mx-1 mb-4 flex h-12[\s\S]*accountMenuCopy\.create/)
+  assert.doesNotMatch(header, /mt-6 flex min-h-14[\s\S]*accountMenuCopy\.create/)
+})
+
 test('notification center is localized and links existing reminders and messages', () => {
   for (const locale of locales) assert.match(notificationCenter, new RegExp(`\\n  ${locale}: \\{`))
   assert.match(notificationCenter, /Notification\.requestPermission\(\)/)

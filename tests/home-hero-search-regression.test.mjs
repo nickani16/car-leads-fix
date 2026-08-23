@@ -65,6 +65,7 @@ test('homepage search keeps category-specific filters and the real count API', (
   assert.match(homeSearchSource, /AbortController/)
   assert.match(homeSearchSource, /payload\.totalCount/)
   assert.match(homeSearchSource, /countError/)
+  assert.match(homeSearchSource, /if \(intent !== 'all'\)/)
   assert.match(homeSearchSource, /params\.set\('mode', intent\)/)
   assert.match(homeSearchSource, /setNonEmptyParam\(params, 'q', queryValue\)/)
   assert.match(homeSearchSource, /params\.set\('municipality', locationValue\)/)
@@ -119,7 +120,7 @@ test('homepage search panels and placeholder retain their accessibility behavior
 test('homepage search uses compact rounded primary controls', () => {
   assert.match(homeSearchSource, /font-medium leading-4 text-\[#344054\]/)
   assert.match(homeSearchSource, /home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-\[12px\]/)
-  assert.match(homeSearchSource, /grid h-10 grid-cols-2 gap-0\.5 rounded-\[12px\]/)
+  assert.match(homeSearchSource, /grid h-10 grid-cols-3 gap-0\.5 rounded-\[12px\]/)
   assert.match(homeSearchSource, /inline-flex h-full min-h-0 items-center justify-center rounded-\[9px\]/)
   assert.doesNotMatch(homeSearchSource, /className=\{`min-h-8 rounded-\[14px\]/)
   assert.match(homeSearchSource, /placeholder=\{label\}/)
@@ -127,6 +128,14 @@ test('homepage search uses compact rounded primary controls', () => {
   assert.match(homeSearchSource, /min-h-10 self-end items-center justify-center gap-2 rounded-full/)
   assert.match(homeSearchSource, /right-3[\s\S]*text-\[#0866ff\]/)
   assert.doesNotMatch(homeSearchSource, /grid min-h-10 grid-cols-2 overflow-hidden rounded-\[12px\]/)
+})
+
+test('homepage search includes every offer type by default and portals its mobile filter dialog', () => {
+  assert.match(homeSearchSource, /type Intent = 'all' \| 'sale' \| 'leasing'/)
+  assert.match(homeSearchSource, /useState<Intent>\('all'\)/)
+  assert.match(homeSearchSource, /\['all', allLabel\]/)
+  assert.match(homeSearchSource, /createPortal\([\s\S]*document\.body/)
+  assert.match(homeSearchSource, /setIntent\('all'\)/)
 })
 
 test('homepage location placeholder keeps the mobile filter text size', () => {

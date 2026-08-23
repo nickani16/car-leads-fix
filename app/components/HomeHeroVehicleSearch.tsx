@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -57,7 +58,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { translateListingVehicleValue } from '@/lib/listing-display'
 
-type Intent = 'sale' | 'leasing'
+type Intent = 'all' | 'sale' | 'leasing'
 
 type HomeSearchFilters = {
   make: string
@@ -496,8 +497,10 @@ function buildHomeSearchParams({
 }) {
   const params = new URLSearchParams()
   params.set('categories', category)
-  params.set('mode', intent)
-  params.set('offerType', intent === 'leasing' ? 'lease' : 'sale')
+  if (intent !== 'all') {
+    params.set('mode', intent)
+    params.set('offerType', intent === 'leasing' ? 'lease' : 'sale')
+  }
   if (market) params.set('markets', market)
 
   const locationValue = location.trim()
@@ -639,7 +642,7 @@ export default function HomeHeroVehicleSearch({
   const { activeCategory: category, setActiveCategory } = useHomeCategory()
   const t = localizedCopy(locale)
   const defaultMarket = defaultSearchCountryForLocale(locale) || 'EU'
-  const [intent, setIntent] = useState<Intent>('sale')
+  const [intent, setIntent] = useState<Intent>('all')
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
   const [geoAreaId, setGeoAreaId] = useState('')
@@ -844,7 +847,7 @@ export default function HomeHeroVehicleSearch({
     setActiveCategory(nextCategory)
     setFilters(emptyFilters)
     setIntent((current) =>
-      current === 'leasing' && !isLeasingMarketplaceCategory(nextCategory) ? 'sale' : current,
+      current === 'leasing' && !isLeasingMarketplaceCategory(nextCategory) ? 'all' : current,
     )
     setSelectedSuggestions([])
     setCategoryMenuOpen(false)
@@ -863,7 +866,7 @@ export default function HomeHeroVehicleSearch({
     setQuery('')
     setLocation('')
     setGeoAreaId('')
-    setIntent('sale')
+    setIntent('all')
     setFilters(emptyFilters)
     setVerifiedOnly(false)
     setMarket(defaultMarket)
@@ -1187,7 +1190,7 @@ export default function HomeHeroVehicleSearch({
         ) : null}
       </section>
 
-      {moreFiltersOpen ? (
+      {moreFiltersOpen ? createPortal(
         <div
           id="home-search-more-filters"
           className="fixed inset-0 z-[260] flex items-end justify-center bg-[#101828]/55 sm:items-center sm:p-6"
@@ -1221,6 +1224,7 @@ export default function HomeHeroVehicleSearch({
               <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
                 <PurchaseTypeControl
                   label={t.purchaseType}
+                  allLabel={t.all}
                   buyLabel={t.buy}
                   leasingLabel={t.leasing}
                   value={intent}
@@ -1272,7 +1276,8 @@ export default function HomeHeroVehicleSearch({
               </button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </form>
   )
@@ -1369,12 +1374,14 @@ function HomeSelectControl({
 
 function PurchaseTypeControl({
   label,
+  allLabel,
   buyLabel,
   leasingLabel,
   value,
   onChange,
 }: {
   label: string
+  allLabel: string
   buyLabel: string
   leasingLabel: string
   value: Intent
@@ -1385,8 +1392,9 @@ function PurchaseTypeControl({
       <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
         {label}
       </legend>
-      <div className="grid h-10 grid-cols-2 gap-0.5 rounded-[12px] border border-[#98a2b3] bg-white p-0.5">
+      <div className="grid h-10 grid-cols-3 gap-0.5 rounded-[12px] border border-[#98a2b3] bg-white p-0.5">
         {([
+          ['all', allLabel],
           ['sale', buyLabel],
           ['leasing', leasingLabel],
         ] as const).map(([option, optionLabel]) => (

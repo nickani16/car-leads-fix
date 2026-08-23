@@ -2069,25 +2069,6 @@ export default function PublicHeader({
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a8082]">
                 {t.shopByCategory}
               </p>
-              <div className="mt-3 grid grid-cols-3 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
-                {searchIntentOptions.map((option) => {
-                  const selected = searchMenuIntent === option.key
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => setSearchMenuIntent(option.key)}
-                      className={`min-h-10 rounded-[13px] px-3 text-[13px] font-semibold transition ${
-                        selected
-                          ? 'bg-white text-[#101828] shadow-[0_7px_18px_rgba(16,24,40,.08)]'
-                          : 'text-[#667085]'
-                      }`}
-                    >
-                      <span className="whitespace-nowrap">{option.shortLabel}</span>
-                    </button>
-                  )
-                })}
-              </div>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
                 {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                   const CategoryIcon =
@@ -2208,15 +2189,6 @@ export default function PublicHeader({
                 </div>
               )})}
             </nav>
-
-            <Link
-              href={createListingHref}
-              onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#00b55e] px-5 text-base font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
-            >
-              {accountMenuCopy.create}
-              <ArrowRight className="h-5 w-5" />
-            </Link>
 
             <Link
               href={localizePublicHref(locale, '/contact')}
@@ -2388,25 +2360,6 @@ export default function PublicHeader({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mb-3 grid grid-cols-3 gap-1 rounded-[14px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
-              {searchIntentOptions.map((option) => {
-                const selected = searchMenuIntent === option.key
-                return (
-                  <button
-                    key={option.key}
-                    type="button"
-                    onClick={() => setSearchMenuIntent(option.key)}
-                    className={`min-h-9 rounded-[11px] px-2 text-[12px] font-semibold transition ${
-                      selected
-                        ? 'bg-white text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.08)]'
-                        : 'text-[#667085]'
-                    }`}
-                  >
-                    <span className="whitespace-nowrap">{option.shortLabel}</span>
-                  </button>
-                )
-              })}
-            </div>
             <div className="grid grid-cols-2 gap-2">
               {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                 const CategoryIcon =
@@ -2438,21 +2391,6 @@ export default function PublicHeader({
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
-            {!headerAccount.authenticated ? (
-              <>
-                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
-                <Link
-                  href={createListingHref}
-                  onClick={closeMobile}
-                  className="mx-1 mb-4 flex h-12 w-[calc(100%-0.5rem)] items-center justify-center gap-2 rounded-[10px] bg-[#00b55e] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
-                >
-                  <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
-                  {accountMenuCopy.create}
-                </Link>
-                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
-              </>
-            ) : null}
-
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <Link
@@ -2503,25 +2441,6 @@ export default function PublicHeader({
             <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
 
             <section className="mb-5">
-              <div className="mb-3 grid grid-cols-3 gap-1 rounded-[16px] border border-[#d9e1ec] bg-[#f4f7fb] p-1">
-                {searchIntentOptions.map((option) => {
-                  const selected = searchMenuIntent === option.key
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => setSearchMenuIntent(option.key)}
-                      className={`min-h-10 rounded-[13px] px-3 text-[13px] font-semibold transition ${
-                        selected
-                          ? 'bg-white text-[#101828] shadow-[0_7px_18px_rgba(16,24,40,.08)]'
-                          : 'text-[#667085]'
-                      }`}
-                    >
-                    <span className="whitespace-nowrap">{option.shortLabel}</span>
-                    </button>
-                  )
-                })}
-              </div>
               <div className="-mx-1 flex flex-wrap gap-2">
                 {visibleSearchCategoryItems.map(({ href, label, slug: categorySlug }) => {
                   const isActive = categorySlug === mobileMenuActiveSlug
