@@ -9,6 +9,7 @@ import {
   CarFront,
   ChevronDown,
   CircleHelp,
+  CircleUserRound,
   CreditCard,
   FilePlus2,
   Heart,
@@ -1960,7 +1961,7 @@ export default function PublicHeader({
                   onClick={() => openAuthModal('login')}
                   className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                 >
-                  <UserRound className="h-[21px] w-[21px]" strokeWidth={2} />
+                  <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={2} />
                   <span>{t.signIn}</span>
                 </button>
               )}
@@ -2305,7 +2306,7 @@ export default function PublicHeader({
               onClick={() => openAuthModal('login', accountHref)}
               className="flex h-11 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <UserRound className="h-[21px] w-[21px]" strokeWidth={1.8} />
+              <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.8} />
               <span>{t.signIn}</span>
             </button>
           )}
@@ -2408,7 +2409,7 @@ export default function PublicHeader({
               ) : (
                 <div>
                   <div className="flex items-start gap-3">
-                    <UserRound className="mt-0.5 h-7 w-7 shrink-0 text-[#202124]" strokeWidth={1.7} />
+                    <CircleUserRound className="mt-0.5 h-7 w-7 shrink-0 text-[#202124]" strokeWidth={1.7} />
                     <div>
                       <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-[#202124]">
                         {t.signIn}
