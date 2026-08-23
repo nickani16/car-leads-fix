@@ -48,14 +48,20 @@ test('desktop list sidebar follows a flat filter structure', () => {
   assert.match(experienceSource, /sidebar \? 'hidden' : 'grid'/)
   assert.match(experienceSource, /summary && !sidebar/)
   assert.doesNotMatch(experienceSource, /mb-2 overflow-hidden rounded-\[8px\] border bg-white/)
-  assert.match(experienceSource, /onChange=\{\(event\) => changeMarketplaceMode\(event\.target\.value as SearchMode\)\}/)
+  assert.match(experienceSource, /role="radiogroup" aria-label=\{desktopListText\.offerType\}/)
+  assert.match(experienceSource, /onChange=\{\(\) => changeMarketplaceMode\(option\)\}/)
+  assert.match(experienceSource, /<SearchableSidebarOptions/)
+  assert.match(experienceSource, /data-marketplace-list-breadcrumbs/)
+  assert.match(experienceSource, /data-marketplace-list-active-filters/)
   assert.doesNotMatch(experienceSource, /grid grid-cols-3 rounded-\[9px\]/)
 })
 
 test('desktop list shell has explicit copy for every public locale', () => {
   assert.match(experienceSource, /const desktopListShellCopy: Record<PublicLocale, DesktopListShellCopy>/)
+  assert.match(experienceSource, /const listViewExtraCopy: Record<PublicLocale, ListViewExtraCopy>/)
   for (const locale of ['en', 'sv', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(experienceSource, new RegExp(`\n  ${locale}: desktopList`))
+    assert.match(experienceSource, new RegExp(`\n  ${locale}: \\{ typeLabel:`))
   }
   assert.match(experienceSource, /showMap: 'Visa karta'/)
   assert.match(experienceSource, /showMap: 'Karte anzeigen'/)
@@ -102,7 +108,7 @@ test('desktop list cards use a wide image, seller row and listing actions', () =
   assert.match(experienceSource, /sm:grid-cols-\[260px_minmax\(0,1fr\)\] sm:items-start/)
   assert.match(experienceSource, /grid-cols-\[320px_minmax\(0,1fr\)\]/)
   assert.match(experienceSource, /min-\[1120px\]:overflow-visible/)
-  assert.match(experienceSource, /flex min-h-9 items-center gap-3/)
+  assert.match(experienceSource, /flex min-h-12 items-start gap-3/)
   assert.match(desktopListingRowSource, /grid-cols-\[minmax\(320px,37%\)_minmax\(0,1fr\)\]/)
   assert.match(experienceSource, /icon=\{<Scale/)
   assert.match(experienceSource, /icon=\{<Layers/)

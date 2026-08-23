@@ -15,6 +15,7 @@ import {
   Columns2,
   Globe2,
   Heart,
+  House,
   Layers,
   List,
   MapPin,
@@ -606,6 +607,33 @@ const desktopListShellCopy: Record<PublicLocale, DesktopListShellCopy> = {
   pl: desktopListPl,
   fi: desktopListFi,
   da: desktopListDa,
+}
+
+type ListViewExtraCopy = {
+  typeLabel: string
+  savedListings: string
+  latestListings: string
+  activeFilter: string
+  activeFilters: string
+  searchByType: string
+  searchByMake: string
+  noOptions: string
+  sortBy: string
+}
+
+const listViewExtraCopy: Record<PublicLocale, ListViewExtraCopy> = {
+  en: { typeLabel: 'Type', savedListings: 'Saved listings', latestListings: 'Latest listings', activeFilter: 'active filter', activeFilters: 'active filters', searchByType: 'Search by type', searchByMake: 'Search by make', noOptions: 'No options found', sortBy: 'Sort by' },
+  sv: { typeLabel: 'Typ', savedListings: 'Sparade annonser', latestListings: 'Senaste annonser', activeFilter: 'aktivt filter', activeFilters: 'aktiva filter', searchByType: 'Sök typ', searchByMake: 'Sök märke', noOptions: 'Inga alternativ hittades', sortBy: 'Sortera efter' },
+  de: { typeLabel: 'Typ', savedListings: 'Gespeicherte Anzeigen', latestListings: 'Neueste Anzeigen', activeFilter: 'aktiver Filter', activeFilters: 'aktive Filter', searchByType: 'Typ suchen', searchByMake: 'Marke suchen', noOptions: 'Keine Optionen gefunden', sortBy: 'Sortieren nach' },
+  at: { typeLabel: 'Typ', savedListings: 'Gespeicherte Anzeigen', latestListings: 'Neueste Anzeigen', activeFilter: 'aktiver Filter', activeFilters: 'aktive Filter', searchByType: 'Typ suchen', searchByMake: 'Marke suchen', noOptions: 'Keine Optionen gefunden', sortBy: 'Sortieren nach' },
+  be: { typeLabel: 'Type', savedListings: 'Bewaarde advertenties', latestListings: 'Nieuwste advertenties', activeFilter: 'actieve filter', activeFilters: 'actieve filters', searchByType: 'Type zoeken', searchByMake: 'Merk zoeken', noOptions: 'Geen opties gevonden', sortBy: 'Sorteren op' },
+  nl: { typeLabel: 'Type', savedListings: 'Bewaarde advertenties', latestListings: 'Nieuwste advertenties', activeFilter: 'actieve filter', activeFilters: 'actieve filters', searchByType: 'Type zoeken', searchByMake: 'Merk zoeken', noOptions: 'Geen opties gevonden', sortBy: 'Sorteren op' },
+  fr: { typeLabel: 'Type', savedListings: 'Annonces enregistrées', latestListings: 'Dernières annonces', activeFilter: 'filtre actif', activeFilters: 'filtres actifs', searchByType: 'Rechercher un type', searchByMake: 'Rechercher une marque', noOptions: 'Aucune option trouvée', sortBy: 'Trier par' },
+  es: { typeLabel: 'Tipo', savedListings: 'Anuncios guardados', latestListings: 'Últimos anuncios', activeFilter: 'filtro activo', activeFilters: 'filtros activos', searchByType: 'Buscar tipo', searchByMake: 'Buscar marca', noOptions: 'No se encontraron opciones', sortBy: 'Ordenar por' },
+  it: { typeLabel: 'Tipo', savedListings: 'Annunci salvati', latestListings: 'Ultimi annunci', activeFilter: 'filtro attivo', activeFilters: 'filtri attivi', searchByType: 'Cerca tipo', searchByMake: 'Cerca marca', noOptions: 'Nessuna opzione trovata', sortBy: 'Ordina per' },
+  pl: { typeLabel: 'Typ', savedListings: 'Zapisane ogłoszenia', latestListings: 'Najnowsze ogłoszenia', activeFilter: 'aktywny filtr', activeFilters: 'aktywne filtry', searchByType: 'Szukaj typu', searchByMake: 'Szukaj marki', noOptions: 'Nie znaleziono opcji', sortBy: 'Sortuj według' },
+  fi: { typeLabel: 'Tyyppi', savedListings: 'Tallennetut ilmoitukset', latestListings: 'Uusimmat ilmoitukset', activeFilter: 'aktiivinen suodatin', activeFilters: 'aktiiviset suodattimet', searchByType: 'Hae tyyppiä', searchByMake: 'Hae merkkiä', noOptions: 'Vaihtoehtoja ei löytynyt', sortBy: 'Lajittele' },
+  da: { typeLabel: 'Type', savedListings: 'Gemte annoncer', latestListings: 'Nyeste annoncer', activeFilter: 'aktivt filter', activeFilters: 'aktive filtre', searchByType: 'Søg type', searchByMake: 'Søg mærke', noOptions: 'Ingen muligheder fundet', sortBy: 'Sorter efter' },
 }
 
 function priceFilterValue(listing: VehicleSearchListing) {
@@ -1238,9 +1266,12 @@ export default function VehicleSearchExperience({
   const [listCategoryOpen, setListCategoryOpen] = useState(true)
   const [listVehicleOpen, setListVehicleOpen] = useState(true)
   const [listMileageOpen, setListMileageOpen] = useState(true)
+  const [listBodyTypeOpen, setListBodyTypeOpen] = useState(true)
   const [listSpecsOpen, setListSpecsOpen] = useState(true)
   const [listSaleDriveOpen, setListSaleDriveOpen] = useState(false)
   const [listEquipmentOpen, setListEquipmentOpen] = useState(false)
+  const [listBodyTypeQuery, setListBodyTypeQuery] = useState('')
+  const [listMakeQuery, setListMakeQuery] = useState('')
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
   const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
@@ -1749,6 +1780,15 @@ export default function VehicleSearchExperience({
       .filter((value): value is string => Boolean(value))
     return [...new Set(liveValues.length ? liveValues : facetValues)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
   }, [mode, optionListings, searchFacets?.bodyTypes])
+  const bodyTypeCounts = useMemo(
+    () => countValues(
+      optionListings
+        .filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+        .map((listing) => listing.bodyType)
+        .filter((value): value is string => Boolean(value)),
+    ),
+    [mode, optionListings],
+  )
   const makeModelOptions = useMemo(() => {
     const scopedListings = optionListings.filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
     const makeCounts = countValues(scopedListings.map((listing) => listing.make).filter(Boolean))
@@ -2180,6 +2220,7 @@ export default function VehicleSearchExperience({
     .filter((listing): listing is VehicleSearchListing => Boolean(listing))
   const compareCopy = getCompareCopy(locale)
   const desktopListText = desktopListShellCopy[locale]
+  const listExtraText = listViewExtraCopy[locale]
   const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
@@ -3129,6 +3170,28 @@ export default function VehicleSearchExperience({
     equipmentQuery.trim() ? { key: 'equipment', label: equipmentQuery.trim(), onRemove: () => setEquipmentQuery('') } : null,
   ]
   const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
+  const listActiveFilters: ActiveFilterChip[] = !selectedCategoryItems.length || activeFilters.some((filter) => filter.key === 'categories')
+    ? activeFilters
+    : [
+      {
+        key: 'categories',
+        label: categoryText(activeCategoryItem, locale),
+        onRemove: () => {
+          setSelectedCategories([])
+          clearUnsupportedCategoryFilters([])
+        },
+      },
+      ...activeFilters,
+    ]
+  const listBodyTypeOptions = categoryScopedOptions(activeCategoryKey, 'bodyType')
+    .filter((option) => normalizeSearchText(option.label).includes(normalizeSearchText(listBodyTypeQuery)))
+    .map((option) => ({
+      ...option,
+      count: bodyTypeCounts.get(option.value) || 0,
+    }))
+  const listMakeOptions = makeModelOptions.makes.filter((option) =>
+    normalizeSearchText(option.label).includes(normalizeSearchText(listMakeQuery)),
+  )
   const saveSearchButtonLabel = savedSearchMessage || (
     activeFilters.length
       ? uiText(locale, 'Save', 'Spara', 'Speichern') + ' ' + activeFilters.length + ' ' + uiText(locale, 'filters', 'filter', 'Filter')
@@ -3181,8 +3244,24 @@ export default function VehicleSearchExperience({
           {desktopMarketplaceView === 'list' ? (
             <div
               data-marketplace-desktop-list
-              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1170px] grid-cols-[320px_minmax(0,1fr)] gap-8 bg-white px-6 py-8 min-[1120px]:grid 2xl:max-w-[1320px] 2xl:px-8"
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1170px] grid-cols-[320px_minmax(0,1fr)] gap-x-8 gap-y-5 bg-white px-6 py-7 min-[1120px]:grid 2xl:max-w-[1320px] 2xl:px-8"
             >
+              <nav
+                data-marketplace-list-breadcrumbs
+                aria-label={translatePublic(locale, 'Breadcrumbs')}
+                className="col-span-2 flex min-h-7 items-center gap-2 text-[12px] font-medium text-[#667085]"
+              >
+                <Link
+                  href={localizePublicHref(locale, '/')}
+                  className="grid h-7 w-7 place-items-center rounded-[6px] text-[#344054] transition hover:bg-[#eef5ff] hover:text-[#0866ff]"
+                  aria-label={translatePublic(locale, 'Home')}
+                >
+                  <House className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5 text-[#98a2b3]" aria-hidden="true" />
+                <span className="truncate font-semibold text-[#344054]">{categoryText(activeCategoryItem, locale)}</span>
+              </nav>
+
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
@@ -3195,9 +3274,9 @@ export default function VehicleSearchExperience({
                       <h2 className="text-[17px] font-semibold text-[#101828]">
                         {desktopListText.filters}
                       </h2>
-                      {activeFilters.length ? (
+                      {listActiveFilters.length ? (
                         <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
-                          {activeFilters.length}
+                          {listActiveFilters.length}
                         </span>
                       ) : null}
                     </div>
@@ -3212,6 +3291,42 @@ export default function VehicleSearchExperience({
                   <div className="mt-3">{renderMarketplaceSearchInput('', true, translatePublic(locale, 'Search'))}</div>
                 </div>
 
+                {listActiveFilters.length ? (
+                  <div className="border-b border-[#e4e7ec] bg-[#fbfcfe] px-3 py-3" data-marketplace-list-active-filters>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[12px] font-semibold text-[#101828]">
+                        {listActiveFilters.length} {listActiveFilters.length === 1
+                          ? listExtraText.activeFilter
+                          : listExtraText.activeFilters}
+                      </p>
+                      <button type="button" onClick={resetFilters} className="text-[11px] font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                        {desktopListText.clearAll}
+                      </button>
+                    </div>
+                    <div className="mt-2"><ActiveFilterChips filters={listActiveFilters} locale={locale} /></div>
+                    <button
+                      type="button"
+                      onClick={saveCurrentSearch}
+                      disabled={savingSearch}
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 border-t border-[#e4e7ec] pt-3 text-[12px] font-semibold text-[#344054] transition hover:text-[#0866ff] disabled:cursor-wait disabled:opacity-70"
+                    >
+                      <Bookmark className="h-4 w-4" aria-hidden="true" />
+                      {saveSearchButtonLabel}
+                    </button>
+                  </div>
+                ) : null}
+
+                <div className="grid border-b border-[#e4e7ec] bg-white">
+                  <Link href={localizePublicHref(locale, '/saved')} className="flex min-h-11 items-center gap-2.5 px-3 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc] hover:text-[#0866ff]">
+                    <Heart className="h-4 w-4 text-[#0866ff]" aria-hidden="true" />
+                    {listExtraText.savedListings}
+                  </Link>
+                  <button type="button" onClick={() => setSortBy('published')} className={`flex min-h-11 items-center gap-2.5 border-t border-[#eef1f5] px-3 text-left text-[12px] font-medium transition hover:bg-[#f8fafc] hover:text-[#0866ff] ${sortBy === 'published' ? 'text-[#0866ff]' : 'text-[#344054]'}`}>
+                    <span className={`h-4 w-4 rounded-[3px] border ${sortBy === 'published' ? 'border-[#0866ff] bg-[#0866ff] shadow-[inset_0_0_0_3px_white]' : 'border-[#98a2b3]'}`} aria-hidden="true" />
+                    {listExtraText.latestListings}
+                  </button>
+                </div>
+
                 <div className="min-h-0 flex-1 px-2 py-1">
                   <CollapsibleFilterSection
                     density="sidebar"
@@ -3221,22 +3336,36 @@ export default function VehicleSearchExperience({
                     open={listOfferTypeOpen}
                     onToggle={() => setListOfferTypeOpen((open) => !open)}
                   >
-                    <label className="relative block">
-                      <span className="sr-only">{desktopListText.offerType}</span>
-                      <select
-                        value={mode}
-                        onChange={(event) => changeMarketplaceMode(event.target.value as SearchMode)}
-                        className="h-10 w-full appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-medium text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
-                      >
-                        {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
-                          <option key={option} value={option}>
-                            {marketplaceModeOptionLabel(locale, option)}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
-                    </label>
+                    <div className="grid gap-1.5" role="radiogroup" aria-label={desktopListText.offerType}>
+                      {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
+                        <label key={option} className="flex min-h-8 cursor-pointer items-center gap-2.5 rounded-[6px] px-2 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc]">
+                          <input type="radio" name="desktop-list-offer-type" value={option} checked={mode === option} onChange={() => changeMarketplaceMode(option)} className="h-4 w-4 accent-[#0866ff]" />
+                          {marketplaceModeOptionLabel(locale, option)}
+                        </label>
+                      ))}
+                    </div>
                   </CollapsibleFilterSection>
+
+                  {filterProfile.includes('bodyType') || listBodyTypeOptions.length || bodyType ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      title={listExtraText.typeLabel}
+                      summary={bodyType ? translateListingVehicleValue(locale, bodyType) : desktopListText.allVehicles}
+                      open={listBodyTypeOpen}
+                      onToggle={() => setListBodyTypeOpen((open) => !open)}
+                    >
+                      <SearchableSidebarOptions
+                        locale={locale}
+                        searchLabel={listExtraText.searchByType}
+                        query={listBodyTypeQuery}
+                        onQueryChange={setListBodyTypeQuery}
+                        options={listBodyTypeOptions}
+                        selectedValue={bodyType}
+                        emptyLabel={listExtraText.noOptions}
+                        onSelect={(value) => setBodyType(value === bodyType ? '' : value)}
+                      />
+                    </CollapsibleFilterSection>
+                  ) : null}
 
                   <CollapsibleFilterSection
                     density="sidebar"
@@ -3271,16 +3400,19 @@ export default function VehicleSearchExperience({
                     onToggle={() => setListVehicleOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      <FilterSelect
+                      <SearchableSidebarOptions
                         locale={locale}
-                        label={uiText(locale, 'Make', 'Märke', 'Marke')}
-                        value={make}
-                        onChange={(value) => {
+                        searchLabel={listExtraText.searchByMake}
+                        query={listMakeQuery}
+                        onQueryChange={setListMakeQuery}
+                        options={listMakeOptions}
+                        selectedValue={make}
+                        emptyLabel={listExtraText.noOptions}
+                        onSelect={(value) => {
                           seoRouteSyncArmedRef.current = value !== make || Boolean(model)
-                          setMake(value)
+                          setMake(value === make ? '' : value)
                           setModel('')
                         }}
-                        options={makeModelOptions.makes.map((option) => ({ value: option.value, label: `${option.label} (${option.count})` }))}
                       />
                       <FilterSelect
                         locale={locale}
@@ -3380,14 +3512,13 @@ export default function VehicleSearchExperience({
                   <CollapsibleFilterSection
                     density="sidebar"
                     icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
-                    title={uiText(locale, 'Fuel, body and gearbox', 'Drivmedel, biltyp och växellåda', 'Kraftstoff, Karosserie und Getriebe')}
-                    summary={[fuel, bodyType ? translateListingVehicleValue(locale, bodyType) : '', gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    title={uiText(locale, 'Fuel and gearbox', 'Drivmedel och växellåda', 'Kraftstoff und Getriebe')}
+                    summary={[fuel, gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
                     open={listSpecsOpen}
                     onToggle={() => setListSpecsOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
                       {renderSidebarTechnicalFilter('fuel')}
-                      {renderSidebarTechnicalFilter('bodyType')}
                       {renderSidebarTechnicalFilter('gearbox')}
                     </div>
                   </CollapsibleFilterSection>
@@ -3452,9 +3583,12 @@ export default function VehicleSearchExperience({
 
               <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
                 <div className="border-b border-[#dfe5ee] bg-white px-0 pb-4 pt-1">
-                  <div className="flex min-h-9 items-center gap-3">
+                  <div className="flex min-h-12 items-start gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[17px] font-semibold text-[#101828]">
+                      <h1 className="truncate text-[20px] font-semibold leading-6 text-[#101828]">
+                        {seoLanding?.h1 || categoryText(activeCategoryItem, locale)}
+                      </h1>
+                      <p className="mt-1 truncate text-[12px] font-medium text-[#475467]">
                         {searchLoading && searchPage === 1
                           ? desktopListText.updatingResults
                           : searchError
@@ -3465,7 +3599,8 @@ export default function VehicleSearchExperience({
                     </div>
                     <label className="relative shrink-0">
                       <span className="sr-only">{desktopListText.sorting}</span>
-                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-8 min-w-[144px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-8 text-[11px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
+                      <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[11px] font-medium text-[#667085]">{listExtraText.sortBy}:</span>
+                      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-9 min-w-[205px] appearance-none rounded-[7px] border border-[#cfd7e4] bg-white pl-[68px] pr-8 text-[11px] font-semibold text-[#344054] outline-none transition focus:border-[#0866ff]">
                         {sortOptions.map((option) => (
                           <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
                         ))}
@@ -3481,11 +3616,6 @@ export default function VehicleSearchExperience({
                       {saveSearchButtonLabel}
                     </button>
                   </div>
-                  {activeFilters.length ? (
-                    <div className="mt-2 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <ActiveFilterChips filters={activeFilters} locale={locale} />
-                    </div>
-                  ) : null}
                 </div>
 
                 <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 bg-white pt-5">
@@ -4362,6 +4492,65 @@ function ActiveFilterChips({
           <X className="h-3.5 w-3.5" />
         </button>
       ))}
+    </div>
+  )
+}
+
+function SearchableSidebarOptions({
+  locale,
+  searchLabel,
+  query,
+  onQueryChange,
+  options,
+  selectedValue,
+  emptyLabel,
+  onSelect,
+}: {
+  locale: PublicLocale
+  searchLabel: string
+  query: string
+  onQueryChange: (value: string) => void
+  options: Array<{ value: string; label: string; count?: number }>
+  selectedValue: string
+  emptyLabel: string
+  onSelect: (value: string) => void
+}) {
+  return (
+    <div className="grid gap-2">
+      <label className="relative block">
+        <span className="sr-only">{searchLabel}</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder={translatePublic(locale, 'Search')}
+          className="h-9 w-full rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
+        />
+        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#344054]" aria-hidden="true" />
+      </label>
+      <div className="grid max-h-[210px] gap-0.5 overflow-y-auto pr-1" role="listbox" aria-label={searchLabel}>
+        {options.length ? options.map((option) => {
+          const selected = option.value === selectedValue
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={selected}
+              onClick={() => onSelect(option.value)}
+              className="flex min-h-8 w-full items-center gap-2.5 rounded-[6px] px-2 text-left text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc]"
+            >
+              <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border ${selected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white'}`} aria-hidden="true">
+                {selected ? <Check className="h-3 w-3" /> : null}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              {typeof option.count === 'number' ? <span className="shrink-0 tabular-nums text-[#667085]">({option.count})</span> : null}
+            </button>
+          )
+        }) : (
+          <p className="px-2 py-3 text-[11px] text-[#667085]">{emptyLabel}</p>
+        )}
+      </div>
     </div>
   )
 }
