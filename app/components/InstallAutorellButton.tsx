@@ -1,89 +1,38 @@
 'use client'
 
-import { Download } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { PublicLocale } from '@/lib/public-i18n'
-
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
+import Link from 'next/link'
+import { Smartphone } from 'lucide-react'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 type InstallCopy = {
   button: string
 }
 
 const copyByLocale: Record<PublicLocale, InstallCopy> = {
-  sv: { button: 'Installera Autorell' },
-  en: { button: 'Install Autorell' },
-  de: { button: 'Autorell installieren' },
-  at: { button: 'Autorell installieren' },
-  be: { button: 'Autorell installeren' },
-  fr: { button: 'Installer Autorell' },
-  es: { button: 'Instalar Autorell' },
-  it: { button: 'Installa Autorell' },
-  pl: { button: 'Zainstaluj Autorell' },
-  nl: { button: 'Autorell installeren' },
-  fi: { button: 'Asenna Autorell' },
-  da: { button: 'Installer Autorell' },
+  sv: { button: 'Ladda ner appen' },
+  en: { button: 'Download the app' },
+  de: { button: 'App herunterladen' },
+  at: { button: 'App herunterladen' },
+  be: { button: 'App downloaden' },
+  fr: { button: 'Télécharger l’application' },
+  es: { button: 'Descargar la aplicación' },
+  it: { button: 'Scarica l’app' },
+  pl: { button: 'Pobierz aplikację' },
+  nl: { button: 'App downloaden' },
+  fi: { button: 'Lataa sovellus' },
+  da: { button: 'Download appen' },
 }
 
 export default function InstallAutorellButton({ locale }: { locale: PublicLocale }) {
   const copy = copyByLocale[locale] || copyByLocale.en
-  const [deferredPrompt, setDeferredPrompt] = useState<InstallPromptEvent | null>(null)
-  const [installed, setInstalled] = useState(false)
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const isInstalled = window.matchMedia('(display-mode: standalone)').matches || Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
-      const storedPrompt = (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt || null
-      setInstalled(isInstalled)
-      setDeferredPrompt(storedPrompt)
-    }, 0)
-
-    const handleInstalled = () => {
-      setInstalled(true)
-      setDeferredPrompt(null)
-    }
-    const handleAvailable = () => {
-      const prompt = (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt || null
-      setDeferredPrompt(prompt)
-    }
-    window.addEventListener('autorell:install-available', handleAvailable)
-    window.addEventListener('autorell:app-installed', handleInstalled)
-    return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('autorell:install-available', handleAvailable)
-      window.removeEventListener('autorell:app-installed', handleInstalled)
-    }
-  }, [])
-
-  async function install() {
-    const prompt = deferredPrompt || (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt
-    if (prompt) {
-      await prompt.prompt()
-      const choice = await prompt.userChoice
-      if (choice.outcome === 'accepted') setInstalled(true)
-      delete (window as Window & { __autorellInstallPrompt?: InstallPromptEvent }).__autorellInstallPrompt
-      setDeferredPrompt(null)
-      return
-    }
-
-    if (navigator.share) {
-      await navigator.share({ title: 'Autorell', url: window.location.origin }).catch(() => undefined)
-    }
-  }
-
-  if (installed) return null
 
   return (
-    <button
-      type="button"
-      onClick={() => void install()}
-      className="inline-flex min-h-9 items-center gap-2 rounded-[8px] border border-[#cbd5e1] bg-white px-3 text-[13px] font-semibold text-[#253858] transition hover:border-[#0866ff] hover:bg-[#f4f8ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+    <Link
+      href={localizePublicHref(locale, '/app')}
+      className="inline-flex min-h-11 items-center gap-2 rounded-[8px] border border-[#cfe1fb] bg-[#eaf3ff] px-4 text-[13px] font-semibold text-[#0755d9] transition hover:border-[#a9c9f5] hover:bg-[#dcecff] hover:text-[#0648bd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
     >
-      <Download className="h-4 w-4" strokeWidth={2} />
+      <Smartphone className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />
       {copy.button}
-    </button>
+    </Link>
   )
 }

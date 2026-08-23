@@ -30,6 +30,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
 import CountryFlag from './CountryFlag'
 import { FooterMarketCurrencyControls } from './PublicFooter'
+import InstallAutorellButton from './InstallAutorellButton'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
 import { createCategoryMapMarker } from './MapCategoryMarker'
@@ -5114,7 +5115,10 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
             {marketplaceFooterDescriptions[locale]}
           </p>
         </div>
-        <MarketplaceSocialLinks />
+        <div className="flex flex-col items-start gap-4 lg:items-end">
+          <MarketplaceSocialLinks />
+          <InstallAutorellButton locale={locale} />
+        </div>
       </div>
       <div className="mt-6 grid gap-4 border-t border-[#eef2f6] pt-5 min-[720px]:grid-cols-[auto_minmax(0,1fr)] min-[720px]:items-end">
         <FooterMarketCurrencyControls locale={locale} className="min-[720px]:self-end" />

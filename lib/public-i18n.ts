@@ -183,6 +183,7 @@ export const publicPagePaths = [
   '/business',
   '/business/pilot',
   '/business/inventory-import',
+  '/app',
   '/saved-searches',
   '/privacy',
   '/cookies',

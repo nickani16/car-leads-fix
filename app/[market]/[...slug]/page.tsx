@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
 import { HelpCenterArticlePage, HelpCenterCategory } from '@/app/components/HelpCenterPages'
 import PricingPage from '@/app/components/PricingPage'
+import AppDownloadPage, { generateAppDownloadMetadata } from '@/app/components/AppDownloadPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import FaqPageClient from '@/app/vanliga-fragor/FaqPageClient'
@@ -44,7 +45,6 @@ import {
 import { getHelpCenterArticle, getHelpCenterCategory } from '@/lib/help-center'
 
 const removedPublicPages = new Set([
-  'app',
   'sell-vehicle',
   'safety-tips',
   'partners',
@@ -90,6 +90,10 @@ export async function generateMetadata({
   params: Promise<{ market: string; slug: string[] }>
 }) {
   const { market, slug } = await params
+  if (slug.join('/') === 'app') {
+    const locale = resolveMarketLocale(market)
+    if (locale) return generateAppDownloadMetadata(locale)
+  }
   if (slug.join('/') === 'business/pilot') {
     return generateBusinessPilotMetadata()
   }
@@ -125,6 +129,10 @@ export default async function LocalizedMarketPage({
   const slugPath = slug.join('/')
   if (removedPublicPages.has(slugPath)) {
     notFound()
+  }
+
+  if (slugPath === 'app') {
+    return <AppDownloadPage locale={locale} marketCode={normalizedMarket.toUpperCase()} />
   }
 
   const helpCenterRoute = resolveHelpCenterRoute(slug)
