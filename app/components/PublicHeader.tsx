@@ -2334,40 +2334,7 @@ export default function PublicHeader({
                 ) : null}
               </span>
             </Link>
-          ) : (
-            <>
-              <Link
-                href={savedHref}
-                onClick={closeMobile}
-                aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
-                className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-              >
-                <span className="relative">
-                  <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                  {savedListingBadge ? (
-                    <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                      {savedListingBadge}
-                    </span>
-                  ) : null}
-                </span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => openAuthModal('login', savedSearchesHref)}
-                aria-label={translatePublic(locale, 'Saved searches')}
-                className="grid h-11 w-9 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-              >
-                <span className="relative">
-                  <Bell className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                  {savedSearchBadge ? (
-                    <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
-                      {savedSearchBadge}
-                    </span>
-                  ) : null}
-                </span>
-              </button>
-            </>
-          )}
+          ) : null}
           {headerAccount.authenticated ? (
             <Link
               href={accountHref}
