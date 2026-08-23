@@ -2432,19 +2432,20 @@ export default function PublicHeader({
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             {!headerAccount.authenticated ? (
               <>
+                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
                 <Link
                   href={createListingHref}
                   onClick={closeMobile}
-                  className="mb-5 flex h-[52px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#00b55e] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
+                  className="mx-1 mb-4 flex h-12 w-[calc(100%-0.5rem)] items-center justify-center gap-2 rounded-[10px] bg-[#00b55e] px-5 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
                 >
                   <FilePlus2 className="h-5 w-5 shrink-0" strokeWidth={2.2} />
                   {accountMenuCopy.create}
                 </Link>
-                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
+                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
               </>
             ) : null}
 
-            <section className="mb-5 rounded-[24px] bg-[#f6f6f4] p-5">
+            <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <Link
                   href={accountHref}
@@ -2467,33 +2468,27 @@ export default function PublicHeader({
                   </span>
                 </Link>
               ) : (
-                <div>
-                  <div className="flex items-start gap-3">
-                    <CircleUserRound className="mt-0.5 h-7 w-7 shrink-0 text-[#202124]" strokeWidth={1.7} />
-                    <div>
-                      <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-[#202124]">
-                        {t.signIn}
-                      </h2>
-                      <p className="mt-1 max-w-[28rem] text-[15px] font-medium leading-6 text-[#344054]">
-                        {publicLabel(
-                          'Save vehicles, searches and contact sellers faster.',
-                          'Spara fordon, sökningar och få enklare kontakt med säljare.',
-                          'Fahrzeuge und Suchen speichern und Verkäufer einfacher kontaktieren.',
-                        )}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3 py-1">
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#202124]" strokeWidth={1.8} />
+                  <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login', accountHref)}
+                      className="block text-left text-[16px] font-semibold leading-6 text-[#202124] transition-colors hover:text-[#0866ff]"
+                    >
+                      {t.signIn}
+                    </button>
+                    <p className="text-[14px] leading-5 text-[#475467]">
+                      {accountMenuCopy.newHere}{' '}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('register')}
+                        className="font-semibold text-[#0866ff] transition-colors hover:text-[#005bd8]"
+                      >
+                        {accountMenuCopy.startHere}
+                      </button>
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('login', accountHref)}
-                    className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#0866ff] bg-white px-5 text-[15px] font-semibold text-[#0866ff]"
-                  >
-                    {publicLabel(
-                      'Sign in or create an account',
-                      'Logga in eller skapa konto',
-                      'Anmelden oder Konto erstellen',
-                    )}
-                  </button>
                 </div>
               )}
             </section>

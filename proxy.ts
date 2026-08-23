@@ -842,6 +842,14 @@ export async function proxy(request: NextRequest) {
   const botProtectionResponse = protectExpensiveCrawlSurfaces(request, pathname)
   if (botProtectionResponse) return botProtectionResponse
 
+  if (methodCanRedirect && pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    url.searchParams.set('flow', 'oauth')
+    if (!url.searchParams.has('next')) url.searchParams.set('next', '/account')
+    return NextResponse.redirect(url, 307)
+  }
+
   if (methodCanRedirect) {
     const goneListingResponse = await responseForPermanentlyRemovedListing(request)
     if (goneListingResponse) return goneListingResponse
