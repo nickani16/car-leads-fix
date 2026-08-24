@@ -1190,9 +1190,16 @@ export default function PublicHeader({
     : 'min-[1120px]:h-[62px]'
   const isBusinessAccount = headerAccount.accountType === 'business'
   const isAdminAccount = Boolean(headerAccount.isAdmin)
+  const privateListingHref = localizePublicHref(locale, '/account/listings/new')
+  const incompletePrivateListingHref = localizePublicHref(
+    locale,
+    `/account/profile?reason=listing&next=${encodeURIComponent(privateListingHref)}`,
+  )
   const createListingHref = isBusinessAccount
     ? `${marketPathPrefix}/account/company/listings/create`
-    : localizePublicHref(locale, '/account/listings/new')
+    : headerAccount.authenticated && headerAccount.profileComplete === false
+      ? incompletePrivateListingHref
+      : privateListingHref
   const baseSellMenuLinks = sellerItems[language].map((item) => {
     const translatedItem =
       locale === 'sv' || locale === 'de' || locale === 'en'

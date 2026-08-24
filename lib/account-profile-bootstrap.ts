@@ -24,6 +24,13 @@ export function accountIntentFromRequest(request: Request, user?: User | null): 
     .find((part) => part.startsWith(`${ACCOUNT_INTENT_COOKIE}=`))
     ?.slice(ACCOUNT_INTENT_COOKIE.length + 1)
 
+  return accountIntentFromCookieAndUser(cookieValue, user)
+}
+
+export function accountIntentFromCookieAndUser(
+  cookieValue: unknown,
+  user?: User | null,
+): AccountIntentDetails {
   const cookieIntent = readAccountIntent(cookieValue)
   const metadata = (user?.user_metadata || {}) as Record<string, unknown>
   const metadataType =

@@ -10,6 +10,10 @@ import {
 } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
 import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+} from '@/lib/account-profile-bootstrap'
 import RegisterForm from './RegisterForm'
 
 export default async function RegisterPage({
@@ -22,9 +26,8 @@ export default async function RegisterPage({
   const query = searchParams ? await searchParams : {}
   const accountParam = Array.isArray(query.account) ? query.account[0] : query.account
   const cookieStore = await cookies()
-  const initialAccountType = normalizeAccountIntent(
-    accountParam || cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
-  )
+  const accountIntentValue = accountParam || cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value
+  const initialAccountType = normalizeAccountIntent(accountIntentValue)
   const nextParam = Array.isArray(query.next) ? query.next[0] : query.next
   const completionDestination = safeReturnPath(nextParam) || localizePublicHref(locale, '/account')
   const requestHeaders = await headers()
@@ -54,6 +57,12 @@ export default async function RegisterPage({
   )
   if (profile && !canReactivate) redirect(localizePublicHref(locale, '/account'))
 
+  const accountIntent = accountIntentFromCookieAndUser(accountIntentValue, user)
+  if (!profile && accountIntent.accountType === 'private') {
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    redirect(localizePublicHref(locale, '/account'))
+  }
+
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} hideMobileBottomNav />
@@ -82,7 +91,7 @@ export default async function RegisterPage({
             locale={locale}
             email={user.email || ''}
             initialCountryCode={marketCode}
-            initialAccountType={initialAccountType}
+            initialAccountType={accountIntent.accountType}
             completionDestination={completionDestination}
           />
         </div>

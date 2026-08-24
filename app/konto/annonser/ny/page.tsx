@@ -12,8 +12,12 @@ import NewListingForm from './NewListingForm'
 import { cookies, headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
-import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
-import { isMarketplaceProfileComplete } from '@/lib/account-profile-bootstrap'
+import { ACCOUNT_INTENT_COOKIE } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+  isMarketplaceProfileComplete,
+} from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('new-listing')
 
@@ -51,13 +55,19 @@ export async function renderNewListingPage({
     .single()
   if (!profile) {
     const cookieStore = await cookies()
-    const accountType = normalizeAccountIntent(
+    const accountIntent = accountIntentFromCookieAndUser(
       cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+      user,
     )
     const listingParams = new URLSearchParams({ category })
     const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
-    const registrationParams = new URLSearchParams({ account: accountType, next })
-    redirect(localizePublicHref(locale, `/register?${registrationParams.toString()}`))
+    if (accountIntent.accountType === 'business') {
+      const registrationParams = new URLSearchParams({ account: 'business', next })
+      redirect(localizePublicHref(locale, `/register?${registrationParams.toString()}`))
+    }
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    const profileParams = new URLSearchParams({ reason: 'listing', next })
+    redirect(localizePublicHref(locale, `/account/profile?${profileParams.toString()}`))
   }
   if (!isMarketplaceProfileComplete(profile)) {
     const listingParams = new URLSearchParams({ category })
@@ -65,7 +75,8 @@ export async function renderNewListingPage({
     const profilePath = profile.account_type === 'business'
       ? '/account/company/profile'
       : '/account/profile'
-    redirect(localizePublicHref(locale, `${profilePath}?next=${encodeURIComponent(next)}`))
+    const profileParams = new URLSearchParams({ reason: 'listing', next })
+    redirect(localizePublicHref(locale, `${profilePath}?${profileParams.toString()}`))
   }
   if (profile.account_type === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)

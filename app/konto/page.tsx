@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Bell,
-  Building2,
   CalendarClock,
   CheckCircle2,
   CreditCard,
@@ -32,8 +31,12 @@ import ProfileForm from './ProfileForm'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { getAdminContext } from '@/lib/admin/context'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
-import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent, type AccountIntent } from '@/lib/account-intent'
-import { isMarketplaceProfileComplete } from '@/lib/account-profile-bootstrap'
+import { ACCOUNT_INTENT_COOKIE } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+  isMarketplaceProfileComplete,
+} from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -127,16 +130,15 @@ export default async function AccountPage() {
 
   if (!profile) {
     const cookieStore = await cookies()
-    const accountIntent = normalizeAccountIntent(
+    const accountIntent = accountIntentFromCookieAndUser(
       cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+      user,
     )
-    return (
-      <LightweightAccount
-        locale={locale}
-        email={user.email || ''}
-        accountIntent={accountIntent}
-      />
-    )
+    if (accountIntent.accountType === 'business') {
+      redirect(localizePublicHref(locale, '/register?account=business'))
+    }
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    redirect(localizePublicHref(locale, '/account'))
   }
   if (
     profile.deleted_at &&
@@ -188,12 +190,18 @@ export default async function AccountPage() {
       ? copy.needsReview
       : copy.verifyEmailStatus
   const profileComplete = isMarketplaceProfileComplete(profile)
+  const createListingHref = profileComplete
+    ? localizePublicHref(locale, '/account/listings/new')
+    : localizePublicHref(
+        locale,
+        `/account/profile?reason=listing&next=${encodeURIComponent(localizePublicHref(locale, '/account/listings/new'))}`,
+      )
 
   const primaryActions = [
     {
       title: copy.createListing,
       text: copy.createListingText,
-      href: localizePublicHref(locale, '/account/listings/new'),
+      href: createListingHref,
       icon: Plus,
       cta: true,
     },
@@ -237,7 +245,7 @@ export default async function AccountPage() {
     { label: copy.overview, href: localizePublicHref(locale, '/account'), icon: UserRound, active: true },
     { label: copy.profile, href: localizePublicHref(locale, '/account/profile'), icon: UserRound },
     { label: copy.listings, href: localizePublicHref(locale, '/account/listings'), icon: FileText },
-    { label: copy.createListing, href: localizePublicHref(locale, '/account/listings/new'), icon: Plus },
+    { label: copy.createListing, href: createListingHref, icon: Plus },
     { label: copy.savedListings, href: localizePublicHref(locale, '/account/saved-listings'), icon: Heart },
     { label: copy.savedSearches, href: localizePublicHref(locale, '/account/saved-searches'), icon: Search },
     { label: copy.messages, href: localizePublicHref(locale, '/account/messages'), icon: MessageCircle },
@@ -773,155 +781,6 @@ function SummaryPanel({
 function displayName(profile: ProfileRow, fallback: string) {
   const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
   return name || profile.display_name || fallback
-}
-
-function LightweightAccount({
-  locale,
-  email,
-  accountIntent,
-}: {
-  locale: PublicLocale
-  email: string
-  accountIntent: AccountIntent
-}) {
-  const copy = getLightweightAccountCopy(locale)
-  const isBusiness = accountIntent === 'business'
-
-  return (
-    <main className="min-h-[70vh] bg-white text-[#101828]">
-      <section className="border-b border-[#e4eaf3]">
-        <div className="mx-auto flex max-w-[var(--autorell-page-max)] flex-col gap-6 px-5 py-9 sm:px-8 lg:flex-row lg:items-end lg:justify-between lg:py-12">
-          <div>
-            <p className="text-xs font-[600] uppercase tracking-[0.2em] text-[#0866ff]">{copy.eyebrow}</p>
-            <h1 className="mt-3 text-4xl font-[600] leading-tight tracking-[-0.04em] sm:text-5xl">{copy.title}</h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[#667085]">{copy.intro}</p>
-          </div>
-          <AccountLogoutButton homeHref={localizePublicHref(locale, '/')} label={copy.signOut} />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-12">
-        <div className="flex flex-col gap-6 border-b border-[#dfe6ef] pb-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
-              {isBusiness ? <Building2 className="h-6 w-6" /> : <CheckCircle2 className="h-6 w-6" />}
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-[500] text-[#0866ff]">{isBusiness ? copy.business : copy.private}</p>
-              <h2 className="mt-1 text-2xl font-[600] tracking-[-0.03em]">{copy.ready}</h2>
-              <p className="mt-2 break-all text-sm text-[#667085]">{email}</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={localizePublicHref(locale, '/marketplace')}
-              className="inline-flex min-h-11 items-center justify-center rounded-[11px] border border-[#cad5e3] px-5 text-sm font-[500] text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
-            >
-              {copy.browse}
-            </Link>
-            <Link
-              href={localizePublicHref(locale, '/account/listings/new')}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[500] text-white transition hover:bg-[#075be4]"
-            >
-              <Plus className="h-4 w-4" />
-              {copy.createListing}
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid border-b border-[#dfe6ef] md:grid-cols-3">
-          {[
-            [copy.savedListings, copy.savedListingsText, '/account/saved-listings', Heart],
-            [copy.savedSearches, copy.savedSearchesText, '/account/saved-searches', Search],
-            [copy.messages, copy.messagesText, '/account/messages', MessageCircle],
-          ].map(([title, text, href, Icon], index) => {
-            const ItemIcon = Icon as LucideIcon
-            return (
-              <Link
-                key={String(title)}
-                href={localizePublicHref(locale, String(href))}
-                className={`group py-7 md:px-7 ${index ? 'border-t border-[#dfe6ef] md:border-l md:border-t-0' : ''}`}
-              >
-                <ItemIcon className="h-5 w-5 text-[#0866ff]" />
-                <h2 className="mt-4 text-lg font-[600]">{String(title)}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{String(text)}</p>
-                <ArrowRight className="mt-5 h-4 w-4 text-[#98a2b3] transition group-hover:translate-x-1 group-hover:text-[#0866ff]" />
-              </Link>
-            )
-          })}
-        </div>
-
-        <p className="mt-6 max-w-3xl text-sm leading-6 text-[#667085]">
-          {isBusiness ? copy.businessCompletion : copy.privateCompletion}
-        </p>
-      </section>
-    </main>
-  )
-}
-
-function getLightweightAccountCopy(locale: PublicLocale) {
-  const en = {
-    eyebrow: 'My Autorell',
-    title: 'Your account is ready.',
-    intro: 'Save vehicles and searches, follow messages and browse Autorell without a separate onboarding step.',
-    signOut: 'Sign out',
-    business: 'Business account selected',
-    private: 'Private account',
-    ready: 'Signed in to Autorell',
-    browse: 'Browse vehicles',
-    createListing: 'Create listing',
-    savedListings: 'Saved listings',
-    savedListingsText: 'Return to vehicles you want to compare.',
-    savedSearches: 'Saved searches',
-    savedSearchesText: 'Keep useful searches connected to your account.',
-    messages: 'Messages',
-    messagesText: 'Keep conversations with buyers and sellers in one place.',
-    businessCompletion: 'Company and contact details are requested only when you create your first listing.',
-    privateCompletion: 'Seller and contact details are requested only when you create your first listing.',
-  }
-  if (locale === 'sv') {
-    return {
-      eyebrow: 'Mina sidor',
-      title: 'Ditt konto är klart.',
-      intro: 'Spara fordon och sökningar, följ meddelanden och använd Autorell utan ett separat onboardingsteg.',
-      signOut: 'Logga ut',
-      business: 'Företagskonto valt',
-      private: 'Privatkonto',
-      ready: 'Inloggad på Autorell',
-      browse: 'Sök fordon',
-      createListing: 'Skapa annons',
-      savedListings: 'Sparade annonser',
-      savedListingsText: 'Återvänd till fordon som du vill jämföra.',
-      savedSearches: 'Sparade sökningar',
-      savedSearchesText: 'Behåll användbara sökningar kopplade till kontot.',
-      messages: 'Meddelanden',
-      messagesText: 'Samla kontakten med köpare och säljare på ett ställe.',
-      businessCompletion: 'Företags- och kontaktuppgifter efterfrågas först när du skapar din första annons.',
-      privateCompletion: 'Säljar- och kontaktuppgifter efterfrågas först när du skapar din första annons.',
-    }
-  }
-  if (locale === 'de' || locale === 'at') {
-    return {
-      eyebrow: 'Mein Autorell',
-      title: 'Dein Konto ist bereit.',
-      intro: 'Speichere Fahrzeuge und Suchen, verwalte Nachrichten und nutze Autorell ohne separates Onboarding.',
-      signOut: 'Abmelden',
-      business: 'Unternehmenskonto ausgewählt',
-      private: 'Privatkonto',
-      ready: 'Bei Autorell angemeldet',
-      browse: 'Fahrzeuge suchen',
-      createListing: 'Anzeige erstellen',
-      savedListings: 'Gespeicherte Anzeigen',
-      savedListingsText: 'Kehre zu Fahrzeugen zurück, die du vergleichen möchtest.',
-      savedSearches: 'Gespeicherte Suchen',
-      savedSearchesText: 'Speichere nützliche Suchen in deinem Konto.',
-      messages: 'Nachrichten',
-      messagesText: 'Verwalte Gespräche mit Käufern und Verkäufern an einem Ort.',
-      businessCompletion: 'Unternehmens- und Kontaktdaten werden erst bei der ersten Anzeige benötigt.',
-      privateCompletion: 'Verkäufer- und Kontaktdaten werden erst bei der ersten Anzeige benötigt.',
-    }
-  }
-  return translatePublicObject(locale, en)
 }
 
 function emptyListingSummary(): AccountListingSummary {
