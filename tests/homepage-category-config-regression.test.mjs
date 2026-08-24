@@ -121,14 +121,21 @@ test('discovery, brands, and selling render before listing feeds', () => {
   const browseIndex = homeSource.indexOf('<HomeBrowseByTypeSwitcher')
   const brandsIndex = homeSource.indexOf('<HomePopularBrandsSwitcher')
   const sellIndex = homeSource.indexOf('<HomeSellOptionsSection')
-  const latestIndex = homeSource.indexOf('?.latest')
-  const topIndex = homeSource.indexOf('?.top')
+  const popularIndex = homeSource.indexOf('?.popular')
 
   assert.ok(browseIndex > -1)
   assert.ok(browseIndex < brandsIndex)
   assert.ok(brandsIndex < sellIndex)
-  assert.ok(sellIndex < latestIndex)
-  assert.ok(latestIndex < topIndex)
+  assert.ok(sellIndex < popularIndex)
+  assert.doesNotMatch(homeSource, /\?\.top|\?\.latest/)
+})
+
+test('homepage has one localized popular-searches listing feed', () => {
+  assert.match(homeSource, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 17, category\)/)
+  assert.doesNotMatch(homeSource, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top'/)
+  assert.match(configSource, /sv: \{ latest: 'Populära sökningar'/)
+  assert.match(configSource, /en: \{ latest: 'Popular searches'/)
+  assert.match(configSource, /de: \{ latest: 'Beliebte Suchanfragen'/)
 })
 
 test('new discovery remains swipeable and uses generated transparent assets', () => {

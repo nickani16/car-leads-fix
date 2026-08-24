@@ -506,10 +506,8 @@ test('canonical English pricing routes do not redirect to themselves', () => {
 test('EU home sections and browser-only header state hydrate deterministically', () => {
   assert.match(home, /const homeListingCategories: MarketplaceCategorySlug\[\] = \[/)
   assert.match(home, /HomeListingCategorySwitcher categories=\{homeListingCategories\}/)
-  assert.match(home, /localListingSectionsByCategory\.get\(category\)\?\.latest/)
-  assert.match(home, /localListingSectionsByCategory\.get\(category\)\?\.top/)
+  assert.match(home, /localListingSectionsByCategory\.get\(category\)\?\.popular/)
   assert.match(home, /key=\{section\.id\}/)
-  assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top', 17, category\)/)
   assert.match(home, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 17, category\)/)
   assert.match(home, /const visibleItems = section\.items\.slice\(0, 16\)/)
   assert.match(home, /homeLoadMoreListingsLabel\(locale\)/)

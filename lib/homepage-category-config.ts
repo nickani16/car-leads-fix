@@ -28,7 +28,6 @@ export type HomepageSellConfig = {
 export type HomepageCategoryPresentation = {
   slug: MarketplaceCategorySlug
   latestTitle: string
-  topTitle: string
   selectedTitle: string
   selectedScrollLabel: string
   selectedCategories: SelectedVehicleCategory[]
@@ -417,20 +416,20 @@ const categorySingularByLocale: Record<PublicLocale, Record<MarketplaceCategoryS
 
 const listingTitleTemplatesByLocale: Record<
   PublicLocale,
-  { latest: string; top: string }
+  { latest: string }
 > = {
-  sv: { latest: 'Senaste annonser för {c} i {m}', top: 'Topplistan för {c} i {m}' },
-  en: { latest: 'Latest {c} listings in {m}', top: 'Top {c} listings in {m}' },
-  de: { latest: 'Neueste Anzeigen für {c} in {m}', top: 'Top-Anzeigen für {c} in {m}' },
-  at: { latest: 'Neueste Anzeigen für {c} in {m}', top: 'Top-Anzeigen für {c} in {m}' },
-  be: { latest: 'Nieuwste advertenties voor {c} in {m}', top: 'Topadvertenties voor {c} in {m}' },
-  fr: { latest: 'Dernières annonces de {c} en {m}', top: 'Meilleures annonces de {c} en {m}' },
-  es: { latest: 'Últimos anuncios de {c} en {m}', top: 'Anuncios destacados de {c} en {m}' },
-  it: { latest: 'Ultimi annunci di {c} in {m}', top: 'Annunci in evidenza di {c} in {m}' },
-  pl: { latest: 'Najnowsze ogłoszenia: {c} w {m}', top: 'Najpopularniejsze ogłoszenia: {c} w {m}' },
-  nl: { latest: 'Nieuwste advertenties voor {c} in {m}', top: 'Topadvertenties voor {c} in {m}' },
-  fi: { latest: 'Uusimmat ilmoitukset: {c} {m}', top: 'Suosituimmat ilmoitukset: {c} {m}' },
-  da: { latest: 'Seneste annoncer for {c} i {m}', top: 'Topannoncer for {c} i {m}' },
+  sv: { latest: 'Populära sökningar' },
+  en: { latest: 'Popular searches' },
+  de: { latest: 'Beliebte Suchanfragen' },
+  at: { latest: 'Beliebte Suchanfragen' },
+  be: { latest: 'Populaire zoekopdrachten' },
+  fr: { latest: 'Recherches populaires' },
+  es: { latest: 'Búsquedas populares' },
+  it: { latest: 'Ricerche popolari' },
+  pl: { latest: 'Popularne wyszukiwania' },
+  nl: { latest: 'Populaire zoekopdrachten' },
+  fi: { latest: 'Suositut haut' },
+  da: { latest: 'Populære søgninger' },
 }
 
 type SectionCopy = {
@@ -565,7 +564,6 @@ export function getHomepageCategoryPresentation(
   return {
     slug: category,
     latestTitle: fillCategoryAndMarket(listingTitles.latest, plural, contextualMarketLabel),
-    topTitle: fillCategoryAndMarket(listingTitles.top, plural, contextualMarketLabel),
     selectedTitle: copy.selected(titleCase(plural)),
     selectedScrollLabel: copy.selected(plural),
     selectedCategories,

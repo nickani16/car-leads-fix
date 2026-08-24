@@ -273,7 +273,7 @@ type MarketplaceSearchApiResponse = {
 
 const MARKETPLACE_RETURN_SEARCH_STATE_KEY = 'autorell:marketplace-return-search'
 const MARKETPLACE_RETURN_SEARCH_ARMED_KEY = 'autorell:marketplace-return-search-armed'
-const MARKETPLACE_PERSISTED_SEARCH_STATE_KEY = 'autorell:marketplace-search-state'
+const MARKETPLACE_PERSISTED_SEARCH_STATE_KEY = 'autorell:marketplace-search-state:v2'
 
 const categories = [
   { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellAllCategoriesIcon },
@@ -1185,7 +1185,7 @@ export default function VehicleSearchExperience({
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
   const safeInitialMarkets = normalizeMarketSelection(
-    initialMarkets.length ? initialMarkets : [safeInitialCountry],
+    initialMarkets,
     safeAutomaticCountry,
   )
   const initialLocationSelection = normalizeMarketplaceLocationSelection({
@@ -1250,7 +1250,7 @@ export default function VehicleSearchExperience({
   const [debouncedSearchInput, setDebouncedSearchInput] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
-  const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
+  const [marketOverride, setMarketOverride] = useState(initialMarkets.length > 0)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [desktopFilterMenu, setDesktopFilterMenu] = useState<DesktopFilterMenu>(null)
   const [quickFilterPlacement, setQuickFilterPlacement] = useState<QuickFilterPlacement | null>(null)
@@ -1381,7 +1381,7 @@ export default function VehicleSearchExperience({
     mode,
     query: query.trim(),
     categories: selectedCategories,
-    markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
+    markets: selectedMarkets,
     make,
     model,
     region,
@@ -1425,8 +1425,6 @@ export default function VehicleSearchExperience({
     if (selectedCategories.length) params.set('categories', selectedCategories.join(','))
     if (marketOverride) {
       params.set('markets', selectedMarkets.length ? selectedMarkets.join(',') : 'EU')
-    } else if (selectedMarkets.length && !sameMarketSelection(selectedMarkets, [safeAutomaticCountry])) {
-      params.set('markets', selectedMarkets.join(','))
     }
     setParam('make', make)
     setParam('model', model)
@@ -1519,7 +1517,7 @@ export default function VehicleSearchExperience({
         setSelectedCategories(nextCategories.length ? nextCategories : ['cars'])
       }
       setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
-      setMarketOverride(true)
+      setMarketOverride(Boolean(restored.markets?.length))
       setMinPrice(restored.minPrice || '')
       setMaxPrice(restored.maxPrice || '')
       setMinYear(restored.minYear || '')
@@ -1714,9 +1712,6 @@ export default function VehicleSearchExperience({
       setSearchLoading(true)
       setSearchError(false)
       const params = new URLSearchParams(marketplaceSearchParams)
-      if (!params.has('markets') && safeAutomaticCountry) {
-        params.set('markets', safeAutomaticCountry)
-      }
       params.set('page', String(searchPage))
       params.set('limit', desktopMarketplaceView === 'list' ? '24' : '48')
       params.set('locale', locale)
@@ -1959,7 +1954,7 @@ export default function VehicleSearchExperience({
     setDebouncedSearchInput('')
     setQuery('')
     setSelectedCategories([])
-    setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+    setSelectedMarkets([])
     setMarketOverride(false)
     setMinPrice('')
     setMaxPrice('')
@@ -3118,12 +3113,12 @@ export default function VehicleSearchExperience({
         },
       }
       : null,
-    marketOverride || !sameMarketSelection(selectedMarkets, normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+    marketOverride
       ? {
         key: 'markets',
         label: marketSummary,
         onRemove: () => {
-          setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+          setSelectedMarkets([])
           setMarketOverride(false)
         },
       }

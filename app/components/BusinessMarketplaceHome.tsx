@@ -572,11 +572,8 @@ export default async function BusinessMarketplaceHome({
   ] = await Promise.all([
     Promise.all(
       homeListingCategories.map(async (category) => {
-        const [top, latest] = await Promise.all([
-          getPublishedMarketplaceHomeListings(localMarketCode, 'top', 17, category),
-          getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category),
-        ])
-        return { category, top, latest }
+        const listings = await getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category)
+        return { category, listings }
       }),
     ),
     getPublishedMarketplaceListingCount(localMarketCode),
@@ -584,10 +581,7 @@ export default async function BusinessMarketplaceHome({
     getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
   ])
   const newsCards = vehicleNews.articles.slice(0, 3)
-  const allHomeListings = categoryListingGroups.flatMap(({ top, latest }) => [
-    ...top,
-    ...latest,
-  ])
+  const allHomeListings = categoryListingGroups.flatMap(({ listings }) => listings)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     allHomeListings
       .map((listing) => listing.seller_user_id)
@@ -597,22 +591,11 @@ export default async function BusinessMarketplaceHome({
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified', localMarketCode)
   const localListingSectionsByCategory = new Map(
     await Promise.all(
-      categoryListingGroups.map(async ({ category, top, latest }) => [
+      categoryListingGroups.map(async ({ category, listings }) => [
         category,
         {
-          top: {
-            id: `${category}-top`,
-            title: categoryPresentations[category].topTitle,
-            emptyText: categoryPresentations[category].emptyText,
-            emptyCta: categoryPresentations[category].emptyCta,
-            emptyHref: categoryPresentations[category].sell.privateHref,
-            marketplaceHref: categoryPresentations[category].marketplaceHref,
-            kind: 'top' as const,
-            marketLabel: localMarketLabel,
-            items: await Promise.all(top.map(toHomeCard)),
-          },
-          latest: {
-            id: `${category}-latest`,
+          popular: {
+            id: `${category}-popular-searches`,
             title: categoryPresentations[category].latestTitle,
             emptyText: categoryPresentations[category].emptyText,
             emptyCta: categoryPresentations[category].emptyCta,
@@ -620,7 +603,7 @@ export default async function BusinessMarketplaceHome({
             marketplaceHref: categoryPresentations[category].marketplaceHref,
             kind: 'latest' as const,
             marketLabel: localMarketLabel,
-            items: await Promise.all(latest.map(toHomeCard)),
+            items: await Promise.all(listings.map(toHomeCard)),
           },
         },
       ] as const),
@@ -721,18 +704,7 @@ export default async function BusinessMarketplaceHome({
         <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
           <HomeListingCategorySwitcher categories={homeListingCategories}>
             {homeListingCategories.map((category) => {
-              const section = localListingSectionsByCategory.get(category)?.latest
-              return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
-            })}
-          </HomeListingCategorySwitcher>
-        </div>
-        </section>
-
-        <section className="bg-white py-10 sm:py-16">
-        <div className={`${homeContentContainerClass} max-sm:mx-0 max-sm:w-screen max-sm:max-w-none max-sm:px-4`}>
-          <HomeListingCategorySwitcher categories={homeListingCategories}>
-            {homeListingCategories.map((category) => {
-              const section = localListingSectionsByCategory.get(category)?.top
+              const section = localListingSectionsByCategory.get(category)?.popular
               return section ? <HomeListingSection key={section.id} section={section} locale={locale} /> : <div key={category} />
             })}
           </HomeListingCategorySwitcher>

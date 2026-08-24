@@ -266,7 +266,7 @@ async function renderMarketplaceCategoryPage({
   const initialMarkets = requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []
   const initialQuery = getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')
   const parsedInitialSearch = parseMarketplaceSearchState(initialQuery, {
-    markets: initialMarkets.length ? initialMarkets : [defaultCountry].filter(Boolean),
+    markets: initialMarkets,
   })
   const initialGeoArea =
     seoLanding?.place || resolveMarketplaceGeoArea(
@@ -287,12 +287,13 @@ async function renderMarketplaceCategoryPage({
     getSearchParam(resolvedSearchParams, 'maxPrice') ||
     (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
 
-  const data = seoLanding
+  const fetchedData = seoLanding
     ? await getSeoLandingListings(seoLanding)
     : await getPublishedMarketplaceCategoryListings(
         requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
         requestedCategory === 'vehicles' ? 360 : 240,
       )
+  const data = preferMarketplaceCountry(fetchedData || [], automaticCountry)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
@@ -594,6 +595,18 @@ function usesPageMarket(markets: string[], marketCode: string | undefined) {
   if (!marketCode) return false
   const normalized = [...new Set(markets.map((value) => value.toUpperCase()).filter(Boolean))]
   return normalized.length === 1 && normalized[0] === marketCode.toUpperCase()
+}
+
+function preferMarketplaceCountry<T extends { country_code?: string | null }>(listings: T[], countryCode: string) {
+  const preferredCountry = countryCode.toUpperCase()
+  if (!preferredCountry) return listings
+  const local: T[] = []
+  const other: T[] = []
+  for (const listing of listings) {
+    if ((listing.country_code || '').toUpperCase() === preferredCountry) local.push(listing)
+    else other.push(listing)
+  }
+  return [...local, ...other]
 }
 
 function getLocalizedEuropeName(locale: PublicLocale) {

@@ -32,6 +32,7 @@ export type MarketplaceSearchInput = {
   countryCode?: string | null
   countries?: string | string[] | null
   markets?: string | string[] | null
+  displayMarket?: string | null
   q?: string | null
   make?: string | null
   model?: string | null
@@ -130,6 +131,12 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   const admin = createAdminClient()
   const filters = normalizeMarketplaceSearchInput(input)
 
+  if (filters.preferredMarket && !filters.cursor) {
+    return filters.sort === 'published'
+      ? searchPublishedWithPreferredMarket(admin, filters)
+      : searchSortedWithPreferredMarket(admin, filters)
+  }
+
   if (filters.sort === 'published' && !filters.cursor) {
     return searchPublishedWithSponsoredBlock(admin, filters)
   }
@@ -169,6 +176,168 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   const hasNext = filters.page < totalPages
   const lastItem = items[items.length - 1] || null
 
+  return {
+    items,
+    facets,
+    nextCursor: hasNext && lastItem ? encodeCursor(cursorFromRow(lastItem, filters.sort)) : null,
+    totalEstimate: totalCount,
+    totalCount,
+    page: filters.page,
+    pageSize: filters.limit,
+    totalPages,
+    limit: filters.limit,
+    hasNext,
+  }
+}
+
+async function searchSortedWithPreferredMarket(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+): Promise<MarketplaceSearchResult> {
+  const verifiedSellerIds = filters.verifiedOnly ? await getVerifiedMarketplaceSellerIds() : null
+  if (verifiedSellerIds && !verifiedSellerIds.length) return emptyMarketplaceSearchResult(filters)
+
+  const countGroup = async (local: boolean) => {
+    let query = admin.from('marketplace_listings').select('id', { count: 'exact', head: true })
+    query = applyMarketplaceListingFilters(query, filters)
+    query = local
+      ? query.eq('country_code', filters.preferredMarket)
+      : query.neq('country_code', filters.preferredMarket)
+    if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+    const { count, error } = await query
+    if (error) throw new Error(error.message)
+    return count || 0
+  }
+
+  const [localCount, otherCount] = await Promise.all([countGroup(true), countGroup(false)])
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
+  const groups = [
+    { local: true, count: localCount },
+    { local: false, count: otherCount },
+  ]
+  let groupStart = 0
+  const rowPromises: Array<Promise<MarketplaceSearchRow[]>> = []
+
+  for (const group of groups) {
+    const slice = pageSliceForGroup(from, to, groupStart, group.count)
+    groupStart += group.count
+    if (!slice) continue
+    rowPromises.push((async () => {
+      let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+      query = applyMarketplaceListingFilters(query, filters)
+      query = group.local
+        ? query.eq('country_code', filters.preferredMarket)
+        : query.neq('country_code', filters.preferredMarket)
+      if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+      if (filters.sort === 'price-asc' || filters.sort === 'price-desc') query = query.not('price', 'is', null)
+      if (filters.sort === 'year-desc') query = query.not('model_year', 'is', null)
+      if (filters.sort === 'mileage-asc') query = query.not('mileage_km', 'is', null)
+      const { data, error } = await applySort(query, filters.sort).range(slice.from, slice.to)
+      if (error) throw new Error(error.message)
+      return (data || []) as MarketplaceSearchRow[]
+    })())
+  }
+
+  const rows = (await Promise.all(rowPromises)).flat()
+  return buildMarketplaceSearchResult(rows, localCount + otherCount, filters, await getDynamicMarketplaceFacets(admin, filters))
+}
+
+async function searchPublishedWithPreferredMarket(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+): Promise<MarketplaceSearchResult> {
+  const now = new Date().toISOString()
+  const verifiedSellerIds = filters.verifiedOnly ? await getVerifiedMarketplaceSellerIds() : null
+  if (verifiedSellerIds && !verifiedSellerIds.length) return emptyMarketplaceSearchResult(filters)
+  const groups = [
+    { local: true, sponsored: true },
+    { local: true, sponsored: false },
+    { local: false, sponsored: true },
+    { local: false, sponsored: false },
+  ]
+
+  const counts = await Promise.all(groups.map(async (group) => {
+    let query = admin.from('marketplace_listings').select('id', { count: 'exact', head: true })
+    query = applyMarketplaceListingFilters(query, filters)
+    query = group.local
+      ? query.eq('country_code', filters.preferredMarket)
+      : query.neq('country_code', filters.preferredMarket)
+    query = group.sponsored
+      ? applyActiveTopPlacementFilter(query, now)
+      : applyNotActiveTopPlacementFilter(query, now)
+    if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+    const { count, error } = await query
+    if (error) throw new Error(error.message)
+    return count || 0
+  }))
+
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
+  let groupStart = 0
+  const rowPromises: Array<Promise<MarketplaceSearchRow[]>> = []
+  groups.forEach((group, index) => {
+    const slice = pageSliceForGroup(from, to, groupStart, counts[index])
+    groupStart += counts[index]
+    if (!slice) return
+    rowPromises.push((async () => {
+      let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+      query = applyMarketplaceListingFilters(query, filters)
+      query = group.local
+        ? query.eq('country_code', filters.preferredMarket)
+        : query.neq('country_code', filters.preferredMarket)
+      query = group.sponsored
+        ? applyActiveTopPlacementFilter(query, now)
+        : applyNotActiveTopPlacementFilter(query, now)
+      if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+      const ordered = group.sponsored
+        ? query
+            .order('boost_started_at', { ascending: true, nullsFirst: false })
+            .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+            .order('published_at', { ascending: false })
+            .order('id', { ascending: false })
+        : query
+            .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+            .order('published_at', { ascending: false })
+            .order('id', { ascending: false })
+      const { data, error } = await ordered.range(slice.from, slice.to)
+      if (error) throw new Error(error.message)
+      return (data || []) as MarketplaceSearchRow[]
+    })())
+  })
+
+  const rows = (await Promise.all(rowPromises)).flat()
+  const items = rows.map((row) => ({
+    ...sanitizePublicListingSellerName(row),
+    is_top_placement:
+      row.boost_status === 'active' &&
+      Boolean(row.boost_expires_at) &&
+      new Date(String(row.boost_expires_at)).getTime() > Date.now(),
+  }))
+  return buildMarketplaceSearchResult(items, counts.reduce((sum, count) => sum + count, 0), filters, await getDynamicMarketplaceFacets(admin, filters))
+}
+
+function pageSliceForGroup(pageFrom: number, pageTo: number, groupStart: number, groupCount: number) {
+  const groupEnd = groupStart + groupCount - 1
+  const intersectionFrom = Math.max(pageFrom, groupStart)
+  const intersectionTo = Math.min(pageTo, groupEnd)
+  if (intersectionFrom > intersectionTo) return null
+  return {
+    from: intersectionFrom - groupStart,
+    to: intersectionTo - groupStart,
+  }
+}
+
+function buildMarketplaceSearchResult(
+  rows: Array<Record<string, unknown>>,
+  totalCount: number,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+  facets: MarketplaceSearchResult['facets'],
+): MarketplaceSearchResult {
+  const items = rows.map(sanitizePublicListingSellerName)
+  const totalPages = Math.max(1, Math.ceil(totalCount / filters.limit))
+  const hasNext = filters.page < totalPages
+  const lastItem = items[items.length - 1] || null
   return {
     items,
     facets,
@@ -311,6 +480,7 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
   return {
     categories,
     markets,
+    preferredMarket: markets.length ? '' : normalizePreferredMarket(input.displayMarket),
     q: parsedSearchState.query || rawQuery,
     make: clean(input.make).slice(0, 80) || parsedSearchState.make,
     model: clean(input.model).slice(0, 80),
@@ -653,6 +823,10 @@ function normalizeCountryFilters(value: unknown) {
         .filter((item) => /^[A-Z]{2}$/.test(item)),
     ),
   ]
+}
+
+function normalizePreferredMarket(value: unknown) {
+  return normalizeCountryFilters(value)[0] || ''
 }
 
 function clean(value: unknown) {

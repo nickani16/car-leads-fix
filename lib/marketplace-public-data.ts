@@ -12,6 +12,7 @@ const publicListingTtl = 300
 
 type MarketplaceQuery = {
   eq: (column: string, value: string | boolean) => MarketplaceQuery
+  neq: (column: string, value: string | boolean) => MarketplaceQuery
   not: (column: string, operator: string, value: unknown) => MarketplaceQuery
   is: (column: string, value: null) => MarketplaceQuery
   or: (filters: string) => MarketplaceQuery
@@ -100,38 +101,47 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
     limit = 8,
     category: MarketplaceCategorySlug | 'vehicles' | null = null,
   ) => {
-    let query = createAdminClient()
-      .from('marketplace_listings')
-      .select(marketplacePublicSelect)
-      .eq('status', 'published')
-      .not('published_at', 'is', null)
-      .is('sold_at', null)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`) as unknown as MarketplaceQuery
-
     const normalizedCountry = (countryCode || '').toUpperCase()
-    if (normalizedCountry && normalizedCountry !== 'EU') {
-      query = query.eq('country_code', normalizedCountry)
-    }
-
-    if (category && category !== 'vehicles') {
-      query = query.eq('category', category)
-    }
-
     const now = new Date().toISOString()
-    if (sort === 'top') {
-      query = query
-        .eq('boost_status', 'active')
-        .not('boost_started_at', 'is', null)
-        .lte('boost_started_at', now)
-        .gt('boost_expires_at', now)
+    const buildQuery = (marketScope: 'local' | 'other' | 'all') => {
+      let query = createAdminClient()
+        .from('marketplace_listings')
+        .select(marketplacePublicSelect)
+        .eq('status', 'published')
+        .not('published_at', 'is', null)
+        .is('sold_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+      if (normalizedCountry && normalizedCountry !== 'EU' && marketScope !== 'all') {
+        query = marketScope === 'local'
+          ? query.eq('country_code', normalizedCountry)
+          : query.neq('country_code', normalizedCountry)
+      }
+      if (category && category !== 'vehicles') query = query.eq('category', category)
+      if (sort === 'top') {
+        query = query
+          .eq('boost_status', 'active')
+          .not('boost_started_at', 'is', null)
+          .lte('boost_started_at', now)
+          .gt('boost_expires_at', now)
+      }
+      return query
+        .order(sort === 'top' ? 'boost_started_at' : 'sort_refreshed_at', { ascending: sort === 'top', nullsFirst: false })
+        .order('published_at', { ascending: false })
+        .limit(limit)
     }
 
-    const { data } = await query
-      .order(sort === 'top' ? 'boost_started_at' : 'sort_refreshed_at', { ascending: sort === 'top', nullsFirst: false })
-      .order('published_at', { ascending: false })
-      .limit(limit)
+    if (!normalizedCountry || normalizedCountry === 'EU') {
+      const { data } = await buildQuery('all')
+      return (data || []).map(sanitizePublicListingSellerName)
+    }
 
-    return (data || []).map(sanitizePublicListingSellerName)
+    const [{ data: local }, { data: other }] = await Promise.all([
+      buildQuery('local'),
+      buildQuery('other'),
+    ])
+    return [...(local || []), ...(other || [])]
+      .slice(0, limit)
+      .map(sanitizePublicListingSellerName)
   },
   ['published-marketplace-home-listings'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
