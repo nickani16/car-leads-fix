@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, ReactNode, useMemo, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react'
 import {
   Building2,
   CheckCircle2,
@@ -22,6 +22,10 @@ import { FlagIcon } from '../components/PublicFooter'
 import BirthDatePicker from '../components/BirthDatePicker'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { reviewNationalId } from '@/lib/national-id'
+import {
+  clearBusinessRegistrationDraft,
+  readBusinessRegistrationDraft,
+} from '@/lib/registration-draft'
 
 const euDialCodes: Record<string, string> = {
   AT: '+43',
@@ -523,6 +527,8 @@ export default function RegisterForm({
   const [phone, setPhone] = useState(() => buildInitialPhone(countryCode))
   const [birthDate, setBirthDate] = useState('')
   const [nationalId, setNationalId] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const countries = useMemo(
@@ -532,6 +538,17 @@ export default function RegisterForm({
         .sort((a, b) => a.name.localeCompare(b.name, locale)),
     [locale],
   )
+
+  useEffect(() => {
+    if (initialAccountType !== 'business') return
+    const frame = window.requestAnimationFrame(() => {
+      const draft = readBusinessRegistrationDraft()
+      if (!draft) return
+      setCompanyName(draft.companyName)
+      setRegistrationNumber(draft.registrationNumber)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [initialAccountType])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -596,6 +613,7 @@ export default function RegisterForm({
         )
         return
       }
+      clearBusinessRegistrationDraft()
       router.push(localizePublicHref(locale, '/account'))
       router.refresh()
     } catch {
@@ -665,8 +683,8 @@ export default function RegisterForm({
             />
           ) : (
             <>
-              <Field name="companyName" label={copy.companyName} autoComplete="organization" required />
-              <Field name="registrationNumber" label={copy.registrationNumber} required />
+              <Field name="companyName" label={copy.companyName} autoComplete="organization" required value={companyName} onChange={(event) => setCompanyName(event.target.value)} />
+              <Field name="registrationNumber" label={copy.registrationNumber} required value={registrationNumber} onChange={(event) => setRegistrationNumber(event.target.value)} />
               <Field name="vatNumber" label={copy.vatNumber} helper={copy.vatHelper} />
               <Field name="websiteUrl" label={copy.websiteUrl} type="url" autoComplete="url" helper={copy.websiteHelper} />
             </>

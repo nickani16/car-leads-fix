@@ -5,6 +5,8 @@ import test from 'node:test'
 const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
 const authCallback = readFileSync(new URL('../app/auth/callback/route.ts', import.meta.url), 'utf8')
 const authCopy = readFileSync(new URL('../lib/auth-copy.ts', import.meta.url), 'utf8')
+const registerForm = readFileSync(new URL('../app/registrera/RegisterForm.tsx', import.meta.url), 'utf8')
+const registrationDraft = readFileSync(new URL('../lib/registration-draft.ts', import.meta.url), 'utf8')
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const proxy = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const rootPage = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8')
@@ -66,13 +68,20 @@ test('mobile more menu keeps the guest CTA and account row compact', () => {
   assert.equal((moreMenu.match(/data-mobile-menu-divider/g) || []).length, 5)
 })
 
-test('auth modal offers a localized business path through the existing onboarding', () => {
-  assert.match(authModal, /type AuthTab = AuthMode \| 'business'/)
-  assert.match(authModal, /\['login', 'register', 'business'\]/)
-  assert.match(authModal, /authTab === 'business'/)
+test('registration keeps two auth tabs and exposes a localized business switch', () => {
+  assert.match(authModal, /\['login', 'register'\]/)
+  assert.doesNotMatch(authModal, /\['login', 'register', 'business'\]/)
+  assert.match(authModal, /role="switch"/)
+  assert.match(authModal, /aria-checked=\{isBusinessRegistration\}/)
+  assert.match(authModal, /saveBusinessRegistrationDraft/)
+  assert.match(registrationDraft, /window\.sessionStorage/)
+  assert.match(registerForm, /readBusinessRegistrationDraft/)
+  assert.match(registerForm, /clearBusinessRegistrationDraft\(\)/)
+  assert.match(registerForm, /value=\{companyName\}/)
+  assert.match(registerForm, /value=\{registrationNumber\}/)
   assert.match(authModal, /\/register\?onboarding=1&account=business/)
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
-    assert.match(authModal, new RegExp(`\\n  ${locale}: \\{ tab:`))
+    assert.match(authModal, new RegExp(`\\n  ${locale}: \\{ switchLabel:`))
   }
 })
 

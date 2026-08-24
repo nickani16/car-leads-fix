@@ -10,12 +10,15 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { isStrongPassword } from '@/lib/password-policy'
 import { getAuthSpamHintCopy, getLocalizedAuthModalCopy } from '@/lib/auth-copy'
+import {
+  clearBusinessRegistrationDraft,
+  saveBusinessRegistrationDraft,
+} from '@/lib/registration-draft'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'
-type AuthTab = AuthMode | 'business'
 type SocialProvider = 'google' | 'azure' | 'facebook'
 
 const socialProviders: Array<{
@@ -96,8 +99,7 @@ export default function AuthModal({
   onAuthenticated,
 }: AuthModalProps) {
   const router = useRouter()
-  const [authTab, setAuthTab] = useState<AuthTab>(initialMode)
-  const mode: AuthMode = authTab === 'login' ? 'login' : 'register'
+  const [mode, setMode] = useState<AuthMode>(initialMode)
   const [view, setView] = useState<AuthView>(initialView || initialMode)
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
@@ -109,6 +111,11 @@ export default function AuthModal({
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isBusinessRegistration, setIsBusinessRegistration] = useState(
+    initialMode === 'register' && Boolean(postLoginDestination?.includes('account=business')),
+  )
+  const [companyName, setCompanyName] = useState('')
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [notice, setNotice] = useState('')
   const [remember, setRemember] = useState(true)
@@ -123,7 +130,7 @@ export default function AuthModal({
   const onCloseRef = useRef(onClose)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
-  const businessCopy = businessAuthCopy[locale] || businessAuthCopy.en
+  const businessCopy = businessRegistrationCopy[locale] || businessRegistrationCopy.en
   const callbackError =
     !error && isOpen && callbackStatus === 'oauth-cancelled'
       ? copy.oauthCancelled
@@ -161,10 +168,10 @@ export default function AuthModal({
     return () => window.clearInterval(timer)
   }, [retryAfter])
 
-  function switchMode(nextMode: AuthTab) {
+  function switchMode(nextMode: AuthMode) {
     setCallbackStatus(null)
-    setAuthTab(nextMode)
-    setView(nextMode === 'login' ? 'login' : 'register')
+    setMode(nextMode)
+    setView(nextMode)
     setStep('email')
     setAuthMethod('password')
     setError('')
@@ -178,7 +185,7 @@ export default function AuthModal({
   function switchView(nextView: AuthView) {
     setCallbackStatus(null)
     setView(nextView)
-    if (nextView === 'login' || nextView === 'register') setAuthTab(nextView)
+    if (nextView === 'login' || nextView === 'register') setMode(nextView)
     setStep('email')
     setAuthMethod('password')
     setError('')
@@ -205,10 +212,30 @@ export default function AuthModal({
     }
     return localizePublicHref(
       locale,
-      authTab === 'business' || postLoginDestination?.includes('account=business')
+      isBusinessRegistration || postLoginDestination?.includes('account=business')
         ? '/register?onboarding=1&account=business'
         : '/register?onboarding=1',
     )
+  }
+
+  function prepareRegistration() {
+    if (mode !== 'register') return true
+    if (!isBusinessRegistration) {
+      clearBusinessRegistrationDraft()
+      return true
+    }
+
+    const cleanCompanyName = companyName.trim()
+    const cleanRegistrationNumber = registrationNumber.trim()
+    if (!cleanCompanyName || !cleanRegistrationNumber) {
+      setError(businessCopy.requiredError)
+      return false
+    }
+    saveBusinessRegistrationDraft({
+      companyName: cleanCompanyName,
+      registrationNumber: cleanRegistrationNumber,
+    })
+    return true
   }
 
   function completeAuth(destination: string) {
@@ -223,6 +250,7 @@ export default function AuthModal({
     setCallbackStatus(null)
     setError('')
     setNotice('')
+    if (!prepareRegistration()) return
     setSocialLoading(provider)
     try {
       if (!(await socialProviderIsEnabled(provider))) {
@@ -276,6 +304,7 @@ export default function AuthModal({
         setError(copy.passwordMismatch)
         return
       }
+      if (!prepareRegistration()) return
     }
     setLoading(true)
     try {
@@ -304,7 +333,7 @@ export default function AuthModal({
           error?: string
         }
         if (result.accountExists || result.code === 'auth_account_exists') {
-          setAuthTab('login')
+          setMode('login')
           setView('login')
           setStep('email')
           setAuthMethod('password')
@@ -410,6 +439,7 @@ export default function AuthModal({
     event?.preventDefault()
     setCallbackStatus(null)
     setError('')
+    if (!prepareRegistration()) return
     setLoading(true)
     try {
       const response = await fetch('/api/auth/email-code/request', {
@@ -519,33 +549,31 @@ export default function AuthModal({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="grid grid-cols-3 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm">
-          {(['login', 'register', 'business'] as const).map((item) => (
+        <div className="grid grid-cols-2 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm">
+          {(['login', 'register'] as const).map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => switchMode(item)}
               className={`relative min-h-11 border-b-2 transition ${
-                authTab === item
+                mode === item
                   ? 'border-[#0866ff] text-[#0866ff]'
                   : 'border-transparent text-[#475467] hover:text-[#101828]'
               }`}
             >
-              {item === 'login' ? copy.loginTab : item === 'register' ? copy.registerTab : businessCopy.tab}
+              {item === 'login' ? copy.loginTab : copy.registerTab}
             </button>
           ))}
         </div>
 
         <div className="px-7 pb-7 pt-6">
           <h2 id="auth-modal-title" className="text-[25px] font-[600] leading-tight tracking-[-.04em] text-[#101828]">
-            {step === 'email' && authTab === 'business' ? businessCopy.title : step === 'email' ? copy.title : copy.codeTitle}
+            {step === 'email' ? copy.title : copy.codeTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
             {step === 'email'
               ? view === 'login' || view === 'register'
-                ? authTab === 'business'
-                  ? businessCopy.description
-                  : (authMethod === 'password' ? copy.passwordDescription : copy.description)
+                ? (authMethod === 'password' ? copy.passwordDescription : copy.description)
                 : copy.description
               : `${copy.codeSent} ${email}`}
           </p>
@@ -641,6 +669,69 @@ export default function AuthModal({
             </form>
           ) : step === 'email' ? (
             <>
+            {mode === 'register' ? (
+              <div className="mt-5 rounded-[13px] border border-[#dbe3ef] bg-[#f8faff] p-4">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isBusinessRegistration}
+                  onClick={() => {
+                    setIsBusinessRegistration((current) => {
+                      const next = !current
+                      if (!next) clearBusinessRegistrationDraft()
+                      return next
+                    })
+                    setError('')
+                  }}
+                  className="flex min-h-11 w-full items-center justify-between gap-4 text-left outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/12"
+                >
+                  <span>
+                    <span className="block text-sm font-[600] text-[#101828]">{businessCopy.switchLabel}</span>
+                    <span className="mt-0.5 block text-xs font-[400] leading-5 text-[#667085]">{businessCopy.switchDescription}</span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                      isBusinessRegistration ? 'bg-[#0866ff]' : 'bg-[#c8d0dc]'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                        isBusinessRegistration ? 'translate-x-[22px]' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </span>
+                </button>
+                {isBusinessRegistration ? (
+                  <div className="mt-4 grid gap-3 border-t border-[#e1e7f0] pt-4">
+                    <label className="block text-xs font-[600] text-[#344054]">
+                      {businessCopy.companyName}
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(event) => setCompanyName(event.target.value)}
+                        autoComplete="organization"
+                        required
+                        placeholder={businessCopy.companyNamePlaceholder}
+                        className="mt-2 h-11 w-full rounded-[10px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition placeholder:font-[400] placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                      />
+                    </label>
+                    <label className="block text-xs font-[600] text-[#344054]">
+                      {businessCopy.registrationNumber}
+                      <input
+                        type="text"
+                        value={registrationNumber}
+                        onChange={(event) => setRegistrationNumber(event.target.value)}
+                        autoComplete="off"
+                        required
+                        placeholder={businessCopy.registrationNumberPlaceholder}
+                        className="mt-2 h-11 w-full rounded-[10px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition placeholder:font-[400] placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                      />
+                    </label>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div className="mt-6 grid gap-2.5">
               {socialProviders.map(({ provider, labelKey }) => (
                 <button
@@ -854,13 +945,13 @@ export default function AuthModal({
           )}
 
           {view === 'login' || view === 'register' ? <p className="mt-6 border-t border-[#edf1f6] pt-5 text-center text-sm text-[#667085]">
-            {authTab === 'login' ? copy.newHere : copy.haveAccount}{' '}
+            {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
             <button
               type="button"
-              onClick={() => switchMode(authTab === 'login' ? 'register' : 'login')}
+              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
               className="font-[600] text-[#0866ff]"
             >
-              {authTab === 'login' ? copy.registerTab : copy.loginTab}
+              {mode === 'login' ? copy.registerTab : copy.loginTab}
             </button>
           </p> : null}
         </div>
@@ -886,17 +977,27 @@ function getAuthSpamHint(locale: PublicLocale) {
   return getAuthSpamHintCopy(locale)
 }
 
-const businessAuthCopy: Record<PublicLocale, { tab: string; title: string; description: string }> = {
-  sv: { tab: 'Företag', title: 'Skapa företagskonto', description: 'Kom igång direkt med Google, Microsoft, Facebook eller mejl. Företagsuppgifterna kompletteras tryggt efter registreringen.' },
-  en: { tab: 'Business', title: 'Create a business account', description: 'Get started with Google, Microsoft, Facebook or email. Complete the company details securely after registration.' },
-  de: { tab: 'Unternehmen', title: 'Unternehmenskonto erstellen', description: 'Starten Sie mit Google, Microsoft, Facebook oder E-Mail. Ergänzen Sie die Firmendaten sicher nach der Registrierung.' },
-  at: { tab: 'Unternehmen', title: 'Unternehmenskonto erstellen', description: 'Starten Sie mit Google, Microsoft, Facebook oder E-Mail. Ergänzen Sie die Firmendaten sicher nach der Registrierung.' },
-  be: { tab: 'Bedrijf', title: 'Zakelijk account maken', description: 'Start met Google, Microsoft, Facebook of e-mail. Vul de bedrijfsgegevens veilig aan na de registratie.' },
-  fr: { tab: 'Entreprise', title: 'Créer un compte professionnel', description: 'Commencez avec Google, Microsoft, Facebook ou votre e-mail. Complétez ensuite les informations de l’entreprise en toute sécurité.' },
-  es: { tab: 'Empresa', title: 'Crear una cuenta de empresa', description: 'Empieza con Google, Microsoft, Facebook o correo electrónico. Completa los datos de la empresa de forma segura después.' },
-  it: { tab: 'Azienda', title: 'Crea un account aziendale', description: 'Inizia con Google, Microsoft, Facebook o email. Completa in modo sicuro i dati aziendali dopo la registrazione.' },
-  pl: { tab: 'Firma', title: 'Utwórz konto firmowe', description: 'Zacznij przez Google, Microsoft, Facebook lub e-mail. Po rejestracji bezpiecznie uzupełnij dane firmy.' },
-  nl: { tab: 'Bedrijf', title: 'Zakelijk account maken', description: 'Start met Google, Microsoft, Facebook of e-mail. Vul de bedrijfsgegevens veilig aan na de registratie.' },
-  fi: { tab: 'Yritys', title: 'Luo yritystili', description: 'Aloita Googlella, Microsoftilla, Facebookilla tai sähköpostilla. Täydennä yrityksen tiedot turvallisesti rekisteröinnin jälkeen.' },
-  da: { tab: 'Virksomhed', title: 'Opret en virksomhedskonto', description: 'Kom i gang med Google, Microsoft, Facebook eller e-mail. Udfyld virksomhedens oplysninger sikkert efter registreringen.' },
+type BusinessRegistrationCopy = {
+  switchLabel: string
+  switchDescription: string
+  companyName: string
+  companyNamePlaceholder: string
+  registrationNumber: string
+  registrationNumberPlaceholder: string
+  requiredError: string
+}
+
+const businessRegistrationCopy: Record<PublicLocale, BusinessRegistrationCopy> = {
+  sv: { switchLabel: 'Jag är företag', switchDescription: 'Aktivera för att skapa ett företagskonto.', companyName: 'Företagsnamn', companyNamePlaceholder: 'Ange företagsnamn', registrationNumber: 'Organisationsnummer', registrationNumberPlaceholder: 'Ange organisationsnummer', requiredError: 'Ange företagsnamn och organisationsnummer för att fortsätta.' },
+  en: { switchLabel: 'I represent a business', switchDescription: 'Turn on to create a business account.', companyName: 'Company name', companyNamePlaceholder: 'Enter company name', registrationNumber: 'Company registration number', registrationNumberPlaceholder: 'Enter registration number', requiredError: 'Enter the company name and registration number to continue.' },
+  de: { switchLabel: 'Ich bin ein Unternehmen', switchDescription: 'Aktivieren, um ein Unternehmenskonto zu erstellen.', companyName: 'Firmenname', companyNamePlaceholder: 'Firmennamen eingeben', registrationNumber: 'Handelsregisternummer', registrationNumberPlaceholder: 'Registernummer eingeben', requiredError: 'Geben Sie Firmenname und Registernummer ein, um fortzufahren.' },
+  at: { switchLabel: 'Ich bin ein Unternehmen', switchDescription: 'Aktivieren, um ein Unternehmenskonto zu erstellen.', companyName: 'Firmenname', companyNamePlaceholder: 'Firmennamen eingeben', registrationNumber: 'Firmenbuchnummer', registrationNumberPlaceholder: 'Firmenbuchnummer eingeben', requiredError: 'Geben Sie Firmenname und Firmenbuchnummer ein, um fortzufahren.' },
+  be: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Schakel in om een bedrijfsaccount aan te maken.', companyName: 'Bedrijfsnaam', companyNamePlaceholder: 'Vul de bedrijfsnaam in', registrationNumber: 'Ondernemingsnummer', registrationNumberPlaceholder: 'Vul het ondernemingsnummer in', requiredError: 'Vul de bedrijfsnaam en het ondernemingsnummer in om verder te gaan.' },
+  fr: { switchLabel: 'Je représente une entreprise', switchDescription: 'Activez cette option pour créer un compte professionnel.', companyName: 'Nom de l’entreprise', companyNamePlaceholder: 'Saisissez le nom de l’entreprise', registrationNumber: 'Numéro d’immatriculation', registrationNumberPlaceholder: 'Saisissez le numéro d’immatriculation', requiredError: 'Saisissez le nom et le numéro d’immatriculation de l’entreprise pour continuer.' },
+  es: { switchLabel: 'Represento a una empresa', switchDescription: 'Actívalo para crear una cuenta de empresa.', companyName: 'Nombre de la empresa', companyNamePlaceholder: 'Introduce el nombre de la empresa', registrationNumber: 'Número de registro', registrationNumberPlaceholder: 'Introduce el número de registro', requiredError: 'Introduce el nombre y el número de registro de la empresa para continuar.' },
+  it: { switchLabel: 'Rappresento un’azienda', switchDescription: 'Attiva per creare un account aziendale.', companyName: 'Nome dell’azienda', companyNamePlaceholder: 'Inserisci il nome dell’azienda', registrationNumber: 'Numero di registrazione', registrationNumberPlaceholder: 'Inserisci il numero di registrazione', requiredError: 'Inserisci il nome e il numero di registrazione dell’azienda per continuare.' },
+  pl: { switchLabel: 'Reprezentuję firmę', switchDescription: 'Włącz, aby utworzyć konto firmowe.', companyName: 'Nazwa firmy', companyNamePlaceholder: 'Wpisz nazwę firmy', registrationNumber: 'Numer rejestracyjny firmy', registrationNumberPlaceholder: 'Wpisz numer rejestracyjny', requiredError: 'Wpisz nazwę i numer rejestracyjny firmy, aby kontynuować.' },
+  nl: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Schakel in om een bedrijfsaccount aan te maken.', companyName: 'Bedrijfsnaam', companyNamePlaceholder: 'Vul de bedrijfsnaam in', registrationNumber: 'KvK-nummer', registrationNumberPlaceholder: 'Vul het KvK-nummer in', requiredError: 'Vul de bedrijfsnaam en het KvK-nummer in om verder te gaan.' },
+  fi: { switchLabel: 'Edustan yritystä', switchDescription: 'Ota käyttöön yritystilin luomiseksi.', companyName: 'Yrityksen nimi', companyNamePlaceholder: 'Anna yrityksen nimi', registrationNumber: 'Y-tunnus', registrationNumberPlaceholder: 'Anna Y-tunnus', requiredError: 'Anna yrityksen nimi ja Y-tunnus jatkaaksesi.' },
+  da: { switchLabel: 'Jeg repræsenterer en virksomhed', switchDescription: 'Aktivér for at oprette en virksomhedskonto.', companyName: 'Virksomhedsnavn', companyNamePlaceholder: 'Indtast virksomhedsnavn', registrationNumber: 'CVR-nummer', registrationNumberPlaceholder: 'Indtast CVR-nummer', requiredError: 'Indtast virksomhedsnavn og CVR-nummer for at fortsætte.' },
 }
