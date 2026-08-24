@@ -23,6 +23,7 @@ import BirthDatePicker from '../components/BirthDatePicker'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { reviewNationalId } from '@/lib/national-id'
 import { clearAccountIntent } from '@/lib/account-intent'
+import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
 
 const euDialCodes: Record<string, string> = {
   AT: '+43',
@@ -671,8 +672,24 @@ export default function RegisterForm({
             />
           ) : (
             <>
-              <Field name="companyName" label={copy.companyName} autoComplete="organization" required value={companyName} onChange={(event) => setCompanyName(event.target.value)} />
-              <Field name="registrationNumber" label={copy.registrationNumber} required value={registrationNumber} onChange={(event) => setRegistrationNumber(event.target.value)} />
+              <Field
+                name="companyName"
+                label={copy.companyName}
+                placeholder={copy.companyNamePlaceholder}
+                autoComplete="organization"
+                required
+                value={companyName}
+                onChange={(event) => setCompanyName(event.target.value)}
+              />
+              <Field
+                name="registrationNumber"
+                label={copy.registrationNumber}
+                placeholder={copy.registrationNumberPlaceholder}
+                helper={copy.registrationNumberHelper}
+                required
+                value={registrationNumber}
+                onChange={(event) => setRegistrationNumber(event.target.value)}
+              />
               <Field name="vatNumber" label={copy.vatNumber} helper={copy.vatHelper} />
               <Field name="websiteUrl" label={copy.websiteUrl} type="url" autoComplete="url" helper={copy.websiteHelper} />
             </>
@@ -847,7 +864,7 @@ function Field({
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <input
         {...inputProps}
-        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#7b8494] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 font-[400] text-[#101828] outline-none transition placeholder:font-[400] placeholder:text-[#7b8494] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
@@ -1003,6 +1020,7 @@ const legalConfirmationCopy: Record<
 }
 
 function getRegisterFormCopy(locale: PublicLocale) {
+  const businessIdentity = getBusinessIdentityCopy(locale)
   const en = {
     chooseAccountType: 'Choose account type',
     privateAccount: 'Private account',
@@ -1020,7 +1038,10 @@ function getRegisterFormCopy(locale: PublicLocale) {
     nationalId: nationalIdGuidanceCopy.en.nationalId,
     nationalIdHelper: nationalIdGuidanceCopy.en.nationalIdHelper,
     companyName: 'Company name',
+    companyNamePlaceholder: 'Enter the registered company name',
     registrationNumber: 'Registration number',
+    registrationNumberPlaceholder: 'Enter the company registration number',
+    registrationNumberHelper: 'Use the identifier shown in the official business register.',
     vatNumber: 'VAT number',
     vatHelper: 'Checked against EU VIES when provided. The account can still be created if the check needs review.',
     websiteUrl: 'Website',
@@ -1068,8 +1089,6 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDateRequired: 'Välj ditt födelsedatum för att fortsätta.',
       nationalId: nationalIdGuidanceCopy.sv.nationalId,
       nationalIdHelper: nationalIdGuidanceCopy.sv.nationalIdHelper,
-      companyName: 'Företagsnamn',
-      registrationNumber: 'Organisationsnummer',
       vatNumber: 'VAT-nummer',
       vatHelper: 'Kontrolleras mot EU VIES när det anges. Kontot kan fortfarande skapas om kontrollen behöver granskas.',
       websiteUrl: 'Webbplats',
@@ -1097,6 +1116,7 @@ function getRegisterFormCopy(locale: PublicLocale) {
       createError: 'Kontot kunde inte skapas. Kontrollera uppgifterna.',
       haveAccount: 'Har du redan ett konto?',
       signIn: 'Logga in',
+      ...businessIdentity,
     }
   }
 
@@ -1118,8 +1138,6 @@ function getRegisterFormCopy(locale: PublicLocale) {
       birthDateRequired: 'Wählen Sie Ihr Geburtsdatum, um fortzufahren.',
       nationalId: nationalIdGuidanceCopy.de.nationalId,
       nationalIdHelper: nationalIdGuidanceCopy.de.nationalIdHelper,
-      companyName: 'Firmenname',
-      registrationNumber: 'Handelsregisternummer',
       vatNumber: 'USt-IdNr.',
       vatHelper: 'Wird gegen EU VIES geprüft, wenn sie angegeben wird. Das Konto kann trotzdem erstellt werden, wenn die Prüfung überprüft werden muss.',
       websiteUrl: 'Website',
@@ -1147,6 +1165,7 @@ function getRegisterFormCopy(locale: PublicLocale) {
       createError: 'Das Konto konnte nicht erstellt werden. Prüfen Sie die Angaben.',
       haveAccount: 'Sie haben bereits ein Konto?',
       signIn: 'Anmelden',
+      ...businessIdentity,
     }
   }
 
@@ -1154,5 +1173,6 @@ function getRegisterFormCopy(locale: PublicLocale) {
     ...translatePublicObject(locale, en),
     ...birthDateGuidanceCopy[locale],
     ...nationalIdGuidanceCopy[locale],
+    ...businessIdentity,
   }
 }

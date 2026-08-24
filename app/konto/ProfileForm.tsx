@@ -9,6 +9,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { localizedAccountError } from '@/lib/account-error-i18n'
+import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
 import { normalizePlaceName } from '@/lib/place-name'
 
 type Profile = {
@@ -50,7 +51,7 @@ export default function ProfileForm({
   emailConfirmed?: boolean
 }) {
   const router = useRouter()
-  const copy = getProfileCopy(locale)
+  const copy = { ...getProfileCopy(locale), ...getBusinessIdentityCopy(locale) }
   const [message, setMessage] = useState('')
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
   const [logoUploading, setLogoUploading] = useState(false)
@@ -218,8 +219,8 @@ export default function ProfileForm({
                 <span className="text-xs leading-5 text-[#667085]">{copy.logoHelp}</span>
               </div>
             </div>
-            <Field name="companyName" label={copy.companyName} defaultValue={profile.company_name || ''} required />
-            <Field name="registrationNumber" label={copy.registrationNumber} defaultValue={profile.registration_number || ''} required />
+            <Field name="companyName" label={copy.companyName} placeholder={copy.companyNamePlaceholder} defaultValue={profile.company_name || ''} required />
+            <Field name="registrationNumber" label={copy.registrationNumber} placeholder={copy.registrationNumberPlaceholder} helper={copy.registrationNumberHelper} defaultValue={profile.registration_number || ''} required />
             <Field name="vatNumber" label={copy.vatNumber} defaultValue={profile.vat_number || ''} />
             <Field name="websiteUrl" label={copy.websiteUrl} defaultValue={profile.website_url || ''} />
             <div className="sm:col-span-2 rounded-[16px] border border-[#d8e3f7] bg-white p-4">
@@ -367,8 +368,8 @@ function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy
 const controlClass =
   'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm outline-none focus:border-[#0866ff]'
 
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; normalizePlace?: boolean }) {
-  const { label, normalizePlace, onBlur, ...rest } = props
+function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; helper?: string; normalizePlace?: boolean }) {
+  const { label, helper, normalizePlace, onBlur, ...rest } = props
   return (
     <label className="block min-w-0">
       <span className="mb-2 block text-sm font-semibold">{label}</span>
@@ -378,8 +379,9 @@ function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
           if (normalizePlace) event.currentTarget.value = normalizePlaceName(event.currentTarget.value)
           onBlur?.(event)
         }}
-        className={`${controlClass} ${rest.type === 'date' ? 'appearance-none' : ''}`}
+        className={`${controlClass} font-[400] placeholder:font-[400] placeholder:text-[#7b8494] placeholder:opacity-100 ${rest.type === 'date' ? 'appearance-none' : ''}`}
       />
+      {helper ? <span className="mt-1.5 block text-xs font-[400] leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
   )
 }

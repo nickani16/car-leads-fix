@@ -911,8 +911,8 @@ type BusinessRegistrationCopy = {
 const businessRegistrationCopy: Record<PublicLocale, BusinessRegistrationCopy> = {
   sv: { switchLabel: 'Jag är företag', switchDescription: 'Företagsuppgifter fylls i först när du vill annonsera.' },
   en: { switchLabel: 'I represent a business', switchDescription: 'Add company details only when you want to advertise.' },
-  de: { switchLabel: 'Ich bin ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
-  at: { switchLabel: 'Ich bin ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
+  de: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
+  at: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
   be: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Bedrijfsgegevens vul je pas in wanneer je wilt adverteren.' },
   fr: { switchLabel: 'Je représente une entreprise', switchDescription: 'Ajoutez les informations de l’entreprise seulement pour publier.' },
   es: { switchLabel: 'Represento a una empresa', switchDescription: 'Añade los datos de la empresa solo cuando quieras anunciarte.' },
