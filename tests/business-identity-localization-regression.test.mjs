@@ -57,6 +57,19 @@ test('company identity placeholders are gray, normal weight and shared by regist
   assert.match(globals, /font-weight: 400 !important/)
 })
 
+test('auth dialog gives translated business fields enough room without allowing overflow', () => {
+  assert.match(authModal, /sm:max-w-\[640px\]/)
+  assert.match(authModal, /lg:max-w-\[680px\]/)
+  assert.ok(
+    (authModal.match(/inset-x-3[^\n]*overflow-hidden[^\n]*text-ellipsis[^\n]*whitespace-nowrap/g)?.length || 0) >= 2,
+    'Business placeholders must stay inside their fields at every responsive width',
+  )
+  assert.ok(
+    (authModal.match(/<label className="min-w-0 text-xs font-\[600\]/g)?.length || 0) >= 2,
+    'Business field columns must be allowed to shrink without overflowing the dialog',
+  )
+})
+
 test('company identity is persisted once and existing profiles skip registration', () => {
   assert.match(registerRoute, /name: companyName/)
   assert.match(registerRoute, /registration_number: registrationNumber \|\| vatNumber/)

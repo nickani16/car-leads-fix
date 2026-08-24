@@ -516,7 +516,7 @@ export default function AuthModal({
           if (event.target === event.currentTarget) onClose()
         }}
       >
-      <section className="relative w-full max-w-[390px] overflow-hidden rounded-[18px] border border-[#dce3ee] bg-white shadow-[0_30px_90px_rgba(16,24,40,.28)]">
+      <section className="relative w-full max-w-[390px] overflow-hidden rounded-[18px] border border-[#dce3ee] bg-white shadow-[0_30px_90px_rgba(16,24,40,.28)] sm:max-w-[640px] lg:max-w-[680px]">
         <button
           type="button"
           onClick={onClose}
@@ -662,7 +662,7 @@ export default function AuthModal({
                   }}
                   className="flex min-h-11 w-full items-center justify-between gap-4 text-left outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/12"
                 >
-                  <span>
+                  <span className="min-w-0">
                     <span className="block text-sm font-[600] text-[#101828]">{businessCopy.switchLabel}</span>
                     <span className="mt-0.5 block text-xs font-[400] leading-5 text-[#667085]">{businessCopy.switchDescription}</span>
                   </span>
@@ -680,8 +680,8 @@ export default function AuthModal({
                   </span>
                 </button>
                 {isBusinessRegistration ? (
-                  <div className="mt-4 grid gap-4 border-t border-[#e1e7f0] pt-4 sm:grid-cols-2">
-                    <label className="block text-xs font-[600] text-[#344054]">
+                  <div className="mt-4 grid gap-4 border-t border-[#e1e7f0] pt-4 sm:grid-cols-2 sm:gap-5">
+                    <label className="min-w-0 text-xs font-[600] text-[#344054]">
                       {businessIdentityCopy.companyName}
                       <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
                         <input
@@ -699,14 +699,14 @@ export default function AuthModal({
                         {companyName ? null : (
                           <span
                             aria-hidden="true"
-                            className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-sm font-[400] text-[#767676]"
+                            className="pointer-events-none absolute inset-x-3 top-1/2 z-20 -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-[400] text-[#767676]"
                           >
                             {businessIdentityCopy.companyNamePlaceholder}
                           </span>
                         )}
                       </div>
                     </label>
-                    <label className="block text-xs font-[600] text-[#344054]">
+                    <label className="min-w-0 text-xs font-[600] text-[#344054]">
                       {businessIdentityCopy.registrationNumber}
                       <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
                         <input
@@ -724,13 +724,13 @@ export default function AuthModal({
                         {registrationNumber ? null : (
                           <span
                             aria-hidden="true"
-                            className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-sm font-[400] text-[#767676]"
+                            className="pointer-events-none absolute inset-x-3 top-1/2 z-20 -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-[400] text-[#767676]"
                           >
                             {businessIdentityCopy.registrationNumberPlaceholder}
                           </span>
                         )}
                       </div>
-                      <span className="mt-1.5 block text-[11px] font-[400] leading-4 text-[#667085]">
+                      <span className="mt-1.5 block break-words text-[11px] font-[400] leading-4 text-[#667085]">
                         {businessIdentityCopy.registrationNumberHelper}
                       </span>
                     </label>
