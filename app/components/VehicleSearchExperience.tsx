@@ -1184,10 +1184,7 @@ export default function VehicleSearchExperience({
   if (!safeInitialCategories.length) safeInitialCategories.push('cars')
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
-  const safeInitialMarkets = normalizeMarketSelection(
-    initialMarkets,
-    safeAutomaticCountry,
-  )
+  const safeInitialMarkets = normalizeMarketSelection(initialMarkets)
   const initialLocationSelection = normalizeMarketplaceLocationSelection({
     countryCode: safeInitialMarkets[0] || safeAutomaticCountry,
     region: initialRegion,

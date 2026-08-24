@@ -13,6 +13,7 @@ test('local market is a ranking preference instead of a default filter', () => {
   assert.match(searchSource, /query\.eq\('country_code', filters\.preferredMarket\)/)
   assert.match(searchSource, /query\.neq\('country_code', filters\.preferredMarket\)/)
   assert.doesNotMatch(clientSource, /params\.set\('markets', safeAutomaticCountry\)/)
+  assert.match(clientSource, /const safeInitialMarkets = normalizeMarketSelection\(initialMarkets\)/)
   assert.match(clientSource, /setSelectedMarkets\(\[\]\)/)
   assert.match(pageSource, /parseMarketplaceSearchState\(initialQuery, \{\s*markets: initialMarkets,/)
 })
