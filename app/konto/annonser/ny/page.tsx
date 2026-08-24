@@ -9,9 +9,10 @@ import { euCountryCodes } from '@/lib/eu-countries'
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
 import { currencyForCountry } from '@/lib/marketplace'
 import NewListingForm from './NewListingForm'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
 
 export const generateMetadata = generateAccountMetadata('new-listing')
 
@@ -39,19 +40,29 @@ export async function renderNewListingPage({
   } = await supabase.auth.getUser()
   if (!user) redirect(localizePublicHref(locale, '/'))
 
+  const { category = 'cars' } = await searchParams
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('marketplace_profiles')
     .select('account_type,country_code,company_id')
     .eq('user_id', user.id)
     .single()
-  if (!profile) redirect(localizePublicHref(locale, '/register'))
+  if (!profile) {
+    const cookieStore = await cookies()
+    const accountType = normalizeAccountIntent(
+      cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+    )
+    const listingParams = new URLSearchParams({ category })
+    const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
+    const registrationParams = new URLSearchParams({ account: accountType, next })
+    redirect(localizePublicHref(locale, `/register?${registrationParams.toString()}`))
+  }
   if (profile.account_type === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)
     if (!entitlement.allowed) redirect('/account/business/subscription')
   }
 
-  const { category = 'cars' } = await searchParams
   const requestHeaders = await headers()
   const marketCode = (marketCodeOverride || requestHeaders.get('x-autorell-market') || '').toUpperCase()
   const localeCountry = countryForLocale(locale)

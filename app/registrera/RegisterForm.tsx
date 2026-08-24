@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react'
+import { FormEvent, ReactNode, useMemo, useState } from 'react'
 import {
   Building2,
   CheckCircle2,
@@ -22,10 +22,7 @@ import { FlagIcon } from '../components/PublicFooter'
 import BirthDatePicker from '../components/BirthDatePicker'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { reviewNationalId } from '@/lib/national-id'
-import {
-  clearBusinessRegistrationDraft,
-  readBusinessRegistrationDraft,
-} from '@/lib/registration-draft'
+import { clearAccountIntent } from '@/lib/account-intent'
 
 const euDialCodes: Record<string, string> = {
   AT: '+43',
@@ -512,11 +509,13 @@ export default function RegisterForm({
   email,
   initialCountryCode,
   initialAccountType = 'private',
+  completionDestination,
 }: {
   locale: PublicLocale
   email: string
   initialCountryCode?: string
   initialAccountType?: 'private' | 'business'
+  completionDestination: string
 }) {
   const copy = getRegisterFormCopy(locale)
   const router = useRouter()
@@ -538,17 +537,6 @@ export default function RegisterForm({
         .sort((a, b) => a.name.localeCompare(b.name, locale)),
     [locale],
   )
-
-  useEffect(() => {
-    if (initialAccountType !== 'business') return
-    const frame = window.requestAnimationFrame(() => {
-      const draft = readBusinessRegistrationDraft()
-      if (!draft) return
-      setCompanyName(draft.companyName)
-      setRegistrationNumber(draft.registrationNumber)
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [initialAccountType])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -613,8 +601,8 @@ export default function RegisterForm({
         )
         return
       }
-      clearBusinessRegistrationDraft()
-      router.push(localizePublicHref(locale, '/account'))
+      clearAccountIntent()
+      router.push(completionDestination)
       router.refresh()
     } catch {
       setError(copy.createError)

@@ -6,7 +6,10 @@ const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import
 const authCallback = readFileSync(new URL('../app/auth/callback/route.ts', import.meta.url), 'utf8')
 const authCopy = readFileSync(new URL('../lib/auth-copy.ts', import.meta.url), 'utf8')
 const registerForm = readFileSync(new URL('../app/registrera/RegisterForm.tsx', import.meta.url), 'utf8')
-const registrationDraft = readFileSync(new URL('../lib/registration-draft.ts', import.meta.url), 'utf8')
+const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.meta.url), 'utf8')
+const accountIntent = readFileSync(new URL('../lib/account-intent.ts', import.meta.url), 'utf8')
+const accountPage = readFileSync(new URL('../app/konto/page.tsx', import.meta.url), 'utf8')
+const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
 const proxy = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const rootPage = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8')
@@ -25,14 +28,11 @@ test('social login uses supported Supabase providers and provider logos', () => 
   assert.doesNotMatch(authModal, /mark: '[GAMf]'/)
 })
 
-test('disabled providers stay inside Autorell with a localized error', () => {
-  assert.match(authModal, /\/auth\/v1\/settings/)
-  assert.match(authModal, /settings\.external\?\.\[provider\] === true/)
-  assert.match(authModal, /setError\(copy\.providerUnavailable\)/)
-  assert.match(authCopy, /providerUnavailable: string/)
-  for (const locale of ['en', 'sv', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
-    assert.match(authCopy, new RegExp(`${locale}: \\{[\\s\\S]*?providerUnavailable:`))
-  }
+test('social provider clicks start Supabase OAuth directly and surface failures', () => {
+  assert.doesNotMatch(authModal, /\/auth\/v1\/settings/)
+  assert.match(authModal, /supabase\.auth\.signInWithOAuth/)
+  assert.match(authModal, /setSocialLoading\(provider\)/)
+  assert.match(authModal, /setError\(copy\.socialError\)/)
 })
 
 test('OAuth callback preserves safe destinations and localized market paths', () => {
@@ -73,16 +73,30 @@ test('registration keeps two auth tabs and exposes a localized business switch',
   assert.doesNotMatch(authModal, /\['login', 'register', 'business'\]/)
   assert.match(authModal, /role="switch"/)
   assert.match(authModal, /aria-checked=\{isBusinessRegistration\}/)
-  assert.match(authModal, /saveBusinessRegistrationDraft/)
-  assert.match(registrationDraft, /window\.sessionStorage/)
-  assert.match(registerForm, /readBusinessRegistrationDraft/)
-  assert.match(registerForm, /clearBusinessRegistrationDraft\(\)/)
+  assert.match(publicHeader, /params\.get\('account'\) === 'business'/)
+  assert.match(publicHeader, /initialBusinessRegistration=\{authBusinessRegistration\}/)
+  assert.match(authModal, /saveAccountIntent/)
+  assert.match(accountIntent, /autorell_account_intent/)
+  assert.match(accountIntent, /SameSite=Lax/)
+  assert.match(registerForm, /clearAccountIntent\(\)/)
   assert.match(registerForm, /value=\{companyName\}/)
   assert.match(registerForm, /value=\{registrationNumber\}/)
-  assert.match(authModal, /\/register\?onboarding=1&account=business/)
+  assert.doesNotMatch(authModal, /companyNamePlaceholder|requiredError/)
+  assert.doesNotMatch(authModal, /\/register\?onboarding=1/)
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(authModal, new RegExp(`\\n  ${locale}: \\{ switchLabel:`))
   }
+})
+
+test('new accounts skip onboarding until they create a listing', () => {
+  assert.match(authModal, /return postLoginDestination \|\| accountDestination\(\)/)
+  assert.match(accountPage, /function LightweightAccount/)
+  assert.match(accountPage, /if \(!profile\)/)
+  assert.match(newListingPage, /if \(!profile\)/)
+  assert.match(newListingPage, /ACCOUNT_INTENT_COOKIE/)
+  assert.match(newListingPage, /\/register\?\$\{registrationParams\.toString\(\)\}/)
+  assert.match(registerPage, /completionDestination=\{completionDestination\}/)
+  assert.match(registerForm, /router\.push\(completionDestination\)/)
 })
 
 test('login and registration metadata is localized and stays within requested limits', () => {

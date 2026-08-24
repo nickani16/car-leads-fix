@@ -1,4 +1,4 @@
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
@@ -9,6 +9,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
+import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
 import RegisterForm from './RegisterForm'
 
 export default async function RegisterPage({
@@ -20,7 +21,12 @@ export default async function RegisterPage({
   const copy = getRegisterPageCopy(locale)
   const query = searchParams ? await searchParams : {}
   const accountParam = Array.isArray(query.account) ? query.account[0] : query.account
-  const initialAccountType = accountParam === 'business' ? 'business' : 'private'
+  const cookieStore = await cookies()
+  const initialAccountType = normalizeAccountIntent(
+    accountParam || cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+  )
+  const nextParam = Array.isArray(query.next) ? query.next[0] : query.next
+  const completionDestination = safeReturnPath(nextParam) || localizePublicHref(locale, '/account')
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const supabase = await createClient()
@@ -30,9 +36,7 @@ export default async function RegisterPage({
 
   if (!user) {
     const params = new URLSearchParams({ auth: 'register' })
-    const nextParam = Array.isArray(query.next) ? query.next[0] : query.next
-    const next = safeReturnPath(nextParam)
-    if (next) params.set('next', next)
+    if (completionDestination) params.set('next', completionDestination)
     if (initialAccountType === 'business') params.set('account', 'business')
     redirect(localizePublicHref(locale, `/?${params.toString()}`))
   }
@@ -79,6 +83,7 @@ export default async function RegisterPage({
             email={user.email || ''}
             initialCountryCode={marketCode}
             initialAccountType={initialAccountType}
+            completionDestination={completionDestination}
           />
         </div>
       </section>

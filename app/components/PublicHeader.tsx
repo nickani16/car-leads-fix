@@ -695,6 +695,7 @@ export default function PublicHeader({
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login')
   const [authInitialView, setAuthInitialView] = useState<AuthView>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
+  const [authBusinessRegistration, setAuthBusinessRegistration] = useState(false)
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
   const [headerAccountResolved, setHeaderAccountResolved] = useState(false)
   const [activePathname, setActivePathname] = useState('')
@@ -1000,7 +1001,9 @@ export default function PublicHeader({
         ? next
         : undefined
     if (auth === 'login') openAuthModal('login', destination)
-    if (auth === 'register' || auth === 'registrera') openAuthModal('register', destination)
+    if (auth === 'register' || auth === 'registrera') {
+      openAuthModal('register', destination, params.get('account') === 'business')
+    }
     if (auth === 'forgot-password') openAuthModal('forgot')
     if (auth === 'reset-password') openAuthModal('reset')
   }, [pathname])
@@ -1422,11 +1425,12 @@ export default function PublicHeader({
     setProfileMenuOpen((current) => (menu === 'profile' ? !current : false))
   }
 
-  function openAuthModal(mode: AuthView, destination?: string) {
+  function openAuthModal(mode: AuthView, destination?: string, businessRegistration = false) {
     const nextMode = mode === 'register' ? 'register' : 'login'
     setAuthInitialMode(nextMode)
     setAuthInitialView(mode)
     setAuthDestination(destination)
+    setAuthBusinessRegistration(mode === 'register' && businessRegistration)
     setAuthModalOpen(true)
     setOpen(false)
     setMobileCategoryOpen(false)
@@ -2731,10 +2735,11 @@ export default function PublicHeader({
       />
       {authModalOpen ? (
         <AuthModal
-          key={`${authInitialView}:${authDestination || ''}`}
+          key={`${authInitialView}:${authDestination || ''}:${authBusinessRegistration ? 'business' : 'private'}`}
           isOpen={authModalOpen}
           initialMode={authInitialMode}
           initialView={authInitialView}
+          initialBusinessRegistration={authBusinessRegistration}
           postLoginDestination={authDestination}
           locale={locale}
           onClose={() => setAuthModalOpen(false)}
