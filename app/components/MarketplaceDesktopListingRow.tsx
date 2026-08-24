@@ -108,7 +108,7 @@ export default function MarketplaceDesktopListingRow({
       data-marketplace-listing-row
       className="group relative grid min-h-[250px] grid-cols-[minmax(280px,34%)_minmax(0,1fr)] grid-rows-[minmax(214px,auto)_36px] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:250px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none"
     >
-      <div className="relative min-h-[214px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-[#f4f6f8]">
+      <div data-marketplace-list-image className="relative min-h-[214px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-[#f4f6f8]">
         <div className="absolute inset-0 overflow-hidden bg-white">
           <ListingCardImageCarousel
             images={images}
@@ -142,6 +142,20 @@ export default function MarketplaceDesktopListingRow({
               {images.length.toLocaleString(numberLocale(locale))}
             </span>
           ) : null}
+          <button
+            data-marketplace-list-compare
+            type="button"
+            aria-pressed={compareActive}
+            onClick={onCompare}
+            className={`pointer-events-auto absolute bottom-2.5 right-2.5 z-30 inline-flex h-8 items-center justify-center gap-1.5 rounded-[6px] border px-2.5 text-[11px] font-semibold shadow-[0_2px_8px_rgba(16,24,40,.12)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
+              compareActive
+                ? 'border-[#0866ff] bg-[#0866ff] text-white'
+                : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
+            }`}
+          >
+            <Scale className="h-3 w-3" aria-hidden="true" />
+            {copy.compare}
+          </button>
         </div>
       </div>
 
@@ -199,8 +213,8 @@ export default function MarketplaceDesktopListingRow({
           </dl>
         ) : null}
 
-        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 border-t border-[#dfe4eb] pt-3">
-          <div className="flex min-w-0 items-center gap-3">
+        <div data-marketplace-list-seller-actions className="mt-auto grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-[#dfe4eb] pt-3">
+          <div className="flex min-w-0 items-center gap-3 pr-1">
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
               <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[5px] border border-[#dfe4eb] bg-white">
                 <Image src={listing.sellerLogoUrl} alt="" fill sizes="40px" className="object-contain p-1" />
@@ -215,19 +229,6 @@ export default function MarketplaceDesktopListingRow({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              aria-pressed={compareActive}
-              onClick={onCompare}
-              className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border px-2.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
-                compareActive
-                  ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                  : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
-              }`}
-            >
-              <Scale className="h-3 w-3" aria-hidden="true" />
-              {copy.compare}
-            </button>
             <Link
               href={href}
               prefetch

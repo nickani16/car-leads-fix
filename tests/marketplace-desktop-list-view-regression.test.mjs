@@ -105,6 +105,10 @@ test('desktop list cards use a wide image, seller row and listing actions', () =
   assert.doesNotMatch(desktopListingRowSource, /sellerRatingAverage/)
   assert.doesNotMatch(desktopListingRowSource, /location \|\| sellerLabel/)
   assert.match(desktopListingRowSource, /aria-pressed=\{compareActive\}/)
+  assert.match(desktopListingRowSource, /data-marketplace-list-image/)
+  assert.match(desktopListingRowSource, /data-marketplace-list-compare/)
+  assert.match(desktopListingRowSource, /data-marketplace-list-seller-actions/)
+  assert.match(desktopListingRowSource, /grid-cols-\[minmax\(0,1fr\)_auto\]/)
   assert.match(desktopListingRowSource, /buildListingPath/)
   assert.match(experienceSource, /<MetaSeparatorList/)
   assert.match(experienceSource, /sellerTypeLabel/)
@@ -123,6 +127,12 @@ test('marketplace dialogs keep one blue scroll container and align the desktop f
   assert.doesNotMatch(experienceSource, /grid max-h-\[(?:420|360)px\] gap-1 overflow-y-auto/)
   assert.match(experienceSource, /placement === 'mobile' \? 'relative top-\[3px\] items-center' : 'items-start'/)
   assert.match(experienceSource, /'marketplace-scrollbar min-w-0 flex-1 overflow-x-auto/)
+  assert.match(experienceSource, /data-marketplace-market-option/)
+  assert.match(experienceSource, /\[&_button\[data-marketplace-market-option\]\]:!font-medium/)
+  assert.match(experienceSource, /data-marketplace-filter-heading/)
+  assert.match(experienceSource, /\[&_\[data-marketplace-filter-heading\]\]:!font-medium/)
+  assert.ok(experienceSource.includes('[&_*]:!font-normal [&_[data-marketplace-filter-heading]]:!font-medium'))
+  assert.ok(experienceSource.includes('[&_*]:!font-normal [&_button]:!font-medium'))
 })
 
 test('desktop list row provides equipment overflow and VAT copy for every public locale', () => {

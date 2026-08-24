@@ -2710,7 +2710,7 @@ export default function VehicleSearchExperience({
               <X className="h-4.5 w-4.5" aria-hidden="true" />
             </button>
           </div>
-          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal [&_button[data-marketplace-apply]]:!font-medium sm:p-5">{children}</div>
+          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal [&_[data-marketplace-filter-heading]]:!font-medium [&_button[data-marketplace-apply]]:!font-medium [&_button[data-marketplace-market-option]]:!font-medium sm:p-5">{children}</div>
         </div>
       </>
     )
@@ -3027,6 +3027,7 @@ export default function VehicleSearchExperience({
                       : selectedMarketCodes.length === 0
                     return (
                       <button
+                        data-marketplace-market-option
                         key={option.value || 'all'}
                         type="button"
                         onClick={() => {
@@ -3803,7 +3804,7 @@ export default function VehicleSearchExperience({
                          <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle category, keyword and equipment.', 'Avgränsa på fordonskategori, sökord och utrustning.', 'Nach Fahrzeugkategorie, Suchbegriff und Ausstattung eingrenzen.')}</p>
                       )}
                     </div>
-                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 font-normal [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] [&_*]:!font-normal sm:space-y-4 sm:px-6">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 font-normal [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] [&_*]:!font-normal [&_[data-marketplace-filter-heading]]:!font-medium sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
                     {renderLocationFilterSection()}
                     <div className="hidden">
@@ -3864,7 +3865,7 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                   </div>
-                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 font-normal shadow-[0_-10px_30px_rgba(16,24,40,.08)] [&_*]:!font-normal sm:px-7 sm:py-4">
+                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 font-normal shadow-[0_-10px_30px_rgba(16,24,40,.08)] [&_*]:!font-normal [&_button]:!font-medium sm:px-7 sm:py-4">
                         <button
                           type="button"
                           onClick={resetFilters}
@@ -4444,7 +4445,7 @@ function CollapsibleFilterSection({
             </span>
           ) : null}
           <span className="min-w-0">
-            <span className={`block font-semibold text-[#101828] ${sidebar ? 'text-[13px]' : 'text-[14px]'}`}>{title}</span>
+            <span data-marketplace-filter-heading className={`block font-medium text-[#101828] ${sidebar ? 'text-[13px]' : 'text-[14px]'}`}>{title}</span>
             {summary && !sidebar ? <span className="mt-0.5 block truncate text-[10px] font-normal text-[#667085]">{summary}</span> : null}
           </span>
         </span>
@@ -4583,7 +4584,7 @@ function FilterInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 hidden text-[13px] font-semibold text-[#101828] sm:block">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 hidden text-[13px] font-medium text-[#101828] sm:block">{label}</span>
       <span className="flex h-11 items-center rounded-[8px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
         <input
           value={value}
@@ -4608,7 +4609,7 @@ function TextFilterInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 block text-[13px] font-medium text-[#101828]">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -4818,7 +4819,7 @@ function MakeModelFilter({
   return (
     <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
       <div className="space-y-1">
-        <p className="text-[15px] font-bold text-[#101828]">{copy.title}</p>
+        <p data-marketplace-filter-heading className="text-[15px] font-medium text-[#101828]">{copy.title}</p>
         <p className="text-[12px] font-medium leading-5 text-[#667085]">
           {copy.intro}
         </p>
@@ -4935,7 +4936,7 @@ function OptionSelectionList({
   if (!options.length) {
     return (
       <div className={`${className} min-h-[120px] overflow-y-auto bg-white p-3`}>
-        <p className="text-[12px] font-bold text-[#101828]">{title}</p>
+        <p data-marketplace-filter-heading className="text-[12px] font-medium text-[#101828]">{title}</p>
         <p className="mt-3 rounded-[10px] bg-[#f8fafc] px-3 py-3 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]">
           {emptyLabel}
         </p>
@@ -4946,7 +4947,7 @@ function OptionSelectionList({
   return (
     <div className={`${className} overflow-y-auto bg-white p-2 [scrollbar-width:thin]`}>
       <div className="sticky top-0 z-10 bg-white px-1 pb-2 pt-1">
-        <p className="text-[12px] font-bold text-[#101828]">{title}</p>
+        <p data-marketplace-filter-heading className="text-[12px] font-medium text-[#101828]">{title}</p>
       </div>
       <div className="space-y-1">
         {options.map((option) => {
@@ -5054,7 +5055,7 @@ function RangeFilter({
   return (
     <section className="border-b border-[#edf1f6] pb-4 last:border-b-0 sm:col-span-2">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
+        <h3 data-marketplace-filter-heading className="text-[15px] font-medium text-[#101828]">{title}</h3>
         {maxValue || minValue ? (
           <button
             type="button"
@@ -5148,7 +5149,7 @@ function FilterSelect({
 }) {
   return (
     <label className="relative block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 block text-[13px] font-medium text-[#101828]">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -5191,7 +5192,7 @@ function LocationHierarchyFilter({
 }) {
   return (
     <div>
-      <p className="mb-2 text-[13px] font-semibold text-[#101828]">{regionLabel}</p>
+      <p data-marketplace-filter-heading className="mb-2 text-[13px] font-medium text-[#101828]">{regionLabel}</p>
       <div className="space-y-0.5">
         {regionOptions.map((option) => {
           const selected = option.value === region
