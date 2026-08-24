@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Camera, MapPin, Scale, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Camera, ChevronDown, MapPin, Scale, ShieldCheck } from 'lucide-react'
 import {
   AutorellAgricultureIcon,
   AutorellBikeIcon,
@@ -98,13 +98,17 @@ export default function MarketplaceDesktopListingRow({
   const photoLabel = `${images.length.toLocaleString(numberLocale(locale))} ${copy.uploadedPhotos}`
   const sellerLabel = listing.sellerIsTrader ? copy.businessSeller : copy.privateSeller
   const contactLabel = contactListingLabel(locale)
+  const detailStripItems = [
+    ...metadata.map((item) => `${item.label}: ${item.value}`),
+    ...equipmentChips,
+  ]
 
   return (
     <article
       data-marketplace-listing-row
-      className="group relative grid min-h-[260px] grid-cols-[minmax(320px,37%)_minmax(0,1fr)] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:260px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none"
+      className="group relative grid min-h-[250px] grid-cols-[minmax(280px,34%)_minmax(0,1fr)] grid-rows-[minmax(214px,auto)_36px] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:250px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none"
     >
-      <div className="relative min-h-[260px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-[#f4f6f8]">
+      <div className="relative min-h-[214px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-[#f4f6f8]">
         <div className="absolute inset-0 overflow-hidden bg-white">
           <ListingCardImageCarousel
             images={images}
@@ -141,7 +145,7 @@ export default function MarketplaceDesktopListingRow({
         </div>
       </div>
 
-      <div className="relative flex min-w-0 flex-col px-5 py-4 2xl:px-6">
+      <div className="relative flex min-w-0 flex-col px-4 py-3.5 2xl:px-5">
         <SavedListingButton
           listingId={listing.id}
           label={copy.saveListing}
@@ -157,11 +161,11 @@ export default function MarketplaceDesktopListingRow({
             onClick={onBeforeNavigate}
             className="block rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
           >
-            <h2 className="line-clamp-1 text-[20px] font-semibold leading-7 text-[#101828] transition-colors group-hover:text-[#0757da] 2xl:text-[22px]">
+            <h2 className="line-clamp-1 text-[18px] font-semibold leading-6 text-[#101828] transition-colors group-hover:text-[#0757da] 2xl:text-[20px]">
               {listing.title}
             </h2>
           </Link>
-          <p className="mt-0.5 text-[19px] font-semibold leading-7 text-[#101828]">
+          <p className="mt-0.5 text-[17px] font-semibold leading-6 text-[#101828]">
             {listing.priceLabel}
             <span className="ml-2 text-[11px] font-normal text-[#667085]">{copy.vatIncluded}</span>
           </p>
@@ -195,33 +199,11 @@ export default function MarketplaceDesktopListingRow({
           </dl>
         ) : null}
 
-        {equipmentChips.length ? (
-          <div className="relative mt-2 min-w-0 overflow-hidden pr-16">
-            <div className="flex min-w-max gap-1.5 whitespace-nowrap">
-              {equipmentChips.map((item) => (
-                <span key={item} className="max-w-[180px] shrink-0 truncate rounded-full bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#0757da]">
-                  {item}
-                </span>
-              ))}
-            </div>
-            {equipmentChips.length > 3 ? (
-              <Link
-                href={href}
-                prefetch
-                onClick={onBeforeNavigate}
-                className="absolute inset-y-0 right-0 z-10 inline-flex items-center bg-white/90 pl-3 text-[10px] font-semibold text-[#0757da] backdrop-blur-[3px] [box-shadow:-12px_0_16px_rgba(255,255,255,.94)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
-              >
-                {copy.showMoreEquipment}
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="mt-auto flex min-w-0 items-end justify-between gap-4 border-t border-[#dfe4eb] pt-3">
+        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 border-t border-[#dfe4eb] pt-3">
           <div className="flex min-w-0 items-center gap-3">
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-              <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[5px] border border-[#dfe4eb] bg-white">
-                <Image src={listing.sellerLogoUrl} alt="" fill sizes="48px" className="object-contain p-1" />
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[5px] border border-[#dfe4eb] bg-white">
+                <Image src={listing.sellerLogoUrl} alt="" fill sizes="40px" className="object-contain p-1" />
               </span>
             ) : null}
             <div className="min-w-0">
@@ -232,12 +214,12 @@ export default function MarketplaceDesktopListingRow({
               </span>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2.5">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               aria-pressed={compareActive}
               onClick={onCompare}
-              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-[7px] border px-3 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
+              className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border px-2.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${
                 compareActive
                   ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
                   : 'border-[#d0d5dd] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
@@ -250,7 +232,7 @@ export default function MarketplaceDesktopListingRow({
               href={href}
               prefetch
               onClick={onBeforeNavigate}
-              className="inline-flex h-10 min-w-[126px] items-center justify-center rounded-[7px] bg-[#0866ff] px-4 text-[12px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+              className="inline-flex h-9 min-w-[108px] items-center justify-center rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
             >
               {contactLabel}
             </Link>
@@ -258,7 +240,7 @@ export default function MarketplaceDesktopListingRow({
               href={href}
               prefetch
               onClick={onBeforeNavigate}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[7px] border border-[#344054] bg-white px-4 text-[12px] font-semibold text-[#101828] transition-colors hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border border-[#344054] bg-white px-3 text-[11px] font-semibold text-[#101828] transition-colors hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
             >
               {copy.viewListing}
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -266,6 +248,21 @@ export default function MarketplaceDesktopListingRow({
           </div>
         </div>
       </div>
+
+      <Link
+        href={href}
+        prefetch
+        onClick={onBeforeNavigate}
+        aria-label={copy.showMoreEquipment}
+        className="relative col-span-2 flex min-w-0 items-start overflow-hidden border-t border-[#dfe4eb] bg-white px-4 pt-1.5 text-[10px] font-normal leading-4 text-[#667085] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
+      >
+        <span className="block min-w-0 flex-1 truncate pr-10">
+          {detailStripItems.join(' | ')}
+        </span>
+        <span className="absolute inset-x-0 bottom-0 grid h-4 place-items-center bg-white/95 text-[#344054]">
+          <ChevronDown className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </Link>
     </article>
   )
 }

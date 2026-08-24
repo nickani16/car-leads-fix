@@ -3249,9 +3249,9 @@ export default function VehicleSearchExperience({
               <aside
                 data-marketplace-list-sidebar
                 aria-label={filterDialogCopy[locale].label}
-                className="flex min-h-0 self-start flex-col overflow-hidden rounded-[7px] border border-[#d7dde7] bg-white"
+                className="flex min-h-0 self-start flex-col bg-white"
               >
-                <div className="border-b border-[#e4e7ec] bg-white px-3 pb-3 pt-3">
+                <div className="border-b border-[#d8dee8] bg-white pb-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
@@ -3276,7 +3276,7 @@ export default function VehicleSearchExperience({
                 </div>
 
                 {listActiveFilters.length ? (
-                  <div className="border-b border-[#e4e7ec] bg-[#fbfcfe] px-3 py-3" data-marketplace-list-active-filters>
+                  <div className="my-4 rounded-[7px] border border-[#d7dde7] bg-white px-3 py-3 shadow-[0_5px_16px_rgba(16,24,40,.06)]" data-marketplace-list-active-filters>
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-[12px] font-semibold text-[#101828]">
                         {listActiveFilters.length} {listActiveFilters.length === 1
@@ -3300,18 +3300,18 @@ export default function VehicleSearchExperience({
                   </div>
                 ) : null}
 
-                <div className="grid border-b border-[#e4e7ec] bg-white">
-                  <Link href={localizePublicHref(locale, '/saved')} className="flex min-h-11 items-center gap-2.5 px-3 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc] hover:text-[#0866ff]">
+                <div className="grid border-b border-[#d8dee8] bg-white">
+                  <Link href={localizePublicHref(locale, '/saved')} className="flex min-h-11 items-center gap-2.5 px-1 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc] hover:text-[#0866ff]">
                     <Heart className="h-4 w-4 text-[#0866ff]" aria-hidden="true" />
                     {listExtraText.savedListings}
                   </Link>
-                  <button type="button" onClick={() => setSortBy('published')} className={`flex min-h-11 items-center gap-2.5 border-t border-[#eef1f5] px-3 text-left text-[12px] font-medium transition hover:bg-[#f8fafc] hover:text-[#0866ff] ${sortBy === 'published' ? 'text-[#0866ff]' : 'text-[#344054]'}`}>
+                  <button type="button" onClick={() => setSortBy('published')} className={`flex min-h-11 items-center gap-2.5 border-t border-[#e4e7ec] px-1 text-left text-[12px] font-medium transition hover:bg-[#f8fafc] hover:text-[#0866ff] ${sortBy === 'published' ? 'text-[#0866ff]' : 'text-[#344054]'}`}>
                     <span className={`h-4 w-4 rounded-[3px] border ${sortBy === 'published' ? 'border-[#0866ff] bg-[#0866ff] shadow-[inset_0_0_0_3px_white]' : 'border-[#98a2b3]'}`} aria-hidden="true" />
                     {listExtraText.latestListings}
                   </button>
                 </div>
 
-                <div className="min-h-0 flex-1 px-2 py-1">
+                <div className="min-h-0 flex-1">
                   <CollapsibleFilterSection
                     density="sidebar"
                     icon={<Scale className="h-4 w-4" aria-hidden="true" />}
@@ -5490,6 +5490,8 @@ function VehicleResultCard({
     .join(', ')
   const subtitle = location
   const equipmentChips = listingEquipmentChips(listing.equipment, locale)
+  const visibleEquipmentChips = equipmentChips.slice(0, 4)
+  const remainingEquipmentCount = Math.max(0, equipmentChips.length - visibleEquipmentChips.length)
   const sellerTypeLabel = listing.sellerIsTrader
     ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
     : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')
@@ -5680,21 +5682,23 @@ function VehicleResultCard({
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              {equipmentChips.map((item) => (
-                <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                  {item}
-                </span>
-              ))}
-              <span className="rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                {sellerTypeLabel}
-              </span>
-              {showCountryChip ? (
-                <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                  <span className="truncate">{countryLabel}</span>
-                </span>
-              ) : null}
-            </div>
+            {visibleEquipmentChips.length ? (
+              <div className="flex max-h-[58px] min-w-0 flex-wrap items-center gap-1.5 overflow-hidden">
+                {visibleEquipmentChips.map((item) => (
+                  <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                    {item}
+                  </span>
+                ))}
+                {remainingEquipmentCount ? (
+                  <span className="rounded-full bg-[#eef5ff] px-2 py-1 text-[12px] font-medium leading-4 text-[#0866ff]">
+                    +{remainingEquipmentCount}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            <p className="line-clamp-1 text-[12px] font-normal leading-5 text-[#667085]">
+              {[sellerTypeLabel, showCountryChip ? countryLabel : null].filter(Boolean).join(' | ')}
+            </p>
             {listing.sellerRatingAverage && listing.sellerRatingCount ? (
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
                 <Star className="h-3.5 w-3.5 text-[#0866ff]" fill="currentColor" />
