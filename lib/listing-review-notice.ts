@@ -1,4 +1,5 @@
 import { translationLocale, type PublicLocale } from '@/lib/public-i18n'
+import { reviewableListingRiskFlags } from '@/lib/listing-review-resolution'
 
 export type ListingReviewNotice = {
   summary: string
@@ -202,7 +203,7 @@ export function listingReviewNotice(
 ): ListingReviewNotice {
   const copy = copies[translationLocale(locale)] || copies.en
   const reasons = Array.from(new Set(
-    riskFlags.map((flag) => copy.reasons[flag] || copy.genericReason),
+    reviewableListingRiskFlags(riskFlags).map((flag) => copy.reasons[flag] || copy.genericReason),
   ))
 
   return {

@@ -13,7 +13,6 @@ import {
   ChevronRight,
   Check,
   Columns2,
-  Globe2,
   Heart,
   House,
   Layers,
@@ -29,7 +28,6 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
-import CountryFlag from './CountryFlag'
 import { FooterMarketCurrencyControls } from './PublicFooter'
 import InstallAutorellButton from './InstallAutorellButton'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
@@ -2712,7 +2710,7 @@ export default function VehicleSearchExperience({
               <X className="h-4.5 w-4.5" aria-hidden="true" />
             </button>
           </div>
-          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal sm:p-5">{children}</div>
+          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal [&_button[data-marketplace-apply]]:!font-medium sm:p-5">{children}</div>
         </div>
       </>
     )
@@ -2866,7 +2864,7 @@ export default function VehicleSearchExperience({
                   unit={priceFilterCurrency}
                   step={1000}
                 />
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2889,7 +2887,7 @@ export default function VehicleSearchExperience({
                   step={1}
                   startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
                 />
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2913,7 +2911,7 @@ export default function VehicleSearchExperience({
                   unit="km"
                   step={5000}
                 />
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -2938,7 +2936,7 @@ export default function VehicleSearchExperience({
                   unit="h"
                   step={250}
                 />
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -3046,9 +3044,6 @@ export default function VehicleSearchExperience({
                         }}
                         className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
                       >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f5f7fb] text-[#101828] ring-1 ring-[#e4e7ec]">
-                          {option.value ? <CountryFlag code={option.value} className="h-5 w-5 rounded-full" /> : <Globe2 className="h-5 w-5" />}
-                        </span>
                         <span className="min-w-0 flex-1 truncate">
                           {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
                         </span>
@@ -3057,7 +3052,7 @@ export default function VehicleSearchExperience({
                     )
                   })}
                 </div>
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -3085,7 +3080,7 @@ export default function VehicleSearchExperience({
                   }}
                   compact
                 />
-                <button type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-semibold text-white transition hover:bg-[#0757da]">
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
                   {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
                 </button>
               </div>
@@ -3223,10 +3218,7 @@ export default function VehicleSearchExperience({
               <Bookmark className="h-5 w-5" />
               Sökningar
             </span>
-            <span className="inline-flex items-center gap-2">
-              <CountryFlag code={primaryMapCountry || 'SE'} className="h-5 w-5" />
-              <span>{primaryMapCountry || 'EU'}</span>
-            </span>
+            <span>{primaryMapCountry || 'EU'}</span>
           </div>
         </header>
 
@@ -3636,7 +3628,6 @@ export default function VehicleSearchExperience({
                             offerBadge={listingOfferBadge(locale, listing)}
                             insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)}
                             equipmentChips={listingEquipmentChips(listing.equipment, locale)}
-                            marketCountryCode={safeInitialCountry}
                             compareActive={compareIds.includes(listing.id)}
                             onCompare={() => toggleCompare(listing.id)}
                             onBeforeNavigate={rememberSearchBeforeListingNavigation}
@@ -3949,7 +3940,6 @@ export default function VehicleSearchExperience({
                         key={listing.id}
                         listing={listing}
                         locale={locale}
-                        marketCountryCode={safeInitialCountry}
                         compareActive={compareIds.includes(listing.id)}
                         onCompare={() => toggleCompare(listing.id)}
                         onBeforeNavigate={rememberSearchBeforeListingNavigation}
@@ -5604,9 +5594,7 @@ function VehicleResultCard({
             <p className="truncate">{sellerTypeLabel}</p>
             {sellerDetail || showCountryChip ? (
               <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
-                {showCountryChip ? (
-                  <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
-                ) : null}
+                {showCountryChip ? <span className="truncate">{countryLabel}</span> : null}
                 {sellerDetail ? <span className="truncate">{sellerDetail}</span> : null}
               </p>
             ) : null}
@@ -5703,7 +5691,6 @@ function VehicleResultCard({
               </span>
               {showCountryChip ? (
                 <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                  <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm" />
                   <span className="truncate">{countryLabel}</span>
                 </span>
               ) : null}
@@ -5716,7 +5703,6 @@ function VehicleResultCard({
             ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="hidden">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
@@ -6175,7 +6161,6 @@ function MapListingPreview({
             <Link href={href} onClick={onBeforeNavigate} className="min-w-0">
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
               <p className="mt-1 flex min-w-0 items-center gap-2 text-sm font-medium text-[#667085]">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm" />
                 <span className="truncate">{location}</span>
               </p>
             </Link>

@@ -19,7 +19,6 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
-import CountryFlag from './CountryFlag'
 import {
   localizePublicHref,
   translatePublic,
@@ -294,7 +293,6 @@ export default function MarketplaceSearch({
               </div>
               <div className="hidden max-h-[360px] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
                 <CountryOptionButton
-                  code=""
                   label={copy.allEurope}
                   selected={!country}
                   onSelect={() => {
@@ -305,7 +303,6 @@ export default function MarketplaceSearch({
                 {countryOptions.map((code) => (
                   <CountryOptionButton
                     key={code}
-                    code={code}
                     label={getEuCountryName(code, countryLocale)}
                     selected={country === code}
                     onSelect={() => {
@@ -548,12 +545,10 @@ function getCategoryHint(category: MarketplaceCategorySlug, locale: PublicLocale
 }
 
 function CountryOptionButton({
-  code,
   label,
   selected,
   onSelect,
 }: {
-  code: string
   label: string
   selected: boolean
   onSelect: () => void
@@ -566,7 +561,6 @@ function CountryOptionButton({
         selected ? 'bg-[#f0f6ff] ring-1 ring-[#acd0ff]' : 'bg-white'
       }`}
     >
-      <CountryFlag code={code || 'eu'} className="h-5 w-7 shrink-0 rounded-[5px] shadow-sm" />
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#101828]">
         {label}
       </span>

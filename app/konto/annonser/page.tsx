@@ -22,7 +22,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translationLocale, type PublicLocale } from '@/lib/public-i18n'
 import { accountListingObject, accountListingText } from '@/lib/account-listings-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { listingLifecycle } from '@/lib/listing-lifecycle'
@@ -197,6 +197,7 @@ export default async function AccountListingsPage({
               packages={packageOptions(listing, locale, priceMap, billingMarket)}
               marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
               autoOpen={query.choosePackage === '1' && query.listing === listing.id}
+              autoOpenReview={query.review === '1' && query.listing === listing.id}
               renderedAt={renderedAt}
             />
             ) : (
@@ -209,6 +210,7 @@ export default async function AccountListingsPage({
               packages={packageOptions(listing, locale, priceMap, billingMarket)}
               marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
               autoOpen={query.choosePackage === '1' && query.listing === listing.id}
+              autoOpenReview={query.review === '1' && query.listing === listing.id}
               renderedAt={renderedAt}
             />
             )
@@ -221,7 +223,7 @@ export default async function AccountListingsPage({
   )
 }
 
-function ListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, renderedAt }: {
+function ListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, autoOpenReview, renderedAt }: {
   listing: ManagedListing
   locale: PublicLocale
   accountType: string
@@ -229,6 +231,7 @@ function ListingCard({ listing, locale, accountType, billingMarket, packages, ma
   packages: PackageOption[]
   marketing: MarketingOption[]
   autoOpen: boolean
+  autoOpenReview: boolean
   renderedAt: number
 }) {
   const lifecycle = listingLifecycle(listing.status, listing.review_status)
@@ -291,6 +294,7 @@ function ListingCard({ listing, locale, accountType, billingMarket, packages, ma
             featuredExpiresAt={listing.featured_expires_at}
             reviewMessage={reviewMessage}
             autoOpen={autoOpen}
+            autoOpenReview={autoOpenReview}
             locale={locale}
           />
         </div>
@@ -370,7 +374,7 @@ function CompanyListingsHero({
   )
 }
 
-function BusinessListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, renderedAt }: {
+function BusinessListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, autoOpenReview, renderedAt }: {
   listing: ManagedListing
   locale: PublicLocale
   accountType: string
@@ -378,6 +382,7 @@ function BusinessListingCard({ listing, locale, accountType, billingMarket, pack
   packages: PackageOption[]
   marketing: MarketingOption[]
   autoOpen: boolean
+  autoOpenReview: boolean
   renderedAt: number
 }) {
   const lifecycle = listingLifecycle(listing.status, listing.review_status)
@@ -458,6 +463,7 @@ function BusinessListingCard({ listing, locale, accountType, billingMarket, pack
             featuredExpiresAt={listing.featured_expires_at}
             reviewMessage={reviewMessage}
             autoOpen={autoOpen}
+            autoOpenReview={autoOpenReview}
             locale={locale}
           />
         </div>
@@ -488,11 +494,34 @@ function AttentionSection({ summary, locale }: { summary: AccountListingSummary;
     summary.counts.payment ? { icon: ReceiptText, title: `${summary.counts.payment} ${copy.attentionPayment}`, cta: copy.completePayment, href: '?status=payment' } : null,
     summary.missingImages && summary.firstMissingImageId ? { icon: FileImage, title: `${summary.missingImages} ${copy.attentionImages}`, cta: copy.addImages, href: `/${summary.firstMissingImageId}/edit` } : null,
     summary.expiringSoon ? { icon: CalendarClock, title: `${summary.expiringSoon} ${copy.attentionExpiring}`, cta: copy.renew, href: '?status=active&sort=expires_asc' } : null,
-    summary.flagged ? { icon: AlertTriangle, title: `${summary.flagged} ${copy.attentionReview}`, cta: copy.readReason, href: '?status=review' } : null,
+    summary.flagged ? {
+      icon: AlertTriangle,
+      title: `${summary.flagged} ${summary.flagged === 1 ? singularReviewAttention(locale) : copy.attentionReview}`,
+      cta: copy.readReason,
+      href: summary.firstFlaggedListingId
+        ? `?status=review&review=1&listing=${encodeURIComponent(summary.firstFlaggedListingId)}`
+        : '?status=review',
+    } : null,
     summary.failedPayments ? { icon: ReceiptText, title: `${summary.failedPayments} ${copy.attentionFailed}`, cta: copy.tryAgain, href: '?status=payment' } : null,
   ].filter(Boolean) as Array<{ icon: typeof AlertTriangle; title: string; cta: string; href: string }>
   if (!alerts.length) return null
   return <section className="mt-6 rounded-[18px] border border-[#fed7aa] bg-[#fffaf5] p-4 sm:p-5" aria-labelledby="attention-title"><h2 id="attention-title" className="text-base font-semibold text-[#9a3412]">{copy.needsAttention}</h2><div className="mt-3 grid gap-2 lg:grid-cols-2">{alerts.map((alert) => <Link key={alert.title} href={`${localizePublicHref(locale, '/account/listings')}${alert.href}`} className="flex flex-col items-start gap-2 rounded-[12px] bg-white p-3 text-sm outline-none transition hover:ring-1 hover:ring-[#fdba74] focus-visible:ring-4 focus-visible:ring-[#fb923c]/20 sm:flex-row sm:items-center sm:gap-3"><span className="flex min-w-0 flex-1 items-center gap-3"><alert.icon className="h-4 w-4 shrink-0 text-[#ea580c]" /><span className="font-medium text-[#7c2d12]">{alert.title}</span></span><span className="pl-7 font-semibold text-[#c2410c] sm:shrink-0 sm:pl-0">{alert.cta}</span></Link>)}</div></section>
+}
+
+function singularReviewAttention(locale: PublicLocale) {
+  const copy: Record<string, string> = {
+    en: 'listing needs review or action',
+    sv: 'annons behöver granskas eller åtgärdas',
+    de: 'Anzeige muss geprüft oder bearbeitet werden',
+    fr: 'annonce doit être vérifiée ou corrigée',
+    es: 'anuncio necesita revisión o corrección',
+    it: 'annuncio richiede una verifica o una correzione',
+    nl: 'advertentie vraagt beoordeling of actie',
+    pl: 'ogłoszenie wymaga sprawdzenia lub poprawy',
+    fi: 'ilmoitus vaatii tarkistuksen tai toimenpiteitä',
+    da: 'annonce skal gennemgås eller rettes',
+  }
+  return copy[translationLocale(locale)] || copy.en
 }
 
 function EmptyState({ filters, locale }: { filters: AccountListingFilters; locale: PublicLocale }) {

@@ -46,6 +46,7 @@ import {
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
+import { listingNeedsReview, listingRiskScore } from '@/lib/listing-review-resolution'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -785,18 +786,6 @@ export async function POST(request: Request) {
           .eq('phone', profile.phone),
       ])
     const riskFlags: string[] = []
-    if (
-      !identifiers.vin &&
-      ['cars', 'vans', 'motorcycles', 'motorhomes', 'caravans', 'trucks'].includes(category)
-    ) {
-      riskFlags.push('missing_vin')
-    }
-    if (
-      !identifiers.serialNumber &&
-      ['agriculture', 'construction'].includes(category)
-    ) {
-      riskFlags.push('missing_serial_number')
-    }
     if (price < lowPriceThreshold(category)) riskFlags.push('unusually_low_price')
     if (
       profile.created_at &&
@@ -811,18 +800,8 @@ export async function POST(request: Request) {
     if (profile.risk_status && profile.risk_status !== 'standard') {
       riskFlags.push(`profile_${profile.risk_status}`)
     }
-    const riskScore = Math.min(
-      100,
-      riskFlags.reduce((score, flag) => {
-        if (flag === 'unusually_low_price') return score + 30
-        if (flag === 'many_listings_short_time') return score + 25
-        if (flag === 'same_phone_multiple_accounts') return score + 25
-        if (flag === 'new_user') return score + 15
-        if (flag.startsWith('profile_')) return score + 35
-        return score + 20
-      }, 0),
-    )
-    const reviewStatus = riskScore >= 50 ? 'flagged' : 'approved'
+    const riskScore = listingRiskScore(riskFlags)
+    const reviewStatus = listingNeedsReview(riskFlags) ? 'flagged' : 'approved'
     const geocoded = await geocodeListingLocation({
       address,
       postalCode,

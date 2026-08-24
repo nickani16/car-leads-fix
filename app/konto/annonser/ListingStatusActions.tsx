@@ -42,6 +42,7 @@ export default function ListingStatusActions({
   featuredExpiresAt,
   reviewMessage,
   autoOpen = false,
+  autoOpenReview = false,
   locale,
 }: {
   listingId: string
@@ -58,6 +59,7 @@ export default function ListingStatusActions({
   featuredExpiresAt: string | null
   reviewMessage: ListingReviewNotice
   autoOpen?: boolean
+  autoOpenReview?: boolean
   locale: PublicLocale
 }) {
   const router = useRouter()
@@ -82,6 +84,10 @@ export default function ListingStatusActions({
   useEffect(() => {
     if (autoOpen && !packageDialogRef.current?.open) packageDialogRef.current?.showModal()
   }, [autoOpen])
+
+  useEffect(() => {
+    if (autoOpenReview && !reviewDialogRef.current?.open) reviewDialogRef.current?.showModal()
+  }, [autoOpenReview])
 
   useEffect(() => {
     if (!menuOpen) return

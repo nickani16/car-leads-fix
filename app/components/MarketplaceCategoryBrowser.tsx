@@ -26,7 +26,6 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import SavedListingButton from './SavedListingButton'
-import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips, formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
@@ -1272,7 +1271,6 @@ export default function MarketplaceCategoryBrowser({
                       {listing.sellerIsTrader ? `${copy.businessSeller} | ${sellerLabel}` : sellerLabel}
                     </p>
                     <div className={listingLayout === 'grid' ? 'mt-4 hidden items-start gap-3 border-t border-[#edf1f6] pt-4 sm:flex' : 'mt-5 flex items-start gap-3 border-t border-[#edf1f6] pt-4'}>
-                      <CountryFlag code={listing.country || 'eu'} className="mt-0.5 h-5 w-5 shrink-0 rounded-full shadow-sm" />
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">{copy.listingCountry}</p>
                         <p className="mt-1 text-sm font-bold text-[#101828]">

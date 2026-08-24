@@ -19,6 +19,12 @@ import {
 } from '@/lib/marketplace-security'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { listingPackageDetails } from '@/lib/marketplace-pricing'
+import {
+  listingNeedsReview,
+  listingRiskScore,
+  reviewableListingRiskFlags,
+} from '@/lib/listing-review-resolution'
 
 const actions = new Set([
   'mark_sold', 'update_listing', 'pause', 'resume', 'unpublish', 'delete', 'relist', 'duplicate',
@@ -169,7 +175,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
+    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data,package_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -350,6 +356,18 @@ export async function PATCH(
     })
     const latitude = geocoded?.latitude ?? parseCoordinate(body.latitude) ?? listing.latitude
     const longitude = geocoded?.longitude ?? parseCoordinate(body.longitude) ?? listing.longitude
+    const nextRiskFlags = reviewableListingRiskFlags(listing.risk_flags)
+    const nextRiskScore = listingRiskScore(nextRiskFlags)
+    const reviewResolved = !listingNeedsReview(nextRiskFlags)
+    const publishAfterReview = listing.status === 'pending_review' && reviewResolved
+    const packageDetails = listingPackageDetails[
+      listing.package_id as keyof typeof listingPackageDetails
+    ] || listingPackageDetails.free_7d
+    const expiresAt = publishAfterReview
+      ? new Date(new Date(now).getTime() + packageDetails.durationDays * 86400000).toISOString()
+      : null
+    const nextStatus = publishAfterReview ? 'published' : listing.status
+    const nextReviewStatus = reviewResolved ? 'approved' : 'flagged'
     const patch: Record<string, unknown> = {
       title: nextTitle,
       make,
@@ -378,12 +396,26 @@ export async function PATCH(
       condition: technicalInput.condition ? clean(technicalInput.condition) : null,
       known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
       service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
+      registration_reference: identifiers.registrationNumber || null,
+      vin: identifiers.vin || null,
+      chassis_number: identifiers.chassisNumber || identifiers.vin || null,
+      serial_number: identifiers.serialNumber || null,
+      frame_number: identifiers.frameNumber || null,
+      battery_serial_number: identifiers.batterySerialNumber || null,
+      total_weight_kg: identifiers.totalWeightKg,
+      axle_configuration: identifiers.axleConfiguration || null,
+      machine_type: identifiers.machineType || null,
+      risk_flags: nextRiskFlags,
+      risk_score: nextRiskScore,
+      review_status: nextReviewStatus,
+      ...(publishAfterReview
+        ? {
+            status: 'published',
+            published_at: now,
+            expires_at: expiresAt,
+          }
+        : {}),
     }
-    const nextRiskFlags = (Array.isArray(listing.risk_flags) ? listing.risk_flags : [])
-      .filter((flag) => !(flag === 'missing_vin' && identifiers.vin))
-      .filter((flag) => !(flag === 'missing_serial_number' && identifiers.serialNumber))
-    patch.risk_flags = nextRiskFlags
-    patch.risk_score = listingRiskScore(nextRiskFlags)
     if (listing.seller_type === 'business' && shouldUpdateInsuranceOffers) {
       patch.insurance_offers = insuranceOffers
     }
@@ -473,9 +505,9 @@ export async function PATCH(
         actor_role: isOwner ? 'seller' : 'admin',
         event_type: priceChanged ? 'listing_price_and_details_updated' : 'listing_details_updated',
         from_status: listing.status,
-        to_status: listing.status,
+        to_status: nextStatus,
         from_review_status: listing.review_status,
-        to_review_status: listing.review_status,
+        to_review_status: nextReviewStatus,
         metadata: {
           old_price: oldPrice,
           new_price: nextPrice,
@@ -487,8 +519,21 @@ export async function PATCH(
           variant,
           model_year: modelYear,
           phone_visibility: phoneVisibility,
+          review_resolved: reviewResolved,
+          auto_published: publishAfterReview,
         },
       }),
+      publishAfterReview
+        ? admin
+            .from('moderation_cases')
+            .update({
+              status: 'closed',
+              closed_at: now,
+              updated_at: now,
+            })
+            .eq('listing_id', listing.id)
+            .in('status', ['open', 'assigned', 'awaiting_information', 'action_taken'])
+        : Promise.resolve({ error: null }),
       priceChanged
         ? admin.from('marketplace_listing_price_history').insert({
             listing_id: listing.id,
@@ -501,7 +546,11 @@ export async function PATCH(
     ])
 
     revalidateTag('marketplace-listings', 'max')
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      status: nextStatus,
+      reviewStatus: nextReviewStatus,
+    })
   }
 
   if (!['published', 'paused'].includes(listing.status)) {
@@ -567,17 +616,6 @@ export async function PATCH(
   revalidateTag('marketplace-listings', 'max')
 
   return NextResponse.json({ success: true })
-}
-
-function listingRiskScore(flags: string[]) {
-  return Math.min(100, flags.reduce((score, flag) => {
-    if (flag === 'unusually_low_price') return score + 30
-    if (flag === 'many_listings_short_time') return score + 25
-    if (flag === 'same_phone_multiple_accounts') return score + 25
-    if (flag === 'new_user') return score + 15
-    if (flag.startsWith('profile_')) return score + 35
-    return score + 20
-  }, 0))
 }
 
 async function isActiveAdmin(

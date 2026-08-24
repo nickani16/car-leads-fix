@@ -14,7 +14,6 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
-import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import SavedListingButton from './SavedListingButton'
 import type { VehicleSearchListing } from './VehicleSearchExperience'
@@ -66,7 +65,6 @@ export default function MarketplaceDesktopListingRow({
   compareActive,
   onCompare,
   onBeforeNavigate,
-  marketCountryCode,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
@@ -76,7 +74,6 @@ export default function MarketplaceDesktopListingRow({
   compareActive: boolean
   onCompare: () => void
   onBeforeNavigate?: () => void
-  marketCountryCode?: string
 }) {
   const copy = desktopListCopy[locale]
   const href = buildListingPath({
@@ -231,9 +228,6 @@ export default function MarketplaceDesktopListingRow({
               <p className="truncate text-[13px] font-semibold text-[#101828]">{listing.sellerName || sellerLabel}</p>
               <span className="mt-1 inline-flex min-w-0 items-center gap-1.5 text-[11px] font-medium text-[#667085]">
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" aria-hidden="true" />
-              {listing.country && listing.country.toUpperCase() !== marketCountryCode?.toUpperCase() ? (
-                <CountryFlag code={listing.country} className="h-3.5 w-3.5 shrink-0 rounded-full" />
-              ) : null}
               <span className="truncate">{location}</span>
               </span>
             </div>
