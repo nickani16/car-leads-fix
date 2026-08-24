@@ -501,7 +501,7 @@ function buildHomeSearchParams({
     params.set('mode', intent)
     params.set('offerType', intent === 'leasing' ? 'lease' : 'sale')
   }
-  if (market) params.set('markets', market)
+  if (market && market !== 'EU') params.set('markets', market)
 
   const locationValue = location.trim()
   const queryValue = [query.trim(), isPostalCode(locationValue) ? locationValue : '']
@@ -641,7 +641,8 @@ export default function HomeHeroVehicleSearch({
   const router = useRouter()
   const { activeCategory: category, setActiveCategory } = useHomeCategory()
   const t = localizedCopy(locale)
-  const defaultMarket = defaultSearchCountryForLocale(locale) || 'EU'
+  const localMarket = defaultSearchCountryForLocale(locale) || 'EU'
+  const defaultMarket = 'EU'
   const [intent, setIntent] = useState<Intent>('all')
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
@@ -655,7 +656,7 @@ export default function HomeHeroVehicleSearch({
   const [selectedSuggestions, setSelectedSuggestions] = useState<SelectedSearchSuggestion[]>([])
   const [facets, setFacets] = useState<HomeSearchFacets>(emptyFacets)
   const [listingCount, setListingCount] = useState<number | null>(
-    localListingCount ?? europeListingCount ?? null,
+    europeListingCount ?? localListingCount ?? null,
   )
   const [countLoading, setCountLoading] = useState(false)
   const [countError, setCountError] = useState(false)
@@ -793,7 +794,7 @@ export default function HomeHeroVehicleSearch({
       params.set('limit', '1')
       params.set('page', '1')
       params.set('locale', locale)
-      params.set('displayMarket', market)
+      params.set('displayMarket', localMarket)
 
       try {
         const response = await fetch(`/api/marketplace/search-v2?${params.toString()}`, {
@@ -825,12 +826,12 @@ export default function HomeHeroVehicleSearch({
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [countParams, locale, location, market, query])
+  }, [countParams, locale, localMarket, location, query])
 
   const smartSearch = useVehicleSmartSearchSuggestions({
     query,
     locale,
-    marketCode: market === 'EU' ? undefined : market,
+    marketCode: market === 'EU' ? (localMarket === 'EU' ? undefined : localMarket) : market,
     category,
     active: searchFocused,
   })
@@ -1128,10 +1129,10 @@ export default function HomeHeroVehicleSearch({
                   filterKey={key}
                   label={t.fields[key]}
                   value={filters[key]}
-                  options={filterOptions(key, category, facets, market)}
+                  options={filterOptions(key, category, facets, market === 'EU' ? localMarket : market)}
                   allLabel={t.all}
                   locale={locale}
-                  market={market}
+                  market={market === 'EU' ? localMarket : market}
                   disabled={key === 'model' && !filters.make}
                   hideLabel
                   onChange={(value) => updateFilter(key, value)}
@@ -1236,10 +1237,10 @@ export default function HomeHeroVehicleSearch({
                     filterKey={key}
                     label={t.fields[key]}
                     value={filters[key]}
-                    options={filterOptions(key, category, facets, market)}
+                    options={filterOptions(key, category, facets, market === 'EU' ? localMarket : market)}
                     allLabel={t.all}
                     locale={locale}
-                    market={market}
+                    market={market === 'EU' ? localMarket : market}
                     onChange={(value) => updateFilter(key, value)}
                   />
                 ))}

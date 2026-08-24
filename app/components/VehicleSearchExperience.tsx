@@ -2702,7 +2702,7 @@ export default function VehicleSearchExperience({
           className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} overflow-hidden rounded-[14px] border border-[#d0d5dd] bg-white shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overscroll-contain max-sm:rounded-[18px]`}
         >
           <div className="flex min-h-16 items-center justify-between gap-4 border-b border-[#e4e7ec] px-4 py-3 sm:px-5">
-            <h2 className="min-w-0 text-[16px] font-semibold leading-6 text-[#101828] sm:text-[17px]">
+            <h2 className="min-w-0 text-[16px] !font-medium leading-6 text-[#101828] sm:text-[17px]">
               {title}
             </h2>
             <button
@@ -2715,7 +2715,7 @@ export default function VehicleSearchExperience({
               <X className="h-4.5 w-4.5" aria-hidden="true" />
             </button>
           </div>
-          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 sm:p-5">{children}</div>
+          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal sm:p-5">{children}</div>
         </div>
       </>
     )
@@ -3759,7 +3759,7 @@ export default function VehicleSearchExperience({
                     <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
-                        <p className="min-w-0 text-[17px] font-semibold text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
+                        <p className="min-w-0 text-[17px] font-medium text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
                         {activeFilters.length ? (
                           <span className="grid h-7 min-w-7 place-items-center rounded-full bg-[#101828] px-2 text-sm font-semibold text-white">
                             {activeFilters.length}
@@ -3795,11 +3795,11 @@ export default function VehicleSearchExperience({
                       </button>
                     </div>
                     {activeFilters.length ? (
-                      <div className="border-b border-[#edf1f6] bg-white px-4 py-2.5 sm:hidden">
+                      <div className="border-b border-[#edf1f6] bg-white px-4 py-2.5 font-normal [&_*]:!font-normal sm:hidden">
                         <ActiveFilterChips filters={activeFilters} locale={locale} />
                       </div>
                     ) : null}
-                    <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6 max-sm:hidden">
+                    <div className="border-b border-[#edf1f6] px-4 py-2.5 font-normal [&_*]:!font-normal sm:px-6 max-sm:hidden">
                       {activeFilters.length ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <ActiveFilterChips filters={activeFilters} locale={locale} />
@@ -3815,7 +3815,7 @@ export default function VehicleSearchExperience({
                          <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle category, keyword and equipment.', 'Avgränsa på fordonskategori, sökord och utrustning.', 'Nach Fahrzeugkategorie, Suchbegriff und Ausstattung eingrenzen.')}</p>
                       )}
                     </div>
-                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] sm:space-y-4 sm:px-6">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 font-normal [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] [&_*]:!font-normal sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
                     {renderLocationFilterSection()}
                     <div className="hidden">
@@ -3876,7 +3876,7 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                   </div>
-                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-7 sm:py-4">
+                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 font-normal shadow-[0_-10px_30px_rgba(16,24,40,.08)] [&_*]:!font-normal sm:px-7 sm:py-4">
                         <button
                           type="button"
                           onClick={resetFilters}

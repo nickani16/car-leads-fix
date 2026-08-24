@@ -138,6 +138,14 @@ test('homepage search includes every offer type by default and portals its mobil
   assert.match(homeSearchSource, /setIntent\('all'\)/)
 })
 
+test('homepage searches all European markets while prioritizing the local market', () => {
+  assert.match(homeSearchSource, /const localMarket = defaultSearchCountryForLocale\(locale\) \|\| 'EU'/)
+  assert.match(homeSearchSource, /const defaultMarket = 'EU'/)
+  assert.match(homeSearchSource, /if \(market && market !== 'EU'\) params\.set\('markets', market\)/)
+  assert.match(homeSearchSource, /params\.set\('displayMarket', localMarket\)/)
+  assert.match(homeSearchSource, /europeListingCount \?\? localListingCount \?\? null/)
+})
+
 test('homepage location placeholder keeps the mobile filter text size', () => {
   assert.match(
     globalCssSource,
