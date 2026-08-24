@@ -29,9 +29,9 @@ export default function InstallAutorellButton({ locale }: { locale: PublicLocale
   return (
     <Link
       href={localizePublicHref(locale, '/app')}
-      className="inline-flex min-h-11 items-center gap-2 rounded-[8px] border border-[#cfe1fb] bg-[#eaf3ff] px-4 text-[13px] font-semibold text-[#0755d9] transition hover:border-[#a9c9f5] hover:bg-[#dcecff] hover:text-[#0648bd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+      className="inline-flex min-h-10 items-center gap-2 rounded-[7px] border border-[#101828] bg-white px-3.5 text-[13px] font-medium text-[#101828] transition hover:bg-[#f2f4f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
     >
-      <Smartphone className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />
+      <Smartphone className="h-[17px] w-[17px]" strokeWidth={1.8} aria-hidden="true" />
       {copy.button}
     </Link>
   )

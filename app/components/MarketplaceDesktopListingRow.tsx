@@ -65,6 +65,7 @@ export default function MarketplaceDesktopListingRow({
   compareActive,
   onCompare,
   onBeforeNavigate,
+  compact = false,
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
@@ -74,6 +75,7 @@ export default function MarketplaceDesktopListingRow({
   compareActive: boolean
   onCompare: () => void
   onBeforeNavigate?: () => void
+  compact?: boolean
 }) {
   const copy = desktopListCopy[locale]
   const href = buildListingPath({
@@ -106,16 +108,21 @@ export default function MarketplaceDesktopListingRow({
   return (
     <article
       data-marketplace-listing-row
-      className="group relative grid min-h-[250px] grid-cols-[minmax(280px,34%)_minmax(0,1fr)] grid-rows-[minmax(214px,auto)_36px] overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [contain-intrinsic-size:250px] [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none"
+      data-marketplace-listing-layout={compact ? 'compact' : 'row'}
+      className={`group relative grid overflow-hidden rounded-[7px] border border-[#d6dde8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] transition-[border-color,box-shadow,transform] duration-200 [content-visibility:auto] hover:-translate-y-px hover:border-[#8eb8ff] hover:shadow-[0_8px_22px_rgba(16,24,40,.075)] motion-reduce:transform-none motion-reduce:transition-none ${
+        compact
+          ? 'min-h-[520px] grid-cols-1 grid-rows-[220px_minmax(264px,auto)_36px] [contain-intrinsic-size:520px]'
+          : 'min-h-[250px] grid-cols-[minmax(280px,34%)_minmax(0,1fr)] grid-rows-[minmax(214px,auto)_36px] [contain-intrinsic-size:250px]'
+      }`}
     >
-      <div data-marketplace-list-image className="relative min-h-[214px] min-w-0 overflow-hidden border-r border-[#e2e7ef] bg-[#f4f6f8]">
+      <div data-marketplace-list-image className={`relative min-w-0 overflow-hidden bg-[#f4f6f8] ${compact ? 'min-h-[220px] border-b border-[#e2e7ef]' : 'min-h-[214px] border-r border-[#e2e7ef]'}`}>
         <div className="absolute inset-0 overflow-hidden bg-white">
           <ListingCardImageCarousel
             images={images}
             title={listing.title}
             href={href}
             onNavigate={onBeforeNavigate}
-            sizes="(min-width: 1536px) 440px, 360px"
+            sizes={compact ? '(min-width: 1120px) 36vw, 50vw' : '(min-width: 1536px) 440px, 360px'}
             previousLabel={copy.previousPhoto}
             nextLabel={copy.nextPhoto}
             showControlsOnDesktop
@@ -159,7 +166,7 @@ export default function MarketplaceDesktopListingRow({
         </div>
       </div>
 
-      <div className="relative flex min-w-0 flex-col px-4 py-3.5 2xl:px-5">
+      <div className={`relative flex min-w-0 flex-col px-4 py-3.5 ${compact ? '' : '2xl:px-5'}`}>
         <SavedListingButton
           listingId={listing.id}
           label={copy.saveListing}
@@ -175,7 +182,7 @@ export default function MarketplaceDesktopListingRow({
             onClick={onBeforeNavigate}
             className="block rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
           >
-            <h2 className="line-clamp-1 text-[18px] font-semibold leading-6 text-[#101828] transition-colors group-hover:text-[#0757da] 2xl:text-[20px]">
+            <h2 className={`font-semibold leading-6 text-[#101828] transition-colors group-hover:text-[#0757da] ${compact ? 'line-clamp-2 text-[17px]' : 'line-clamp-1 text-[18px] 2xl:text-[20px]'}`}>
               {listing.title}
             </h2>
           </Link>
@@ -213,7 +220,7 @@ export default function MarketplaceDesktopListingRow({
           </dl>
         ) : null}
 
-        <div data-marketplace-list-seller-actions className="mt-auto grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-[#dfe4eb] pt-3">
+        <div data-marketplace-list-seller-actions className={`mt-auto grid min-w-0 items-center gap-3 border-t border-[#dfe4eb] pt-3 ${compact ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_auto]'}`}>
           <div className="flex min-w-0 items-center gap-3 pr-1">
             {listing.sellerIsTrader && listing.sellerLogoUrl ? (
               <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[5px] border border-[#dfe4eb] bg-white">
@@ -228,12 +235,12 @@ export default function MarketplaceDesktopListingRow({
               </span>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className={`flex shrink-0 items-center gap-2 ${compact ? 'w-full' : ''}`}>
             <Link
               href={href}
               prefetch
               onClick={onBeforeNavigate}
-              className="inline-flex h-9 min-w-[108px] items-center justify-center rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+              className={`inline-flex h-9 min-w-[108px] items-center justify-center rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition-colors hover:bg-[#0757da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${compact ? 'flex-1' : ''}`}
             >
               {contactLabel}
             </Link>
@@ -241,7 +248,7 @@ export default function MarketplaceDesktopListingRow({
               href={href}
               prefetch
               onClick={onBeforeNavigate}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border border-[#344054] bg-white px-3 text-[11px] font-semibold text-[#101828] transition-colors hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+              className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border border-[#344054] bg-white px-3 text-[11px] font-semibold text-[#101828] transition-colors hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2 ${compact ? 'flex-1' : ''}`}
             >
               {copy.viewListing}
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -255,7 +262,7 @@ export default function MarketplaceDesktopListingRow({
         prefetch
         onClick={onBeforeNavigate}
         aria-label={copy.showMoreEquipment}
-        className="relative col-span-2 flex min-w-0 items-start overflow-hidden border-t border-[#dfe4eb] bg-white px-4 pt-1.5 text-[10px] font-normal leading-4 text-[#667085] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
+        className={`relative flex min-w-0 items-start overflow-hidden border-t border-[#dfe4eb] bg-white px-4 pt-1.5 text-[10px] font-normal leading-4 text-[#667085] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] ${compact ? '' : 'col-span-2'}`}
       >
         <span className="block min-w-0 flex-1 truncate pr-10">
           {detailStripItems.join(' | ')}

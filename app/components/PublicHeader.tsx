@@ -1898,9 +1898,9 @@ export default function PublicHeader({
                 <Link
                   href={createListingHref}
                   onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-[8px] bg-[#00b55e] px-4 text-[14px] font-semibold text-white transition-colors duration-150 hover:bg-[#009b51] active:bg-[#008547]"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[14px] font-medium text-[#0866ff] transition-colors duration-150 hover:bg-[#eef5ff] active:bg-[#e1edff]"
                 >
-                  <Plus className="h-4 w-4" strokeWidth={2.2} />
+                  <Plus className="h-[17px] w-[17px]" strokeWidth={1.8} />
                   <span>{accountMenuCopy.create}</span>
                 </Link>
               ) : null}
@@ -1945,7 +1945,7 @@ export default function PublicHeader({
                       aria-expanded={profileMenuOpen}
                       className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e9f0fd] text-[10px] font-semibold text-[#0866ff]">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#00887a] text-[10px] font-semibold text-white">
                         {mobileAccountInitials}
                       </span>
                       <span>{accountMenuCopy.pages}</span>
@@ -2011,7 +2011,7 @@ export default function PublicHeader({
                     onClick={() => openAuthModal('login')}
                     className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                   >
-                    <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={2} />
+                    <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.55} />
                     <span>{t.signIn}</span>
                   </button>
                 </>
@@ -2224,7 +2224,7 @@ export default function PublicHeader({
                 </div>
               ) : (
                 <div className="mt-4 flex items-center gap-4">
-                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#101828]" strokeWidth={1.8} />
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#101828]" strokeWidth={1.55} />
                   <div className="min-w-0">
                     <button
                       type="button"
@@ -2321,7 +2321,7 @@ export default function PublicHeader({
               onClick={closeMobile}
               className="flex h-11 shrink-0 items-center gap-2 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e9f0fd] text-[12px] font-semibold text-[#0866ff]">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#00887a] text-[12px] font-semibold text-white">
                 {mobileAccountInitials}
               </span>
               <span className="whitespace-nowrap">{mobileProfileLabel}</span>
@@ -2332,7 +2332,7 @@ export default function PublicHeader({
               onClick={() => openAuthModal('login', accountHref)}
               className="flex h-11 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.8} />
+              <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.55} />
               <span>{t.signIn}</span>
             </button>
           )}
@@ -2392,6 +2392,19 @@ export default function PublicHeader({
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
+            {headerAccountResolved && !headerAccount.authenticated ? (
+              <>
+                <Link
+                  href={createListingHref}
+                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
+                  className="mb-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[15px] font-medium text-[#0866ff] transition-colors active:bg-[#eaf2ff]"
+                >
+                  <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" />
+                  <span>{accountMenuCopy.create}</span>
+                </Link>
+                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
+              </>
+            ) : null}
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <Link
@@ -2399,7 +2412,7 @@ export default function PublicHeader({
                   onClick={closeMobile}
                   className="flex items-center gap-3 text-[#101828]"
                 >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#e9f0fd] text-sm font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00887a] text-sm font-semibold text-white ring-1 ring-[#00766a]">
                     {mobileAccountInitials}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -2416,7 +2429,7 @@ export default function PublicHeader({
                 </Link>
               ) : (
                 <div className="flex items-center gap-3 py-1">
-                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#202124]" strokeWidth={1.8} />
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#202124]" strokeWidth={1.55} />
                   <div className="min-w-0">
                     <button
                       type="button"

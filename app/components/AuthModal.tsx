@@ -15,6 +15,7 @@ const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'
+type AuthTab = AuthMode | 'business'
 type SocialProvider = 'google' | 'azure' | 'facebook'
 
 const socialProviders: Array<{
@@ -95,7 +96,8 @@ export default function AuthModal({
   onAuthenticated,
 }: AuthModalProps) {
   const router = useRouter()
-  const [mode, setMode] = useState<AuthMode>(initialMode)
+  const [authTab, setAuthTab] = useState<AuthTab>(initialMode)
+  const mode: AuthMode = authTab === 'login' ? 'login' : 'register'
   const [view, setView] = useState<AuthView>(initialView || initialMode)
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
@@ -121,6 +123,7 @@ export default function AuthModal({
   const onCloseRef = useRef(onClose)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
+  const businessCopy = businessAuthCopy[locale] || businessAuthCopy.en
   const callbackError =
     !error && isOpen && callbackStatus === 'oauth-cancelled'
       ? copy.oauthCancelled
@@ -158,10 +161,10 @@ export default function AuthModal({
     return () => window.clearInterval(timer)
   }, [retryAfter])
 
-  function switchMode(nextMode: AuthMode) {
+  function switchMode(nextMode: AuthTab) {
     setCallbackStatus(null)
-    setMode(nextMode)
-    setView(nextMode)
+    setAuthTab(nextMode)
+    setView(nextMode === 'login' ? 'login' : 'register')
     setStep('email')
     setAuthMethod('password')
     setError('')
@@ -175,7 +178,7 @@ export default function AuthModal({
   function switchView(nextView: AuthView) {
     setCallbackStatus(null)
     setView(nextView)
-    if (nextView === 'login' || nextView === 'register') setMode(nextView)
+    if (nextView === 'login' || nextView === 'register') setAuthTab(nextView)
     setStep('email')
     setAuthMethod('password')
     setError('')
@@ -202,7 +205,7 @@ export default function AuthModal({
     }
     return localizePublicHref(
       locale,
-      postLoginDestination?.includes('account=business')
+      authTab === 'business' || postLoginDestination?.includes('account=business')
         ? '/register?onboarding=1&account=business'
         : '/register?onboarding=1',
     )
@@ -301,7 +304,7 @@ export default function AuthModal({
           error?: string
         }
         if (result.accountExists || result.code === 'auth_account_exists') {
-          setMode('login')
+          setAuthTab('login')
           setView('login')
           setStep('email')
           setAuthMethod('password')
@@ -516,31 +519,33 @@ export default function AuthModal({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="grid grid-cols-2 border-b border-[#e5eaf1] px-7 pt-5 text-sm font-[600]">
-          {(['login', 'register'] as const).map((item) => (
+        <div className="grid grid-cols-3 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm">
+          {(['login', 'register', 'business'] as const).map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => switchMode(item)}
               className={`relative min-h-11 border-b-2 transition ${
-                mode === item
+                authTab === item
                   ? 'border-[#0866ff] text-[#0866ff]'
                   : 'border-transparent text-[#475467] hover:text-[#101828]'
               }`}
             >
-              {item === 'login' ? copy.loginTab : copy.registerTab}
+              {item === 'login' ? copy.loginTab : item === 'register' ? copy.registerTab : businessCopy.tab}
             </button>
           ))}
         </div>
 
         <div className="px-7 pb-7 pt-6">
           <h2 id="auth-modal-title" className="text-[25px] font-[600] leading-tight tracking-[-.04em] text-[#101828]">
-            {step === 'email' ? copy.title : copy.codeTitle}
+            {step === 'email' && authTab === 'business' ? businessCopy.title : step === 'email' ? copy.title : copy.codeTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
             {step === 'email'
               ? view === 'login' || view === 'register'
-                ? (authMethod === 'password' ? copy.passwordDescription : copy.description)
+                ? authTab === 'business'
+                  ? businessCopy.description
+                  : (authMethod === 'password' ? copy.passwordDescription : copy.description)
                 : copy.description
               : `${copy.codeSent} ${email}`}
           </p>
@@ -849,13 +854,13 @@ export default function AuthModal({
           )}
 
           {view === 'login' || view === 'register' ? <p className="mt-6 border-t border-[#edf1f6] pt-5 text-center text-sm text-[#667085]">
-            {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
+            {authTab === 'login' ? copy.newHere : copy.haveAccount}{' '}
             <button
               type="button"
-              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+              onClick={() => switchMode(authTab === 'login' ? 'register' : 'login')}
               className="font-[600] text-[#0866ff]"
             >
-              {mode === 'login' ? copy.registerTab : copy.loginTab}
+              {authTab === 'login' ? copy.registerTab : copy.loginTab}
             </button>
           </p> : null}
         </div>
@@ -879,4 +884,19 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode, view: AuthView =
 
 function getAuthSpamHint(locale: PublicLocale) {
   return getAuthSpamHintCopy(locale)
+}
+
+const businessAuthCopy: Record<PublicLocale, { tab: string; title: string; description: string }> = {
+  sv: { tab: 'Företag', title: 'Skapa företagskonto', description: 'Kom igång direkt med Google, Microsoft, Facebook eller mejl. Företagsuppgifterna kompletteras tryggt efter registreringen.' },
+  en: { tab: 'Business', title: 'Create a business account', description: 'Get started with Google, Microsoft, Facebook or email. Complete the company details securely after registration.' },
+  de: { tab: 'Unternehmen', title: 'Unternehmenskonto erstellen', description: 'Starten Sie mit Google, Microsoft, Facebook oder E-Mail. Ergänzen Sie die Firmendaten sicher nach der Registrierung.' },
+  at: { tab: 'Unternehmen', title: 'Unternehmenskonto erstellen', description: 'Starten Sie mit Google, Microsoft, Facebook oder E-Mail. Ergänzen Sie die Firmendaten sicher nach der Registrierung.' },
+  be: { tab: 'Bedrijf', title: 'Zakelijk account maken', description: 'Start met Google, Microsoft, Facebook of e-mail. Vul de bedrijfsgegevens veilig aan na de registratie.' },
+  fr: { tab: 'Entreprise', title: 'Créer un compte professionnel', description: 'Commencez avec Google, Microsoft, Facebook ou votre e-mail. Complétez ensuite les informations de l’entreprise en toute sécurité.' },
+  es: { tab: 'Empresa', title: 'Crear una cuenta de empresa', description: 'Empieza con Google, Microsoft, Facebook o correo electrónico. Completa los datos de la empresa de forma segura después.' },
+  it: { tab: 'Azienda', title: 'Crea un account aziendale', description: 'Inizia con Google, Microsoft, Facebook o email. Completa in modo sicuro i dati aziendali dopo la registrazione.' },
+  pl: { tab: 'Firma', title: 'Utwórz konto firmowe', description: 'Zacznij przez Google, Microsoft, Facebook lub e-mail. Po rejestracji bezpiecznie uzupełnij dane firmy.' },
+  nl: { tab: 'Bedrijf', title: 'Zakelijk account maken', description: 'Start met Google, Microsoft, Facebook of e-mail. Vul de bedrijfsgegevens veilig aan na de registratie.' },
+  fi: { tab: 'Yritys', title: 'Luo yritystili', description: 'Aloita Googlella, Microsoftilla, Facebookilla tai sähköpostilla. Täydennä yrityksen tiedot turvallisesti rekisteröinnin jälkeen.' },
+  da: { tab: 'Virksomhed', title: 'Opret en virksomhedskonto', description: 'Kom i gang med Google, Microsoft, Facebook eller e-mail. Udfyld virksomhedens oplysninger sikkert efter registreringen.' },
 }

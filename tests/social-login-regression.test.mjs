@@ -52,18 +52,28 @@ test('mobile more menu keeps the guest CTA and account row compact', () => {
   const accountSectionIndex = moreMenu.indexOf("<section className={headerAccount.authenticated")
   assert.ok(ctaIndex >= 0)
   assert.ok(accountSectionIndex > ctaIndex)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /bg-\[#00b55e\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /hover:bg-\[#009b51\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /active:bg-\[#008547\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /rounded-\[10px\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /h-12/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /w-\[calc\(100%-0\.5rem\)\]/)
-  assert.match(moreMenu.slice(0, accountSectionIndex), /<FilePlus2/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /border-\[#0866ff\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /bg-white/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /text-\[#0866ff\]/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /rounded-full/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /min-h-11/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /w-full/)
+  assert.match(moreMenu.slice(0, accountSectionIndex), /<Plus/)
   assert.match(moreMenu.slice(0, accountSectionIndex), /!headerAccount\.authenticated/)
   assert.match(moreMenu, /accountMenuCopy\.newHere/)
   assert.match(moreMenu, /accountMenuCopy\.startHere/)
   assert.doesNotMatch(moreMenu, /Save vehicles, searches and contact sellers faster/)
-  assert.equal((moreMenu.match(/data-mobile-menu-divider/g) || []).length, 4)
+  assert.equal((moreMenu.match(/data-mobile-menu-divider/g) || []).length, 5)
+})
+
+test('auth modal offers a localized business path through the existing onboarding', () => {
+  assert.match(authModal, /type AuthTab = AuthMode \| 'business'/)
+  assert.match(authModal, /\['login', 'register', 'business'\]/)
+  assert.match(authModal, /authTab === 'business'/)
+  assert.match(authModal, /\/register\?onboarding=1&account=business/)
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(authModal, new RegExp(`\\n  ${locale}: \\{ tab:`))
+  }
 })
 
 test('login and registration metadata is localized and stays within requested limits', () => {

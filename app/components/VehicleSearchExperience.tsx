@@ -1273,6 +1273,7 @@ export default function VehicleSearchExperience({
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
   const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
   const [resultsLayoutTouched, setResultsLayoutTouched] = useState(false)
+  const [desktopListColumns, setDesktopListColumns] = useState<1 | 2>(1)
   const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>(initialPage > 1 ? 'list' : 'map')
   const canonicalSearchBaselineRef = useRef<string | null>(null)
   const categoryRouteSyncArmedRef = useRef(false)
@@ -3587,6 +3588,19 @@ export default function VehicleSearchExperience({
                       </p>
                       <span className="sr-only">{desktopListText.resultsUpdate}</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setDesktopListColumns((columns) => columns === 1 ? 2 : 1)}
+                      aria-label={desktopListColumns === 1
+                        ? uiText(locale, 'Show two vehicles per row', 'Visa två fordon per rad', 'Zwei Fahrzeuge pro Zeile anzeigen')
+                        : uiText(locale, 'Show one vehicle per row', 'Visa ett fordon per rad', 'Ein Fahrzeug pro Zeile anzeigen')}
+                      title={desktopListColumns === 1
+                        ? uiText(locale, 'Two vehicles per row', 'Två fordon per rad', 'Zwei Fahrzeuge pro Zeile')
+                        : uiText(locale, 'One vehicle per row', 'Ett fordon per rad', 'Ein Fahrzeug pro Zeile')}
+                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-[7px] border transition ${desktopListColumns === 2 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'}`}
+                    >
+                      {desktopListColumns === 1 ? <Columns2 className="h-4 w-4" aria-hidden="true" /> : <List className="h-4 w-4" aria-hidden="true" />}
+                    </button>
                     <label className="flex h-9 min-w-[250px] shrink-0 items-center rounded-[7px] border border-[#cfd7e4] bg-white transition focus-within:border-[#0866ff] focus-within:ring-2 focus-within:ring-[#0866ff]/15">
                       <span className="sr-only">{desktopListText.sorting}</span>
                       <span className="shrink-0 pl-3 text-[11px] font-normal text-[#667085]">{listExtraText.sortBy}:</span>
@@ -3620,7 +3634,7 @@ export default function VehicleSearchExperience({
                         onPageChange={changeSearchPage}
                         className="mb-3 justify-end"
                       />
-                    <ol className="grid gap-3">
+                    <ol className={`grid gap-3 ${desktopListColumns === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                       {filteredListings.map((listing) => (
                         <li key={listing.id} className="min-w-0">
                           <MarketplaceDesktopListingRow
@@ -3632,6 +3646,7 @@ export default function VehicleSearchExperience({
                             compareActive={compareIds.includes(listing.id)}
                             onCompare={() => toggleCompare(listing.id)}
                             onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                            compact={desktopListColumns === 2}
                           />
                         </li>
                       ))}

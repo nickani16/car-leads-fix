@@ -23,7 +23,9 @@ test('app page is localized and provides two native install actions', () => {
 test('both public footers link to the localized app page', () => {
   assert.match(footerAction, /Smartphone/)
   assert.match(footerAction, /localizePublicHref\(locale, '\/app'\)/)
-  assert.match(footerAction, /bg-\[#eaf3ff\]/)
+  assert.match(footerAction, /border-\[#101828\]/)
+  assert.match(footerAction, /bg-white/)
+  assert.match(footerAction, /text-\[#101828\]/)
   assert.match(marketplace, /<InstallAutorellButton locale=\{locale\} \/>/)
 })
 
