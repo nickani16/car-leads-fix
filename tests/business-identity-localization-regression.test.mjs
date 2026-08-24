@@ -46,6 +46,12 @@ test('company identity placeholders are gray, normal weight and shared by regist
   assert.match(profileForm, /placeholder=\{copy\.registrationNumberPlaceholder\}/)
   assert.match(profileForm, /autorell-account-input/)
   assert.match(authModal, /autorell-account-input/)
+  assert.match(authModal, /companyName \? null : \(/)
+  assert.match(authModal, /registrationNumber \? null : \(/)
+  assert.ok(
+    (authModal.match(/text-sm font-\[400\] text-\[#767676\]/g)?.length || 0) >= 3,
+    'Business and email placeholders must share the same typography and gray color',
+  )
   assert.match(globals, /\.autorell-account-input::placeholder/)
   assert.match(globals, /color: #7b8494 !important/)
   assert.match(globals, /font-weight: 400 !important/)

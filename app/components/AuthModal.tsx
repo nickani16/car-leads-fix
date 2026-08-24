@@ -683,31 +683,53 @@ export default function AuthModal({
                   <div className="mt-4 grid gap-4 border-t border-[#e1e7f0] pt-4 sm:grid-cols-2">
                     <label className="block text-xs font-[600] text-[#344054]">
                       {businessIdentityCopy.companyName}
-                      <input
-                        value={companyName}
-                        onChange={(event) => {
-                          setCompanyName(event.target.value)
-                          setError('')
-                        }}
-                        required
-                        autoComplete="organization"
-                        placeholder={businessIdentityCopy.companyNamePlaceholder}
-                        className="autorell-account-input mt-2 h-12 w-full rounded-[11px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-                      />
+                      <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                        <input
+                          value={companyName}
+                          onChange={(event) => {
+                            setCompanyName(event.target.value)
+                            setError('')
+                          }}
+                          required
+                          autoComplete="organization"
+                          placeholder=""
+                          aria-label={businessIdentityCopy.companyNamePlaceholder}
+                          className="autorell-account-input relative z-10 min-w-0 flex-1 bg-transparent text-sm font-[400] text-[#101828] outline-none"
+                        />
+                        {companyName ? null : (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-sm font-[400] text-[#767676]"
+                          >
+                            {businessIdentityCopy.companyNamePlaceholder}
+                          </span>
+                        )}
+                      </div>
                     </label>
                     <label className="block text-xs font-[600] text-[#344054]">
                       {businessIdentityCopy.registrationNumber}
-                      <input
-                        value={registrationNumber}
-                        onChange={(event) => {
-                          setRegistrationNumber(event.target.value)
-                          setError('')
-                        }}
-                        required
-                        autoComplete="off"
-                        placeholder={businessIdentityCopy.registrationNumberPlaceholder}
-                        className="autorell-account-input mt-2 h-12 w-full rounded-[11px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-                      />
+                      <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                        <input
+                          value={registrationNumber}
+                          onChange={(event) => {
+                            setRegistrationNumber(event.target.value)
+                            setError('')
+                          }}
+                          required
+                          autoComplete="off"
+                          placeholder=""
+                          aria-label={businessIdentityCopy.registrationNumberPlaceholder}
+                          className="autorell-account-input relative z-10 min-w-0 flex-1 bg-transparent text-sm font-[400] text-[#101828] outline-none"
+                        />
+                        {registrationNumber ? null : (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 z-20 -translate-y-1/2 text-sm font-[400] text-[#767676]"
+                          >
+                            {businessIdentityCopy.registrationNumberPlaceholder}
+                          </span>
+                        )}
+                      </div>
                       <span className="mt-1.5 block text-[11px] font-[400] leading-4 text-[#667085]">
                         {businessIdentityCopy.registrationNumberHelper}
                       </span>
