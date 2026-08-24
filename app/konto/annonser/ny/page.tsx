@@ -13,6 +13,7 @@ import { cookies, headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
+import { isMarketplaceProfileComplete } from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('new-listing')
 
@@ -45,7 +46,7 @@ export async function renderNewListingPage({
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,country_code,company_id')
+    .select('account_type,country_code,company_id,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number')
     .eq('user_id', user.id)
     .single()
   if (!profile) {
@@ -57,6 +58,14 @@ export async function renderNewListingPage({
     const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
     const registrationParams = new URLSearchParams({ account: accountType, next })
     redirect(localizePublicHref(locale, `/register?${registrationParams.toString()}`))
+  }
+  if (!isMarketplaceProfileComplete(profile)) {
+    const listingParams = new URLSearchParams({ category })
+    const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
+    const profilePath = profile.account_type === 'business'
+      ? '/account/company/profile'
+      : '/account/profile'
+    redirect(localizePublicHref(locale, `${profilePath}?next=${encodeURIComponent(next)}`))
   }
   if (profile.account_type === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)

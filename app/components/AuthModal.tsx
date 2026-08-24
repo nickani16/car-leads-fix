@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { isStrongPassword } from '@/lib/password-policy'
 import { getAuthSpamHintCopy, getLocalizedAuthModalCopy } from '@/lib/auth-copy'
 import { saveAccountIntent } from '@/lib/account-intent'
+import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
@@ -95,6 +96,8 @@ export default function AuthModal({
   const [isBusinessRegistration, setIsBusinessRegistration] = useState(
     initialMode === 'register' && initialBusinessRegistration,
   )
+  const [companyName, setCompanyName] = useState('')
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [notice, setNotice] = useState('')
   const [remember, setRemember] = useState(true)
@@ -110,6 +113,7 @@ export default function AuthModal({
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
   const businessCopy = businessRegistrationCopy[locale] || businessRegistrationCopy.en
+  const businessIdentityCopy = getBusinessIdentityCopy(locale)
   const callbackError =
     !error && isOpen && callbackStatus === 'oauth-cancelled'
       ? copy.oauthCancelled
@@ -194,7 +198,17 @@ export default function AuthModal({
 
   function rememberRegistrationIntent() {
     if (mode !== 'register') return
-    saveAccountIntent(isBusinessRegistration ? 'business' : 'private')
+    saveAccountIntent(isBusinessRegistration ? 'business' : 'private', {
+      companyName,
+      registrationNumber,
+    })
+  }
+
+  function registrationDetailsAreValid() {
+    if (mode !== 'register' || !isBusinessRegistration) return true
+    if (companyName.trim() && registrationNumber.trim()) return true
+    setError(businessCopy.fieldsRequired)
+    return false
   }
 
   function completeAuth(destination: string) {
@@ -209,6 +223,7 @@ export default function AuthModal({
     setCallbackStatus(null)
     setError('')
     setNotice('')
+    if (!registrationDetailsAreValid()) return
     rememberRegistrationIntent()
     setSocialLoading(provider)
     try {
@@ -221,7 +236,7 @@ export default function AuthModal({
           ? { prompt: 'select_account' }
           : undefined
       const supabase = createClient()
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const { data: oauthData, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: redirectTo.toString(),
@@ -232,7 +247,9 @@ export default function AuthModal({
       if (oauthError) {
         setError(copy.socialError)
         setSocialLoading(null)
+        return
       }
+      if (oauthData.url) window.location.assign(oauthData.url)
     } catch {
       setError(copy.socialError)
       setSocialLoading(null)
@@ -250,6 +267,7 @@ export default function AuthModal({
       return
     }
     if (mode === 'register') {
+      if (!registrationDetailsAreValid()) return
       if (!isStrongPassword(password)) {
         setError(copy.passwordRequirement)
         return
@@ -276,6 +294,9 @@ export default function AuthModal({
             confirmPassword,
             locale,
             next: destination,
+            accountType: isBusinessRegistration ? 'business' : 'private',
+            companyName: isBusinessRegistration ? companyName.trim() : '',
+            registrationNumber: isBusinessRegistration ? registrationNumber.trim() : '',
           }),
         })
         const result = (await response.json()) as {
@@ -393,6 +414,7 @@ export default function AuthModal({
     event?.preventDefault()
     setCallbackStatus(null)
     setError('')
+    if (!registrationDetailsAreValid()) return
     rememberRegistrationIntent()
     setLoading(true)
     try {
@@ -436,6 +458,7 @@ export default function AuthModal({
           email,
           code,
           locale,
+          registration: mode === 'register',
           next: mode === 'register' ? destinationForRegister : postLoginDestination || destinationForAccount,
         }),
       })
@@ -656,6 +679,41 @@ export default function AuthModal({
                     />
                   </span>
                 </button>
+                {isBusinessRegistration ? (
+                  <div className="mt-4 grid gap-4 border-t border-[#e1e7f0] pt-4 sm:grid-cols-2">
+                    <label className="block text-xs font-[600] text-[#344054]">
+                      {businessIdentityCopy.companyName}
+                      <input
+                        value={companyName}
+                        onChange={(event) => {
+                          setCompanyName(event.target.value)
+                          setError('')
+                        }}
+                        required
+                        autoComplete="organization"
+                        placeholder={businessIdentityCopy.companyNamePlaceholder}
+                        className="autorell-account-input mt-2 h-12 w-full rounded-[11px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                      />
+                    </label>
+                    <label className="block text-xs font-[600] text-[#344054]">
+                      {businessIdentityCopy.registrationNumber}
+                      <input
+                        value={registrationNumber}
+                        onChange={(event) => {
+                          setRegistrationNumber(event.target.value)
+                          setError('')
+                        }}
+                        required
+                        autoComplete="off"
+                        placeholder={businessIdentityCopy.registrationNumberPlaceholder}
+                        className="autorell-account-input mt-2 h-12 w-full rounded-[11px] border border-[#ccd5e2] bg-white px-3 text-sm font-[400] text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                      />
+                      <span className="mt-1.5 block text-[11px] font-[400] leading-4 text-[#667085]">
+                        {businessIdentityCopy.registrationNumberHelper}
+                      </span>
+                    </label>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <div className="mt-6 grid gap-2.5">
@@ -906,19 +964,20 @@ function getAuthSpamHint(locale: PublicLocale) {
 type BusinessRegistrationCopy = {
   switchLabel: string
   switchDescription: string
+  fieldsRequired: string
 }
 
 const businessRegistrationCopy: Record<PublicLocale, BusinessRegistrationCopy> = {
-  sv: { switchLabel: 'Jag är företag', switchDescription: 'Företagsuppgifter fylls i först när du vill annonsera.' },
-  en: { switchLabel: 'I represent a business', switchDescription: 'Add company details only when you want to advertise.' },
-  de: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
-  at: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Unternehmensdaten werden erst beim Inserieren ergänzt.' },
-  be: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Bedrijfsgegevens vul je pas in wanneer je wilt adverteren.' },
-  fr: { switchLabel: 'Je représente une entreprise', switchDescription: 'Ajoutez les informations de l’entreprise seulement pour publier.' },
-  es: { switchLabel: 'Represento a una empresa', switchDescription: 'Añade los datos de la empresa solo cuando quieras anunciarte.' },
-  it: { switchLabel: 'Rappresento un’azienda', switchDescription: 'Aggiungi i dati aziendali solo quando vuoi pubblicare un annuncio.' },
-  pl: { switchLabel: 'Reprezentuję firmę', switchDescription: 'Dane firmy uzupełnisz dopiero przed publikacją ogłoszenia.' },
-  nl: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Bedrijfsgegevens vul je pas in wanneer je wilt adverteren.' },
-  fi: { switchLabel: 'Edustan yritystä', switchDescription: 'Yritystiedot täydennetään vasta ilmoitusta julkaistaessa.' },
-  da: { switchLabel: 'Jeg repræsenterer en virksomhed', switchDescription: 'Virksomhedsoplysninger udfyldes først, når du vil annoncere.' },
+  sv: { switchLabel: 'Jag är företag', switchDescription: 'Skapa ett företagskonto med företagets registrerade uppgifter.', fieldsRequired: 'Fyll i företagsnamn och organisationsnummer.' },
+  en: { switchLabel: 'I represent a business', switchDescription: 'Create a business account using the company’s registered details.', fieldsRequired: 'Enter the company name and registration number.' },
+  de: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Erstellen Sie ein Unternehmenskonto mit den eingetragenen Firmendaten.', fieldsRequired: 'Geben Sie Firmenname und Registernummer ein.' },
+  at: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Erstellen Sie ein Unternehmenskonto mit den eingetragenen Firmendaten.', fieldsRequired: 'Geben Sie Firmenname und Firmenbuchnummer ein.' },
+  be: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Maak een bedrijfsaccount met de officiële bedrijfsgegevens.', fieldsRequired: 'Vul de bedrijfsnaam en het ondernemingsnummer in.' },
+  fr: { switchLabel: 'Je représente une entreprise', switchDescription: 'Créez un compte entreprise avec les informations officielles.', fieldsRequired: 'Saisissez la raison sociale et le numéro SIREN.' },
+  es: { switchLabel: 'Represento a una empresa', switchDescription: 'Crea una cuenta de empresa con los datos registrados.', fieldsRequired: 'Introduce la denominación social y el NIF de la empresa.' },
+  it: { switchLabel: 'Rappresento un’azienda', switchDescription: 'Crea un account aziendale con i dati registrati.', fieldsRequired: 'Inserisci la denominazione e il codice fiscale dell’impresa.' },
+  pl: { switchLabel: 'Reprezentuję firmę', switchDescription: 'Utwórz konto firmowe przy użyciu danych rejestrowych.', fieldsRequired: 'Wpisz nazwę firmy i jej oficjalny identyfikator.' },
+  nl: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Maak een bedrijfsaccount met de officiële bedrijfsgegevens.', fieldsRequired: 'Vul de bedrijfsnaam en het KVK-nummer in.' },
+  fi: { switchLabel: 'Edustan yritystä', switchDescription: 'Luo yritystili yrityksen rekisteröidyillä tiedoilla.', fieldsRequired: 'Anna yrityksen nimi ja Y-tunnus.' },
+  da: { switchLabel: 'Jeg repræsenterer en virksomhed', switchDescription: 'Opret en virksomhedskonto med de registrerede oplysninger.', fieldsRequired: 'Indtast virksomhedsnavn og CVR-nummer.' },
 }

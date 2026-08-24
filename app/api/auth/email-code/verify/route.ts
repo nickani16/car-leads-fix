@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { accountIntentFromRequest, ensureMarketplaceProfile } from '@/lib/account-profile-bootstrap'
 import {
   emailHash,
   isValidEmail,
@@ -50,14 +51,6 @@ type EmailCodeChallenge = {
   redirect_path: string | null
 }
 
-function onboardingDestination(requested: string) {
-  const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
-  const accountType = requested.includes('account=business') ? '&account=business' : ''
-  return firstSegment && marketPathPrefixes.has(firstSegment)
-    ? `/${firstSegment}/register?onboarding=1${accountType}`
-    : `/register?onboarding=1${accountType}`
-}
-
 function accountDestination(requested: string, accountType?: string | null) {
   const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
   const prefix = firstSegment && marketPathPrefixes.has(firstSegment) ? `/${firstSegment}` : ''
@@ -75,6 +68,7 @@ export async function POST(request: Request) {
       locale?: string
       next?: string
       purpose?: string
+      registration?: boolean
     }
     const locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
@@ -345,6 +339,22 @@ export async function POST(request: Request) {
           .limit(1)
           .maybeSingle()
       : { data: null }
+    let readyProfile = profile
+    if (!readyProfile && !invitation && !adminUser && !companyInvitation) {
+      const bootstrapped = await ensureMarketplaceProfile({
+        user: data.user,
+        locale,
+        intent: body.registration
+          ? accountIntentFromRequest(request, data.user)
+          : { accountType: 'private', companyName: '', registrationNumber: '' },
+      })
+      readyProfile = {
+        user_id: data.user.id,
+        account_type: bootstrapped.accountType,
+        identity_status: 'pending',
+      }
+    }
+
     const adminRole = invitation?.role_key
     const destination = adminRole === 'support_admin'
       ? '/admin/support'
@@ -352,9 +362,9 @@ export async function POST(request: Request) {
         ? '/admin'
         : companyInvitation && requested.includes('/company/team/accept')
           ? requested
-        : profile
-          ? accountDestination(requested, profile.account_type)
-          : onboardingDestination(requested)
+        : readyProfile
+          ? accountDestination(requested, readyProfile.account_type)
+          : accountDestination(requested)
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {

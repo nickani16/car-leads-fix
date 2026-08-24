@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { accountIntentFromRequest, ensureMarketplaceProfile } from '@/lib/account-profile-bootstrap'
+import { localeFromRequest } from '@/lib/auth-locale'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
@@ -48,13 +50,28 @@ export async function GET(request: Request) {
   }
 
   if (tokenHash && type === 'signup') {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: 'signup',
     })
 
-    if (!error) {
-      return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+    if (!error && data.user) {
+      try {
+        const profile = await ensureMarketplaceProfile({
+          user: data.user,
+          locale: localeFromRequest(request),
+          intent: accountIntentFromRequest(request, data.user),
+        })
+        const destination = safeNext.includes('/company/team/accept')
+          ? safeNext
+          : profile.accountType === 'business'
+            ? safeNext.replace(/\/account(?=$|\?)/, '/account/company')
+            : safeNext
+        return NextResponse.redirect(new URL(destination, requestUrl.origin))
+      } catch (profileError) {
+        console.error('Signup profile bootstrap failed', profileError)
+        return oauthFailureRedirect('oauth-error')
+      }
     }
   }
 
@@ -64,7 +81,25 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user?.email) {
-        return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+        try {
+          const profile = await ensureMarketplaceProfile({
+            user,
+            locale: localeFromRequest(request),
+            intent: mode === 'register'
+              ? accountIntentFromRequest(request, user)
+              : { accountType: 'private', companyName: '', registrationNumber: '' },
+          })
+          const destination = safeNext.includes('/company/team/accept')
+            ? safeNext
+            : profile.accountType === 'business' && /\/account(?:$|\?)/.test(safeNext)
+              ? safeNext.replace(/\/account(?=$|\?)/, '/account/company')
+              : safeNext
+          return NextResponse.redirect(new URL(destination, requestUrl.origin))
+        } catch (profileError) {
+          console.error('OAuth profile bootstrap failed', profileError)
+          await supabase.auth.signOut()
+          return oauthFailureRedirect('oauth-error')
+        }
       }
       await supabase.auth.signOut()
     }

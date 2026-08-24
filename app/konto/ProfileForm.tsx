@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle2, Clock3, ShieldAlert } from 'lucide-react'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import {
@@ -51,6 +51,7 @@ export default function ProfileForm({
   emailConfirmed?: boolean
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const copy = { ...getProfileCopy(locale), ...getBusinessIdentityCopy(locale) }
   const [message, setMessage] = useState('')
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
@@ -79,7 +80,18 @@ export default function ProfileForm({
       body: JSON.stringify(Object.fromEntries(form)),
     })
     const result = (await response.json()) as { error?: string }
-    setMessage(response.ok ? copy.saved : localizedAccountError(locale, result, copy.saveError))
+    if (!response.ok) {
+      setMessage(localizedAccountError(locale, result, copy.saveError))
+      return
+    }
+
+    setMessage(copy.saved)
+    const next = searchParams.get('next')
+    if (next?.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')) {
+      router.replace(next)
+      return
+    }
+    router.refresh()
   }
 
   async function uploadLogo(file?: File) {
@@ -379,7 +391,7 @@ function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
           if (normalizePlace) event.currentTarget.value = normalizePlaceName(event.currentTarget.value)
           onBlur?.(event)
         }}
-        className={`${controlClass} font-[400] placeholder:font-[400] placeholder:text-[#7b8494] placeholder:opacity-100 ${rest.type === 'date' ? 'appearance-none' : ''}`}
+        className={`${controlClass} autorell-account-input font-[400] ${rest.type === 'date' ? 'appearance-none' : ''}`}
       />
       {helper ? <span className="mt-1.5 block text-xs font-[400] leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>

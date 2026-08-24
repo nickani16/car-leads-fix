@@ -9,6 +9,8 @@ const registerRoute = readFileSync(new URL('../app/api/account/register/route.ts
 const profileForm = readFileSync(new URL('../app/konto/ProfileForm.tsx', import.meta.url), 'utf8')
 const profileRoute = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
+const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
+const globals = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 
 test('every public market has explicit official business identity terminology', () => {
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
@@ -38,14 +40,15 @@ test('every public market has explicit official business identity terminology', 
 test('company identity placeholders are gray, normal weight and shared by registration and profile', () => {
   assert.match(registerForm, /placeholder=\{copy\.companyNamePlaceholder\}/)
   assert.match(registerForm, /placeholder=\{copy\.registrationNumberPlaceholder\}/)
-  assert.match(registerForm, /placeholder:font-\[400\]/)
-  assert.match(registerForm, /placeholder:text-\[#7b8494\]/)
-  assert.match(registerForm, /placeholder:opacity-100/)
+  assert.match(registerForm, /autorell-account-input/)
   assert.match(profileForm, /getBusinessIdentityCopy\(locale\)/)
   assert.match(profileForm, /placeholder=\{copy\.companyNamePlaceholder\}/)
   assert.match(profileForm, /placeholder=\{copy\.registrationNumberPlaceholder\}/)
-  assert.match(profileForm, /placeholder:font-\[400\]/)
-  assert.match(profileForm, /placeholder:text-\[#7b8494\]/)
+  assert.match(profileForm, /autorell-account-input/)
+  assert.match(authModal, /autorell-account-input/)
+  assert.match(globals, /\.autorell-account-input::placeholder/)
+  assert.match(globals, /color: #7b8494 !important/)
+  assert.match(globals, /font-weight: 400 !important/)
 })
 
 test('company identity is persisted once and existing profiles skip registration', () => {

@@ -64,6 +64,9 @@ export async function PATCH(request: Request) {
     region: region || null,
     postal_code: postalCode,
     risk_status: phoneRiskStatus(phoneRiskFlags),
+    ...(existingProfile.account_type === 'business'
+      ? { business_onboarding_status: 'submitted' }
+      : {}),
     updated_at: new Date().toISOString(),
   }
 

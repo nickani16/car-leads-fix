@@ -864,7 +864,7 @@ function Field({
       <span className="mb-2 block text-sm font-semibold">{label}</span>
       <input
         {...inputProps}
-        className="h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 font-[400] text-[#101828] outline-none transition placeholder:font-[400] placeholder:text-[#7b8494] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        className="autorell-account-input h-13 min-w-0 w-full rounded-[14px] border border-[#d7deed] px-4 font-[400] text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
       {helper ? <span className="mt-1.5 block text-xs leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>

@@ -3,14 +3,19 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
+const emailCodeAuth = readFileSync(new URL('../app/components/EmailCodeAuth.tsx', import.meta.url), 'utf8')
 const authCallback = readFileSync(new URL('../app/auth/callback/route.ts', import.meta.url), 'utf8')
 const authCopy = readFileSync(new URL('../lib/auth-copy.ts', import.meta.url), 'utf8')
 const registerForm = readFileSync(new URL('../app/registrera/RegisterForm.tsx', import.meta.url), 'utf8')
-const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.meta.url), 'utf8')
 const accountIntent = readFileSync(new URL('../lib/account-intent.ts', import.meta.url), 'utf8')
-const accountPage = readFileSync(new URL('../app/konto/page.tsx', import.meta.url), 'utf8')
+const accountBootstrap = readFileSync(new URL('../lib/account-profile-bootstrap.ts', import.meta.url), 'utf8')
+const emailCodeVerify = readFileSync(new URL('../app/api/auth/email-code/verify/route.ts', import.meta.url), 'utf8')
+const passwordSignup = readFileSync(new URL('../app/api/auth/password-signup/route.ts', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
 const publicHeader = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
+const businessMarketplaceHome = readFileSync(new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url), 'utf8')
+const profileForm = readFileSync(new URL('../app/konto/ProfileForm.tsx', import.meta.url), 'utf8')
+const profileRoute = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 const proxy = readFileSync(new URL('../proxy.ts', import.meta.url), 'utf8')
 const rootPage = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8')
 const marketPage = readFileSync(new URL('../app/[market]/page.tsx', import.meta.url), 'utf8')
@@ -33,6 +38,7 @@ test('social provider clicks start Supabase OAuth directly and surface failures'
   assert.match(authModal, /supabase\.auth\.signInWithOAuth/)
   assert.match(authModal, /setSocialLoading\(provider\)/)
   assert.match(authModal, /setError\(copy\.socialError\)/)
+  assert.match(authModal, /window\.location\.assign\(oauthData\.url\)/)
 })
 
 test('OAuth callback preserves safe destinations and localized market paths', () => {
@@ -81,22 +87,34 @@ test('registration keeps two auth tabs and exposes a localized business switch',
   assert.match(registerForm, /clearAccountIntent\(\)/)
   assert.match(registerForm, /value=\{companyName\}/)
   assert.match(registerForm, /value=\{registrationNumber\}/)
-  assert.doesNotMatch(authModal, /companyNamePlaceholder|requiredError/)
+  assert.match(authModal, /businessIdentityCopy\.companyNamePlaceholder/)
+  assert.match(authModal, /businessIdentityCopy\.registrationNumberPlaceholder/)
+  assert.match(authModal, /registrationDetailsAreValid/)
   assert.doesNotMatch(authModal, /\/register\?onboarding=1/)
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(authModal, new RegExp(`\\n  ${locale}: \\{ switchLabel:`))
   }
 })
 
-test('new accounts skip onboarding until they create a listing', () => {
+test('new accounts receive a minimal profile and defer completion until listing creation', () => {
   assert.match(authModal, /return postLoginDestination \|\| accountDestination\(\)/)
-  assert.match(accountPage, /function LightweightAccount/)
-  assert.match(accountPage, /if \(!profile\)/)
-  assert.match(newListingPage, /if \(!profile\)/)
-  assert.match(newListingPage, /ACCOUNT_INTENT_COOKIE/)
-  assert.match(newListingPage, /\/register\?\$\{registrationParams\.toString\(\)\}/)
-  assert.match(registerPage, /completionDestination=\{completionDestination\}/)
-  assert.match(registerForm, /router\.push\(completionDestination\)/)
+  assert.match(authCallback, /ensureMarketplaceProfile/)
+  assert.match(emailCodeVerify, /ensureMarketplaceProfile/)
+  assert.match(passwordSignup, /autorell_account_type/)
+  assert.match(accountBootstrap, /marketplace_profiles/)
+  assert.match(accountBootstrap, /marketplace_companies/)
+  assert.match(accountBootstrap, /marketplace_company_members/)
+  assert.match(accountBootstrap, /isMarketplaceProfileComplete/)
+  assert.match(newListingPage, /if \(!isMarketplaceProfileComplete\(profile\)\)/)
+  assert.match(newListingPage, /\/account\/company\/profile/)
+  assert.match(newListingPage, /\/account\/profile/)
+  assert.doesNotMatch(emailCodeAuth, /onboarding=1/)
+  assert.doesNotMatch(businessMarketplaceHome, /onboarding=1/)
+  assert.match(businessMarketplaceHome, /auth=register&account=business/)
+  assert.match(publicHeader, /profileComplete === false/)
+  assert.match(publicHeader, /getIncompleteProfileCopy\(locale\)/)
+  assert.match(profileForm, /searchParams\.get\('next'\)/)
+  assert.match(profileRoute, /business_onboarding_status: 'submitted'/)
 })
 
 test('login and registration metadata is localized and stays within requested limits', () => {

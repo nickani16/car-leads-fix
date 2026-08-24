@@ -54,9 +54,7 @@ export default function EmailCodeAuth({
     if (requestedNext?.includes('/company/team/accept')) return requestedNext
     return localizePublicHref(
       locale,
-      registerAccountType === 'business'
-        ? '/register?onboarding=1&account=business'
-        : '/register?onboarding=1',
+      registerAccountType === 'business' ? '/account/company' : '/account',
     )
   }
 
@@ -128,6 +126,7 @@ export default function EmailCodeAuth({
             flowMode === 'register'
               ? destinationForRegister
               : requestedNext || localizePublicHref(locale, '/account'),
+          registration: flowMode === 'register',
         }),
       })
       const result = (await response.json()) as {
@@ -180,6 +179,7 @@ export default function EmailCodeAuth({
             confirmPassword,
             locale,
             next: registerDestinationForSubmit,
+            accountType: registerAccountType,
           }),
         })
         const result = (await response.json()) as {

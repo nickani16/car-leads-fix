@@ -199,6 +199,7 @@ type HeaderAccount = {
   displayName?: string
   accountType?: 'private' | 'business' | null
   isAdmin?: boolean
+  profileComplete?: boolean
   unreadMessages: number
   conversationCount: number
 }
@@ -1363,6 +1364,11 @@ export default function PublicHeader({
     da: { pages: 'Mine sider', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud', privateAccount: 'Privatkonto', businessAccount: 'Firmakonto', newHere: 'Ny på websitet?', startHere: 'Start her' },
   }
   const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
+  const incompleteProfileCopy = getIncompleteProfileCopy(locale)
+  const completeProfileHref = localizePublicHref(
+    locale,
+    headerAccount.accountType === 'business' ? '/account/company/profile' : '/account/profile',
+  )
   const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
   const accountSettingsHref = isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : `${marketPathPrefix}/account/settings`
   const profileMenuLinks = isAdminAccount
@@ -1956,12 +1962,29 @@ export default function PublicHeader({
                       <ChevronDown className={`h-4 w-4 transition ${profileMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <div
-                      className={`absolute right-0 top-full z-[150] mt-2 w-56 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                      className={`absolute right-0 top-full z-[150] mt-2 w-72 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                         profileMenuOpen
                           ? 'pointer-events-auto translate-y-0 opacity-100'
                           : 'pointer-events-none -translate-y-1 opacity-0'
                       }`}
                     >
+                      {headerAccount.profileComplete === false ? (
+                        <div className="mx-2 mb-2 rounded-[8px] border border-[#cfe0ff] bg-[#eef5ff] p-3">
+                          <strong className="block text-sm font-[600] text-[#101828]">
+                            {incompleteProfileCopy.title}
+                          </strong>
+                          <p className="mt-1 text-xs font-[400] leading-5 text-[#475467]">
+                            {incompleteProfileCopy.description}
+                          </p>
+                          <Link
+                            href={completeProfileHref}
+                            onClick={(event) => handleInternalNavigation(event, completeProfileHref)}
+                            className="mt-2.5 inline-flex min-h-9 w-full items-center justify-center rounded-[7px] border border-[#0866ff] bg-white px-3 text-xs font-[600] text-[#0866ff] transition hover:bg-[#e5efff]"
+                          >
+                            {incompleteProfileCopy.action}
+                          </Link>
+                        </div>
+                      ) : null}
                       {profileMenuLinks.map(({ href, label, icon: Icon }) => (
                         <Link
                           key={href}
@@ -2411,26 +2434,45 @@ export default function PublicHeader({
             ) : null}
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
-                <Link
-                  href={accountHref}
-                  onClick={closeMobile}
-                  className="flex items-center gap-3 text-[#101828]"
-                >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00887a] text-sm font-semibold text-white ring-1 ring-[#00766a]">
-                    {mobileAccountInitials}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
-                      {mobileAccountName}
-                    </strong>
-                    <span className="mt-0.5 block text-sm font-medium text-[#667085]">
-                      {mobileAccountTypeLabel}
+                <div>
+                  <Link
+                    href={accountHref}
+                    onClick={closeMobile}
+                    className="flex items-center gap-3 text-[#101828]"
+                  >
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00887a] text-sm font-semibold text-white ring-1 ring-[#00766a]">
+                      {mobileAccountInitials}
                     </span>
-                  </span>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-[#0866ff]">
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                </Link>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
+                        {mobileAccountName}
+                      </strong>
+                      <span className="mt-0.5 block text-sm font-medium text-[#667085]">
+                        {mobileAccountTypeLabel}
+                      </span>
+                    </span>
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-[#0866ff]">
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </Link>
+                  {headerAccount.profileComplete === false ? (
+                    <div className="mt-4 rounded-[10px] border border-[#cfe0ff] bg-[#eef5ff] p-3">
+                      <strong className="block text-sm font-[600] text-[#101828]">
+                        {incompleteProfileCopy.title}
+                      </strong>
+                      <p className="mt-1 text-xs font-[400] leading-5 text-[#475467]">
+                        {incompleteProfileCopy.description}
+                      </p>
+                      <Link
+                        href={completeProfileHref}
+                        onClick={closeMobile}
+                        className="mt-2.5 inline-flex min-h-9 w-full items-center justify-center rounded-[7px] border border-[#0866ff] bg-white px-3 text-xs font-[600] text-[#0866ff]"
+                      >
+                        {incompleteProfileCopy.action}
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
               ) : (
                 <div className="flex items-center gap-3 py-1">
                   <CircleUserRound className="h-11 w-11 shrink-0 text-[#202124]" strokeWidth={1.55} />
@@ -2748,5 +2790,23 @@ export default function PublicHeader({
       ) : null}
     </>
   )
+}
+
+function getIncompleteProfileCopy(locale: PublicLocale) {
+  const copy: Record<PublicLocale, { title: string; description: string; action: string }> = {
+    sv: { title: 'Din profil är inte komplett', description: 'Fyll i de viktigaste uppgifterna innan du skapar en annons.', action: 'Komplettera din profil' },
+    en: { title: 'Your profile is incomplete', description: 'Add the essential details before creating a listing.', action: 'Complete your profile' },
+    de: { title: 'Ihr Profil ist unvollständig', description: 'Ergänzen Sie die wichtigsten Angaben, bevor Sie eine Anzeige erstellen.', action: 'Profil vervollständigen' },
+    at: { title: 'Ihr Profil ist unvollständig', description: 'Ergänzen Sie die wichtigsten Angaben, bevor Sie eine Anzeige erstellen.', action: 'Profil vervollständigen' },
+    be: { title: 'Je profiel is niet compleet', description: 'Vul de belangrijkste gegevens in voordat je een advertentie plaatst.', action: 'Profiel voltooien' },
+    fr: { title: 'Votre profil est incomplet', description: 'Ajoutez les informations essentielles avant de créer une annonce.', action: 'Compléter votre profil' },
+    es: { title: 'Tu perfil está incompleto', description: 'Añade los datos esenciales antes de crear un anuncio.', action: 'Completar el perfil' },
+    it: { title: 'Il tuo profilo è incompleto', description: 'Aggiungi i dati essenziali prima di creare un annuncio.', action: 'Completa il profilo' },
+    pl: { title: 'Twój profil jest niekompletny', description: 'Uzupełnij najważniejsze dane przed utworzeniem ogłoszenia.', action: 'Uzupełnij profil' },
+    nl: { title: 'Je profiel is niet compleet', description: 'Vul de belangrijkste gegevens in voordat je een advertentie plaatst.', action: 'Profiel voltooien' },
+    fi: { title: 'Profiilisi on puutteellinen', description: 'Täydennä tärkeimmät tiedot ennen ilmoituksen luomista.', action: 'Täydennä profiili' },
+    da: { title: 'Din profil er ikke komplet', description: 'Tilføj de vigtigste oplysninger, før du opretter en annonce.', action: 'Udfyld din profil' },
+  }
+  return copy[locale]
 }
 

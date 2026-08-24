@@ -789,7 +789,7 @@ export function HomeSellerAudienceSection({
       title: copy.businessTitle,
       text: copy.businessText,
       cta: copy.businessCta,
-      href: localizePublicHref(locale, '/register?onboarding=1&account=business'),
+      href: localizePublicHref(locale, '/?auth=register&account=business'),
       variant: 'secondary',
     },
   ] as const

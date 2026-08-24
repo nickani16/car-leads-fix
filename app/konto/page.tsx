@@ -33,6 +33,7 @@ import { generateAccountMetadata } from '@/lib/account-seo'
 import { getAdminContext } from '@/lib/admin/context'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent, type AccountIntent } from '@/lib/account-intent'
+import { isMarketplaceProfileComplete } from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -186,15 +187,7 @@ export default async function AccountPage() {
     : accountNeedsReview
       ? copy.needsReview
       : copy.verifyEmailStatus
-  const profileComplete = Boolean(
-    profile.first_name &&
-      profile.last_name &&
-      profile.email &&
-      profile.phone &&
-      profile.address_line_1 &&
-      profile.postal_code &&
-      profile.city,
-  )
+  const profileComplete = isMarketplaceProfileComplete(profile)
 
   const primaryActions = [
     {
@@ -259,7 +252,7 @@ export default async function AccountPage() {
           icon: UserRound,
           title: copy.profileNeedsWork,
           text: copy.profileNeedsWorkText,
-          href: '#profile-details',
+          href: localizePublicHref(locale, '/account/profile'),
           label: copy.completeProfile,
         }
       : null,
@@ -413,7 +406,7 @@ export default async function AccountPage() {
             [copy.expiredListings, listingSummary.counts.expired, localizePublicHref(locale, '/account/listings?status=expired')],
           ]} />
           <SummaryPanel title={copy.safety} text={copy.safetyText} items={[
-            [copy.profileStatus, profileComplete ? copy.complete : copy.needsUpdate, '#profile-details'],
+            [copy.profileStatus, profileComplete ? copy.complete : copy.needsUpdate, localizePublicHref(locale, '/account/profile')],
             [copy.accountType, copy.privateAccount, '#profile-details'],
             [copy.country, profile.country_code || copy.notSet, '#profile-details'],
           ]} />

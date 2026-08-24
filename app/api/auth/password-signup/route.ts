@@ -8,9 +8,9 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 function safeNext(value: unknown, locale: ReturnType<typeof localeFromRequest>) {
-  const next = String(value || localizedAuthPath(locale, '/register?onboarding=1'))
+  const next = String(value || localizedAuthPath(locale, '/account'))
   if (!next.startsWith('/') || next.startsWith('//') || next.startsWith('/api/')) {
-    return localizedAuthPath(locale, '/register?onboarding=1')
+    return localizedAuthPath(locale, '/account')
   }
   return next
 }
@@ -24,10 +24,16 @@ export async function POST(request: Request) {
       confirmPassword?: string
       locale?: string
       next?: string
+      accountType?: string
+      companyName?: string
+      registrationNumber?: string
     }
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
     const confirmPassword = String(body.confirmPassword || '')
+    const accountType = body.accountType === 'business' ? 'business' : 'private'
+    const companyName = String(body.companyName || '').trim()
+    const registrationNumber = String(body.registrationNumber || '').trim()
     locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
 
@@ -39,6 +45,9 @@ export async function POST(request: Request) {
     }
     if (password !== confirmPassword) {
       return NextResponse.json({ error: copy.passwordMismatch }, { status: 400 })
+    }
+    if (accountType === 'business' && (!companyName || !registrationNumber)) {
+      return NextResponse.json({ error: copy.signupError }, { status: 400 })
     }
 
     const signupLimit = checkRateLimit({
@@ -66,7 +75,12 @@ export async function POST(request: Request) {
       email,
       password,
       options: {
-        data: { preferred_locale: locale },
+        data: {
+          preferred_locale: locale,
+          autorell_account_type: accountType,
+          autorell_company_name: accountType === 'business' ? companyName : '',
+          autorell_registration_number: accountType === 'business' ? registrationNumber : '',
+        },
       },
     })
 

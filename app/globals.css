@@ -114,6 +114,12 @@ body {
   opacity: 1 !important;
 }
 
+.autorell-account-input::placeholder {
+  color: #7b8494 !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
 .autorell-range {
   appearance: none;
   background: transparent;
