@@ -48,6 +48,7 @@ import ListingsFilters from './ListingsFilters'
 import BulkListingActions from './BulkListingActions'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { listingReviewNotice } from '@/lib/listing-review-notice'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -609,13 +610,7 @@ function paginationWindow(current: number, total: number) {
 }
 
 function reviewReason(listing: ManagedListing, locale: string) {
-  if (!listing.risk_flags.length) return null
-  const labels: Record<string, [string, string]> = {
-    price_outlier: ['Priset avviker tydligt och behöver kontrolleras.', 'The price differs significantly and needs review.'],
-    duplicate_identifier: ['Fordonsidentifieraren används redan i en annan annons.', 'The vehicle identifier is already used by another listing.'],
-    duplicate_listing: ['Annonsen liknar en befintlig annons och behöver kontrolleras.', 'The listing resembles an existing listing and needs review.'],
-  }
-  return listing.risk_flags.map((flag) => labels[flag]?.[locale === 'sv' ? 0 : 1] || (locale === 'sv' ? 'Annonsuppgifterna behöver kontrolleras innan publicering.' : 'The listing details need review before publication.')).join(' ')
+  return listingReviewNotice(locale as PublicLocale, listing.risk_flags)
 }
 
 function canBulkManage(status: string) { return ['published', 'paused', 'draft', 'pending_payment', 'expired', 'sold', 'rejected'].includes(status) }

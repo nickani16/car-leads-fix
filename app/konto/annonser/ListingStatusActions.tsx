@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { type PublicLocale } from '@/lib/public-i18n'
 import { accountListingText } from '@/lib/account-listings-i18n'
+import type { ListingReviewNotice } from '@/lib/listing-review-notice'
 
 export type PackageOption = {
   id: string
@@ -55,7 +56,7 @@ export default function ListingStatusActions({
   boostExpiresAt: string | null
   featuredStartedAt: string | null
   featuredExpiresAt: string | null
-  reviewMessage: string | null
+  reviewMessage: ListingReviewNotice
   autoOpen?: boolean
   locale: PublicLocale
 }) {
@@ -71,7 +72,6 @@ export default function ListingStatusActions({
   const [menuOpen, setMenuOpen] = useState(false)
   const [loading, setLoading] = useState('')
   const [message, setMessage] = useState('')
-  const swedish = locale === 'sv'
   const availablePackages = (status === 'published'
     ? packages.filter((item) => item.id !== 'free_7d')
     : packages).filter((item) => item.available)
@@ -242,8 +242,34 @@ export default function ListingStatusActions({
         </div>
       </dialog>
 
-      <dialog ref={reviewDialogRef} aria-labelledby={`review-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
-        <div className="p-6"><DialogHeader eyebrow={text('Annonsstatus', 'Listing status')} title={status === 'rejected' ? text('Åtgärd krävs', 'Action required') : text('Under granskning', 'In review')} description={reviewMessage || text('Autorell granskar annonsen. Ingen ytterligare betalning behövs.', 'Autorell is reviewing the listing. No further payment is required.')} titleId={`review-${listingId}`} close={() => reviewDialogRef.current?.close()} /></div>
+      <dialog ref={reviewDialogRef} aria-labelledby={`review-${listingId}`} className="fixed inset-0 m-auto max-h-[90vh] w-[min(92vw,620px)] overflow-y-auto rounded-[18px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
+        <div className="p-5 sm:p-7">
+          <DialogHeader
+            eyebrow={text('Annonsstatus', 'Listing status')}
+            title={status === 'rejected' ? text('Åtgärd krävs', 'Action required') : text('Under granskning', 'In review')}
+            description={reviewMessage.summary}
+            titleId={`review-${listingId}`}
+            close={() => reviewDialogRef.current?.close()}
+          />
+          <section className="mt-6 rounded-[14px] border border-[#dce6f5] bg-[#f8fbff] p-4" aria-label={text('Orsak till granskningen', 'Reason for review')}>
+            <h3 className="text-sm font-semibold text-[#101828]">{text('Det här kontrollerar vi', 'What we are checking')}</h3>
+            <ul className="mt-3 grid gap-3">
+              {reviewMessage.reasons.map((reason) => (
+                <li key={reason} className="flex gap-3 text-sm leading-6 text-[#475467]">
+                  <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-[#0866ff]" />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <div className="mt-4 rounded-[14px] border border-[#fed7aa] bg-[#fffaf5] p-4">
+            <strong className="block text-sm font-semibold text-[#9a3412]">{text('Nästa steg', 'Next step')}</strong>
+            <p className="mt-1 text-sm leading-6 text-[#7c2d12]">{reviewMessage.nextStep}</p>
+          </div>
+          <button type="button" onClick={() => reviewDialogRef.current?.close()} className={`${primary} mt-6 w-full sm:ml-auto sm:w-auto`}>
+            {text('Stäng', 'Close')}
+          </button>
+        </div>
       </dialog>
 
       <dialog ref={soldDialogRef} aria-labelledby={`sold-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">

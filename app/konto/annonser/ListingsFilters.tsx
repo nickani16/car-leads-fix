@@ -147,7 +147,7 @@ export default function ListingsFilters({
                 value={search}
                 onChange={(event) => { searchTouched.current = true; setSearch(event.target.value) }}
                 placeholder={t('Sök bland dina annonser', 'Search your listings')}
-                className="h-12 w-full rounded-[14px] border border-[#cbd5e1] bg-white pl-10 pr-10 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                className="h-12 w-full rounded-[14px] border border-[#cbd5e1] bg-white pl-10 pr-10 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
               />
               {search ? <button type="button" onClick={() => { searchTouched.current = true; setSearch('') }} aria-label={t('Rensa sökning', 'Clear search')} className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#667085] hover:bg-[#f2f4f7] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-4 w-4" /></button> : null}
             </span>

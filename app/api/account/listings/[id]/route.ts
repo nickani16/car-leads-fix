@@ -169,7 +169,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
+    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
     .eq('id', id)
     .maybeSingle()
 
@@ -379,6 +379,11 @@ export async function PATCH(
       known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
       service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
     }
+    const nextRiskFlags = (Array.isArray(listing.risk_flags) ? listing.risk_flags : [])
+      .filter((flag) => !(flag === 'missing_vin' && identifiers.vin))
+      .filter((flag) => !(flag === 'missing_serial_number' && identifiers.serialNumber))
+    patch.risk_flags = nextRiskFlags
+    patch.risk_score = listingRiskScore(nextRiskFlags)
     if (listing.seller_type === 'business' && shouldUpdateInsuranceOffers) {
       patch.insurance_offers = insuranceOffers
     }
@@ -562,6 +567,17 @@ export async function PATCH(
   revalidateTag('marketplace-listings', 'max')
 
   return NextResponse.json({ success: true })
+}
+
+function listingRiskScore(flags: string[]) {
+  return Math.min(100, flags.reduce((score, flag) => {
+    if (flag === 'unusually_low_price') return score + 30
+    if (flag === 'many_listings_short_time') return score + 25
+    if (flag === 'same_phone_multiple_accounts') return score + 25
+    if (flag === 'new_user') return score + 15
+    if (flag.startsWith('profile_')) return score + 35
+    return score + 20
+  }, 0))
 }
 
 async function isActiveAdmin(

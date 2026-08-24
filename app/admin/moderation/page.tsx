@@ -29,7 +29,7 @@ export default async function AdminModerationPage({
 }) {
   const params = await searchParams
   const q = getParam(params, 'q')
-  const queue = getParam(params, 'queue') || 'pending'
+  const queue = getParam(params, 'queue') || 'actionable'
   const severity = getParam(params, 'severity')
   const page = getPage(params)
   const { from, to } = pageRange(page)
@@ -42,7 +42,8 @@ export default async function AdminModerationPage({
     .order('created_at', { ascending: true })
     .range(from, to)
 
-  if (queue === 'risk') query = query.gt('risk_score', 0)
+  if (queue === 'actionable') query = query.in('review_status', ['pending_review', 'flagged'])
+  else if (queue === 'risk') query = query.gt('risk_score', 0)
   else if (queue === 'flagged') query = query.eq('review_status', 'flagged')
   else if (queue === 'rejected') query = query.eq('review_status', 'rejected')
   else query = query.eq('review_status', 'pending_review')
@@ -77,6 +78,7 @@ export default async function AdminModerationPage({
           value={queue}
           label="Kö"
           options={[
+            { value: 'actionable', label: 'Alla att granska' },
             { value: 'pending', label: 'Väntar granskning' },
             { value: 'flagged', label: 'Flaggade' },
             { value: 'risk', label: 'Risksignaler' },

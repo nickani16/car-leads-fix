@@ -22,6 +22,14 @@ const accountSettingsPage = readFileSync(
   new URL('../app/account/settings/page.tsx', import.meta.url),
   'utf8',
 )
+const privateProfilePage = readFileSync(
+  new URL('../app/account/profile/page.tsx', import.meta.url),
+  'utf8',
+)
+const companyProfilePage = readFileSync(
+  new URL('../app/account/company/profile/page.tsx', import.meta.url),
+  'utf8',
+)
 const emailVerification = readFileSync(
   new URL('../lib/email-verification.ts', import.meta.url),
   'utf8',
@@ -71,8 +79,12 @@ test('account profile treats confirmed Supabase email as verified', () => {
   assert.match(emailVerification, /hasConfirmedSupabaseEmail\(user, email\) \|\| \(await hasVerifiedEmailCode\(email\)\)/)
   assert.match(accountPage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
   assert.match(accountSettingsPage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
+  assert.match(privateProfilePage, /hasVerifiedAccountEmail\(profile\.email, user\)/)
+  assert.match(companyProfilePage, /hasVerifiedAccountEmail\(profile\?\.email, authUser\.user\)/)
   assert.doesNotMatch(accountPage, /hasVerifiedEmailCode\(profile\.email\)/)
   assert.doesNotMatch(accountSettingsPage, /hasVerifiedEmailCode\(profile\.email\)/)
+  assert.doesNotMatch(privateProfilePage, /hasVerifiedEmailCode\(profile\.email\)/)
+  assert.doesNotMatch(companyProfilePage, /hasVerifiedEmailCode\(profile\?\.email\)/)
 })
 
 test('public private seller trust follows verified email and risk status', () => {

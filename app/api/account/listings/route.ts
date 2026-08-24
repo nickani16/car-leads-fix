@@ -1098,6 +1098,22 @@ export async function POST(request: Request) {
             })),
           )
         : Promise.resolve({ error: null }),
+      reviewStatus === 'flagged'
+        ? admin.from('moderation_cases').insert({
+            listing_id: listing.id,
+            subject_user_id: user.id,
+            source: 'automatic',
+            case_type: 'listing_risk_review',
+            severity: riskSeverity(riskScore),
+            priority: riskScore,
+            status: 'open',
+            evidence: {
+              risk_score: riskScore,
+              risk_flags: riskFlags,
+              reference_number: listing.reference_number,
+            },
+          })
+        : Promise.resolve({ error: null }),
       serialPlateImage
         ? admin.from('marketplace_listing_documents').insert({
             listing_id: listing.id,
@@ -1115,7 +1131,7 @@ export async function POST(request: Request) {
     ])
     optionalSideEffects.forEach((result, index) => {
       logOptionalListingSideEffect(
-        ['identifiers', 'legal_acceptances', 'listing_event', 'risk_events', 'serial_plate_document'][index] || `side_effect_${index}`,
+        ['identifiers', 'legal_acceptances', 'listing_event', 'risk_events', 'moderation_case', 'serial_plate_document'][index] || `side_effect_${index}`,
         result,
       )
     })

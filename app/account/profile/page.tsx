@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
-import { hasVerifiedEmailCode } from '@/lib/email-verification'
+import { hasVerifiedAccountEmail } from '@/lib/email-verification'
 import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 
 export const generateMetadata = generateAccountMetadata('profile')
@@ -79,7 +79,7 @@ export default async function PrivateProfilePage() {
 
   if (!profile) redirect(localizePublicHref(locale, '/register'))
   if (profile.account_type === 'business') redirect(localizePublicHref(locale, '/account/company/profile'))
-  const emailVerified = await hasVerifiedEmailCode(profile.email)
+  const emailVerified = await hasVerifiedAccountEmail(profile.email, user)
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] px-5 py-8 sm:px-8 lg:py-12">
