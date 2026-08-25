@@ -12,8 +12,12 @@ const staticGeoDatasets = readFileSync(new URL('../lib/geo-static-datasets.ts', 
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
 const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
+const seoSitemapPlaces = readFileSync(new URL('../lib/seo-sitemap-places.ts', import.meta.url), 'utf8')
 const largeMarketRows = JSON.parse(
   readFileSync(new URL('../scripts/data/geonames-large-market-places-2026.json', import.meta.url), 'utf8'),
+)
+const swedenSitemapRows = JSON.parse(
+  readFileSync(new URL('../scripts/data/geonames-sweden-sitemap-places-2026.json', import.meta.url), 'utf8'),
 )
 
 test('geo directory creates public read tables with indexed bounded search', () => {
@@ -84,6 +88,18 @@ test('Sweden seed is complete from generated county data', () => {
   assert.ok(places.some((place) => place.name === 'Stockholm'))
   assert.ok(places.some((place) => place.name === 'Göteborg'))
   assert.ok(places.some((place) => place.name === 'Malmö'))
+})
+
+test('Swedish SEO sitemaps use a dedicated nationwide locality dataset', () => {
+  assert.equal(swedenSitemapRows.length, 10_000)
+  assert.equal(new Set(swedenSitemapRows.map((row) => slug(row.municipalityName))).size, 10_000)
+  assert.equal(new Set(swedenSitemapRows.map((row) => row.regionCode)).size, 21)
+  assert.ok(swedenSitemapRows.some((row) => row.municipalityName === 'Stockholm'))
+  assert.ok(swedenSitemapRows.some((row) => row.municipalityName === 'Göteborg'))
+  assert.ok(swedenSitemapRows.some((row) => row.municipalityName === 'Malmö'))
+  assert.match(seoSitemapPlaces, /geonames-sweden-sitemap-places-2026/)
+  assert.match(seoSitemapPlaces, /country !== 'SE'/)
+  assert.match(seoSitemapPlaces, /\[\.\.\.baseAreas, \.\.\.swedenSitemapPlaces\]/)
 })
 
 test('Finland seed is complete and region scoped', () => {

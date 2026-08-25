@@ -7,12 +7,14 @@ import {
 } from './marketplace-search-state'
 import {
   getGeoRegions,
-  getStaticMarketplaceGeoAreas,
   marketplaceGeoSlug,
   resolveStaticMarketplaceGeoAreaBySlug,
   searchGeoPlaces,
 } from './marketplace-geo'
+import { getSeoSitemapAreas } from './seo-sitemap-places'
 import type { PublicLocale } from './public-i18n'
+
+export { getSeoSitemapAreas } from './seo-sitemap-places'
 
 type GeoCategoryRoute = {
   category: MarketplaceCategorySlug
@@ -521,10 +523,6 @@ export function getSeoSitemapModels(category: MarketplaceCategorySlug) {
     .flatMap(([make, models]) => models.slice(0, 2).map((model) => ({ make, model })))
 }
 
-export function getSeoSitemapAreas(countryCode: string) {
-  return getStaticMarketplaceGeoAreas(countryCode)
-}
-
 export function shouldIncludeInSitemap({
   category,
   make,
@@ -849,6 +847,11 @@ async function resolveGeoLandingPlace(countryCode: string, placeSlug: string) {
 
   const datasetPlace = resolveStaticMarketplaceGeoAreaBySlug(countryCode, placeSlug)
   if (datasetPlace) return datasetPlace
+
+  const sitemapPlace = getSeoSitemapAreas(countryCode).find(
+    (area) => area.slug === marketplaceGeoSlug(placeSlug),
+  )
+  if (sitemapPlace) return sitemapPlace
 
   const [regions, places] = await Promise.all([
     getGeoRegions(countryCode),
