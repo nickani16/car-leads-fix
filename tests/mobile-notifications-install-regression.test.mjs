@@ -30,7 +30,7 @@ test('create listing is absent from desktop and opened mobile navigation', () =>
 })
 
 test('mobile menus keep category links without create-listing or offer-type controls', () => {
-  assert.equal((header.match(/searchIntentOptions\.map/g) || []).length, 1)
+  assert.equal((header.match(/searchIntentOptions\.map/g) || []).length, 0)
   assert.doesNotMatch(header, /mx-1 mb-4 flex h-12[\s\S]*accountMenuCopy\.create/)
   assert.doesNotMatch(header, /mt-6 flex min-h-14[\s\S]*accountMenuCopy\.create/)
   assert.match(header, /-mx-4 -mt-5 mb-4 h-px bg-\[#e4e7ec\]/)

@@ -99,98 +99,98 @@ type MenuItem = {
   requiresLogin?: boolean
 }
 
-type SearchMegaCopy = {
+type DesktopSearchMenuCopy = {
+  title: string
   intro: string
-  saleText: string
-  leasingText: string
-  openCategory: string
-  openLeasing: string
+  personal: string
+  work: string
+  viewAll: string
 }
 
-const searchMegaCopy: Record<PublicLocale, SearchMegaCopy> = {
+const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
   sv: {
-    intro: 'Välj en fordonskategori och gå direkt till matchande annonser.',
-    saleText: 'Se fordon som är redo att köpas.',
-    leasingText: 'Visa leasingannonser från företagssäljare.',
-    openCategory: 'Öppna kategori',
-    openLeasing: 'Öppna leasing',
+    title: 'Hitta fordon',
+    intro: 'Gå direkt till våra mest populära fordonskategorier.',
+    personal: 'Person & fritid',
+    work: 'Transport & arbete',
+    viewAll: 'Visa alla fordon',
   },
   en: {
-    intro: 'Choose one vehicle category and go straight to matching listings.',
-    saleText: 'Browse vehicles that are ready to buy.',
-    leasingText: 'Show leasing listings from business sellers.',
-    openCategory: 'Open category',
-    openLeasing: 'Open leasing',
+    title: 'Find vehicles',
+    intro: 'Go straight to our most popular vehicle categories.',
+    personal: 'Cars & leisure',
+    work: 'Transport & work',
+    viewAll: 'View all vehicles',
   },
   de: {
-    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
-    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
-    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
-    openCategory: 'Kategorie öffnen',
-    openLeasing: 'Leasing öffnen',
+    title: 'Fahrzeuge finden',
+    intro: 'Direkt zu unseren beliebtesten Fahrzeugkategorien.',
+    personal: 'Pkw & Freizeit',
+    work: 'Transport & Gewerbe',
+    viewAll: 'Alle Fahrzeuge anzeigen',
   },
   at: {
-    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
-    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
-    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
-    openCategory: 'Kategorie öffnen',
-    openLeasing: 'Leasing öffnen',
-  },
-  be: {
-    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
-    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
-    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
-    openCategory: 'Categorie openen',
-    openLeasing: 'Leasing openen',
+    title: 'Fahrzeuge finden',
+    intro: 'Direkt zu unseren beliebtesten Fahrzeugkategorien.',
+    personal: 'Pkw & Freizeit',
+    work: 'Transport & Gewerbe',
+    viewAll: 'Alle Fahrzeuge anzeigen',
   },
   fr: {
-    intro: 'Choisissez une catégorie de véhicule et accédez directement aux annonces correspondantes.',
-    saleText: 'Parcourez les véhicules prêts à être achetés.',
-    leasingText: 'Afficher les annonces de leasing des vendeurs professionnels.',
-    openCategory: 'Ouvrir la catégorie',
-    openLeasing: 'Ouvrir le leasing',
+    title: 'Trouver un véhicule',
+    intro: 'Accédez directement à nos catégories de véhicules les plus populaires.',
+    personal: 'Auto & loisirs',
+    work: 'Transport & activité',
+    viewAll: 'Voir tous les véhicules',
   },
   es: {
-    intro: 'Elige una categoría de vehículo y ve directamente a los anuncios correspondientes.',
-    saleText: 'Consulta vehículos listos para comprar.',
-    leasingText: 'Muestra anuncios de leasing de vendedores profesionales.',
-    openCategory: 'Abrir categoría',
-    openLeasing: 'Abrir leasing',
+    title: 'Encontrar vehículos',
+    intro: 'Accede directamente a nuestras categorías de vehículos más populares.',
+    personal: 'Coches y ocio',
+    work: 'Transporte y trabajo',
+    viewAll: 'Ver todos los vehículos',
   },
   it: {
-    intro: 'Scegli una categoria di veicoli e vai direttamente agli annunci corrispondenti.',
-    saleText: "Sfoglia veicoli pronti per l'acquisto.",
-    leasingText: 'Mostra annunci di leasing da venditori professionali.',
-    openCategory: 'Apri categoria',
-    openLeasing: 'Apri leasing',
-  },
-  pl: {
-    intro: 'Wybierz kategorię pojazdu i przejdź bezpośrednio do pasujących ogłoszeń.',
-    saleText: 'Przeglądaj pojazdy gotowe do zakupu.',
-    leasingText: 'Pokaż oferty leasingu od sprzedawców firmowych.',
-    openCategory: 'Otwórz kategorię',
-    openLeasing: 'Otwórz leasing',
+    title: 'Trova veicoli',
+    intro: 'Vai direttamente alle nostre categorie di veicoli più popolari.',
+    personal: 'Auto e tempo libero',
+    work: 'Trasporto e lavoro',
+    viewAll: 'Vedi tutti i veicoli',
   },
   nl: {
-    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
-    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
-    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
-    openCategory: 'Categorie openen',
-    openLeasing: 'Leasing openen',
+    title: 'Voertuigen vinden',
+    intro: 'Ga direct naar onze populairste voertuigcategorieën.',
+    personal: 'Auto & vrije tijd',
+    work: 'Transport & werk',
+    viewAll: 'Alle voertuigen bekijken',
   },
-  fi: {
-    intro: 'Valitse ajoneuvoluokka ja siirry suoraan sopiviin ilmoituksiin.',
-    saleText: 'Selaa ostovalmiita ajoneuvoja.',
-    leasingText: 'Näytä yritysmyyjien leasing-ilmoitukset.',
-    openCategory: 'Avaa luokka',
-    openLeasing: 'Avaa leasing',
+  be: {
+    title: 'Voertuigen vinden',
+    intro: 'Ga direct naar onze populairste voertuigcategorieën.',
+    personal: 'Auto & vrije tijd',
+    work: 'Transport & werk',
+    viewAll: 'Alle voertuigen bekijken',
+  },
+  pl: {
+    title: 'Znajdź pojazd',
+    intro: 'Przejdź bezpośrednio do najpopularniejszych kategorii pojazdów.',
+    personal: 'Samochody i rekreacja',
+    work: 'Transport i praca',
+    viewAll: 'Zobacz wszystkie pojazdy',
   },
   da: {
-    intro: 'Vælg en køretøjskategori og gå direkte til matchende annoncer.',
-    saleText: 'Se køretøjer, der er klar til køb.',
-    leasingText: 'Vis leasingannoncer fra erhvervssælgere.',
-    openCategory: 'Åbn kategori',
-    openLeasing: 'Åbn leasing',
+    title: 'Find køretøjer',
+    intro: 'Gå direkte til vores mest populære køretøjskategorier.',
+    personal: 'Bil & fritid',
+    work: 'Transport & arbejde',
+    viewAll: 'Se alle køretøjer',
+  },
+  fi: {
+    title: 'Löydä ajoneuvo',
+    intro: 'Siirry suoraan suosituimpiin ajoneuvoluokkiimme.',
+    personal: 'Autot ja vapaa-aika',
+    work: 'Kuljetus ja työ',
+    viewAll: 'Näytä kaikki ajoneuvot',
   },
 }
 
@@ -1026,30 +1026,27 @@ export default function PublicHeader({
       icon: category.icon,
     }
   })
-  const searchIntentOptions = [
+  const desktopSearchCopy = desktopSearchMenuCopy[locale]
+  const desktopSearchItemsBySlug = new Map(
+    buyItems.flatMap((item) => item.slug ? [[item.slug, item] as const] : []),
+  )
+  const desktopSearchGroups = [
     {
-      key: 'all' as const,
-      label: publicLabel('All', 'Alla', 'Alle'),
-      shortLabel: publicLabel('All', 'Alla', 'Alle'),
-      text: publicLabel(
-        'Show vehicles for sale and leasing together.',
-        'Visa fordon till salu och leasing tillsammans.',
-        'Fahrzeuge zum Kauf und Leasing gemeinsam anzeigen.',
-      ),
+      key: 'personal',
+      label: desktopSearchCopy.personal,
+      slugs: ['cars', 'motorcycles', 'motorhomes', 'caravans'] as const,
     },
     {
-      key: 'sale' as const,
-      label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
-      shortLabel: publicLabel('Buy', 'Köp', 'Kaufen'),
-      text: searchMegaCopy[locale].saleText,
+      key: 'work',
+      label: desktopSearchCopy.work,
+      slugs: ['vans', 'trucks', 'agriculture', 'construction'] as const,
     },
-    {
-      key: 'leasing' as const,
-      label: publicLabel('Vehicle leasing', 'Leasing av fordon', 'Fahrzeugleasing'),
-      shortLabel: publicLabel('Leasing', 'Leasing', 'Leasing'),
-      text: searchMegaCopy[locale].leasingText,
-    },
-  ]
+  ].map((group) => ({
+    ...group,
+    items: group.slugs
+      .map((slug) => desktopSearchItemsBySlug.get(slug))
+      .filter((item): item is MenuItem => Boolean(item)),
+  }))
   const searchCategoryHref = (href: string) => {
     const [pathname, search = ''] = href.split('?')
     const params = new URLSearchParams(search)
@@ -1626,78 +1623,48 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-[#d9e1ec] bg-white shadow-[0_24px_70px_rgba(16,24,40,.16)] transition ${
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(600px,calc(100vw-2rem))] overflow-hidden rounded-[12px] border border-[#d9e1ec] bg-white shadow-[0_20px_55px_rgba(16,24,40,.14)] transition ${
                           searchMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        <div className="grid gap-4 p-4">
-                          <div className="rounded-[14px] bg-[#f6f9ff] px-4 py-3 ring-1 ring-[#dbe8ff]">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">
-                              {t.shopByCategory}
-                            </p>
-                            <p className="mt-1 text-[13px] font-[400] leading-5 text-[#475467]">
-                              {searchMegaCopy[locale].intro}
-                            </p>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
-                            {searchIntentOptions.map((option) => {
-                              const selected = searchMenuIntent === option.key
-                              return (
-                                <button
-                                  key={option.key}
-                                  type="button"
-                                  role="tab"
-                                  aria-selected={selected}
-                                  onClick={() => setSearchMenuIntent(option.key)}
-                                  className={`min-w-0 overflow-hidden rounded-[11px] px-2.5 py-2.5 text-left transition ${
-                                    selected
-                                      ? 'bg-white text-[#101828] shadow-[0_8px_20px_rgba(16,24,40,.08)] ring-1 ring-[#d8e1ee]'
-                                      : 'text-[#475467] hover:bg-white/70 hover:text-[#101828]'
-                                  }`}
-                                >
-                                  <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.label}</span>
-                                  <span className="mt-0.5 block max-h-8 min-w-0 overflow-hidden whitespace-normal break-words text-[11px] font-[400] leading-4 text-[#667085] [overflow-wrap:anywhere]">{option.text}</span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                          <div className="grid grid-cols-3 gap-2.5">
-                            {visibleSearchCategoryItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon, slug: categorySlug }) => {
-                              const CategoryIcon =
-                                (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
-                              const itemHref = searchCategoryHref(categoryHref)
-                              return (
-                                <Link
-                                  key={categoryHref}
-                                  href={itemHref}
-                                  onClick={(event) => handleInternalNavigation(event, itemHref)}
-                                  className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
-                                >
-                                  <span className="flex min-w-0 items-center gap-3">
-                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#101828] transition group-hover:bg-[#0866ff] group-hover:text-white">
-                                      <CategoryIcon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                                    </span>
-                                    <span className="min-w-0">
-                                      <span className="block truncate text-[14px] font-[500] leading-tight">
-                                        {categoryLabel}
-                                      </span>
-                                      <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
-                                        {searchMenuIntent === 'leasing'
-                                          ? searchMegaCopy[locale].openLeasing
-                                          : searchMenuIntent === 'sale'
-                                            ? searchMegaCopy[locale].openCategory
-                                            : publicLabel('Open all', 'Öppna alla', 'Alle öffnen')}
-                                      </span>
-                                    </span>
-                                  </span>
-                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
-                                </Link>
-                              )
-                            })}
-                          </div>
+                        <div className="border-b border-[#e4e7ec] px-6 py-5">
+                          <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+                            {desktopSearchCopy.title}
+                          </p>
+                          <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
+                            {desktopSearchCopy.intro}
+                          </p>
                         </div>
+                        <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
+                          {desktopSearchGroups.map((group) => (
+                            <div key={group.key} className="px-6 py-5">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">
+                                {group.label}
+                              </p>
+                              <div className="mt-2">
+                                {group.items.map(({ href: categoryHref, label: categoryLabel }) => (
+                                  <Link
+                                    key={categoryHref}
+                                    href={categoryHref}
+                                    onClick={(event) => handleInternalNavigation(event, categoryHref)}
+                                    className="block rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 text-[#101828] transition hover:bg-[#f5f7fa] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                                  >
+                                    {categoryLabel}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <Link
+                          href={href}
+                          onClick={(event) => handleInternalNavigation(event, href)}
+                          className="block border-t border-[#e4e7ec] bg-[#f8fafc] px-6 py-4 text-[14px] font-semibold text-[#0866ff] transition hover:bg-[#f1f5f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
+                        >
+                          {desktopSearchCopy.viewAll}
+                        </Link>
                       </div>
                     </div>
                   )
