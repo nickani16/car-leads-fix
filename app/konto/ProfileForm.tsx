@@ -220,6 +220,7 @@ export default function ProfileForm({
               helper={copy.identityNumberHelper}
               autoComplete="off"
               inputMode="text"
+              required
             />
           )
         )}

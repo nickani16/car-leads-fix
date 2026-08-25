@@ -52,6 +52,7 @@ test('missing private identity details can be completed securely from the profil
   const listingPage = read('app/konto/annonser/ny/page.tsx')
 
   assert.match(profileForm, /name="nationalId"/)
+  assert.match(profileForm, /name="nationalId"[\s\S]*?required/)
   assert.match(profileForm, /identityNumberPlaceholder/)
   assert.match(profileForm, /autorell-account-input font-\[400\]/)
   assert.match(profileForm, /window\.location\.assign\(localizePublicHref\(locale, '\/account'\)\)/)
