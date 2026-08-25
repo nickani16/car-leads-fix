@@ -10,6 +10,7 @@ const marketplace = readFileSync(new URL('../app/marketplace/[category]/page.tsx
 const robots = readFileSync(new URL('../app/robots.txt/route.ts', import.meta.url), 'utf8')
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
+const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
 const privacyRoute = readFileSync(new URL('../app/privacy/page.tsx', import.meta.url), 'utf8')
 const reportRoute = readFileSync(new URL('../app/report/page.tsx', import.meta.url), 'utf8')
 const localizedReportRoute = readFileSync(new URL('../app/rapportera/page.tsx', import.meta.url), 'utf8')
@@ -37,6 +38,14 @@ test('static sitemaps cover every active country market without removing special
 test('listing sitemap freshness follows the actual listing update time', () => {
   assert.match(sitemapRoute, /updated_at,published_at,created_at/)
   assert.match(sitemapRoute, /listing\.updated_at \|\| listing\.published_at \|\| listing\.created_at/)
+})
+
+test('generated sitemap shards advertise freshness without week-old CDN responses', () => {
+  assert.match(sitemapIndex, /generatedSitemapLastModified/)
+  assert.match(sitemapIndex, /<lastmod>\$\{lastModified\}<\/lastmod>/)
+  assert.match(sitemapUtils, /generatedSitemapLastModified = '\d{4}-\d{2}-\d{2}'/)
+  assert.match(sitemapUtils, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)
+  assert.doesNotMatch(sitemapUtils, /stale-while-revalidate=604800/)
 })
 
 test('localized pages expose document language and reciprocal language alternates', () => {

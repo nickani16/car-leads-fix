@@ -58,6 +58,10 @@ export function marketFromSitemapName(name: string): SitemapMarketCode | null {
 export const popularGeoMakes = getSeoSitemapMakes('cars')
 export const popularGeoModels = getSeoSitemapModels('cars')
 
+// Bump this only when the generated SEO sitemap datasets or URL rules change.
+// Google uses it to decide when existing sitemap shards need to be fetched again.
+export const generatedSitemapLastModified = '2026-08-25'
+
 export function geoModelsForSitemapMarket(market: SitemapMarketCode) {
   return market === 'dk' || market === 'nl'
     ? getSeoSitemapModels('cars', 6)
@@ -68,7 +72,7 @@ export function xmlResponse(body: string, cacheControl?: string) {
   return new Response(body, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': cacheControl || 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      'Cache-Control': cacheControl || 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
       Vary: 'Host, X-Forwarded-Host',
     },
   })

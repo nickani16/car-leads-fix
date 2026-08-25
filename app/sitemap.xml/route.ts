@@ -6,6 +6,7 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
+  generatedSitemapLastModified,
   geoModelsForSitemapMarket,
   popularGeoMakes,
   sitemapHostForRequest,
@@ -34,25 +35,32 @@ export async function GET(request: Request) {
   const geoMakeSitemapNames = await getGeoMakeSitemapNames(sitemapMarkets)
   const geoModelSitemapNames = await getGeoModelSitemapNames(sitemapMarkets)
   const vehicleNewsSitemapNames = sitemapMarkets.map((market) => `vehicle-news-${market}`)
-  const sitemapNames = [
+  const generatedSitemapNames = [
     ...staticSitemapNames,
     ...seoSitemapNames,
     ...marketplaceSitemapNames,
     ...geoSitemapNames,
     ...geoMakeSitemapNames,
     ...geoModelSitemapNames,
-    ...vehicleNewsSitemapNames,
-    ...listingSitemapNames,
+  ]
+  const sitemapEntries = [
+    ...generatedSitemapNames.map((name) => ({
+      name,
+      lastModified: generatedSitemapLastModified,
+    })),
+    ...vehicleNewsSitemapNames.map((name) => ({ name })),
+    ...listingSitemapNames.map((name) => ({ name })),
   ]
 
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...sitemapNames.map((name) => [
+    ...sitemapEntries.map(({ name, lastModified }) => [
       '  <sitemap>',
       `    <loc>${host}/sitemaps/${name}.xml</loc>`,
+      lastModified ? `    <lastmod>${lastModified}</lastmod>` : null,
       '  </sitemap>',
-    ].join('\n')),
+    ].filter(Boolean).join('\n')),
     '</sitemapindex>',
     '',
   ].join('\n')
