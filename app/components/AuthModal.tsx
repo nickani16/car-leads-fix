@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, EyeOff, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, EyeOff, MailCheck, X } from 'lucide-react'
 import {
   localizePublicHref,
   type PublicLocale,
@@ -100,6 +100,7 @@ export default function AuthModal({
   const [registrationNumber, setRegistrationNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [notice, setNotice] = useState('')
+  const [confirmationEmail, setConfirmationEmail] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -123,7 +124,10 @@ export default function AuthModal({
   const displayedError = error || callbackError
 
   useEffect(() => {
-    onCloseRef.current = onClose
+    onCloseRef.current = () => {
+      setConfirmationEmail('')
+      onClose()
+    }
   }, [onClose])
 
   useEffect(() => {
@@ -159,6 +163,7 @@ export default function AuthModal({
     setAuthMethod('password')
     setError('')
     setNotice('')
+    setConfirmationEmail('')
     setPassword('')
     setConfirmPassword('')
     setDigits(['', '', '', '', '', ''])
@@ -173,6 +178,7 @@ export default function AuthModal({
     setAuthMethod('password')
     setError('')
     setNotice('')
+    setConfirmationEmail('')
     setPassword('')
     setConfirmPassword('')
     setDigits(['', '', '', '', '', ''])
@@ -324,7 +330,7 @@ export default function AuthModal({
           completeAuth(result.destination || destination)
           return
         }
-        setNotice(copy.confirmEmailSent)
+        setConfirmationEmail(cleanEmail)
         return
       }
 
@@ -507,26 +513,61 @@ export default function AuthModal({
       aria-labelledby="auth-modal-title"
       className="fixed inset-0 z-[300] overflow-y-auto bg-[#101828]/55 px-4 py-4 backdrop-blur-[2px] sm:py-8"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (event.target === event.currentTarget) onCloseRef.current()
       }}
     >
       <div
         className="flex min-h-full items-start justify-center py-2 sm:items-center"
         onMouseDown={(event) => {
-          if (event.target === event.currentTarget) onClose()
+          if (event.target === event.currentTarget) onCloseRef.current()
         }}
       >
       <section className="relative w-full max-w-[390px] overflow-hidden rounded-[18px] border border-[#dce3ee] bg-white shadow-[0_30px_90px_rgba(16,24,40,.28)] sm:max-w-[640px] lg:max-w-[680px]">
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => onCloseRef.current()}
           aria-label={copy.close}
           className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full text-[#667085] transition hover:bg-[#f2f4f7] hover:text-[#101828]"
         >
           <X className="h-4 w-4" />
         </button>
 
-        <div className="grid grid-cols-2 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm">
+        {confirmationEmail ? (
+          <div className="px-7 pb-8 pt-10 text-center sm:px-10 sm:pb-10 sm:pt-12">
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#eaf2ff] text-[#0866ff] ring-8 ring-[#f5f8ff]">
+              <MailCheck className="h-8 w-8" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <h2 id="auth-modal-title" className="mx-auto mt-6 max-w-[480px] text-[26px] font-[600] leading-tight tracking-[-.04em] text-[#101828] sm:text-[30px]">
+              {copy.confirmEmailTitle}
+            </h2>
+            <p className="mx-auto mt-3 max-w-[480px] text-sm leading-6 text-[#667085]">
+              {copy.confirmEmailSent}
+            </p>
+            <div className="mx-auto mt-6 max-w-[440px] rounded-[13px] border border-[#cfe0ff] bg-[#f5f9ff] px-4 py-3 text-left">
+              <span className="block text-xs font-[600] text-[#667085]">{copy.email}</span>
+              <strong className="mt-1 block break-all text-sm font-[600] text-[#101828]">{confirmationEmail}</strong>
+            </div>
+            <p className="mx-auto mt-4 max-w-[440px] text-xs leading-5 text-[#667085]">
+              {getAuthSpamHint(locale)}
+            </p>
+            <button
+              type="button"
+              onClick={() => onCloseRef.current()}
+              className="mt-7 inline-flex min-h-12 w-full max-w-[440px] items-center justify-center rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4]"
+            >
+              {copy.confirmEmailClose}
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode('login')}
+              className="mt-4 w-full text-center text-sm font-[600] text-[#0866ff]"
+            >
+              {copy.backToLogin}
+            </button>
+          </div>
+        ) : null}
+
+        <div className={`${confirmationEmail ? 'hidden' : 'grid'} grid-cols-2 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm`}>
           {(['login', 'register'] as const).map((item) => (
             <button
               key={item}
@@ -543,8 +584,8 @@ export default function AuthModal({
           ))}
         </div>
 
-        <div className="px-7 pb-7 pt-6">
-          <h2 id="auth-modal-title" className="text-[25px] font-[600] leading-tight tracking-[-.04em] text-[#101828]">
+        <div className={confirmationEmail ? 'hidden' : 'px-7 pb-7 pt-6'}>
+          <h2 id={confirmationEmail ? undefined : 'auth-modal-title'} className="text-[25px] font-[600] leading-tight tracking-[-.04em] text-[#101828]">
             {step === 'email' ? copy.title : copy.codeTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-[#667085]">

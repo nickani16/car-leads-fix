@@ -4,6 +4,7 @@ import test from 'node:test'
 
 const authComponent = readFileSync(new URL('../app/components/EmailCodeAuth.tsx', import.meta.url), 'utf8')
 const authModal = readFileSync(new URL('../app/components/AuthModal.tsx', import.meta.url), 'utf8')
+const authCopy = readFileSync(new URL('../lib/auth-copy.ts', import.meta.url), 'utf8')
 const loginPage = readFileSync(new URL('../app/login/page.tsx', import.meta.url), 'utf8')
 const forgotPage = readFileSync(new URL('../app/forgot-password/page.tsx', import.meta.url), 'utf8')
 const resetPage = readFileSync(new URL('../app/reset-password/page.tsx', import.meta.url), 'utf8')
@@ -47,10 +48,31 @@ test('public header auth popup uses password first and keeps OTP fallback', () =
 
 test('auth popup does not steal focus back to email during parent rerenders', () => {
   assert.match(authModal, /const onCloseRef = useRef\(onClose\)/)
-  assert.match(authModal, /onCloseRef\.current = onClose/)
+  assert.match(authModal, /onCloseRef\.current = \(\) => \{[\s\S]*setConfirmationEmail\(''\)[\s\S]*onClose\(\)/)
   assert.match(authModal, /onCloseRef\.current\(\)/)
   assert.match(authModal, /\}, \[initialMode, isOpen\]\)/)
   assert.doesNotMatch(authModal, /\}, \[initialMode, isOpen, onClose\]\)/)
+})
+
+test('password signup replaces the form with a clear localized email confirmation screen', () => {
+  assert.match(authModal, /const \[confirmationEmail, setConfirmationEmail\] = useState\(''\)/)
+  assert.match(authModal, /setConfirmationEmail\(cleanEmail\)/)
+  assert.doesNotMatch(authModal, /setNotice\(copy\.confirmEmailSent\)/)
+  assert.match(authModal, /<MailCheck/)
+  assert.match(authModal, /copy\.confirmEmailTitle/)
+  assert.match(authModal, /copy\.confirmEmailClose/)
+  assert.match(authModal, /\{confirmationEmail\}/)
+  assert.match(authModal, /getAuthSpamHint\(locale\)/)
+  const modalBaseBlock = authCopy.slice(authCopy.indexOf('const modalBase = {'), authCopy.indexOf('const socialCopy:'))
+  const locales = ['en', 'sv', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']
+  for (const [index, locale] of locales.entries()) {
+    const start = modalBaseBlock.indexOf(`  ${locale}: {`)
+    const end = index + 1 < locales.length ? modalBaseBlock.indexOf(`  ${locales[index + 1]}: {`, start + 1) : modalBaseBlock.length
+    const localeBlock = modalBaseBlock.slice(start, end)
+    assert.match(localeBlock, /confirmEmailTitle:/)
+    assert.match(localeBlock, /confirmEmailClose:/)
+  }
+  assert.match(authCopy, /translationLocale\(locale\)/)
 })
 
 test('legacy auth pages redirect into the public auth popup', () => {
