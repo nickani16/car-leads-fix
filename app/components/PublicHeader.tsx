@@ -749,6 +749,7 @@ export default function PublicHeader({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [searchMenuOpen, setSearchMenuOpen] = useState(false)
   const [desktopSearchCategory, setDesktopSearchCategory] = useState<MarketplaceCategorySlug | null>(null)
+  const [desktopSearchMotion, setDesktopSearchMotion] = useState<'idle' | 'forward' | 'back'>('idle')
   const [searchMenuIntent, setSearchMenuIntent] = useState<MarketplaceSearchMode>(marketplaceMode)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
@@ -1469,6 +1470,7 @@ export default function PublicHeader({
 
   function toggleDesktopMenu(menu: 'search' | 'sell' | 'business' | 'help' | 'profile') {
     setDesktopSearchCategory(null)
+    setDesktopSearchMotion('idle')
     setSearchMenuOpen((current) => (menu === 'search' ? !current : false))
     setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
     setBusinessMenuOpen((current) => (menu === 'business' ? !current : false))
@@ -1687,17 +1689,23 @@ export default function PublicHeader({
                         }`}
                       >
                         {desktopSearchCategoryItem && desktopSearchCategory ? (
-                          <div key={desktopSearchCategory}>
+                          <div
+                            key={desktopSearchCategory}
+                            className={desktopSearchMotion === 'forward' ? 'autorell-desktop-search-forward' : undefined}
+                          >
                             <div className="border-b border-[#e4e7ec] px-6 py-5">
                               <button
                                 type="button"
-                                onClick={() => setDesktopSearchCategory(null)}
+                                onClick={() => {
+                                  setDesktopSearchMotion('back')
+                                  setDesktopSearchCategory(null)
+                                }}
                                 className="-ml-1 inline-flex items-center gap-1 rounded-[6px] px-1 py-1 text-[12px] font-medium text-[#667085] transition hover:bg-[#f5f7fa] hover:text-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
                               >
                                 <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
                                 {desktopSearchCopy.back}
                               </button>
-                              <p className="mt-2 text-[17px] font-semibold leading-6 text-[#101828]">
+                              <p className="mt-2 text-[17px] font-semibold leading-6 text-[#0866ff]">
                                 {desktopSearchCategoryItem.label}
                               </p>
                               <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
@@ -1728,9 +1736,12 @@ export default function PublicHeader({
                             </Link>
                           </div>
                         ) : (
-                          <div key="categories">
+                          <div
+                            key="categories"
+                            className={desktopSearchMotion === 'back' ? 'autorell-desktop-search-back' : undefined}
+                          >
                             <div className="border-b border-[#e4e7ec] px-6 py-5">
-                              <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+                              <p className="text-[17px] font-semibold leading-6 text-[#0866ff]">
                                 {desktopSearchCopy.title}
                               </p>
                               <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
@@ -1744,17 +1755,30 @@ export default function PublicHeader({
                                     {group.label}
                                   </p>
                                   <div className="mt-2">
-                                    {group.items.map(({ label: categoryLabel, slug: categorySlug }) => (
-                                      <button
+                                    {group.items.map(({ label: categoryLabel, slug: categorySlug, href: categoryHref }) => (
+                                      <div
                                         key={categorySlug}
-                                        type="button"
-                                        aria-label={`${categoryLabel}: ${desktopSearchCopy.browseTypes}`}
-                                        onClick={() => setDesktopSearchCategory(categorySlug || null)}
-                                        className="group flex w-full items-center justify-between rounded-[6px] px-2 py-2.5 text-left text-[14px] font-medium leading-5 text-[#101828] transition hover:bg-[#f5f7fa] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                                        className="group flex w-full items-center rounded-[6px] transition hover:bg-[#f5f7fa]"
                                       >
-                                        <span>{categoryLabel}</span>
-                                        <ChevronRight className="h-4 w-4 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" aria-hidden="true" />
-                                      </button>
+                                        <Link
+                                          href={categoryHref}
+                                          onClick={(event) => handleInternalNavigation(event, categoryHref)}
+                                          className="min-w-0 flex-1 rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 text-[#101828] transition group-hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                                        >
+                                          {categoryLabel}
+                                        </Link>
+                                        <button
+                                          type="button"
+                                          aria-label={`${categoryLabel}: ${desktopSearchCopy.browseTypes}`}
+                                          onClick={() => {
+                                            setDesktopSearchMotion('forward')
+                                            setDesktopSearchCategory(categorySlug || null)
+                                          }}
+                                          className="mr-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[6px] text-[#98a2b3] transition hover:bg-white hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                                        >
+                                          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
+                                        </button>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>

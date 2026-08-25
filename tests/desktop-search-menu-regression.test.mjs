@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
+const globals = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const bodyTypes = readFileSync(new URL('../lib/marketplace-body-types.ts', import.meta.url), 'utf8')
 const homeSearch = readFileSync(new URL('../app/components/HomeHeroVehicleSearch.tsx', import.meta.url), 'utf8')
 const desktopSearchStart = header.indexOf("if (item.kind === 'search')")
@@ -44,6 +45,27 @@ test('desktop categories drill into localized vehicle types inside the same drop
   assert.match(header, /params\.set\('bodyType', bodyType\)/)
   assert.match(desktopSearchMenu, /<ChevronRight/)
   assert.match(desktopSearchMenu, /<ChevronLeft/)
+})
+
+test('desktop category labels lead to all vehicles while the separate arrow opens vehicle types', () => {
+  assert.match(desktopSearchMenu, /href=\{categoryHref\}/)
+  assert.match(desktopSearchMenu, /handleInternalNavigation\(event, categoryHref\)/)
+  assert.match(desktopSearchMenu, /aria-label=\{`\$\{categoryLabel\}: \$\{desktopSearchCopy\.browseTypes\}`\}/)
+  assert.match(desktopSearchMenu, /setDesktopSearchCategory\(categorySlug \|\| null\)/)
+})
+
+test('desktop category navigation uses blue titles and directional reduced-motion-safe transitions', () => {
+  assert.equal((desktopSearchMenu.match(/text-\[#0866ff\]/g) || []).length >= 4, true)
+  assert.match(header, /useState<'idle' \| 'forward' \| 'back'>\('idle'\)/)
+  assert.match(desktopSearchMenu, /setDesktopSearchMotion\('forward'\)/)
+  assert.match(desktopSearchMenu, /setDesktopSearchMotion\('back'\)/)
+  assert.match(desktopSearchMenu, /autorell-desktop-search-forward/)
+  assert.match(desktopSearchMenu, /autorell-desktop-search-back/)
+  assert.match(globals, /@keyframes autorell-desktop-search-forward/)
+  assert.match(globals, /translate3d\(24px, 0, 0\)/)
+  assert.match(globals, /@keyframes autorell-desktop-search-back/)
+  assert.match(globals, /translate3d\(-24px, 0, 0\)/)
+  assert.match(globals, /@media \(prefers-reduced-motion: reduce\)/)
 })
 
 test('desktop drilldown shares the body type source used by the existing home search', () => {
