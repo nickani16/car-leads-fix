@@ -1,9 +1,11 @@
+import { createHmac } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { euCountryCodes } from '@/lib/eu-countries'
 import { phoneRiskStatus, validatePhoneForCountry } from '@/lib/phone-verification'
 import { normalizePlaceName } from '@/lib/place-name'
+import { normalizeNationalId, reviewNationalId } from '@/lib/national-id'
 
 function clean(value: unknown) {
   return String(value || '').trim()
@@ -17,7 +19,7 @@ export async function PATCH(request: Request) {
   const admin = createAdminClient()
   const { data: existingProfile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,company_id,phone')
+    .select('account_type,company_id,phone,national_id_hash,national_id_last4,identity_status')
     .eq('user_id', user.id)
     .maybeSingle()
   if (!existingProfile) return NextResponse.json({ error: 'Profilen hittades inte.' }, { status: 404 })
@@ -38,10 +40,50 @@ export async function PATCH(request: Request) {
   const city = normalizePlaceName(body.city)
   const region = normalizePlaceName(body.region)
   const birthDate = clean(body.birthDate)
+  const nationalId = clean(body.nationalId)
   const websiteUrl = clean(body.websiteUrl)
   const companyContactEmail = clean(body.companyContactEmail).toLowerCase()
   const companyContactPhone = clean(body.companyContactPhone)
   const companyContactEmailValid = !companyContactEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyContactEmail)
+  let identityUpdate: Record<string, unknown> = {}
+  if (existingProfile.account_type === 'private' && nationalId) {
+    const nationalIdReview = reviewNationalId(countryCode, nationalId)
+    if (nationalIdReview.status === 'invalid') {
+      return NextResponse.json(
+        { code: 'profile_invalid_national_id', field: 'nationalId', error: 'Kontrollera identitetsnumrets format.' },
+        { status: 400 },
+      )
+    }
+
+    const identifierSecret =
+      process.env.MARKETPLACE_IDENTITY_HASH_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!identifierSecret) throw new Error('Identity hashing is not configured.')
+
+    const normalizedNationalId = normalizeNationalId(nationalId)
+    const nationalIdHash = createHmac('sha256', identifierSecret)
+      .update(`${countryCode}:${normalizedNationalId}`)
+      .digest('hex')
+    const { data: identityOwner, error: identityOwnerError } = await admin
+      .from('marketplace_profiles')
+      .select('user_id')
+      .eq('country_code', countryCode)
+      .eq('national_id_hash', nationalIdHash)
+      .maybeSingle()
+    if (identityOwnerError) throw identityOwnerError
+    if (identityOwner && identityOwner.user_id !== user.id) {
+      return NextResponse.json(
+        { code: 'profile_national_id_in_use', field: 'nationalId', error: 'Identitetsuppgifterna är redan kopplade till ett annat konto.' },
+        { status: 409 },
+      )
+    }
+
+    identityUpdate = {
+      national_id_hash: nationalIdHash,
+      national_id_last4: normalizedNationalId.slice(-4),
+      identity_status: nationalIdReview.status === 'passed' ? 'format_validated' : 'needs_review',
+      verification_updated_at: new Date().toISOString(),
+    }
+  }
   const profile = {
     display_name: `${firstName} ${lastName}`.trim(),
     legal_name: `${firstName} ${lastName}`.trim(),
@@ -64,6 +106,7 @@ export async function PATCH(request: Request) {
     region: region || null,
     postal_code: postalCode,
     risk_status: phoneRiskStatus(phoneRiskFlags),
+    ...identityUpdate,
     updated_at: new Date().toISOString(),
   }
 

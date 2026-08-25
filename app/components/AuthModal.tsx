@@ -436,7 +436,7 @@ export default function AuthModal({
                 </div>
               </label>
               {error ? <AuthError message={error} /> : null}
-              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
+              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
                 className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
@@ -486,7 +486,7 @@ export default function AuthModal({
               </label>
               <p className="mt-3 text-xs leading-5 text-[#667085]">{copy.passwordRequirement}</p>
               {error ? <AuthError message={error} /> : null}
-              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
+              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
                 className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
@@ -598,7 +598,7 @@ export default function AuthModal({
               </button>
 
               {error ? <AuthError message={error} /> : null}
-              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
+              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
 
               <button
                 disabled={loading}

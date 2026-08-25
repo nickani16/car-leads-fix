@@ -13,7 +13,7 @@ export function normalizePlaceName(value: unknown) {
       continue
     }
     output += char
-    nextUpper = char === ' ' || char === '-' || char === '/'
+    nextUpper = char === ' ' || char === '-' || char === '/' || char === "'" || char === '’'
   }
 
   return output
