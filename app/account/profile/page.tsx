@@ -147,7 +147,7 @@ function profileCopy(locale: PublicLocale) {
     intro: 'Keep your private seller details up to date. We show only what is needed publicly.',
     privateAccount: 'Private account',
     listingBlockedTitle: 'Complete your profile before creating a listing',
-    listingBlockedText: 'Add your required contact details, date of birth and address below. You can continue to the listing as soon as the profile is complete.',
+    listingBlockedText: 'Add your required contact details, date of birth, identity number and address below. You can continue to the listing as soon as the profile is complete.',
     completeToContinue: 'Required to continue',
   }
   if (locale === 'sv') {
@@ -158,7 +158,7 @@ function profileCopy(locale: PublicLocale) {
       intro: 'Håll dina privata säljaruppgifter uppdaterade. Publikt visar vi bara det som behövs.',
       privateAccount: 'Privatkonto',
       listingBlockedTitle: 'Komplettera profilen innan du skapar en annons',
-      listingBlockedText: 'Fyll i kontaktuppgifter, födelsedatum och adress nedan. Du kan fortsätta till annonsen så snart profilen är komplett.',
+      listingBlockedText: 'Fyll i kontaktuppgifter, födelsedatum, personnummer och adress nedan. Du kan fortsätta till annonsen så snart profilen är komplett.',
       completeToContinue: 'Krävs för att fortsätta',
     }
   }
@@ -170,7 +170,7 @@ function profileCopy(locale: PublicLocale) {
       intro: 'Halten Sie Ihre privaten Verkäuferdaten aktuell. Öffentlich zeigen wir nur das Nötige.',
       privateAccount: 'Privatkonto',
       listingBlockedTitle: 'Vervollständigen Sie Ihr Profil, bevor Sie eine Anzeige erstellen',
-      listingBlockedText: 'Ergänzen Sie unten Kontaktdaten, Geburtsdatum und Adresse. Sobald das Profil vollständig ist, können Sie mit der Anzeige fortfahren.',
+      listingBlockedText: 'Ergänzen Sie unten Kontaktdaten, Geburtsdatum, Ausweisnummer und Adresse. Sobald das Profil vollständig ist, können Sie mit der Anzeige fortfahren.',
       completeToContinue: 'Zum Fortfahren erforderlich',
     }
   }

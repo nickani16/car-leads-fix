@@ -32,7 +32,7 @@ export async function GET() {
   const [{ data: profile }, { data: conversations }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('account_type,display_name,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number')
+      .select('account_type,display_name,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number,national_id_last4')
       .eq('user_id', user.id)
       .maybeSingle(),
     admin

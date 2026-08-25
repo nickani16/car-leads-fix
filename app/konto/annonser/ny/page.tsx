@@ -50,7 +50,7 @@ export async function renderNewListingPage({
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,country_code,company_id,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number')
+    .select('account_type,country_code,company_id,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number,national_id_last4')
     .eq('user_id', user.id)
     .single()
   if (!profile) {

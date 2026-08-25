@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle2, Clock3, ShieldAlert } from 'lucide-react'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import {
+  localizePublicHref,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { localizedAccountError } from '@/lib/account-error-i18n'
 import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
+import { getNationalIdProfileCopy } from '@/lib/national-id-profile-i18n'
 import { normalizePlaceName } from '@/lib/place-name'
 
 type Profile = {
@@ -52,7 +54,11 @@ export default function ProfileForm({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const copy = { ...getProfileCopy(locale), ...getBusinessIdentityCopy(locale) }
+  const copy = {
+    ...getProfileCopy(locale),
+    ...getBusinessIdentityCopy(locale),
+    ...getNationalIdProfileCopy(locale),
+  }
   const [message, setMessage] = useState('')
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
   const [logoUploading, setLogoUploading] = useState(false)
@@ -88,10 +94,10 @@ export default function ProfileForm({
     setMessage(copy.saved)
     const next = searchParams.get('next')
     if (next?.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')) {
-      router.replace(next)
+      window.location.assign(next)
       return
     }
-    router.refresh()
+    window.location.assign(localizePublicHref(locale, '/account'))
   }
 
   async function uploadLogo(file?: File) {
@@ -197,14 +203,25 @@ export default function ProfileForm({
           </select>
         </label>
         {profile.account_type === 'private' && (
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold">{copy.identityNumber}</span>
-            <input
-              value={profile.national_id_last4 ? `......${profile.national_id_last4}` : copy.notRegistered}
-              disabled
-              className={`${controlClass} bg-[#f5f6f8]`}
+          profile.national_id_last4 ? (
+            <label className="block min-w-0">
+              <span className="mb-2 block text-sm font-semibold">{copy.identityNumberSaved}</span>
+              <input
+                value={`......${profile.national_id_last4}`}
+                disabled
+                className={`${controlClass} bg-[#f5f6f8] text-[#667085]`}
+              />
+            </label>
+          ) : (
+            <Field
+              name="nationalId"
+              label={copy.identityNumber}
+              placeholder={copy.identityNumberPlaceholder}
+              helper={copy.identityNumberHelper}
+              autoComplete="off"
+              inputMode="text"
             />
-          </label>
+          )
         )}
         {profile.account_type === 'business' && (
           <>
@@ -378,7 +395,7 @@ function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy
 }
 
 const controlClass =
-  'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm outline-none focus:border-[#0866ff]'
+  'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm font-[400] text-[#101828] outline-none focus:border-[#0866ff]'
 
 function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; helper?: string; normalizePlace?: boolean }) {
   const { label, helper, normalizePlace, onBlur, ...rest } = props

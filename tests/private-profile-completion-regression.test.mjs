@@ -39,7 +39,58 @@ test('profile completeness uses the same private requirements everywhere', () =>
     'postal_code',
     'city',
     'birth_date',
+    'national_id_last4',
   ]) {
     assert.match(bootstrap, new RegExp(`profile\\.${field}`))
   }
+})
+
+test('missing private identity details can be completed securely from the profile', () => {
+  const profileForm = read('app/konto/ProfileForm.tsx')
+  const profileApi = read('app/api/account/profile/route.ts')
+  const headerApi = read('app/api/account/header/route.ts')
+  const listingPage = read('app/konto/annonser/ny/page.tsx')
+
+  assert.match(profileForm, /name="nationalId"/)
+  assert.match(profileForm, /identityNumberPlaceholder/)
+  assert.match(profileForm, /autorell-account-input font-\[400\]/)
+  assert.match(profileForm, /window\.location\.assign\(localizePublicHref\(locale, '\/account'\)\)/)
+  assert.match(profileApi, /reviewNationalId\(countryCode, nationalId\)/)
+  assert.match(profileApi, /createHmac\('sha256'/)
+  assert.match(profileApi, /national_id_last4: normalizedNationalId\.slice\(-4\)/)
+  assert.match(profileApi, /raw_identifier_stored: false/)
+  assert.match(headerApi, /national_id_last4/)
+  assert.match(listingPage, /national_id_last4/)
+})
+
+test('password signup clearly instructs users to click the confirmation link', () => {
+  const authCopy = read('lib/auth-copy.ts')
+
+  assert.match(authCopy, /klicka på bekräftelselänken/)
+  assert.match(authCopy, /click the confirmation link/)
+  assert.match(authCopy, /klicken Sie auf den Bestätigungslink/)
+  assert.match(authCopy, /cliquez sur le lien de confirmation/)
+  assert.match(authCopy, /pulsa el enlace de confirmación/)
+  assert.match(authCopy, /seleziona il link di conferma/)
+  assert.match(authCopy, /kliknij link potwierdzający/)
+  assert.match(authCopy, /klik op de bevestigingslink/)
+  assert.match(authCopy, /napsauta vahvistuslinkkiä/)
+  assert.match(authCopy, /klik på bekræftelseslinket/)
+})
+
+test('identity labels and placeholders are localized for every Autorell market', () => {
+  const identityCopy = read('lib/national-id-profile-i18n.ts')
+
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(identityCopy, new RegExp(`\\n  ${locale}: \\{`))
+  }
+  assert.match(identityCopy, /Personnummer/)
+  assert.match(identityCopy, /Rijksregisternummer/)
+  assert.match(identityCopy, /Numéro de sécurité sociale/)
+  assert.match(identityCopy, /DNI o NIE/)
+  assert.match(identityCopy, /Codice fiscale/)
+  assert.match(identityCopy, /Numer PESEL/)
+  assert.match(identityCopy, /Burgerservicenummer/)
+  assert.match(identityCopy, /Henkilötunnus/)
+  assert.match(identityCopy, /CPR-nummer/)
 })

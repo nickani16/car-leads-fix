@@ -157,7 +157,7 @@ export function isMarketplaceProfileComplete(profile: Record<string, unknown> | 
   if (profile.account_type === 'business') {
     return Boolean(clean(profile.company_name) && clean(profile.registration_number))
   }
-  return Boolean(clean(profile.birth_date))
+  return Boolean(clean(profile.birth_date) && clean(profile.national_id_last4))
 }
 
 function defaultCountryCode(locale: PublicLocale) {

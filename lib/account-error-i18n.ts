@@ -13,6 +13,8 @@ const errorCodeAliases: Record<string, string> = {
   business_account_required: 'Create a business account to activate a plan.',
   business_onboarding_incomplete: 'The company must be reviewed by Autorell before new listings can be published.',
   plan_required: 'The business subscription must be active before more listings can be created.',
+  profile_invalid_national_id: 'Check the identity number format.',
+  profile_national_id_in_use: 'These identity details are already connected to another account.',
 }
 
 const errorMessageAliases: Array<[RegExp, string]> = [
@@ -100,6 +102,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The action could not be completed.': 'Åtgärden kunde inte genomföras.',
     'Invitation could not be sent.': 'Inbjudan kunde inte skickas.',
     'Review could not be saved.': 'Omdömet kunde inte sparas.',
+    'Check the identity number format.': 'Kontrollera personnumrets format.',
+    'These identity details are already connected to another account.': 'Personnumret är redan kopplat till ett annat konto.',
   },
   de: {
     'You need to sign in.': 'Sie müssen sich anmelden.',
@@ -128,6 +132,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The action could not be completed.': 'Die Aktion konnte nicht durchgeführt werden.',
     'Invitation could not be sent.': 'Die Einladung konnte nicht gesendet werden.',
     'Review could not be saved.': 'Die Bewertung konnte nicht gespeichert werden.',
+    'Check the identity number format.': 'Prüfen Sie das Format der Ausweisnummer.',
+    'These identity details are already connected to another account.': 'Diese Ausweisdaten sind bereits mit einem anderen Konto verbunden.',
   },
   fr: {
     'You need to sign in.': 'Vous devez vous connecter.',
@@ -145,6 +151,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'L’abonnement entreprise doit être actif avant de créer d’autres annonces.',
     'Invitation could not be sent.': 'L’invitation n’a pas pu être envoyée.',
     'Review could not be saved.': 'L’avis n’a pas pu être enregistré.',
+    'Check the identity number format.': 'Vérifiez le format du numéro d’identité.',
+    'These identity details are already connected to another account.': 'Ces données d’identité sont déjà associées à un autre compte.',
   },
   es: {
     'You need to sign in.': 'Debes iniciar sesión.',
@@ -162,6 +170,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'La suscripción de empresa debe estar activa antes de crear más anuncios.',
     'Invitation could not be sent.': 'No se pudo enviar la invitación.',
     'Review could not be saved.': 'No se pudo guardar la reseña.',
+    'Check the identity number format.': 'Comprueba el formato del número de identidad.',
+    'These identity details are already connected to another account.': 'Estos datos de identidad ya están vinculados a otra cuenta.',
   },
   it: {
     'You need to sign in.': 'Devi accedere.',
@@ -178,6 +188,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'L’abbonamento aziendale deve essere attivo prima di creare altri annunci.',
     'Invitation could not be sent.': 'Impossibile inviare l’invito.',
     'Review could not be saved.': 'Impossibile salvare la recensione.',
+    'Check the identity number format.': 'Controlla il formato del codice identificativo.',
+    'These identity details are already connected to another account.': 'Questi dati identificativi sono già associati a un altro account.',
   },
   nl: {
     'You need to sign in.': 'Je moet inloggen.',
@@ -194,6 +206,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'Het zakelijke abonnement moet actief zijn voordat er meer advertenties kunnen worden aangemaakt.',
     'Invitation could not be sent.': 'De uitnodiging kon niet worden verzonden.',
     'Review could not be saved.': 'De beoordeling kon niet worden opgeslagen.',
+    'Check the identity number format.': 'Controleer de indeling van het identiteitsnummer.',
+    'These identity details are already connected to another account.': 'Deze identiteitsgegevens zijn al aan een ander account gekoppeld.',
   },
   pl: {
     'You need to sign in.': 'Musisz się zalogować.',
@@ -210,6 +224,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'Subskrypcja firmowa musi być aktywna, zanim można dodać więcej ogłoszeń.',
     'Invitation could not be sent.': 'Nie udało się wysłać zaproszenia.',
     'Review could not be saved.': 'Nie udało się zapisać opinii.',
+    'Check the identity number format.': 'Sprawdź format numeru identyfikacyjnego.',
+    'These identity details are already connected to another account.': 'Te dane identyfikacyjne są już powiązane z innym kontem.',
   },
   fi: {
     'You need to sign in.': 'Sinun täytyy kirjautua sisään.',
@@ -226,6 +242,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'Yritystilaus on oltava aktiivinen ennen kuin uusia ilmoituksia voi luoda.',
     'Invitation could not be sent.': 'Kutsua ei voitu lähettää.',
     'Review could not be saved.': 'Arvostelua ei voitu tallentaa.',
+    'Check the identity number format.': 'Tarkista henkilötunnuksen muoto.',
+    'These identity details are already connected to another account.': 'Nämä henkilötiedot on jo liitetty toiseen tiliin.',
   },
   da: {
     'You need to sign in.': 'Du skal logge ind.',
@@ -242,6 +260,8 @@ const localizedErrorMessages: Record<string, Record<string, string>> = {
     'The business subscription must be active before more listings can be created.': 'Virksomhedsabonnementet skal være aktivt, før der kan oprettes flere annoncer.',
     'Invitation could not be sent.': 'Invitationen kunne ikke sendes.',
     'Review could not be saved.': 'Anmeldelsen kunne ikke gemmes.',
+    'Check the identity number format.': 'Kontrollér identitetsnummerets format.',
+    'These identity details are already connected to another account.': 'Disse identitetsoplysninger er allerede knyttet til en anden konto.',
   },
 }
 
