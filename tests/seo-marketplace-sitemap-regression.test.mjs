@@ -26,9 +26,26 @@ test('SEO route state is centralized for all eleven active markets', () => {
   assert.match(geoLandingSource, /buildSeoMarketplaceSearchParams/)
   assert.match(geoLandingSource, /shouldIncludeInSitemap/)
   assert.match(geoLandingSource, /localizeSeoPlace/)
-  assert.match(geoLandingSource, /title: normalizeSeoText\(`\$\{copy\.h1\} \| Autorell`\)/)
+  assert.match(geoLandingSource, /title: fitSeoTitle\(`\$\{copy\.h1\} \| Autorell`\)/)
+  assert.match(geoLandingSource, /if \(cleaned\.length <= 60\) return cleaned/)
   assert.doesNotMatch(geoLandingSource, /cleanSeoText\(`\$\{copy\.h1\} \| Autorell`, 60\)/)
   assert.match(geoLandingSource, /fitSeoDescription/)
+  assert.match(geoLandingSource, /place\.name === '\\u00c5land'/)
+  assert.match(geoLandingSource, /name: 'Ahvenanmaa'/)
+  for (const localizedLead of [
+    'Utforska utbudet:',
+    'D\\u00e9couvrez les annonces :',
+    'Scopri gli annunci:',
+    'Explora los anuncios:',
+    'Bekijk het aanbod:',
+    'Sprawd\\u017a oferty:',
+    'Se udvalget:',
+    'Tutustu tarjontaan:',
+  ]) {
+    assert.ok(geoLandingSource.includes(localizedLead), `${localizedLead} is missing from localized metadata`)
+  }
+  assert.doesNotMatch(geoLandingSource, /Zobacz aktualne og\\u0142oszenia \$\{subject\}/)
+  assert.doesNotMatch(geoLandingSource, /Katso kohteen \$\{subject\}/)
   assert.match(geoLandingSource, /BMW: \['X5', '3 Series'/)
   assert.match(geoLandingSource, /Volvo: \['XC60', 'V60'/)
   assert.match(marketplaceGeoSource, /getStaticGeoDataset/)

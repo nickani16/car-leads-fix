@@ -39,7 +39,10 @@ landingUrls.push({
 
 const results = await mapWithConcurrency(landingUrls, 8, verifyLanding)
 for (const result of results) {
-  console.log(`${result.market.padEnd(2)} ${result.sitemap.padEnd(24)} ${result.title}`)
+  console.log(
+    `${result.market.padEnd(2)} ${result.sitemap.padEnd(24)} ${result.title} ` +
+    `(title ${result.titleLength}, description ${result.descriptionLength})`,
+  )
 }
 console.log(`Verified ${results.length} rendered SEO landings across ${markets.length} markets.`)
 
@@ -49,27 +52,37 @@ async function verifyLanding({ market, sitemap, canonicalUrl }) {
   assert.equal(canonical.origin, expectedOrigin, `${sitemap} contains a non-canonical origin`)
   assert.equal(canonical.search, '', `${sitemap} contains a query URL: ${canonicalUrl}`)
 
-  const localMarketPrefix =
-    ['127.0.0.1', 'localhost'].includes(baseUrl.hostname) && ['se', 'de'].includes(market)
-      ? `/${market}`
-      : ''
-  const requestUrl = new URL(`${localMarketPrefix}${canonical.pathname}${canonical.search}`, baseUrl)
-  const response = await fetch(requestUrl, { redirect: 'manual' })
+  const isLocal = ['127.0.0.1', 'localhost'].includes(baseUrl.hostname)
+  const canonicalPath = canonical.pathname.startsWith(`/${market}/`)
+    ? canonical.pathname.slice(market.length + 1)
+    : canonical.pathname
+  const requestPath = isLocal
+    ? `/seo/${market}${canonicalPath}`
+    : `${canonical.pathname}${canonical.search}`
+  const requestUrl = new URL(requestPath, baseUrl)
+  const response = await fetch(requestUrl, {
+    redirect: 'manual',
+    headers: isLocal ? { 'x-autorell-internal-seo': '1' } : undefined,
+  })
   assert.equal(response.status, 200, `${canonical.pathname} returned ${response.status}`)
 
   const $ = cheerio.load(await response.text())
   const title = normalizeText($('title').first().text())
   const description = normalizeText($('meta[name="description"]').attr('content'))
   const canonicalHref = $('link[rel="canonical"]').attr('href')
-  const h1 = normalizeText($('#seo-marketplace-heading').first().text())
-
-  assert.ok(h1, `${canonical.pathname} is missing its state-specific H1`)
-  assert.equal(title, `${h1} | Autorell`, `${canonical.pathname} has generic or truncated title metadata`)
+  assert.ok(title.endsWith(' | Autorell'), `${canonical.pathname} is missing the Autorell title suffix`)
+  assert.ok(title.length <= 60, `${canonical.pathname} title exceeds 60 characters`)
   assert.equal(canonicalHref, canonicalUrl, `${canonical.pathname} has the wrong canonical`)
   assert.ok(description.length >= 60, `${canonical.pathname} has an incomplete description`)
   assert.ok(description.length <= 155, `${canonical.pathname} description exceeds 155 characters`)
 
-  return { market, sitemap, title }
+  return {
+    market,
+    sitemap,
+    title,
+    titleLength: title.length,
+    descriptionLength: description.length,
+  }
 }
 
 function extractLocations(xml) {

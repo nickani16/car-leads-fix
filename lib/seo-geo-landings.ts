@@ -397,7 +397,7 @@ export async function resolveGeoLandingRoute(
     routeKind,
     canonicalPath,
     h1: copy.h1,
-    title: normalizeSeoText(`${copy.h1} | Autorell`),
+    title: fitSeoTitle(`${copy.h1} | Autorell`),
     description: fitSeoDescription(copy.description),
     zeroResultsText: copy.zeroResults,
     breadcrumbs,
@@ -406,19 +406,38 @@ export async function resolveGeoLandingRoute(
 }
 
 function localizeSeoPlace(place: MarketplaceGeoArea, locale: PublicLocale): MarketplaceGeoArea {
-  if (locale !== 'be' || !place.name.includes('/')) return place
+  if (locale === 'fi' && place.name === '\u00c5land') {
+    return { ...place, name: 'Ahvenanmaa' }
+  }
+
+  if (locale !== 'be') return place
 
   const dutchName = place.name
     .split('/')
     .map((part) => part.trim())
     .filter(Boolean)
     .at(-1)
+    ?.replace(/^Arrondissement\s+/i, '')
 
   return dutchName ? { ...place, name: dutchName } : place
 }
 
 function normalizeSeoText(value: string) {
   return cleanSeoText(value, Number.MAX_SAFE_INTEGER)
+}
+
+function fitSeoTitle(value: string) {
+  const cleaned = normalizeSeoText(value)
+  if (cleaned.length <= 60) return cleaned
+
+  const suffix = cleaned.endsWith(' | Autorell') ? ' | Autorell' : ''
+  const available = 60 - suffix.length
+  const candidate = cleaned.slice(0, available).trimEnd()
+  const wordBoundary = candidate.lastIndexOf(' ')
+  const shortened = wordBoundary >= Math.max(24, available - 18)
+    ? candidate.slice(0, wordBoundary)
+    : candidate
+  return `${shortened.replace(/[\s,;:.-]+$/g, '')}${suffix}`
 }
 
 function fitSeoDescription(value: string) {
@@ -714,7 +733,7 @@ function buildLocalizedSeoCopy(
   const copy = {
     sv: {
       h1: `${subject} till salu i ${scope}`,
-      description: `Se ${subject} till salu i ${scope}. J\u00e4mf\u00f6r aktuella annonser fr\u00e5n privata s\u00e4ljare och f\u00f6retag p\u00e5 Autorell.`,
+      description: `Utforska utbudet: ${subject} till salu i ${scope}. J\u00e4mf\u00f6r aktuella annonser fr\u00e5n privatpersoner och f\u00f6retag p\u00e5 Autorell.`,
       zeroResults: `Inga annonser f\u00f6r ${subject} i ${scope} just nu`,
     },
     de: {
@@ -728,43 +747,43 @@ function buildLocalizedSeoCopy(
       zeroResults: `Derzeit keine Anzeigen f\u00fcr ${subject} in ${scope}`,
     },
     fr: {
-      h1: `${subject} \u00e0 vendre ${countryScope ? 'en' : '\u00e0'} ${scope}`,
-      description: `Recherchez ${subject} \u00e0 vendre ${countryScope ? 'en' : '\u00e0'} ${scope}. Comparez les annonces de particuliers et de professionnels sur Autorell.`,
+      h1: `${subject} \u00e0 vendre - ${scope}`,
+      description: `D\u00e9couvrez les annonces : ${subject} \u00e0 vendre - ${scope}. Comparez les offres actuelles des particuliers et des professionnels sur Autorell.`,
       zeroResults: `Aucune annonce pour ${subject} ${countryScope ? 'en' : '\u00e0'} ${scope} pour le moment`,
     },
     it: {
-      h1: `${subject} in vendita ${countryScope ? 'in' : 'a'} ${scope}`,
-      description: `Scopri ${subject} in vendita ${countryScope ? 'in' : 'a'} ${scope}. Confronta annunci di privati e aziende su Autorell.`,
+      h1: `${subject} in vendita - ${scope}`,
+      description: `Scopri gli annunci: ${subject} in vendita - ${scope}. Confronta le offerte attuali di privati e professionisti su Autorell.`,
       zeroResults: `Nessun annuncio per ${subject} ${countryScope ? 'in' : 'a'} ${scope} al momento`,
     },
     es: {
       h1: `${subject} en venta en ${scope}`,
-      description: `Busca ${subject} en venta en ${scope}. Compara anuncios actuales de particulares y empresas en Autorell.`,
+      description: `Explora los anuncios: ${subject} en venta en ${scope}. Compara ofertas actuales de particulares y profesionales en Autorell.`,
       zeroResults: `No hay anuncios de ${subject} en ${scope} ahora mismo`,
     },
     nl: {
       h1: `${subject} te koop in ${scope}`,
-      description: `Bekijk ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
+      description: `Bekijk het aanbod: ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
       zeroResults: `Momenteel geen advertenties voor ${subject} in ${scope}`,
     },
     be: {
       h1: `${subject} te koop in ${scope}`,
-      description: `Bekijk ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
+      description: `Bekijk het aanbod: ${subject} te koop in ${scope}. Vergelijk actuele advertenties van particuliere en zakelijke verkopers op Autorell.`,
       zeroResults: `Momenteel geen advertenties voor ${subject} in ${scope}`,
     },
     pl: {
       h1: `${subject} na sprzeda\u017c - ${scope}`,
-      description: `Zobacz aktualne og\u0142oszenia ${subject} w lokalizacji ${scope}. Por\u00f3wnaj oferty prywatne i firmowe w Autorell.`,
+      description: `Sprawd\u017a oferty: ${subject} na sprzeda\u017c - ${scope}. Por\u00f3wnaj aktualne og\u0142oszenia prywatne i firmowe w Autorell.`,
       zeroResults: `Obecnie brak og\u0142osze\u0144 dla ${subject} - ${scope}`,
     },
     da: {
       h1: `${subject} til salg i ${scope}`,
-      description: `Se ${subject} til salg i ${scope}. Sammenlign aktuelle annoncer fra private og virksomheder p\u00e5 Autorell.`,
+      description: `Se udvalget: ${subject} til salg i ${scope}. Sammenlign aktuelle annoncer fra private s\u00e6lgere og virksomheder p\u00e5 Autorell.`,
       zeroResults: `Ingen annoncer for ${subject} i ${scope} lige nu`,
     },
     fi: {
       h1: `${subject} myynniss\u00e4 - ${scope}`,
-      description: `Katso kohteen ${subject} ajankohtaiset ilmoitukset alueella ${scope}. Vertaile yksityisten ja yritysten tarjontaa Autorellissa.`,
+      description: `Tutustu tarjontaan: ${subject} myynniss\u00e4 - ${scope}. Vertaile yksityisten ja yritysten ajankohtaisia ilmoituksia Autorellissa.`,
       zeroResults: `Ei ilmoituksia haulle ${subject} - ${scope}`,
     },
     en: {
@@ -776,7 +795,11 @@ function buildLocalizedSeoCopy(
   return copy[locale] || copy.en
 }
 
-function buildLocalizedLeasingSeoCopy(locale: PublicLocale, subject: string, scope: string) {
+function buildLocalizedLeasingSeoCopy(
+  locale: PublicLocale,
+  subject: string,
+  scope: string,
+) {
   const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
   const copy = {
     sv: {
@@ -790,38 +813,38 @@ function buildLocalizedLeasingSeoCopy(locale: PublicLocale, subject: string, sco
       zeroResults: `Derzeit keine Leasingangebote f\u00fcr ${subject} in ${scope}`,
     },
     fr: {
-      h1: `${subject} en leasing \u00e0 ${scope}`,
-      description: `Recherchez ${subject} en leasing \u00e0 ${scope}. Comparez les offres actuelles de professionnels sur Autorell.`,
+      h1: `${subject} en leasing - ${scope}`,
+      description: `D\u00e9couvrez les offres : ${subject} en leasing - ${scope}. Comparez les offres actuelles des professionnels sur Autorell.`,
       zeroResults: `Aucune offre de leasing pour ${subject} \u00e0 ${scope} pour le moment`,
     },
     it: {
-      h1: `${subject} in leasing a ${scope}`,
-      description: `Cerca ${subject} in leasing a ${scope}. Confronta le offerte attuali delle aziende su Autorell.`,
+      h1: `${subject} in leasing - ${scope}`,
+      description: `Scopri le offerte: ${subject} in leasing - ${scope}. Confronta le proposte attuali delle aziende su Autorell.`,
       zeroResults: `Nessuna offerta di leasing per ${subject} a ${scope} al momento`,
     },
     es: {
       h1: `${subject} en leasing en ${scope}`,
-      description: `Busca ${subject} en leasing en ${scope}. Compara ofertas actuales de empresas en Autorell.`,
+      description: `Explora las ofertas: ${subject} en leasing en ${scope}. Compara propuestas actuales de empresas en Autorell.`,
       zeroResults: `No hay ofertas de leasing de ${subject} en ${scope} ahora mismo`,
     },
     nl: {
       h1: `${subject} leasen in ${scope}`,
-      description: `Zoek ${subject} voor leasing in ${scope}. Vergelijk actuele aanbiedingen van bedrijven op Autorell.`,
+      description: `Bekijk het leaseaanbod: ${subject} leasen in ${scope}. Vergelijk actuele aanbiedingen van zakelijke verkopers op Autorell.`,
       zeroResults: `Momenteel geen leaseaanbiedingen voor ${subject} in ${scope}`,
     },
     pl: {
       h1: `${subject} w leasingu - ${scope}`,
-      description: `Znajd\u017a ${subject} w leasingu w lokalizacji ${scope}. Por\u00f3wnaj aktualne oferty firm w Autorell.`,
+      description: `Sprawd\u017a oferty: ${subject} w leasingu - ${scope}. Por\u00f3wnaj aktualne propozycje firmowe w Autorell.`,
       zeroResults: `Obecnie brak ofert leasingu dla ${subject} - ${scope}`,
     },
     da: {
       h1: `${subject} til leasing i ${scope}`,
-      description: `Find ${subject} til leasing i ${scope}. Sammenlign aktuelle tilbud fra virksomheder p\u00e5 Autorell.`,
+      description: `Se leasingudvalget: ${subject} til leasing i ${scope}. Sammenlign aktuelle tilbud fra virksomheder p\u00e5 Autorell.`,
       zeroResults: `Ingen leasingtilbud for ${subject} i ${scope} lige nu`,
     },
     fi: {
       h1: `${subject} leasingiin - ${scope}`,
-      description: `Etsi ${subject} leasingiin alueella ${scope}. Vertaile yritysten ajankohtaisia tarjouksia Autorellissa.`,
+      description: `Tutustu leasingtarjontaan: ${subject} leasingiin - ${scope}. Vertaile yritysten ajankohtaisia tarjouksia Autorellissa.`,
       zeroResults: `Ei leasingilmoituksia haulle ${subject} - ${scope}`,
     },
     en: {
