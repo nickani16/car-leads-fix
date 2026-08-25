@@ -1,1 +1,1 @@
-export { default, renderListingCreatedPage } from '../../../account/listings/created/page'
+export { default } from '../../../account/listings/created/page'

@@ -87,7 +87,7 @@ export default function AdminEntityActions({
                   <AlertTriangle className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 id="admin-action-title" className="text-lg font-black text-[#101828]">
+                  <h2 id="admin-action-title" className="text-lg font-semibold text-[#101828]">
                     {active.confirmTitle || active.label}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#667085]">

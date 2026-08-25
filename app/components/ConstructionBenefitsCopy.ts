@@ -7,8 +7,8 @@ const copy: Record<PublicLocale, ConstructionCopy> = {
   sv: {
     metaTitle: 'Sälj entreprenadmaskiner gratis online | Autorell',
     metaDescription: 'Annonsera grävmaskiner, hjullastare och annan entreprenadmaskin gratis i 5 dagar och nå köpare på Autorell.',
-    eyebrow: 'SÄLJ ENTREPRENADSMASKINER PÅ AUTORELL',
-    title: 'Sälj entreprenadmaskiner gratis',
+    eyebrow: 'SÄLJ MASKINER PÅ AUTORELL',
+    title: 'Sälj maskiner gratis',
     intro: 'Skapa en tydlig annons för grävmaskiner, hjullastare och andra maskiner och nå köpare som söker rätt utrustning.',
     primaryCta: 'Kom igång gratis',
     proof: 'Gratis grundannons i 5 dagar. Betala bara för längre publicering eller extra synlighet.',
@@ -18,8 +18,8 @@ const copy: Record<PublicLocale, ConstructionCopy> = {
       { title: 'Publicera gratis', text: 'Din grundannons är gratis i 5 dagar. Förläng bara när du behöver det.' },
       { title: 'Nå rätt köpare', text: 'Köpare hittar maskinen via sök, kategori och marknad och kontaktar dig direkt.' },
     ],
-    seoTitle: 'Byggd för att entreprenadmaskiner ska hittas',
-    seoText: 'Autorell gör det enkelt att annonsera grävmaskiner, hjullastare, dumprar, kranar och annan entreprenadutrustning med rätt tekniska data och bilder.',
+    seoTitle: 'Byggd för att maskiner ska hittas',
+    seoText: 'Autorell gör det enkelt att annonsera grävmaskiner, hjullastare, dumprar, kranar och andra maskiner med rätt tekniska data och bilder.',
     faqTitle: 'Vanliga frågor om att sälja entreprenadmaskiner',
     faqs: [
       { question: 'Är det gratis att annonsera en entreprenadmaskin?', answer: 'Ja. Grundannonsen är gratis i 5 dagar. Du betalar bara om du vill annonsera längre eller öka synligheten.' },

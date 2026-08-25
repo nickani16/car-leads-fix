@@ -1,5 +1,6 @@
 import 'server-only'
 
+import crypto from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import {
@@ -34,7 +35,7 @@ type BusinessBillingEmailInput = {
   invoiceUrl?: string | null
   pdfUrl?: string | null
   dueAt?: string | null
-  daysLeft?: 1 | 2
+  daysLeft?: number
   locale?: string | null
   market?: string | null
 }
@@ -54,6 +55,49 @@ type MessageCopy = {
   url: string
 }
 
+type BusinessBillingCopy = {
+  openAccount: string
+  openInvoice: string
+  viewReceipt: string
+  openPayments: string
+  payInvoice: string
+  payNow: string
+  receiptTitle: string
+  failedPreview: string
+  failedTitle: string
+  blockedSubject: string
+  blockedPreview: string
+  blockedTitle: string
+  cancelTitle: string
+  cancelPreview: string
+  welcomeSubject: (plan: string) => string
+  welcomePreview: (plan: string) => string
+  welcomeTitle: (plan: string) => string
+  welcomeBody: (limit: string) => string
+  invoiceSubject: (line: string) => string
+  invoicePreviewDue: (amount: string, due: string) => string
+  invoicePreview: (amount: string) => string
+  invoiceTitle: (line: string) => string
+  invoiceBodyDue: (plan: string, amount: string, due: string) => string
+  invoiceBody: (plan: string, amount: string) => string
+  receiptSubject: (plan: string) => string
+  receiptPreview: (amount: string) => string
+  receiptBody: (plan: string) => string
+  failedSubject: (plan: string) => string
+  failedBody: (plan: string) => string
+  reminderSubject: (days: number) => string
+  reminderPreviewDue: (line: string, due: string) => string
+  reminderPreview: (line: string) => string
+  reminderTitle: (days: number) => string
+  reminderBodyDue: (line: string, plan: string, due: string) => string
+  reminderBody: (line: string, plan: string) => string
+  blockedBody: (plan: string) => string
+  cancelSubject: (plan: string) => string
+  cancelPreviewDue: (date: string) => string
+  cancelBodyDue: (plan: string, date: string) => string
+  cancelBody: (plan: string) => string
+}
+
 const planLabels: Record<string, string> = {
   free: 'Free',
   starter: 'Starter',
@@ -66,67 +110,129 @@ export async function sendBusinessBillingEmail(
   admin: SupabaseClient,
   input: BusinessBillingEmailInput,
 ) {
-  const recipient = await getBusinessRecipient(admin, input.userId, input)
-  if (!recipient) return { delivered: false, reason: 'missing_recipient' as const }
+  const recipients = await getBusinessBillingRecipients(admin, input.userId, input)
+  if (!recipients.length) return { delivered: false, reason: 'missing_recipient' as const }
 
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    await recordEmailDelivery(admin, input, recipient.email, 'skipped', null, 'RESEND_API_KEY_MISSING')
+    for (const recipient of recipients) {
+      await recordEmailDelivery(admin, inputForRecipient(input, recipient.email), recipient.email, 'skipped', null, 'RESEND_API_KEY_MISSING')
+    }
     return { delivered: false, reason: 'missing_provider_key' as const }
   }
 
-  const reserved = await reserveEmailDelivery(admin, input, recipient.email)
-  if (!reserved) return { delivered: false, reason: 'duplicate' as const }
+  const resend = new Resend(apiKey)
+  let delivered = 0
+  let duplicates = 0
+  let lastReason: string | null = null
 
-  const message = buildBusinessBillingMessage(input, recipient)
-  const { data, error } = await new Resend(apiKey).emails.send(
-    {
-      from: process.env.AUTORELL_EMAIL_FROM || 'Autorell <noreply@autorell.com>',
-      to: recipient.email,
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    },
-    { headers: { 'Idempotency-Key': input.deliveryKey } },
-  )
+  for (const recipient of recipients) {
+    const recipientInput = inputForRecipient(input, recipient.email)
+    const reserved = await reserveEmailDelivery(admin, recipientInput, recipient.email)
+    if (!reserved) {
+      duplicates += 1
+      continue
+    }
 
-  if (error) {
-    await recordEmailDelivery(admin, input, recipient.email, 'failed', null, error.message)
-    console.error('[business-billing-email] delivery failed', {
-      kind: input.kind,
-      deliveryKey: input.deliveryKey,
-      userId: input.userId,
-      message: error.message,
-    })
-    return { delivered: false, reason: error.message }
+    const message = buildBusinessBillingMessage(input, recipient)
+    const { data, error } = await resend.emails.send(
+      {
+        from: process.env.AUTORELL_EMAIL_FROM || 'Autorell <noreply@autorell.com>',
+        to: recipient.email,
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+      },
+      { headers: { 'Idempotency-Key': recipientInput.deliveryKey } },
+    )
+
+    if (error) {
+      await recordEmailDelivery(admin, recipientInput, recipient.email, 'failed', null, error.message)
+      lastReason = error.message
+      console.error('[business-billing-email] delivery failed', {
+        kind: input.kind,
+        deliveryKey: recipientInput.deliveryKey,
+        userId: input.userId,
+        recipient: recipient.email,
+        message: error.message,
+      })
+      continue
+    }
+
+    await recordEmailDelivery(admin, recipientInput, recipient.email, 'sent', data?.id || null, null)
+    delivered += 1
   }
 
-  await recordEmailDelivery(admin, input, recipient.email, 'sent', data?.id || null, null)
-  return { delivered: true, providerMessageId: data?.id || null }
+  if (delivered > 0) return { delivered: true, deliveredCount: delivered }
+  if (duplicates === recipients.length) return { delivered: false, reason: 'duplicate' as const }
+  return { delivered: false, reason: lastReason || 'not_delivered' }
 }
 
-async function getBusinessRecipient(
+async function getBusinessBillingRecipients(
   admin: SupabaseClient,
   userId: string,
   input?: Pick<BusinessBillingEmailInput, 'locale' | 'market'>,
-): Promise<BusinessRecipient | null> {
+): Promise<BusinessRecipient[]> {
   const { data: profile } = await admin
     .from('marketplace_profiles')
-    .select('email,company_name,display_name,locale,country_code')
+    .select('email,company_name,display_name,locale,country_code,company_id')
     .eq('user_id', userId)
     .maybeSingle()
 
-  const email = String(profile?.email || '').trim()
-  if (!email || !email.includes('@')) return null
-  return {
-    email,
-    companyName: String(profile?.company_name || profile?.display_name || 'Company'),
-    locale: resolveEmailLocale({
-      locale: input?.locale || profile?.locale,
-      market: input?.market,
-      countryCode: profile?.country_code,
-    }),
+  const companyName = String(profile?.company_name || profile?.display_name || 'Company')
+  const fallbackLocale = resolveEmailLocale({
+    locale: input?.locale || profile?.locale,
+    market: input?.market,
+    countryCode: profile?.country_code,
+  })
+  const recipients: BusinessRecipient[] = []
+  const addRecipient = (emailValue: unknown, localeValue?: unknown, countryCode?: unknown) => {
+    const email = String(emailValue || '').trim().toLowerCase()
+    if (!email || !email.includes('@') || recipients.some((recipient) => recipient.email === email)) return
+    recipients.push({
+      email,
+      companyName,
+      locale: resolveEmailLocale({
+        locale: input?.locale || String(localeValue || ''),
+        market: input?.market,
+        countryCode: String(countryCode || profile?.country_code || ''),
+      }) || fallbackLocale,
+    })
   }
+
+  const companyId = String(profile?.company_id || '').trim()
+  if (companyId) {
+    const { data: billingMembers } = await admin
+      .from('marketplace_company_members')
+      .select('user_id')
+      .eq('company_id', companyId)
+      .eq('billing_notifications_enabled', true)
+
+    const userIds = Array.from(new Set((billingMembers || []).map((member) => String(member.user_id)).filter(Boolean)))
+    if (userIds.length) {
+      const { data: memberProfiles } = await admin
+        .from('marketplace_profiles')
+        .select('email,locale,country_code')
+        .in('user_id', userIds)
+      for (const memberProfile of memberProfiles || []) {
+        addRecipient(memberProfile.email, memberProfile.locale, memberProfile.country_code)
+      }
+    }
+  }
+
+  addRecipient(profile?.email, profile?.locale, profile?.country_code)
+  return recipients
+}
+
+function inputForRecipient(input: BusinessBillingEmailInput, recipientEmail: string): BusinessBillingEmailInput {
+  return {
+    ...input,
+    deliveryKey: `${input.deliveryKey}-${hashRecipientEmail(recipientEmail)}`,
+  }
+}
+
+function hashRecipientEmail(email: string) {
+  return crypto.createHash('sha256').update(email.trim().toLowerCase()).digest('hex').slice(0, 16)
 }
 
 async function reserveEmailDelivery(admin: SupabaseClient, input: BusinessBillingEmailInput, recipientEmail: string) {
@@ -284,8 +390,8 @@ function renderEmailHtml(copy: MessageCopy, companyName: string, locale: EmailLo
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeEmailHtml(copy.title)}</title></head><body style="margin:0;background:#f6f8fb;font-family:Arial,sans-serif;color:#101828"><div style="display:none;max-height:0;overflow:hidden">${escapeEmailHtml(copy.preview)}</div><div style="max-width:640px;margin:0 auto;padding:36px 18px"><div style="background:#fff;border:1px solid #d9e2ef;border-radius:14px;padding:32px"><p style="margin:0 0 18px;color:#0866ff;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase">${escapeEmailHtml(labels.header)}</p><h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;color:#101828">${escapeEmailHtml(copy.title)}</h1><p style="margin:0 0 18px;color:#475467;font-size:15px;line-height:1.7">${escapeEmailHtml(copy.body)}</p><p style="margin:0 0 26px;color:#667085;font-size:13px">${escapeEmailHtml(labels.company)}: ${escapeEmailHtml(companyName)}</p><a href="${escapeEmailHtml(copy.url)}" style="display:inline-block;background:#0866ff;color:#fff;padding:13px 18px;border-radius:8px;text-decoration:none;font-weight:700">${escapeEmailHtml(copy.cta)}</a></div><p style="margin:18px 4px 0;color:#98a2b3;font-size:12px;line-height:1.6">${escapeEmailHtml(labels.footer)}</p></div></body></html>`
 }
 
-function kindCopy(locale: EmailLocale) {
-  const en = {
+function kindCopy(locale: EmailLocale): BusinessBillingCopy {
+  const en: BusinessBillingCopy = {
     openAccount: 'Open account pages',
     openInvoice: 'Open invoice',
     viewReceipt: 'View receipt',
@@ -372,7 +478,85 @@ function kindCopy(locale: EmailLocale) {
       cancelBody: (plan) => `${plan} är aktivt till periodens slut. Redan skapade fakturor och sista fakturan måste fortfarande betalas innan kontot stängs helt.`,
     },
   }
-  return { ...en, ...(overrides[locale] || {}) }
+  return { ...en, ...(localizedBillingKindCopy(locale) || {}), ...(overrides[locale] || {}) }
+}
+
+function localizedBillingKindCopy(locale: EmailLocale): Partial<BusinessBillingCopy> | null {
+  if (locale === 'en' || locale === 'sv') return null
+  const copy: Partial<Record<EmailLocale, Partial<BusinessBillingCopy>>> = {
+    da: {
+      openAccount: 'Åbn kontosider', openInvoice: 'Åbn faktura', viewReceipt: 'Se kvittering', openPayments: 'Åbn betalinger', payInvoice: 'Betal faktura', payNow: 'Betal nu',
+      receiptTitle: 'Betaling gennemført', failedPreview: 'Opdater betalingen for at undgå begrænsning af kontoen.', failedTitle: 'Betalingen gik ikke igennem',
+      blockedSubject: 'Din Autorell-virksomhedskonto er begrænset, indtil betalingen er modtaget', blockedPreview: 'Kontoen åbnes igen, når den forfaldne faktura er betalt.', blockedTitle: 'Kontoen er begrænset',
+      cancelTitle: 'Opsigelsen er planlagt', cancelPreview: 'Planen er aktiv indtil periodens udløb.',
+      welcomeSubject: (plan: string) => `Velkommen til Autorell ${plan}`, welcomePreview: (plan: string) => `Virksomhedsplanen ${plan} er aktiv.`, welcomeTitle: (plan: string) => `Velkommen til Autorell ${plan}`, welcomeBody: (limit: string) => `Din virksomhedsplan er aktiv. I har ${limit} og kan håndtere annoncer, betalinger og abonnementer fra kontosiderne.`,
+      invoiceSubject: (line: string) => `${line} fra Autorell er klar`, invoicePreviewDue: (amount: string, due: string) => `${amount} forfalder ${due}.`, invoicePreview: (amount: string) => `${amount} til betaling.`, invoiceTitle: (line: string) => `${line} er klar`, invoiceBodyDue: (plan: string, amount: string, due: string) => `Fakturaen for ${plan} er oprettet. Beløbet er ${amount} og forfalder ${due}. Betal via linket nedenfor eller efter betalingsinstruktionerne på fakturaen.`, invoiceBody: (plan: string, amount: string) => `Fakturaen for ${plan} er oprettet. Beløbet er ${amount}. Betal via linket nedenfor eller efter betalingsinstruktionerne på fakturaen.`,
+      receiptSubject: (plan: string) => `Betaling modtaget for ${plan}`, receiptPreview: (amount: string) => `${amount} er betalt. Her er kvitteringen/fakturaen.`, receiptBody: (plan: string) => `Vi har modtaget betalingen for ${plan}. Kontoen er aktiv, og kvitteringen/fakturaen er tilgængelig via linket nedenfor.`,
+      failedSubject: (plan: string) => `Betalingen for ${plan} gik ikke igennem`, failedBody: (plan: string) => `Vi kunne ikke registrere betalingen for ${plan}. Åbn betalingssiden og betal fakturaen eller opdater betalingsmetoden for at undgå begrænsning af kontoen.`,
+      reminderSubject: (days: number) => `${days} dag${days === 1 ? '' : 'e'} tilbage til at betale Autorell-fakturaen`, reminderPreviewDue: (line: string, due: string) => `${line} forfalder ${due}.`, reminderPreview: (line: string) => `${line} forfalder snart.`, reminderTitle: (days: number) => `${days} dag${days === 1 ? '' : 'e'} tilbage`, reminderBodyDue: (line: string, plan: string, due: string) => `${line} for ${plan} forfalder ${due}. Betal til tiden for at bevare adgangen til virksomhedsplanen.`, reminderBody: (line: string, plan: string) => `${line} for ${plan} forfalder snart. Betal til tiden for at bevare adgangen til virksomhedsplanen.`,
+      blockedBody: (plan: string) => `Fakturaen for ${plan} er forfalden. Virksomhedskontoen er begrænset, indtil betalingen er modtaget. Åbn betalingssiden eller fakturaen for at betale.`, cancelSubject: (plan: string) => `Opsigelse planlagt for ${plan}`, cancelPreviewDue: (date: string) => `Planen er aktiv indtil ${date}.`, cancelBodyDue: (plan: string, date: string) => `${plan} er aktiv indtil ${date}. Udstedte fakturaer og slutfakturaen skal stadig betales, før kontoen kan lukkes helt.`, cancelBody: (plan: string) => `${plan} er aktiv indtil den aktuelle periode slutter. Udstedte fakturaer og slutfakturaen skal stadig betales, før kontoen kan lukkes helt.`,
+    },
+    fi: {
+      openAccount: 'Avaa tilisivut', openInvoice: 'Avaa lasku', viewReceipt: 'Näytä kuitti', openPayments: 'Avaa maksut', payInvoice: 'Maksa lasku', payNow: 'Maksa nyt',
+      receiptTitle: 'Maksu suoritettu', failedPreview: 'Päivitä maksu, jotta tilin rajoitus vältetään.', failedTitle: 'Maksu ei onnistunut', blockedSubject: 'Autorell-yritystili on rajoitettu, kunnes maksu on vastaanotettu', blockedPreview: 'Tili avataan uudelleen, kun erääntynyt lasku on maksettu.', blockedTitle: 'Tili on rajoitettu', cancelTitle: 'Irtisanominen on ajoitettu', cancelPreview: 'Paketti pysyy aktiivisena nykyisen jakson loppuun.',
+      welcomeSubject: (plan: string) => `Tervetuloa Autorell ${plan} -pakettiin`, welcomePreview: (plan: string) => `${plan}-yrityspaketti on aktiivinen.`, welcomeTitle: (plan: string) => `Tervetuloa Autorell ${plan} -pakettiin`, welcomeBody: (limit: string) => `Yrityspakettinne on aktiivinen. Käytössänne on ${limit}, ja voitte hallita ilmoituksia, maksuja ja tilauksia tilisivuilta.`,
+      invoiceSubject: (line: string) => `${line} Autorellilta on valmis`, invoicePreviewDue: (amount: string, due: string) => `${amount} erääntyy ${due}.`, invoicePreview: (amount: string) => `${amount} maksettavana.`, invoiceTitle: (line: string) => `${line} on valmis`, invoiceBodyDue: (plan: string, amount: string, due: string) => `${plan}-paketin lasku on luotu. Summa on ${amount} ja eräpäivä on ${due}. Maksa alla olevasta linkistä tai laskun maksuohjeiden mukaan.`, invoiceBody: (plan: string, amount: string) => `${plan}-paketin lasku on luotu. Summa on ${amount}. Maksa alla olevasta linkistä tai laskun maksuohjeiden mukaan.`,
+      receiptSubject: (plan: string) => `Maksu vastaanotettu: ${plan}`, receiptPreview: (amount: string) => `${amount} on maksettu. Tässä on kuitti/lasku.`, receiptBody: (plan: string) => `Olemme vastaanottaneet maksun paketista ${plan}. Tili on aktiivinen ja kuitti/lasku on saatavilla alla olevasta linkistä.`, failedSubject: (plan: string) => `Maksu paketista ${plan} ei onnistunut`, failedBody: (plan: string) => `Emme voineet rekisteröidä maksua paketista ${plan}. Avaa maksusivu ja maksa lasku tai päivitä maksutapa, jotta tilin rajoitus vältetään.`,
+      reminderSubject: (days: number) => `${days} päivää aikaa maksaa Autorell-lasku`, reminderPreviewDue: (line: string, due: string) => `${line} erääntyy ${due}.`, reminderPreview: (line: string) => `${line} erääntyy pian.`, reminderTitle: (days: number) => `${days} päivää jäljellä`, reminderBodyDue: (line: string, plan: string, due: string) => `${line} paketista ${plan} erääntyy ${due}. Maksa ajoissa, jotta yrityspaketin käyttö jatkuu.`, reminderBody: (line: string, plan: string) => `${line} paketista ${plan} erääntyy pian. Maksa ajoissa, jotta yrityspaketin käyttö jatkuu.`,
+      blockedBody: (plan: string) => `${plan}-paketin lasku on erääntynyt. Yritystili on rajoitettu, kunnes maksu on vastaanotettu. Avaa maksusivu tai lasku maksaaksesi.`, cancelSubject: (plan: string) => `Irtisanominen ajoitettu: ${plan}`, cancelPreviewDue: (date: string) => `Paketti pysyy aktiivisena ${date} asti.`, cancelBodyDue: (plan: string, date: string) => `${plan} pysyy aktiivisena ${date} asti. Luodut laskut ja loppulasku on silti maksettava ennen tilin sulkemista.`, cancelBody: (plan: string) => `${plan} pysyy aktiivisena nykyisen jakson loppuun. Luodut laskut ja loppulasku on silti maksettava ennen tilin sulkemista.`,
+    },
+  }
+
+  if (copy[locale]) return copy[locale] || null
+
+  const labels = {
+    de: ['Kontoseiten öffnen', 'Rechnung öffnen', 'Beleg anzeigen', 'Zahlungen öffnen', 'Rechnung bezahlen', 'Jetzt bezahlen', 'Rechnung', 'Unternehmensplan'],
+    fr: ['Ouvrir le compte', 'Ouvrir la facture', 'Voir le reçu', 'Ouvrir les paiements', 'Payer la facture', 'Payer maintenant', 'Facture', 'forfait entreprise'],
+    it: ['Apri account', 'Apri fattura', 'Vedi ricevuta', 'Apri pagamenti', 'Paga fattura', 'Paga ora', 'Fattura', 'piano aziendale'],
+    es: ['Abrir cuenta', 'Abrir factura', 'Ver recibo', 'Abrir pagos', 'Pagar factura', 'Pagar ahora', 'Factura', 'plan de empresa'],
+    nl: ['Account openen', 'Factuur openen', 'Bon bekijken', 'Betalingen openen', 'Factuur betalen', 'Nu betalen', 'Factuur', 'zakelijk plan'],
+    pl: ['Otwórz konto', 'Otwórz fakturę', 'Zobacz potwierdzenie', 'Otwórz płatności', 'Zapłać fakturę', 'Zapłać teraz', 'Faktura', 'plan firmowy'],
+  } as const
+  const value = labels[locale as keyof typeof labels]
+  if (!value) return null
+  const [openAccount, openInvoice, viewReceipt, openPayments, payInvoice, payNow, invoiceWord, planWord] = value
+  return {
+    openAccount, openInvoice, viewReceipt, openPayments, payInvoice, payNow,
+    receiptTitle: locale === 'de' ? 'Zahlung abgeschlossen' : locale === 'fr' ? 'Paiement effectué' : locale === 'it' ? 'Pagamento completato' : locale === 'es' ? 'Pago completado' : locale === 'nl' ? 'Betaling voltooid' : 'Płatność zakończona',
+    failedPreview: locale === 'de' ? 'Aktualisieren Sie die Zahlung, um eine Kontoeinschränkung zu vermeiden.' : locale === 'fr' ? 'Mettez à jour le paiement pour éviter une restriction du compte.' : locale === 'it' ? 'Aggiorna il pagamento per evitare limitazioni dell’account.' : locale === 'es' ? 'Actualiza el pago para evitar restricciones en la cuenta.' : locale === 'nl' ? 'Werk de betaling bij om accountbeperking te voorkomen.' : 'Zaktualizuj płatność, aby uniknąć ograniczenia konta.',
+    failedTitle: locale === 'de' ? 'Die Zahlung wurde nicht durchgeführt' : locale === 'fr' ? 'Le paiement n’a pas abouti' : locale === 'it' ? 'Il pagamento non è andato a buon fine' : locale === 'es' ? 'El pago no se ha completado' : locale === 'nl' ? 'De betaling is niet gelukt' : 'Płatność nie została zrealizowana',
+    blockedSubject: locale === 'de' ? 'Ihr Autorell-Unternehmenskonto ist eingeschränkt, bis die Zahlung eingegangen ist' : locale === 'fr' ? 'Votre compte entreprise Autorell est restreint jusqu’à réception du paiement' : locale === 'it' ? 'Il tuo account aziendale Autorell è limitato fino alla ricezione del pagamento' : locale === 'es' ? 'Tu cuenta de empresa de Autorell está restringida hasta que recibamos el pago' : locale === 'nl' ? 'Je zakelijke Autorell-account is beperkt totdat de betaling is ontvangen' : 'Twoje konto firmowe Autorell jest ograniczone do czasu otrzymania płatności',
+    blockedPreview: locale === 'de' ? 'Das Konto wird wieder geöffnet, sobald die überfällige Rechnung bezahlt ist.' : locale === 'fr' ? 'Le compte sera réactivé lorsque la facture échue sera payée.' : locale === 'it' ? 'L’account verrà riattivato quando la fattura scaduta sarà pagata.' : locale === 'es' ? 'La cuenta se reactivará cuando la factura vencida esté pagada.' : locale === 'nl' ? 'Het account wordt opnieuw geopend wanneer de achterstallige factuur is betaald.' : 'Konto zostanie ponownie otwarte po opłaceniu zaległej faktury.',
+    blockedTitle: locale === 'de' ? 'Das Konto ist eingeschränkt' : locale === 'fr' ? 'Le compte est restreint' : locale === 'it' ? 'L’account è limitato' : locale === 'es' ? 'La cuenta está restringida' : locale === 'nl' ? 'Het account is beperkt' : 'Konto jest ograniczone',
+    cancelTitle: locale === 'de' ? 'Ihre Kündigung ist vorgemerkt' : locale === 'fr' ? 'Votre résiliation est planifiée' : locale === 'it' ? 'La cancellazione è programmata' : locale === 'es' ? 'Tu cancelación está programada' : locale === 'nl' ? 'Je opzegging is gepland' : 'Rezygnacja została zaplanowana',
+    cancelPreview: locale === 'de' ? 'Der Plan bleibt bis zum Ende des aktuellen Zeitraums aktiv.' : locale === 'fr' ? 'Le forfait reste actif jusqu’à la fin de la période en cours.' : locale === 'it' ? 'Il piano resta attivo fino alla fine del periodo corrente.' : locale === 'es' ? 'El plan sigue activo hasta el final del periodo actual.' : locale === 'nl' ? 'Het plan blijft actief tot het einde van de huidige periode.' : 'Plan pozostaje aktywny do końca bieżącego okresu.',
+    welcomeSubject: (plan: string) => `Autorell ${plan}`,
+    welcomePreview: (plan: string) => `${plan} ${planWord} active.`,
+    welcomeTitle: (plan: string) => `Autorell ${plan}`,
+    welcomeBody: (limit: string) => `${planWord} active. ${limit}.`,
+    invoiceSubject: (line: string) => `${line} Autorell`,
+    invoicePreviewDue: (amount: string, due: string) => `${amount} - ${due}.`,
+    invoicePreview: (amount: string) => `${amount}.`,
+    invoiceTitle: (line: string) => `${line}`,
+    invoiceBodyDue: (plan: string, amount: string, due: string) => `${invoiceWord} for ${plan}: ${amount}. Due: ${due}.`,
+    invoiceBody: (plan: string, amount: string) => `${invoiceWord} for ${plan}: ${amount}.`,
+    receiptSubject: (plan: string) => `${plan} - ${locale === 'de' ? 'Zahlung erhalten' : locale === 'fr' ? 'paiement reçu' : locale === 'it' ? 'pagamento ricevuto' : locale === 'es' ? 'pago recibido' : locale === 'nl' ? 'betaling ontvangen' : 'płatność otrzymana'}`,
+    receiptPreview: (amount: string) => `${amount}.`,
+    receiptBody: (plan: string) => `${plan}: ${locale === 'de' ? 'Die Zahlung wurde erhalten.' : locale === 'fr' ? 'Le paiement a été reçu.' : locale === 'it' ? 'Il pagamento è stato ricevuto.' : locale === 'es' ? 'El pago se ha recibido.' : locale === 'nl' ? 'De betaling is ontvangen.' : 'Płatność została otrzymana.'}`,
+    failedSubject: (plan: string) => `${plan} - ${locale === 'de' ? 'Zahlung fehlgeschlagen' : locale === 'fr' ? 'paiement échoué' : locale === 'it' ? 'pagamento non riuscito' : locale === 'es' ? 'pago fallido' : locale === 'nl' ? 'betaling mislukt' : 'płatność nieudana'}`,
+    failedBody: (plan: string) => `${plan}: ${locale === 'de' ? 'Öffnen Sie die Zahlungsseite und bezahlen Sie die Rechnung.' : locale === 'fr' ? 'Ouvrez la page de paiement et payez la facture.' : locale === 'it' ? 'Apri la pagina pagamenti e paga la fattura.' : locale === 'es' ? 'Abre la página de pagos y paga la factura.' : locale === 'nl' ? 'Open de betaalpagina en betaal de factuur.' : 'Otwórz stronę płatności i opłać fakturę.'}`,
+    reminderSubject: (days: number) => `${days} - ${invoiceWord} Autorell`,
+    reminderPreviewDue: (line: string, due: string) => `${line}: ${due}.`,
+    reminderPreview: (line: string) => `${line}.`,
+    reminderTitle: (days: number) => `${days}`,
+    reminderBodyDue: (line: string, plan: string, due: string) => `${line} / ${plan}: ${due}.`,
+    reminderBody: (line: string, plan: string) => `${line} / ${plan}.`,
+    blockedBody: (plan: string) => `${plan}: ${locale === 'de' ? 'Die Rechnung ist überfällig.' : locale === 'fr' ? 'La facture est échue.' : locale === 'it' ? 'La fattura è scaduta.' : locale === 'es' ? 'La factura está vencida.' : locale === 'nl' ? 'De factuur is achterstallig.' : 'Faktura jest po terminie.'}`,
+    cancelSubject: (plan: string) => `${plan} - ${locale === 'de' ? 'Kündigung' : locale === 'fr' ? 'résiliation' : locale === 'it' ? 'cancellazione' : locale === 'es' ? 'cancelación' : locale === 'nl' ? 'opzegging' : 'rezygnacja'}`,
+    cancelPreviewDue: (date: string) => `${date}.`,
+    cancelBodyDue: (plan: string, date: string) => `${plan}: ${date}.`,
+    cancelBody: (plan: string) => `${plan}.`,
+  }
 }
 
 function invoiceLabel(locale: EmailLocale, invoiceNumber?: string | null) {

@@ -1,11 +1,15 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, CreditCard, ExternalLink, FileText, ReceiptText } from 'lucide-react'
+import { CreditCard, ExternalLink, FileText, ReceiptText } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import BillingPortalButton from './BillingPortalButton'
+
+export const generateMetadata = generateAccountMetadata('payments')
 
 type InvoiceRow = {
   id: string
@@ -83,7 +87,10 @@ async function PrivatePaymentsPage({
   return (
     <main className="min-h-screen bg-[#f6f8fb] px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[1180px]">
-        <BackLink locale={locale} label={copy.back} />
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: 'payments' }]}
+        />
 
         <section className="mt-6 rounded-[18px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.055)] sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -191,7 +198,10 @@ async function BusinessPaymentsPage({
   return (
     <main className="min-h-screen bg-[#f6f8fb] px-5 py-10 sm:px-8">
       <div className="mx-auto max-w-[1180px]">
-        <BackLink locale={locale} label={copy.back} />
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'companyAccount', href: '/account/company' }, { key: 'payments' }]}
+        />
 
         <section className="mt-6 rounded-[16px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.055)] sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -200,7 +210,7 @@ async function BusinessPaymentsPage({
               <h1 className="mt-3 text-4xl font-semibold tracking-[-.045em] text-[#101828]">{copy.title}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085]">{copy.intro}</p>
             </div>
-            {subscription?.stripe_customer_id ? <BillingPortalButton label={copy.openStripe} /> : null}
+            {subscription?.stripe_customer_id ? <BillingPortalButton label={copy.openStripe} locale={locale} /> : null}
           </div>
 
           <div className="mt-7 grid gap-3 md:grid-cols-3">
@@ -268,18 +278,6 @@ async function BusinessPaymentsPage({
         </section>
       </div>
     </main>
-  )
-}
-
-function BackLink({ locale, label }: { locale: PublicLocale; label: string }) {
-  return (
-    <Link
-      href={localizePublicHref(locale, '/account')}
-      className="inline-flex items-center gap-2 text-sm font-bold text-[#475467] transition hover:text-[#0866ff]"
-    >
-      <ArrowLeft className="h-4 w-4" />
-      {label}
-    </Link>
   )
 }
 

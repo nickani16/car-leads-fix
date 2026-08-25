@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Programme pilote Autorell",
+    "title": "Devenez l'un des premiers distributeurs partenaires d'Autorell",
+    "body": [
+      "Nous sélectionnons un nombre limité de distributeurs automobiles qui pourront connecter gratuitement leur stock existant à Autorell pendant la période pilote.",
+      "Autorell importe votre stock, actualise automatiquement les prix et la disponibilité, et vous fournit des statistiques sur la visibilité, les clics et les demandes clients.",
+      "Lorsque la collaboration commence à créer une valeur commerciale documentée, nous élaborons ensemble un accord séparé pour la poursuivre."
+    ],
+    "benefits": [
+      "Connexion du stock gratuite",
+      "Aucun frais d'intégration",
+      "Mise à jour automatique du stock",
+      "Aucun engagement pendant la période pilote",
+      "Statistiques de trafic et de prospects",
+      "Accompagnement personnalisé",
+      "Plusieurs établissements peuvent être connectés",
+      "Accord commercial séparé uniquement après création de valeur"
+    ],
+    "primaryCta": "Postuler au programme pilote",
+    "secondaryCta": "Découvrir la connexion de stock",
+    "availabilityNote": "Un nombre limité d'entreprises sera admis à la première phase pilote."
+  },
+  "pilotPage": {
+    "metaTitle": "Pilote de stock gratuit pour distributeurs | Autorell",
+    "metaDescription": "Demandez à connecter votre stock automobile à Autorell avec accompagnement gratuit, synchronisation automatique et sans abonnement payant automatique.",
+    "heroEyebrow": "Programme pilote pour distributeurs automobiles",
+    "heroTitle": "Connectez gratuitement votre stock de véhicules",
+    "heroIntro": "Autorell recherche des distributeurs automobiles sélectionnés pour un programme pilote gratuit. Nous connectons votre stock existant, actualisons automatiquement les annonces et mesurons les résultats avec vous.",
+    "primaryCta": "Postuler au programme pilote",
+    "secondaryCta": "Comment fonctionne l'import de stock",
+    "includedTitle": "Ce qui est inclus",
+    "includedIntro": "La première connexion est conçue pour être pratique, mesurable et sans engagement commercial automatique.",
+    "included": [
+      "Accompagnement gratuit",
+      "Connexion technique gratuite",
+      "Import de votre stock de véhicules existant",
+      "Synchronisation automatique des véhicules ajoutés, modifiés et retirés",
+      "Profil d'entreprise sur Autorell",
+      "Statistiques de consultation des annonces",
+      "Statistiques de clics et de prospects",
+      "Assistance pendant la période pilote",
+      "Aucun engagement pendant la période pilote"
+    ],
+    "stepsTitle": "Comment cela fonctionne",
+    "steps": [
+      {
+        "title": "Envoyez votre candidature",
+        "text": "Votre entreprise envoie une courte candidature avec des informations sur son stock et la méthode de connexion souhaitée."
+      },
+      {
+        "title": "Autorell examine l'entreprise",
+        "text": "Nous examinons l'entreprise, son stock et la source technique avant toute connexion."
+      },
+      {
+        "title": "Acceptez les conditions du pilote",
+        "text": "L'entreprise accepte les conditions du pilote et confirme ses droits sur les données et les images des véhicules."
+      },
+      {
+        "title": "Nous connectons la source",
+        "text": "Autorell connecte le site web vérifié et prépare un aperçu de l’import. Les demandes XML, CSV, API et DMS font l’objet d’un accompagnement technique distinct."
+      },
+      {
+        "title": "Le stock est publié et maintenu à jour",
+        "text": "Les annonces approuvées sont publiées et les véhicules ajoutés, modifiés ou vendus sont synchronisés en toute sécurité."
+      }
+    ],
+    "afterTitle": "Après la période pilote",
+    "afterLead": "Le programme pilote ne devient pas automatiquement un abonnement payant.",
+    "afterBody": "Si Autorell peut démontrer un trafic pertinent, des prospects ou une autre valeur commerciale, les parties peuvent discuter d'un accord commercial séparé.",
+    "afterNote": "Aucun paiement, aucune facture et aucun abonnement ne peut commencer sans une nouvelle approbation explicite de l'entreprise.",
+    "faqTitle": "Questions sur le programme pilote",
+    "faqs": [
+      {
+        "question": "Le programme pilote est-il payant ?",
+        "answer": "Non. La connexion technique, l'accompagnement, l'import du stock et la synchronisation automatique sont gratuits pendant la période pilote convenue."
+      },
+      {
+        "question": "Devons-nous publier les annonces manuellement ?",
+        "answer": "Non. Une fois la source et l'aperçu approuvés, Autorell peut créer et mettre à jour les annonces à partir du stock connecté."
+      },
+      {
+        "question": "Quels types de stocks peuvent être connectés ?",
+        "answer": "Les voitures particulières, utilitaires et autres catégories de véhicules prises en charge peuvent être étudiées. Le périmètre exact est confirmé lors de l'examen technique."
+      },
+      {
+        "question": "À quelle fréquence le stock est-il actualisé ?",
+        "answer": "La fréquence dépend de la source et de la configuration du pilote. Une synchronisation quotidienne est le point de départ habituel, avec une fréquence supérieure si elle est convenue et techniquement possible."
+      },
+      {
+        "question": "Que se passe-t-il lorsqu'un véhicule est vendu ?",
+        "answer": "Un véhicule vendu ou retiré est d'abord confirmé par une synchronisation réussie, puis mis en pause ou marqué comme vendu. Une panne temporaire de la source ne retire jamais tout le stock."
+      },
+      {
+        "question": "Plusieurs établissements peuvent-ils être connectés ?",
+        "answer": "Oui. Plusieurs établissements peuvent être connectés s'ils sont identifiables dans les données source ou associés pendant l'accompagnement."
+      },
+      {
+        "question": "Que se passe-t-il après la période pilote ?",
+        "answer": "Nous examinons ensemble les résultats documentés. La poursuite de la collaboration exige un accord séparé accepté par les deux parties."
+      },
+      {
+        "question": "Devenons-nous automatiquement un client payant ?",
+        "answer": "Non. Il n'existe aucune conversion, aucun paiement ni abonnement automatique après le pilote."
+      },
+      {
+        "question": "À qui appartiennent les annonces, images et données des véhicules ?",
+        "answer": "L'entreprise conserve ses droits sur ses contenus et confirme qu'elle peut les fournir pour publication. Autorell reçoit uniquement les droits nécessaires pour les importer, stocker, afficher et synchroniser selon les conditions du pilote."
+      },
+      {
+        "question": "Pouvons-nous mettre fin au projet pilote ?",
+        "answer": "Oui. Le pilote peut être arrêté sans engagement d'abonnement. Le retrait pratique des contenus importés est géré de manière contrôlée avec l'entreprise."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Candidature au pilote",
+    "title": "Parlez-nous de votre stock",
+    "intro": "La candidature ne lance aucune intégration et ne crée aucun abonnement payant. Autorell l'examine et contacte d'abord la personne indiquée.",
+    "companySection": "Entreprise",
+    "contactSection": "Personne de contact",
+    "inventorySection": "Stock et connexion",
+    "consentSection": "Consentements",
+    "companyName": "Nom de l'entreprise",
+    "registrationNumber": "Numéro d'immatriculation de l'entreprise",
+    "country": "Pays",
+    "website": "Site web",
+    "contactName": "Personne de contact",
+    "contactRole": "Fonction",
+    "email": "E-mail",
+    "phone": "Numéro de téléphone",
+    "inventorySize": "Nombre approximatif de véhicules actifs",
+    "locationCount": "Nombre d'établissements",
+    "currentSystem": "Système de stock actuel",
+    "integrationMethod": "Méthode d'intégration souhaitée",
+    "message": "Informations complémentaires",
+    "selectOption": "Sélectionner une option",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2 000" },
+      { "value": "2000_plus", "label": "Plus de 2 000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Import depuis le site web (disponible en pilote)" },
+      { "value": "xml", "label": "Flux XML (accompagnement technique)" },
+      { "value": "csv", "label": "Fichier CSV (accompagnement technique)" },
+      { "value": "api", "label": "API (accompagnement technique)" },
+      { "value": "dms", "label": "Système DMS (accompagnement administratif)" },
+      { "value": "unknown", "label": "Pas encore certain" }
+    ],
+    "privacyConsent": "J'ai lu et j'accepte la politique de confidentialité d'Autorell.",
+    "contactConsent": "J'accepte qu'Autorell contacte l'entreprise au sujet du programme pilote.",
+    "privacyLink": "Lire la politique de confidentialité",
+    "submit": "Envoyer la candidature",
+    "submitting": "Envoi de la candidature",
+    "requiredNote": "Les champs marqués d'un * sont obligatoires.",
+    "successTitle": "Merci pour votre candidature",
+    "successBody": "Autorell examinera l'entreprise et contactera la personne indiquée. Aucune intégration ni publication ne commence avant l'approbation de l'entreprise et l'acceptation des conditions du pilote.",
+    "successReference": "Référence de la candidature",
+    "sendAnother": "Envoyer une autre candidature",
+    "genericError": "La candidature n'a pas pu être envoyée. Vérifiez les champs et réessayez.",
+    "rateLimitError": "Trop de candidatures ont été envoyées depuis cette connexion. Veuillez réessayer plus tard.",
+    "duplicateError": "Une candidature a été envoyée récemment pour cette adresse e-mail. Autorell vous contactera après son examen."
+  }
+}

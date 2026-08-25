@@ -1,8 +1,12 @@
 'use client'
 
-import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, X } from 'lucide-react'
+import { CheckCircle2, LoaderCircle, Megaphone, MoreHorizontal, ShieldCheck, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { type PublicLocale } from '@/lib/public-i18n'
+import { accountListingText } from '@/lib/account-listings-i18n'
+import type { ListingReviewNotice } from '@/lib/listing-review-notice'
 
 export type PackageOption = {
   id: string
@@ -38,6 +42,7 @@ export default function ListingStatusActions({
   featuredExpiresAt,
   reviewMessage,
   autoOpen = false,
+  autoOpenReview = false,
   locale,
 }: {
   listingId: string
@@ -52,9 +57,10 @@ export default function ListingStatusActions({
   boostExpiresAt: string | null
   featuredStartedAt: string | null
   featuredExpiresAt: string | null
-  reviewMessage: string | null
+  reviewMessage: ListingReviewNotice
   autoOpen?: boolean
-  locale: string
+  autoOpenReview?: boolean
+  locale: PublicLocale
 }) {
   const router = useRouter()
   const menuRef = useRef<HTMLDivElement>(null)
@@ -68,7 +74,6 @@ export default function ListingStatusActions({
   const [menuOpen, setMenuOpen] = useState(false)
   const [loading, setLoading] = useState('')
   const [message, setMessage] = useState('')
-  const swedish = locale === 'sv'
   const availablePackages = (status === 'published'
     ? packages.filter((item) => item.id !== 'free_7d')
     : packages).filter((item) => item.available)
@@ -79,6 +84,10 @@ export default function ListingStatusActions({
   useEffect(() => {
     if (autoOpen && !packageDialogRef.current?.open) packageDialogRef.current?.showModal()
   }, [autoOpen])
+
+  useEffect(() => {
+    if (autoOpenReview && !reviewDialogRef.current?.open) reviewDialogRef.current?.showModal()
+  }, [autoOpenReview])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -106,7 +115,7 @@ export default function ListingStatusActions({
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string }
     setLoading('')
-    if (!response.ok) return setMessage(result.error || text('Annonsen kunde inte uppdateras.', 'The listing could not be updated.'))
+    if (!response.ok) return setMessage(localizedAccountError(locale, result, text('Annonsen kunde inte uppdateras.', 'The listing could not be updated.')))
     after?.()
     router.refresh()
   }
@@ -122,7 +131,7 @@ export default function ListingStatusActions({
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (!response.ok) {
       setLoading('')
-      return setMessage(result.error || text('Paketet kunde inte väljas.', 'The package could not be selected.'))
+      return setMessage(localizedAccountError(locale, result, text('Paketet kunde inte väljas.', 'The package could not be selected.')))
     }
     if (result.url) return window.location.assign(result.url)
     setLoading('')
@@ -143,7 +152,7 @@ export default function ListingStatusActions({
     const result = (await response.json().catch(() => ({}))) as { error?: string; url?: string }
     if (result.url) return window.location.assign(result.url)
     setLoading('')
-    setMessage(result.error || text('Köpet kunde inte startas.', 'The purchase could not be started.'))
+    setMessage(localizedAccountError(locale, result, text('Köpet kunde inte startas.', 'The purchase could not be started.')))
   }
 
   async function duplicate() {
@@ -156,12 +165,12 @@ export default function ListingStatusActions({
     })
     const result = (await response.json().catch(() => ({}))) as { error?: string; listingId?: string }
     setLoading('')
-    if (!response.ok || !result.listingId) return setMessage(result.error || text('Annonsen kunde inte dupliceras.', 'The listing could not be duplicated.'))
+    if (!response.ok || !result.listingId) return setMessage(localizedAccountError(locale, result, text('Annonsen kunde inte dupliceras.', 'The listing could not be duplicated.')))
     router.push(`/account/listings/${result.listingId}/edit`)
   }
 
   function text(sv: string, en: string) {
-    return swedish ? sv : en
+    return accountListingText(locale, en, sv)
   }
 
   function openPackage() {
@@ -171,8 +180,9 @@ export default function ListingStatusActions({
   }
 
   const secondary = secondaryActions(status)
+  const paymentTrust = paymentTrustCopy(locale)
   const button = 'inline-flex min-h-10 items-center justify-center rounded-[11px] border border-[#cbd7e8] bg-white px-3.5 text-sm font-semibold text-[#344054] outline-none transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20 disabled:opacity-50'
-  const primary = 'inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.18)] outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30 disabled:opacity-50'
+  const primary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(8,102,255,.18)] outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30 disabled:opacity-50'
 
   return (
     <>
@@ -196,7 +206,7 @@ export default function ListingStatusActions({
               : action === 'mark_sold' ? () => soldDialogRef.current?.showModal()
               : action === 'delete' ? () => { if (window.confirm(text('Ta bort annonsen?', 'Delete this listing?'))) void mutate('delete') }
               : () => mutate(action)
-            return <button key={action} type="button" role="menuitem" onClick={handler} className="rounded-[9px] px-3 py-2 text-left text-sm font-medium text-[#344054] outline-none hover:bg-[#f2f6ff] hover:text-[#0866ff] focus-visible:bg-[#f2f6ff]">{actionLabel(action, swedish)}</button>
+            return <button key={action} type="button" role="menuitem" onClick={handler} className="rounded-[9px] px-3 py-2 text-left text-sm font-medium text-[#344054] outline-none hover:bg-[#f2f6ff] hover:text-[#0866ff] focus-visible:bg-[#f2f6ff]">{actionLabel(action, locale)}</button>
           })}
         </div> : null}
       </div>
@@ -213,6 +223,7 @@ export default function ListingStatusActions({
               <span className="text-xs font-semibold text-[#0866ff]">{item.duration}</span><strong className="mt-2 block text-lg font-semibold">{item.title}</strong><span className="mt-1 block text-xl font-semibold">{item.price}</span><span className="mt-3 block text-sm leading-6 text-[#667085]">{item.description}</span>{selected ? <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#0866ff]"><CheckCircle2 className="h-4 w-4" />{text('Valt', 'Selected')}</span> : null}
             </button>
           })}</div> : <p className="mt-6 rounded-[14px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{text('Inget paket har ett aktivt pris för denna marknad. Kontakta support.', 'No package has an active price for this market. Contact support.')}</p>}
+          <PaymentTrustStrip copy={paymentTrust} />
           {message ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</p> : null}
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" className={button} onClick={() => packageDialogRef.current?.close()}>{text('Spara och fortsätt senare', 'Save and continue later')}</button><button type="button" className={primary} disabled={loading === 'package' || !availablePackages.some((item) => item.id === selectedPackage)} onClick={continueWithPackage}>{loading === 'package' ? text('Öppnar…', 'Opening…') : selectedPackage === 'free_7d' ? text('Publicera gratis', 'Publish free') : text('Fortsätt till säker betalning', 'Continue to secure payment')}</button></div>
         </div>
@@ -232,12 +243,39 @@ export default function ListingStatusActions({
               <button type="button" disabled={disabled || Boolean(loading)} onClick={() => startMarketing(option.productKey)} className={`${primary} mt-5 w-full`}>{loading === option.productKey ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{disabled ? text('24-timmarsspärr aktiv', '24-hour cooldown active') : text('Välj och betala', 'Select and pay')}</button>
             </article>
           })}</div> : <p className="mt-6 rounded-[14px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{text('Ingen marknadsföringsprodukt har ett aktivt pris för denna marknad.', 'No promotion product has an active price for this market.')}</p>}
+          <PaymentTrustStrip copy={paymentTrust} />
           {message ? <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</p> : null}
         </div>
       </dialog>
 
-      <dialog ref={reviewDialogRef} aria-labelledby={`review-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
-        <div className="p-6"><DialogHeader eyebrow={text('Annonsstatus', 'Listing status')} title={status === 'rejected' ? text('Åtgärd krävs', 'Action required') : text('Under granskning', 'In review')} description={reviewMessage || text('Autorell granskar annonsen. Ingen ytterligare betalning behövs.', 'Autorell is reviewing the listing. No further payment is required.')} titleId={`review-${listingId}`} close={() => reviewDialogRef.current?.close()} /></div>
+      <dialog ref={reviewDialogRef} aria-labelledby={`review-${listingId}`} className="fixed inset-0 m-auto max-h-[90vh] w-[min(92vw,620px)] overflow-y-auto rounded-[18px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
+        <div className="p-5 sm:p-7">
+          <DialogHeader
+            eyebrow={text('Annonsstatus', 'Listing status')}
+            title={status === 'rejected' ? text('Åtgärd krävs', 'Action required') : text('Under granskning', 'In review')}
+            description={reviewMessage.summary}
+            titleId={`review-${listingId}`}
+            close={() => reviewDialogRef.current?.close()}
+          />
+          <section className="mt-6 rounded-[14px] border border-[#dce6f5] bg-[#f8fbff] p-4" aria-label={text('Orsak till granskningen', 'Reason for review')}>
+            <h3 className="text-sm font-semibold text-[#101828]">{text('Det här kontrollerar vi', 'What we are checking')}</h3>
+            <ul className="mt-3 grid gap-3">
+              {reviewMessage.reasons.map((reason) => (
+                <li key={reason} className="flex gap-3 text-sm leading-6 text-[#475467]">
+                  <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-[#0866ff]" />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <div className="mt-4 rounded-[14px] border border-[#fed7aa] bg-[#fffaf5] p-4">
+            <strong className="block text-sm font-semibold text-[#9a3412]">{text('Nästa steg', 'Next step')}</strong>
+            <p className="mt-1 text-sm leading-6 text-[#7c2d12]">{reviewMessage.nextStep}</p>
+          </div>
+          <button type="button" onClick={() => reviewDialogRef.current?.close()} className={`${primary} mt-6 w-full sm:ml-auto sm:w-auto`}>
+            {text('Stäng', 'Close')}
+          </button>
+        </div>
       </dialog>
 
       <dialog ref={soldDialogRef} aria-labelledby={`sold-${listingId}`} className="w-[min(92vw,560px)] rounded-[22px] border-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55">
@@ -272,7 +310,68 @@ export default function ListingStatusActions({
 }
 
 function DialogHeader({ eyebrow, title, description, titleId, close }: { eyebrow: string; title: string; description: string; titleId: string; close: () => void }) {
-  return <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{eyebrow}</p><h2 id={titleId} className="mt-2 text-2xl font-semibold">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{description}</p></div><button type="button" onClick={close} aria-label="Stäng" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button></div>
+  return <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{eyebrow}</p><h2 id={titleId} className="mt-2 text-2xl font-semibold">{title}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{description}</p></div><button type="button" onClick={close} aria-label="Close" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button></div>
+}
+
+function PaymentTrustStrip({ copy }: { copy: { title: string; text: string } }) {
+  return (
+    <div className="mt-4 grid gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f7fbff] p-4 text-sm text-[#475467] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+      <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#0866ff] shadow-sm">
+        <ShieldCheck className="h-5 w-5" />
+      </span>
+      <div>
+        <strong className="block text-[#101828]">{copy.title}</strong>
+        <span className="mt-1 block leading-6">{copy.text}</span>
+      </div>
+    </div>
+  )
+}
+
+function paymentTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg betalning med Stripe',
+      text: 'Betalda val öppnas i TLS/SSL-krypterad Stripe Checkout. Autorell ser eller lagrar aldrig dina kortuppgifter.',
+    },
+    en: {
+      title: 'Secure payment with Stripe',
+      text: 'Paid choices open in TLS/SSL-encrypted Stripe Checkout. Autorell never sees or stores your card details.',
+    },
+    de: {
+      title: 'Sichere Zahlung mit Stripe',
+      text: 'Kostenpflichtige Optionen öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Autorell sieht oder speichert Ihre Kartendaten nie.',
+    },
+    fr: {
+      title: 'Paiement sécurisé avec Stripe',
+      text: 'Les options payantes s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Autorell ne voit ni ne stocke jamais vos données de carte.',
+    },
+    es: {
+      title: 'Pago seguro con Stripe',
+      text: 'Las opciones de pago se abren en Stripe Checkout cifrado con TLS/SSL. Autorell nunca ve ni almacena tus datos de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con Stripe',
+      text: 'Le opzioni a pagamento si aprono in Stripe Checkout crittografato TLS/SSL. Autorell non vede né conserva mai i dati della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met Stripe',
+      text: 'Betaalde keuzes openen in TLS/SSL-versleutelde Stripe Checkout. Autorell ziet of bewaart je kaartgegevens nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność przez Stripe',
+      text: 'Płatne opcje otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Autorell nigdy nie widzi ani nie przechowuje danych karty.',
+    },
+    fi: {
+      title: 'Turvallinen maksu Stripen kautta',
+      text: 'Maksulliset valinnat avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Autorell ei koskaan näe tai tallenna korttitietojasi.',
+    },
+    da: {
+      title: 'Sikker betaling med Stripe',
+      text: 'Betalte valg åbnes i TLS/SSL-krypteret Stripe Checkout. Autorell ser eller gemmer aldrig dine kortoplysninger.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function secondaryActions(status: string) {
@@ -286,7 +385,7 @@ function secondaryActions(status: string) {
   return []
 }
 
-function actionLabel(action: string, swedish: boolean) {
+function actionLabel(action: string, locale: PublicLocale) {
   const labels: Record<string, [string, string]> = {
     package: ['Välj eller byt paket', 'Choose or change package'],
     review: ['Visa granskningsstatus', 'View review status'],
@@ -296,7 +395,9 @@ function actionLabel(action: string, swedish: boolean) {
     duplicate: ['Duplicera', 'Duplicate'],
     delete: ['Ta bort', 'Delete'],
   }
-  return labels[action]?.[swedish ? 0 : 1] || action
+  const label = labels[action]
+  if (!label) return action
+  return accountListingText(locale, label[1], label[0])
 }
 
 function formatDateTime(value: string, locale: string) {

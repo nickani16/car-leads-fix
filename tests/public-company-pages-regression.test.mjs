@@ -6,7 +6,14 @@ const companyPage = readFileSync(new URL('../lib/public-company-page.tsx', impor
 const rootRoute = readFileSync(new URL('../app/company/[id]/page.tsx', import.meta.url), 'utf8')
 const localizedRoute = readFileSync(new URL('../app/[market]/company/[id]/page.tsx', import.meta.url), 'utf8')
 const listingDetail = readFileSync(new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url), 'utf8')
+const listingBackButton = readFileSync(new URL('../app/components/ListingBackButton.tsx', import.meta.url), 'utf8')
+const listingEquipmentSection = readFileSync(new URL('../app/components/ListingEquipmentSection.tsx', import.meta.url), 'utf8')
+const listingLocationMap = readFileSync(new URL('../app/components/ListingLocationMap.tsx', import.meta.url), 'utf8')
+const listingImageGallery = readFileSync(new URL('../app/components/ListingImageGallery.tsx', import.meta.url), 'utf8')
+const marketplacePublicData = readFileSync(new URL('../lib/marketplace-public-data.ts', import.meta.url), 'utf8')
+const globalsCss = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx', import.meta.url), 'utf8')
+const listingCreateRoute = readFileSync(new URL('../app/api/account/listings/route.ts', import.meta.url), 'utf8')
 const profileApi = readFileSync(new URL('../app/api/account/profile/route.ts', import.meta.url), 'utf8')
 
 test('public company pages are available on root and localized routes', () => {
@@ -74,6 +81,100 @@ test('business listing detail links to eligible public company page', () => {
   assert.doesNotMatch(listingDetail, /Kontakt sker via Autorell/)
   assert.doesNotMatch(listingDetail, /Contact happens through Autorell/)
   assert.doesNotMatch(listingDetail, /Kontakt erfolgt/)
+})
+
+test('listing detail top navigation uses a history-aware back link instead of visible breadcrumb pills', () => {
+  assert.match(listingDetail, /ListingBackButton/)
+  assert.match(listingDetail, /fallbackBackHref/)
+  assert.match(listingDetail, /label=\{copy\.backToListings\}/)
+  assert.match(listingBackButton, /window\.history\.back\(\)/)
+  assert.match(listingBackButton, /document\.referrer/)
+  assert.match(listingBackButton, /group-hover:-translate-x-1/)
+  assert.match(listingBackButton, /text-\[14px\] font-\[500\]/)
+  assert.doesNotMatch(listingDetail, /rounded-full border border-\[#d8e2f1\]/)
+  assert.doesNotMatch(listingDetail, /item\.icon === 'home'/)
+})
+
+test('listing detail cards do not use card shadows', () => {
+  assert.doesNotMatch(listingDetail, /listing-contact-card[^"]*shadow-/)
+  assert.doesNotMatch(listingDetail, /rounded-\[12px\] border border-\[#dfe6f2\] bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingDetail, /rounded-\[16px\] border border-\[#dfe6f2\] bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingEquipmentSection, /bg-white p-4 shadow-sm/)
+  assert.doesNotMatch(listingLocationMap, /bg-white shadow-sm/)
+  assert.doesNotMatch(listingLocationMap, /bg-white p-5 shadow-sm/)
+  assert.doesNotMatch(listingImageGallery, /aspect-\[16\/9\] overflow-hidden shadow-sm/)
+})
+
+test('listing detail desktop spec tabs stay compact and company flag is round', () => {
+  assert.match(listingDetail, /sm:gap-2\.5 sm:rounded-\[11px\] sm:px-3 sm:py-2\.5/)
+  assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
+  assert.match(listingDetail, /sm:text-\[13px\] sm:leading-4/)
+  assert.match(listingDetail, /CountryFlag code=\{listing\.country_code \|\| 'eu'\} className="h-4 w-4 shrink-0 rounded-full shadow-sm"/)
+})
+
+test('listing detail map has no duplicate location overlay and uses refined controls', () => {
+  assert.match(listingLocationMap, /autorell-listing-location-map/)
+  assert.doesNotMatch(listingLocationMap, /left-4 top-4 z-20 hidden rounded-\[8px\]/)
+  assert.match(globalsCss, /\.autorell-listing-location-map \.maplibregl-ctrl-group/)
+  assert.match(globalsCss, /border-radius: 12px/)
+  assert.match(globalsCss, /width: 38px/)
+  assert.match(globalsCss, /background-color: #eef5ff/)
+})
+
+test('listing detail bottom listing facts stay compact on desktop', () => {
+  assert.match(listingDetail, /sm:grid-cols-2 sm:gap-2 xl:grid-cols-4/)
+  assert.match(listingDetail, /bg-white px-4 py-3 sm:px-3 sm:py-2\.5/)
+  assert.match(listingDetail, /sm:text-\[9px\] sm:tracking-\[0\.12em\]/)
+  assert.match(listingDetail, /sm:mt-1 sm:text-\[13px\] sm:leading-4/)
+})
+
+test('listing detail specifications do not duplicate location fields', () => {
+  const buildSpecsBody = listingDetail.slice(
+    listingDetail.indexOf('function buildSpecs('),
+    listingDetail.indexOf('function isPublicSellerDescription'),
+  )
+  assert.doesNotMatch(buildSpecsBody, /Bilens plats/)
+  assert.doesNotMatch(buildSpecsBody, /Vehicle location/)
+  assert.doesNotMatch(buildSpecsBody, /Kommun/)
+  assert.doesNotMatch(buildSpecsBody, /Municipality/)
+})
+
+test('listing detail equipment tabs stay compact on desktop', () => {
+  assert.match(listingEquipmentSection, /sm:p-6/)
+  assert.match(listingEquipmentSection, /sm:rounded-\[13px\] sm:p-3/)
+  assert.match(listingEquipmentSection, /sm:px-2\.5 sm:py-1 sm:text-xs/)
+  assert.match(listingEquipmentSection, /sm:h-3\.5 sm:w-3\.5/)
+})
+
+test('listing detail shows electric vehicle technical values from current form keys', () => {
+  assert.match(listingDetail, /listingStructuredData/)
+  assert.match(listingDetail, /\.\.\.listingStructuredData/)
+  assert.match(listingDetail, /isElectricListing/)
+  assert.match(listingDetail, /missingTechnicalLabel/)
+  assert.match(listingDetail, /technicalData\.electricRangeKm \?\? technicalData\.rangeKm/)
+  assert.match(listingDetail, /technical\.batteryCapacityKWh \?\? technical\.batteryCapacityWh/)
+  assert.match(listingDetail, /technical\.motorPowerKw \?\? technical\.motorPowerW/)
+  assert.match(listingDetail, /formatTechnicalValue\(electricRange, 'km'\) \|\| \(electricListing \? missingTechnicalLabel\(locale\) : null\)/)
+})
+
+test('generated fallback seller descriptions are not shown as seller information', () => {
+  assert.match(listingDetail, /isPublicSellerDescription/)
+  assert.match(listingDetail, /function publicSellerDescriptionFromListing/)
+  assert.match(listingDetail, /structuredData\.seller_note_original/)
+  assert.match(listingDetail, /Strukturerad Autorell-annons:/)
+  assert.match(listingCreateRoute, /Strukturerad Autorell-annons:/)
+  assert.match(marketplacePublicData, /select\(`\$\{marketplacePublicSelect\},insurance_offers`\)/)
+})
+
+test('listing contact card separates actions from seller identity', () => {
+  assert.match(listingDetail, /function PrivateSellerProfileCard/)
+  assert.match(listingDetail, /flex items-start gap-3 py-4/)
+  assert.doesNotMatch(listingDetail, /flex items-start gap-3 border-y border\[#dfe6f2\] py-4/)
+  assert.doesNotMatch(listingDetail, /<div className="border-t border\[#edf1f6\] p-4 sm:p-5">\s*\{listing\.seller_type === 'private'/)
+})
+
+test('new listing creation includes fuel type when collecting electric technical fields', () => {
+  assert.match(listingCreateRoute, /fieldsForCategoryAndSubcategory\(category, \{\s*bodyType: text\(form, 'bodyType'\),\s*fuelType: text\(form, 'fuelType'\),\s*\}\)/s)
 })
 
 test('new listing page uses a white page background', () => {

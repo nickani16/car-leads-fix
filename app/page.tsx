@@ -2,6 +2,13 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import BusinessMarketplaceHome from './components/BusinessMarketplaceHome'
 import { createSeoMetadata, getMarketHomeSeo } from '@/lib/market-seo'
+import { getPublicLanguageAlternates, publicUrlForLocale } from '@/lib/public-seo'
+import { getHomepageCategorySeo } from '@/lib/homepage-category-config'
+import { getAuthSeoCopy } from '@/lib/auth-copy'
+
+type HomePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
 
 async function getRootMarket() {
   const requestHeaders = await headers()
@@ -12,26 +19,49 @@ async function getRootMarket() {
   return 'en'
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
   const market = await getRootMarket()
+  const query = await searchParams
+  const auth = Array.isArray(query.auth) ? query.auth[0] : query.auth
+  if (auth === 'login' || auth === 'register') {
+    const seo = getAuthSeoCopy(market, auth)
+    return {
+      title: { absolute: seo.title },
+      description: seo.description,
+      robots: { index: false, follow: true },
+    }
+  }
+  const languages = getPublicLanguageAlternates('/')
 
   if (market === 'de') {
     return createSeoMetadata({
-      seo: getMarketHomeSeo('de'),
-      canonical: 'https://www.autorell.com/de',
+      seo: {
+        ...getMarketHomeSeo('de'),
+        ...getHomepageCategorySeo('de', 'cars', 'Deutschland'),
+      },
+      canonical: publicUrlForLocale('de'),
+      alternates: { languages },
     })
   }
 
   if (market === 'en') {
     return createSeoMetadata({
-      seo: getMarketHomeSeo('eu'),
+      seo: {
+        ...getMarketHomeSeo('eu'),
+        ...getHomepageCategorySeo('en', 'cars', 'Europe'),
+      },
       canonical: 'https://www.autorell.com',
+      alternates: { languages },
     })
   }
 
   return createSeoMetadata({
-    seo: getMarketHomeSeo('se'),
-    canonical: 'https://www.autorell.com/se',
+    seo: {
+      ...getMarketHomeSeo('se'),
+      ...getHomepageCategorySeo('sv', 'cars', 'Sverige'),
+    },
+    canonical: publicUrlForLocale('sv'),
+    alternates: { languages },
   })
 }
 

@@ -2,29 +2,37 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { KeyboardEvent, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+import type { KeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, WheelEvent as ReactWheelEvent } from 'react'
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Check,
   Columns2,
-  Expand,
   Heart,
+  House,
   Layers,
   List,
-  Map,
   MapPin,
+  Plus,
   Search,
   Scale,
+  ShieldCheck,
   SlidersHorizontal,
   Star,
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BrandLogo from './BrandLogo'
-import CountryFlag from './CountryFlag'
+import { FooterMarketCurrencyControls } from './PublicFooter'
+import InstallAutorellButton from './InstallAutorellButton'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
+import MarketplaceDesktopListingRow from './MarketplaceDesktopListingRow'
+import { createCategoryMapMarker } from './MapCategoryMarker'
 import SavedListingButton from './SavedListingButton'
 import {
   useVehicleSmartSearchSuggestions,
@@ -46,29 +54,45 @@ import {
 import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
-import { formatMileageAsMil } from '@/lib/listing-display'
-import { marketplaceListingMatchesLocationQuery } from '@/lib/marketplace-locations'
-import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
+import { shouldUseDarkFloatingGlass } from '@/lib/floating-glass-tone'
+import {
+  getMarketplaceCountryLocations,
+  inferMarketplaceLocation,
+  marketplaceListingMatchesLocationQuery,
+} from '@/lib/marketplace-locations'
+import { localizePublicHref, repairMojibakeText, translatePublic, type PublicLocale } from '@/lib/public-i18n'
 import { SAVED_SEARCHES_EVENT } from '@/lib/saved-searches'
 import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
 import { fieldsForCategory } from '@/lib/listing-schema'
+import { currencyForCountry, isLeasingMarketplaceCategory } from '@/lib/marketplace'
+import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
+import { applyMarketplaceSearchModeParams } from '@/lib/marketplace-search-seo'
+import type { MarketplaceBoundingBox } from '@/lib/marketplace-search-state'
 import { vehicleValueInEnglish } from '@/lib/vehicle-translation'
+import { translateListingEquipmentValue } from '@/lib/listing-equipment'
 
-type SearchMode = 'sale' | 'leasing'
+type SearchMode = 'all' | 'sale' | 'leasing'
+type GeoFilterMode = 'legacy' | 'strict'
 type ResultsLayout = 'single' | 'split'
+type DesktopMarketplaceView = 'map' | 'list'
+type QuickFilterPlacement = 'desktop' | 'mobile'
+type DesktopFilterMenu = 'mode' | 'price' | 'year' | 'mileage' | 'operatingHours' | 'category' | 'bodyType' | 'market' | 'model' | null
 type ActiveFilterChip = { key: string; label: string; icon?: ReactNode; onRemove: () => void }
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
   dedupeKey: string
 }
 
+type ListingInsuranceOffer = {
+  provider: string | null
+  monthlyCost: number | string | null
+  currency: string | null
+}
+
 let selectedSearchSuggestionSequence = 0
 
-const appStoreHref =
-  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
-const playStoreHref =
-  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
-  'https://play.google.com/store/search?q=autorell&c=apps'
+const maxCompareListings = 4
 
 function searchSuggestionDedupeKey(suggestion: VehicleSmartSearchSuggestion) {
   return [
@@ -91,6 +115,52 @@ function createSelectedSearchSuggestion(
   }
 }
 
+function formatGeoBound(value: number) {
+  if (!Number.isFinite(value)) return ''
+  return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
+}
+
+function countValues(values: string[]) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    const cleanValue = value.trim()
+    if (!cleanValue) continue
+    counts.set(cleanValue, (counts.get(cleanValue) || 0) + 1)
+  }
+  return new Map(
+    Array.from(counts.entries()).sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'sv-SE')),
+  )
+}
+
+function normalizeMarketplaceLocationSelection({
+  countryCode,
+  region,
+  municipality,
+  city,
+}: {
+  countryCode: string
+  region?: string | null
+  municipality?: string | null
+  city?: string | null
+}) {
+  const catalog = getMarketplaceCountryLocations(countryCode)
+  const explicitRegion = catalog.regions.find(
+    (item) => normalizeSearchText(item.name) === normalizeSearchText(region),
+  )
+  if (explicitRegion) {
+    return { region: explicitRegion.name, municipality: municipality || '' }
+  }
+
+  const inferred = inferMarketplaceLocation({
+    countryCode,
+    municipality: municipality || region,
+    city,
+  })
+  return inferred.region
+    ? inferred
+    : { region: region || '', municipality: municipality || '' }
+}
+
 type SavedVehicleSearch = {
   savedAt: string
   filters: {
@@ -103,6 +173,8 @@ type SavedVehicleSearch = {
     region: string
     city: string
     municipality: string
+    geoAreaId?: string
+    geoBounds?: MarketplaceBoundingBox | null
     minPrice: string
     maxPrice: string
     minYear: string
@@ -126,7 +198,11 @@ type SavedVehicleSearch = {
   }
 }
 
-type MarketplaceReturnSearchState = SavedVehicleSearch['filters']
+type MarketplaceReturnSearchState = SavedVehicleSearch['filters'] & {
+  __windowScrollY?: number
+  __desktopResultsScrollTop?: number
+  __desktopMarketplaceView?: DesktopMarketplaceView
+}
 
 export type VehicleSearchListing = {
   id: string
@@ -141,12 +217,14 @@ export type VehicleSearchListing = {
   gearbox: string | null
   bodyType: string | null
   country: string
+  region: string | null
   city: string | null
   municipality: string | null
   latitude: number | null
   longitude: number | null
   priceLabel: string
   priceValue: number
+  displayPriceValue?: number | null
   imageUrl: string | null
   imageUrls: string[]
   sellerLogoUrl: string | null
@@ -158,8 +236,18 @@ export type VehicleSearchListing = {
   condition: string | null
   color: string | null
   equipment: string | null
+  description?: string | null
   offerType?: 'sale' | 'lease' | 'sale_and_lease' | null
   leaseData?: Record<string, unknown> | null
+  insuranceOffers?: ListingInsuranceOffer[] | null
+}
+
+export type VehicleSearchSeoLanding = {
+  h1: string
+  description: string
+  zeroResultsText: string
+  breadcrumbs: Array<{ label: string; href: string }>
+  relatedLinks: Array<{ label: string; href: string }>
 }
 
 type MarketplaceSearchApiResponse = {
@@ -172,6 +260,8 @@ type MarketplaceSearchApiResponse = {
   facets?: {
     makes?: Array<string | { value: string; count: number }>
     models?: Array<string | { value: string; count: number }>
+    regions?: Array<string | { value: string; count: number }>
+    municipalities?: Array<string | { value: string; count: number }>
     fuels?: Array<string | { value: string; count: number }>
     gearboxes?: Array<string | { value: string; count: number }>
     bodyTypes?: Array<string | { value: string; count: number }>
@@ -179,14 +269,9 @@ type MarketplaceSearchApiResponse = {
   }
 }
 
-const tabs: Array<{ key: SearchMode; label: string; mobileLabel: string; hint: string }> = [
-  { key: 'sale', label: 'Fordon till salu', mobileLabel: 'Fordon till salu', hint: 'Privata och företag' },
-  { key: 'leasing', label: 'Leasing', mobileLabel: 'Leasing', hint: 'Företagsannonser' },
-]
-
 const MARKETPLACE_RETURN_SEARCH_STATE_KEY = 'autorell:marketplace-return-search'
 const MARKETPLACE_RETURN_SEARCH_ARMED_KEY = 'autorell:marketplace-return-search-armed'
-const MARKETPLACE_PERSISTED_SEARCH_STATE_KEY = 'autorell:marketplace-search-state'
+const MARKETPLACE_PERSISTED_SEARCH_STATE_KEY = 'autorell:marketplace-search-state:v2'
 
 const categories = [
   { key: 'all', label: 'Alla kategorier', shortLabel: 'Alla', icon: AutorellAllCategoriesIcon },
@@ -230,11 +315,6 @@ const marketOptions = [
   { value: 'ES', label: 'España' },
   { value: 'SE', label: 'Sverige' },
 ]
-
-const countryFilterOptions = marketOptions.map((option) => ({
-  ...option,
-  label: option.value ? option.label : 'All of Europe',
-}))
 
 const selectableMarketCodes = new Set(marketOptions.map((option) => option.value).filter(Boolean))
 const allMarketCodes = new Set(['EU', 'ALL'])
@@ -346,19 +426,29 @@ function writeMarketplaceReturnSearchState(locale: PublicLocale, state: Marketpl
 }
 
 function isLeasingListing(listing: VehicleSearchListing) {
-  return listing.offerType === 'lease' || listing.offerType === 'sale_and_lease' || (listing.equipment || '').toLowerCase().includes('leasing')
+  return listing.offerType === 'lease' || listing.offerType === 'sale_and_lease'
 }
 
-function listingEquipmentChips(equipment: string | null | undefined) {
+function isSaleListing(listing: VehicleSearchListing) {
+  return listing.offerType === 'sale' || listing.offerType === 'sale_and_lease'
+}
+
+function normalizeSearchMode(value?: string | null): SearchMode {
+  if (value === 'sale' || value === 'leasing') return value
+  return 'all'
+}
+
+function listingEquipmentChips(equipment: string | null | undefined, locale: PublicLocale) {
   return Array.from(
     new Set(
       (equipment || '')
         .split(/[,;\n|]+/)
         .map((item) => item.trim())
         .filter(Boolean)
+        .map((item) => translateListingEquipmentValue(locale, item) || item)
         .filter((item) => item.length <= 28),
     ),
-  ).slice(0, 2)
+  ).slice(0, 16)
 }
 
 const categoryEnglishLabels: Record<string, string> = {
@@ -375,9 +465,450 @@ const categoryEnglishLabels: Record<string, string> = {
 }
 
 function uiText(locale: PublicLocale, en: string, sv: string, de?: string) {
-  if (locale === 'sv') return sv
-  if (locale === 'de') return de || en
-  return locale === 'en' ? en : translatePublic(locale, en)
+  if (locale === 'sv') return repairMojibakeText(sv)
+  if (locale === 'de' || locale === 'at') return repairMojibakeText(de || en)
+  return locale === 'en' ? repairMojibakeText(en) : translatePublic(locale, en)
+}
+
+const filterDialogCopy: Record<PublicLocale, { close: string; label: string }> = {
+  en: { close: 'Close filter menu', label: 'Filter options' },
+  sv: { close: 'Stäng filtermeny', label: 'Filteralternativ' },
+  de: { close: 'Filtermenü schließen', label: 'Filteroptionen' },
+  at: { close: 'Filtermenü schließen', label: 'Filteroptionen' },
+  be: { close: 'Filtermenu sluiten', label: 'Filteropties' },
+  fr: { close: 'Fermer le menu des filtres', label: 'Options de filtrage' },
+  es: { close: 'Cerrar el menú de filtros', label: 'Opciones de filtro' },
+  it: { close: 'Chiudi il menu dei filtri', label: 'Opzioni filtro' },
+  pl: { close: 'Zamknij menu filtrów', label: 'Opcje filtrów' },
+  nl: { close: 'Filtermenu sluiten', label: 'Filteropties' },
+  fi: { close: 'Sulje suodatinvalikko', label: 'Suodatusvaihtoehdot' },
+  da: { close: 'Luk filtermenu', label: 'Filtermuligheder' },
+}
+
+type DesktopListShellCopy = {
+  filters: string
+  clearAll: string
+  offerType: string
+  vehicleCategory: string
+  makeModelYear: string
+  allVehicles: string
+  before1950: string
+  anyPrice: string
+  locationMarket: string
+  county: string
+  municipality: string
+  vehicleDetails: string
+  mileageFuelEquipment: string
+  sellerCondition: string
+  allSellers: string
+  updatingResults: string
+  countFailure: string
+  resultsUpdate: string
+  sorting: string
+  showMap: string
+  loading: string
+  showMore: string
+  searchResults: string
+}
+
+const desktopListEn: DesktopListShellCopy = {
+  filters: 'Filters', clearAll: 'Clear all', offerType: 'Offer type', vehicleCategory: 'Vehicle category',
+  makeModelYear: 'Make, model and year', allVehicles: 'All vehicles', before1950: 'Before 1950', anyPrice: 'Any price',
+  locationMarket: 'Location and market', county: 'Region', municipality: 'Municipality', vehicleDetails: 'Vehicle details',
+  mileageFuelEquipment: 'Mileage, fuel and equipment', sellerCondition: 'Seller and condition', allSellers: 'All sellers',
+  updatingResults: 'Updating results...', countFailure: 'Could not update search count', resultsUpdate: 'Listings update as you change filters',
+  sorting: 'Sorting', showMap: 'Show map', loading: 'Loading...', showMore: 'Show more listings', searchResults: 'Search results',
+}
+const desktopListSv: DesktopListShellCopy = {
+  filters: 'Filter', clearAll: 'Rensa alla', offerType: 'Annonstyp', vehicleCategory: 'Fordonskategori',
+  makeModelYear: 'Märke, modell och årsmodell', allVehicles: 'Alla fordon', before1950: 'Före 1950', anyPrice: 'Alla priser',
+  locationMarket: 'Plats och marknad', county: 'Län', municipality: 'Kommun', vehicleDetails: 'Fordonsuppgifter',
+  mileageFuelEquipment: 'Miltal, drivmedel och utrustning', sellerCondition: 'Säljare och skick', allSellers: 'Alla säljare',
+  updatingResults: 'Uppdaterar resultat...', countFailure: 'Kunde inte uppdatera antal', resultsUpdate: 'Annonserna uppdateras när du ändrar filtren',
+  sorting: 'Sortering', showMap: 'Visa karta', loading: 'Laddar...', showMore: 'Visa fler annonser', searchResults: 'Sökresultat',
+}
+const desktopListDe: DesktopListShellCopy = {
+  filters: 'Filter', clearAll: 'Alle löschen', offerType: 'Angebotsart', vehicleCategory: 'Fahrzeugkategorie',
+  makeModelYear: 'Marke, Modell und Baujahr', allVehicles: 'Alle Fahrzeuge', before1950: 'Vor 1950', anyPrice: 'Jeder Preis',
+  locationMarket: 'Ort und Markt', county: 'Region', municipality: 'Gemeinde', vehicleDetails: 'Fahrzeugdetails',
+  mileageFuelEquipment: 'Kilometerstand, Kraftstoff und Ausstattung', sellerCondition: 'Verkäufer und Zustand', allSellers: 'Alle Verkäufer',
+  updatingResults: 'Ergebnisse werden aktualisiert...', countFailure: 'Anzahl konnte nicht aktualisiert werden', resultsUpdate: 'Anzeigen werden beim Ändern der Filter aktualisiert',
+  sorting: 'Sortierung', showMap: 'Karte anzeigen', loading: 'Wird geladen...', showMore: 'Mehr Anzeigen zeigen', searchResults: 'Suchergebnisse',
+}
+const desktopListNl: DesktopListShellCopy = {
+  filters: 'Filters', clearAll: 'Alles wissen', offerType: 'Type aanbod', vehicleCategory: 'Voertuigcategorie',
+  makeModelYear: 'Merk, model en bouwjaar', allVehicles: 'Alle voertuigen', before1950: 'Voor 1950', anyPrice: 'Elke prijs',
+  locationMarket: 'Locatie en markt', county: 'Provincie', municipality: 'Gemeente', vehicleDetails: 'Voertuiggegevens',
+  mileageFuelEquipment: 'Kilometerstand, brandstof en uitrusting', sellerCondition: 'Verkoper en staat', allSellers: 'Alle verkopers',
+  updatingResults: 'Resultaten worden bijgewerkt...', countFailure: 'Aantal kon niet worden bijgewerkt', resultsUpdate: 'Advertenties worden bijgewerkt wanneer je filters wijzigt',
+  sorting: 'Sortering', showMap: 'Kaart tonen', loading: 'Laden...', showMore: 'Meer advertenties tonen', searchResults: 'Zoekresultaten',
+}
+const desktopListFr: DesktopListShellCopy = {
+  filters: 'Filtres', clearAll: 'Tout effacer', offerType: "Type d'offre", vehicleCategory: 'Catégorie du véhicule',
+  makeModelYear: 'Marque, modèle et année', allVehicles: 'Tous les véhicules', before1950: 'Avant 1950', anyPrice: 'Tous les prix',
+  locationMarket: 'Lieu et marché', county: 'Région', municipality: 'Commune', vehicleDetails: 'Détails du véhicule',
+  mileageFuelEquipment: 'Kilométrage, carburant et équipements', sellerCondition: 'Vendeur et état', allSellers: 'Tous les vendeurs',
+  updatingResults: 'Mise à jour des résultats...', countFailure: 'Impossible de mettre à jour le nombre', resultsUpdate: 'Les annonces se mettent à jour lorsque vous modifiez les filtres',
+  sorting: 'Tri', showMap: 'Afficher la carte', loading: 'Chargement...', showMore: "Afficher plus d'annonces", searchResults: 'Résultats de recherche',
+}
+const desktopListEs: DesktopListShellCopy = {
+  filters: 'Filtros', clearAll: 'Borrar todo', offerType: 'Tipo de oferta', vehicleCategory: 'Categoría del vehículo',
+  makeModelYear: 'Marca, modelo y año', allVehicles: 'Todos los vehículos', before1950: 'Antes de 1950', anyPrice: 'Cualquier precio',
+  locationMarket: 'Ubicación y mercado', county: 'Región', municipality: 'Municipio', vehicleDetails: 'Datos del vehículo',
+  mileageFuelEquipment: 'Kilometraje, combustible y equipamiento', sellerCondition: 'Vendedor y estado', allSellers: 'Todos los vendedores',
+  updatingResults: 'Actualizando resultados...', countFailure: 'No se pudo actualizar el número', resultsUpdate: 'Los anuncios se actualizan al cambiar los filtros',
+  sorting: 'Ordenación', showMap: 'Ver mapa', loading: 'Cargando...', showMore: 'Ver más anuncios', searchResults: 'Resultados de búsqueda',
+}
+const desktopListIt: DesktopListShellCopy = {
+  filters: 'Filtri', clearAll: 'Cancella tutto', offerType: 'Tipo di offerta', vehicleCategory: 'Categoria del veicolo',
+  makeModelYear: 'Marca, modello e anno', allVehicles: 'Tutti i veicoli', before1950: 'Prima del 1950', anyPrice: 'Qualsiasi prezzo',
+  locationMarket: 'Località e mercato', county: 'Regione', municipality: 'Comune', vehicleDetails: 'Dati del veicolo',
+  mileageFuelEquipment: 'Chilometraggio, carburante e dotazioni', sellerCondition: 'Venditore e condizioni', allSellers: 'Tutti i venditori',
+  updatingResults: 'Aggiornamento dei risultati...', countFailure: 'Impossibile aggiornare il numero', resultsUpdate: 'Gli annunci si aggiornano quando modifichi i filtri',
+  sorting: 'Ordinamento', showMap: 'Mostra mappa', loading: 'Caricamento...', showMore: 'Mostra altri annunci', searchResults: 'Risultati di ricerca',
+}
+const desktopListPl: DesktopListShellCopy = {
+  filters: 'Filtry', clearAll: 'Wyczyść wszystko', offerType: 'Typ oferty', vehicleCategory: 'Kategoria pojazdu',
+  makeModelYear: 'Marka, model i rocznik', allVehicles: 'Wszystkie pojazdy', before1950: 'Przed 1950', anyPrice: 'Dowolna cena',
+  locationMarket: 'Lokalizacja i rynek', county: 'Województwo', municipality: 'Gmina', vehicleDetails: 'Dane pojazdu',
+  mileageFuelEquipment: 'Przebieg, paliwo i wyposażenie', sellerCondition: 'Sprzedawca i stan', allSellers: 'Wszyscy sprzedawcy',
+  updatingResults: 'Aktualizowanie wyników...', countFailure: 'Nie udało się zaktualizować liczby', resultsUpdate: 'Ogłoszenia aktualizują się po zmianie filtrów',
+  sorting: 'Sortowanie', showMap: 'Pokaż mapę', loading: 'Ładowanie...', showMore: 'Pokaż więcej ogłoszeń', searchResults: 'Wyniki wyszukiwania',
+}
+const desktopListFi: DesktopListShellCopy = {
+  filters: 'Suodattimet', clearAll: 'Tyhjennä kaikki', offerType: 'Ilmoitustyyppi', vehicleCategory: 'Ajoneuvoluokka',
+  makeModelYear: 'Merkki, malli ja vuosimalli', allVehicles: 'Kaikki ajoneuvot', before1950: 'Ennen vuotta 1950', anyPrice: 'Mikä tahansa hinta',
+  locationMarket: 'Sijainti ja markkina', county: 'Maakunta', municipality: 'Kunta', vehicleDetails: 'Ajoneuvon tiedot',
+  mileageFuelEquipment: 'Ajokilometrit, polttoaine ja varusteet', sellerCondition: 'Myyjä ja kunto', allSellers: 'Kaikki myyjät',
+  updatingResults: 'Päivitetään tuloksia...', countFailure: 'Määrää ei voitu päivittää', resultsUpdate: 'Ilmoitukset päivittyvät, kun muutat suodattimia',
+  sorting: 'Lajittelu', showMap: 'Näytä kartta', loading: 'Ladataan...', showMore: 'Näytä lisää ilmoituksia', searchResults: 'Hakutulokset',
+}
+const desktopListDa: DesktopListShellCopy = {
+  filters: 'Filtre', clearAll: 'Ryd alle', offerType: 'Annoncetype', vehicleCategory: 'Køretøjskategori',
+  makeModelYear: 'Mærke, model og modelår', allVehicles: 'Alle køretøjer', before1950: 'Før 1950', anyPrice: 'Enhver pris',
+  locationMarket: 'Placering og marked', county: 'Region', municipality: 'Kommune', vehicleDetails: 'Køretøjsoplysninger',
+  mileageFuelEquipment: 'Kilometertal, brændstof og udstyr', sellerCondition: 'Sælger og stand', allSellers: 'Alle sælgere',
+  updatingResults: 'Opdaterer resultater...', countFailure: 'Antallet kunne ikke opdateres', resultsUpdate: 'Annoncerne opdateres, når du ændrer filtrene',
+  sorting: 'Sortering', showMap: 'Vis kort', loading: 'Indlæser...', showMore: 'Vis flere annoncer', searchResults: 'Søgeresultater',
+}
+
+const desktopListShellCopy: Record<PublicLocale, DesktopListShellCopy> = {
+  en: desktopListEn,
+  sv: desktopListSv,
+  de: desktopListDe,
+  at: desktopListDe,
+  be: desktopListNl,
+  nl: desktopListNl,
+  fr: desktopListFr,
+  es: desktopListEs,
+  it: desktopListIt,
+  pl: desktopListPl,
+  fi: desktopListFi,
+  da: desktopListDa,
+}
+
+type ListViewExtraCopy = {
+  typeLabel: string
+  savedListings: string
+  latestListings: string
+  activeFilter: string
+  activeFilters: string
+  searchByType: string
+  searchByMake: string
+  noOptions: string
+  sortBy: string
+}
+
+const listViewExtraCopy: Record<PublicLocale, ListViewExtraCopy> = {
+  en: { typeLabel: 'Type', savedListings: 'Saved listings', latestListings: 'Latest listings', activeFilter: 'active filter', activeFilters: 'active filters', searchByType: 'Search by type', searchByMake: 'Search by make', noOptions: 'No options found', sortBy: 'Sort by' },
+  sv: { typeLabel: 'Typ', savedListings: 'Sparade annonser', latestListings: 'Senaste annonser', activeFilter: 'aktivt filter', activeFilters: 'aktiva filter', searchByType: 'Sök typ', searchByMake: 'Sök märke', noOptions: 'Inga alternativ hittades', sortBy: 'Sortera efter' },
+  de: { typeLabel: 'Typ', savedListings: 'Gespeicherte Anzeigen', latestListings: 'Neueste Anzeigen', activeFilter: 'aktiver Filter', activeFilters: 'aktive Filter', searchByType: 'Typ suchen', searchByMake: 'Marke suchen', noOptions: 'Keine Optionen gefunden', sortBy: 'Sortieren nach' },
+  at: { typeLabel: 'Typ', savedListings: 'Gespeicherte Anzeigen', latestListings: 'Neueste Anzeigen', activeFilter: 'aktiver Filter', activeFilters: 'aktive Filter', searchByType: 'Typ suchen', searchByMake: 'Marke suchen', noOptions: 'Keine Optionen gefunden', sortBy: 'Sortieren nach' },
+  be: { typeLabel: 'Type', savedListings: 'Bewaarde advertenties', latestListings: 'Nieuwste advertenties', activeFilter: 'actieve filter', activeFilters: 'actieve filters', searchByType: 'Type zoeken', searchByMake: 'Merk zoeken', noOptions: 'Geen opties gevonden', sortBy: 'Sorteren op' },
+  nl: { typeLabel: 'Type', savedListings: 'Bewaarde advertenties', latestListings: 'Nieuwste advertenties', activeFilter: 'actieve filter', activeFilters: 'actieve filters', searchByType: 'Type zoeken', searchByMake: 'Merk zoeken', noOptions: 'Geen opties gevonden', sortBy: 'Sorteren op' },
+  fr: { typeLabel: 'Type', savedListings: 'Annonces enregistrées', latestListings: 'Dernières annonces', activeFilter: 'filtre actif', activeFilters: 'filtres actifs', searchByType: 'Rechercher un type', searchByMake: 'Rechercher une marque', noOptions: 'Aucune option trouvée', sortBy: 'Trier par' },
+  es: { typeLabel: 'Tipo', savedListings: 'Anuncios guardados', latestListings: 'Últimos anuncios', activeFilter: 'filtro activo', activeFilters: 'filtros activos', searchByType: 'Buscar tipo', searchByMake: 'Buscar marca', noOptions: 'No se encontraron opciones', sortBy: 'Ordenar por' },
+  it: { typeLabel: 'Tipo', savedListings: 'Annunci salvati', latestListings: 'Ultimi annunci', activeFilter: 'filtro attivo', activeFilters: 'filtri attivi', searchByType: 'Cerca tipo', searchByMake: 'Cerca marca', noOptions: 'Nessuna opzione trovata', sortBy: 'Ordina per' },
+  pl: { typeLabel: 'Typ', savedListings: 'Zapisane ogłoszenia', latestListings: 'Najnowsze ogłoszenia', activeFilter: 'aktywny filtr', activeFilters: 'aktywne filtry', searchByType: 'Szukaj typu', searchByMake: 'Szukaj marki', noOptions: 'Nie znaleziono opcji', sortBy: 'Sortuj według' },
+  fi: { typeLabel: 'Tyyppi', savedListings: 'Tallennetut ilmoitukset', latestListings: 'Uusimmat ilmoitukset', activeFilter: 'aktiivinen suodatin', activeFilters: 'aktiiviset suodattimet', searchByType: 'Hae tyyppiä', searchByMake: 'Hae merkkiä', noOptions: 'Vaihtoehtoja ei löytynyt', sortBy: 'Lajittele' },
+  da: { typeLabel: 'Type', savedListings: 'Gemte annoncer', latestListings: 'Nyeste annoncer', activeFilter: 'aktivt filter', activeFilters: 'aktive filtre', searchByType: 'Søg type', searchByMake: 'Søg mærke', noOptions: 'Ingen muligheder fundet', sortBy: 'Sorter efter' },
+}
+
+function priceFilterValue(listing: VehicleSearchListing) {
+  const value = listing.displayPriceValue ?? listing.priceValue
+  return Number.isFinite(value) ? value : 0
+}
+
+function defaultPriceFilterMax(currency: string) {
+  switch (currency.toUpperCase()) {
+    case 'EUR':
+      return 100000
+    case 'PLN':
+      return 500000
+    case 'DKK':
+      return 750000
+    case 'SEK':
+      return 700000
+    default:
+      return 100000
+  }
+}
+
+function getCompareCopy(locale: PublicLocale) {
+  const copy = {
+    en: {
+      eyebrow: 'Compare',
+      title: 'Compare vehicles',
+      subtitle: 'Compare price, mileage, seller and location side by side.',
+      selectedSingular: 'listing selected',
+      selectedPlural: 'listings selected',
+      helper: 'Select 2-4 listings and compare the most important data.',
+      action: 'Compare',
+      clear: 'Clear comparison',
+      close: 'Close comparison',
+      remove: 'Remove from comparison',
+      limit: 'You can compare up to 4 listings.',
+      view: 'Open listing',
+      best: 'Best',
+      price: 'Price',
+      year: 'Model year',
+      mileage: 'Mileage',
+      fuel: 'Fuel',
+      gearbox: 'Gearbox',
+      bodyType: 'Body type',
+      condition: 'Condition',
+      seller: 'Seller',
+      location: 'Location',
+      offer: 'Offer',
+    },
+    sv: {
+      eyebrow: 'Jämför',
+      title: 'Jämför fordon',
+      subtitle: 'Jämför pris, miltal, säljare och plats sida vid sida.',
+      selectedSingular: 'annons vald',
+      selectedPlural: 'annonser valda',
+      helper: 'Välj 2-4 annonser och jämför viktigaste datan.',
+      action: 'Jämför',
+      clear: 'Rensa jämförelse',
+      close: 'Stäng jämförelse',
+      remove: 'Ta bort från jämförelse',
+      limit: 'Du kan jämföra max 4 annonser.',
+      view: 'Öppna annons',
+      best: 'Bäst',
+      price: 'Pris',
+      year: 'Årsmodell',
+      mileage: 'Miltal',
+      fuel: 'Drivmedel',
+      gearbox: 'Växellåda',
+      bodyType: 'Karosstyp',
+      condition: 'Skick',
+      seller: 'Säljare',
+      location: 'Plats',
+      offer: 'Erbjudande',
+    },
+    de: {
+      eyebrow: 'Vergleichen',
+      title: 'Fahrzeuge vergleichen',
+      subtitle: 'Preis, Kilometerstand, Verkäufer und Standort nebeneinander vergleichen.',
+      selectedSingular: 'Anzeige ausgewählt',
+      selectedPlural: 'Anzeigen ausgewählt',
+      helper: 'Wählen Sie 2-4 Anzeigen und vergleichen Sie die wichtigsten Daten.',
+      action: 'Vergleichen',
+      clear: 'Vergleich löschen',
+      close: 'Vergleich schließen',
+      remove: 'Aus Vergleich entfernen',
+      limit: 'Sie können maximal 4 Anzeigen vergleichen.',
+      view: 'Anzeige öffnen',
+      best: 'Beste',
+      price: 'Preis',
+      year: 'Baujahr',
+      mileage: 'Kilometer',
+      fuel: 'Kraftstoff',
+      gearbox: 'Getriebe',
+      bodyType: 'Karosserie',
+      condition: 'Zustand',
+      seller: 'Verkäufer',
+      location: 'Standort',
+      offer: 'Angebot',
+    },
+    fr: {
+      eyebrow: 'Comparer',
+      title: 'Comparer les véhicules',
+      subtitle: 'Comparez prix, kilométrage, vendeur et lieu côte à côte.',
+      selectedSingular: 'annonce sélectionnée',
+      selectedPlural: 'annonces sélectionnées',
+      helper: 'Sélectionnez 2 à 4 annonces et comparez les données clés.',
+      action: 'Comparer',
+      clear: 'Vider la comparaison',
+      close: 'Fermer la comparaison',
+      remove: 'Retirer de la comparaison',
+      limit: 'Vous pouvez comparer jusqu’à 4 annonces.',
+      view: 'Ouvrir l’annonce',
+      best: 'Meilleur',
+      price: 'Prix',
+      year: 'Année',
+      mileage: 'Kilométrage',
+      fuel: 'Carburant',
+      gearbox: 'Boîte',
+      bodyType: 'Carrosserie',
+      condition: 'État',
+      seller: 'Vendeur',
+      location: 'Lieu',
+      offer: 'Offre',
+    },
+    es: {
+      eyebrow: 'Comparar',
+      title: 'Comparar vehículos',
+      subtitle: 'Compara precio, kilometraje, vendedor y ubicación lado a lado.',
+      selectedSingular: 'anuncio seleccionado',
+      selectedPlural: 'anuncios seleccionados',
+      helper: 'Selecciona de 2 a 4 anuncios y compara los datos clave.',
+      action: 'Comparar',
+      clear: 'Borrar comparación',
+      close: 'Cerrar comparación',
+      remove: 'Quitar de la comparación',
+      limit: 'Puedes comparar hasta 4 anuncios.',
+      view: 'Abrir anuncio',
+      best: 'Mejor',
+      price: 'Precio',
+      year: 'Año',
+      mileage: 'Kilometraje',
+      fuel: 'Combustible',
+      gearbox: 'Cambio',
+      bodyType: 'Carrocería',
+      condition: 'Estado',
+      seller: 'Vendedor',
+      location: 'Ubicación',
+      offer: 'Oferta',
+    },
+    it: {
+      eyebrow: 'Confronta',
+      title: 'Confronta veicoli',
+      subtitle: 'Confronta prezzo, chilometraggio, venditore e luogo affiancati.',
+      selectedSingular: 'annuncio selezionato',
+      selectedPlural: 'annunci selezionati',
+      helper: 'Seleziona 2-4 annunci e confronta i dati principali.',
+      action: 'Confronta',
+      clear: 'Cancella confronto',
+      close: 'Chiudi confronto',
+      remove: 'Rimuovi dal confronto',
+      limit: 'Puoi confrontare fino a 4 annunci.',
+      view: 'Apri annuncio',
+      best: 'Migliore',
+      price: 'Prezzo',
+      year: 'Anno',
+      mileage: 'Chilometraggio',
+      fuel: 'Carburante',
+      gearbox: 'Cambio',
+      bodyType: 'Carrozzeria',
+      condition: 'Condizione',
+      seller: 'Venditore',
+      location: 'Luogo',
+      offer: 'Offerta',
+    },
+    nl: {
+      eyebrow: 'Vergelijken',
+      title: 'Voertuigen vergelijken',
+      subtitle: 'Vergelijk prijs, kilometerstand, verkoper en locatie naast elkaar.',
+      selectedSingular: 'advertentie geselecteerd',
+      selectedPlural: 'advertenties geselecteerd',
+      helper: 'Selecteer 2-4 advertenties en vergelijk de belangrijkste gegevens.',
+      action: 'Vergelijken',
+      clear: 'Vergelijking wissen',
+      close: 'Vergelijking sluiten',
+      remove: 'Uit vergelijking verwijderen',
+      limit: 'Je kunt maximaal 4 advertenties vergelijken.',
+      view: 'Advertentie openen',
+      best: 'Beste',
+      price: 'Prijs',
+      year: 'Bouwjaar',
+      mileage: 'Kilometerstand',
+      fuel: 'Brandstof',
+      gearbox: 'Transmissie',
+      bodyType: 'Carrosserie',
+      condition: 'Staat',
+      seller: 'Verkoper',
+      location: 'Locatie',
+      offer: 'Aanbod',
+    },
+    da: {
+      eyebrow: 'Sammenlign',
+      title: 'Sammenlign køretøjer',
+      subtitle: 'Sammenlign pris, kilometerstand, sælger og placering side om side.',
+      selectedSingular: 'annonce valgt',
+      selectedPlural: 'annoncer valgt',
+      helper: 'Vælg 2-4 annoncer og sammenlign de vigtigste data.',
+      action: 'Sammenlign',
+      clear: 'Ryd sammenligning',
+      close: 'Luk sammenligning',
+      remove: 'Fjern fra sammenligning',
+      limit: 'Du kan sammenligne op til 4 annoncer.',
+      view: 'Åbn annonce',
+      best: 'Bedst',
+      price: 'Pris',
+      year: 'Årgang',
+      mileage: 'Kilometerstand',
+      fuel: 'Brændstof',
+      gearbox: 'Gearkasse',
+      bodyType: 'Karrosseri',
+      condition: 'Stand',
+      seller: 'Sælger',
+      location: 'Placering',
+      offer: 'Tilbud',
+    },
+    fi: {
+      eyebrow: 'Vertaa',
+      title: 'Vertaile ajoneuvoja',
+      subtitle: 'Vertaa hintaa, ajomäärää, myyjää ja sijaintia rinnakkain.',
+      selectedSingular: 'ilmoitus valittu',
+      selectedPlural: 'ilmoitusta valittu',
+      helper: 'Valitse 2-4 ilmoitusta ja vertaile tärkeimpiä tietoja.',
+      action: 'Vertaa',
+      clear: 'Tyhjennä vertailu',
+      close: 'Sulje vertailu',
+      remove: 'Poista vertailusta',
+      limit: 'Voit vertailla enintään 4 ilmoitusta.',
+      view: 'Avaa ilmoitus',
+      best: 'Paras',
+      price: 'Hinta',
+      year: 'Vuosimalli',
+      mileage: 'Ajomäärä',
+      fuel: 'Polttoaine',
+      gearbox: 'Vaihteisto',
+      bodyType: 'Korimalli',
+      condition: 'Kunto',
+      seller: 'Myyjä',
+      location: 'Sijainti',
+      offer: 'Tarjous',
+    },
+    pl: {
+      eyebrow: 'Porównaj',
+      title: 'Porównaj pojazdy',
+      subtitle: 'Porównaj cenę, przebieg, sprzedawcę i lokalizację obok siebie.',
+      selectedSingular: 'ogłoszenie wybrane',
+      selectedPlural: 'ogłoszenia wybrane',
+      helper: 'Wybierz 2-4 ogłoszenia i porównaj najważniejsze dane.',
+      action: 'Porównaj',
+      clear: 'Wyczyść porównanie',
+      close: 'Zamknij porównanie',
+      remove: 'Usuń z porównania',
+      limit: 'Możesz porównać maksymalnie 4 ogłoszenia.',
+      view: 'Otwórz ogłoszenie',
+      best: 'Najlepsze',
+      price: 'Cena',
+      year: 'Rok',
+      mileage: 'Przebieg',
+      fuel: 'Paliwo',
+      gearbox: 'Skrzynia',
+      bodyType: 'Nadwozie',
+      condition: 'Stan',
+      seller: 'Sprzedawca',
+      location: 'Lokalizacja',
+      offer: 'Oferta',
+    },
+  }
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  return copy[effectiveLocale as keyof typeof copy] || copy.en
 }
 
 function buildSearchQueryFromSuggestions(
@@ -405,6 +936,36 @@ const marketplaceFooterDescriptions: Record<PublicLocale, string> = {
   da: 'Autorell er en europæisk markedsplads for køretøjsannoncer. Købere kan finde annoncer, og sælgere kan nå de rette kunder på en sikker og tydelig måde.',
 }
 
+const marketplaceFooterCopyright: Record<PublicLocale, string> = {
+  sv: 'Alla rättigheter förbehållna.',
+  de: 'Alle Rechte vorbehalten.',
+  en: 'All rights reserved.',
+  at: 'Alle Rechte vorbehalten.',
+  be: 'Alle rechten voorbehouden.',
+  fr: 'Tous droits réservés.',
+  es: 'Todos los derechos reservados.',
+  it: 'Tutti i diritti riservati.',
+  pl: 'Wszelkie prawa zastrzeżone.',
+  nl: 'Alle rechten voorbehouden.',
+  fi: 'Kaikki oikeudet pidätetään.',
+  da: 'Alle rettigheder forbeholdes.',
+}
+
+const marketplaceBrandSubtitle: Record<PublicLocale, string> = {
+  sv: 'Marknadsplats',
+  de: 'Marktplatz',
+  en: 'Marketplace',
+  at: 'Marktplatz',
+  be: 'Marktplaats',
+  fr: 'Place de marché',
+  es: 'Mercado',
+  it: 'Marketplace',
+  pl: 'Platforma',
+  nl: 'Marktplaats',
+  fi: 'Markkinapaikka',
+  da: 'Markedsplads',
+}
+
 function formatRating(value: number, locale: PublicLocale) {
   return value.toLocaleString(locale === 'sv' ? 'sv-SE' : locale, {
     maximumFractionDigits: 1,
@@ -430,6 +991,61 @@ function categoryText(item: (typeof categories)[number], locale: PublicLocale, s
   }
   const en = categoryEnglishLabels[item.key] || item.label
   return locale === 'en' ? en : translatePublic(locale, en)
+}
+
+function getMarketplaceEmptySubject({
+  locale,
+  make,
+  model,
+  bodyType,
+  selectedCategoryItems,
+}: {
+  locale: PublicLocale
+  make: string
+  model: string
+  bodyType: string
+  selectedCategoryItems: Array<(typeof categories)[number]>
+}) {
+  const makeModel = [make, model].filter(Boolean).join(' ').trim()
+  if (makeModel) return makeModel
+  if (bodyType) return translateListingVehicleValue(locale, bodyType).toLocaleLowerCase(emptyStateLocale(locale))
+  const category = selectedCategoryItems.length === 1 ? selectedCategoryItems[0] : null
+  if (category && category.key !== 'all') return categoryText(category, locale, true).toLocaleLowerCase(emptyStateLocale(locale))
+  return ''
+}
+
+function getMarketplaceEmptyCopy(locale: PublicLocale, subject: string, location: string) {
+  const cleanedSubject = subject.trim()
+  const cleanedLocation = location.trim()
+  const titleTemplate = cleanedSubject && cleanedLocation
+    ? translatePublic(locale, 'No listings for {subject} match your search in {location} yet')
+    : cleanedSubject
+      ? translatePublic(locale, 'No listings for {subject} match your search yet')
+      : translatePublic(locale, 'No listings match your search yet')
+
+  return {
+    title: titleTemplate
+      .replace('{subject}', cleanedSubject)
+      .replace('{location}', cleanedLocation),
+    sellerText: translatePublic(locale, 'Be the first to publish a listing and reach buyers in your market and across Europe.'),
+    createLabel: translatePublic(locale, 'Create free listing'),
+    quickStart: translatePublic(locale, 'It only takes a few minutes to get started.'),
+    loginIntro: translatePublic(locale, 'Already have an account?'),
+    loginLabel: translatePublic(locale, 'Log in'),
+  }
+}
+
+function emptyStateLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'da') return 'da-DK'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'de' || locale === 'at') return 'de-DE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl' || locale === 'be') return 'nl-NL'
+  return 'en-US'
 }
 
 function sortOptionLabel(value: string, fallback: string, locale: PublicLocale) {
@@ -482,9 +1098,12 @@ export default function VehicleSearchExperience({
   initialRegion = '',
   initialCity = '',
   initialMunicipality = '',
+  initialGeoAreaId = '',
+  initialGeoBounds = null,
+  initialGeoFilterMode = 'legacy',
   initialMinPrice = '',
   initialMaxPrice = '',
-  initialMode = 'sale',
+  initialMode = 'all',
   initialMinYear = '',
   initialMaxYear = '',
   initialMinMileage = '',
@@ -502,6 +1121,12 @@ export default function VehicleSearchExperience({
   initialLeasingPossible = false,
   initialEquipmentQuery = '',
   initialSortBy = 'published',
+  initialPage = 1,
+  initialModeExplicit = false,
+  disableUrlSync = false,
+  seoLanding,
+  preserveCanonicalUrl = false,
+  syncCategoryRoute = false,
 }: {
   listings: VehicleSearchListing[]
   locale?: PublicLocale
@@ -517,6 +1142,9 @@ export default function VehicleSearchExperience({
   initialRegion?: string
   initialCity?: string
   initialMunicipality?: string
+  initialGeoAreaId?: string
+  initialGeoBounds?: MarketplaceBoundingBox | null
+  initialGeoFilterMode?: GeoFilterMode
   initialMinPrice?: string
   initialMaxPrice?: string
   initialMode?: SearchMode
@@ -537,16 +1165,30 @@ export default function VehicleSearchExperience({
   initialLeasingPossible?: boolean
   initialEquipmentQuery?: string
   initialSortBy?: string
+  initialPage?: number
+  initialModeExplicit?: boolean
+  disableUrlSync?: boolean
+  seoLanding?: VehicleSearchSeoLanding
+  preserveCanonicalUrl?: boolean
+  syncCategoryRoute?: boolean
 }) {
+  const router = useRouter()
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
-  const safeInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
+  const baseInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
+  const safeInitialCategories = initialMode === 'leasing'
+    ? baseInitialCategories.filter((category) => isLeasingMarketplaceCategory(category))
+    : baseInitialCategories
+  if (!safeInitialCategories.length) safeInitialCategories.push('cars')
   const safeInitialCountry = (defaultCountry || '').toUpperCase()
   const safeAutomaticCountry = (automaticCountry || safeInitialCountry).toUpperCase()
-  const safeInitialMarkets = normalizeMarketSelection(
-    initialMarkets.length ? initialMarkets : [safeInitialCountry],
-    safeAutomaticCountry,
-  )
+  const safeInitialMarkets = normalizeMarketSelection(initialMarkets)
+  const initialLocationSelection = normalizeMarketplaceLocationSelection({
+    countryCode: safeInitialMarkets[0] || safeAutomaticCountry,
+    region: initialRegion,
+    municipality: initialMunicipality,
+    city: initialCity,
+  })
   const initialSearchSuggestions = useMemo(
     () =>
       initialSearchChips
@@ -573,9 +1215,12 @@ export default function VehicleSearchExperience({
       initialRegion ||
       initialCity ||
       initialMunicipality ||
+      initialGeoAreaId ||
+      initialGeoBounds ||
       initialMinPrice ||
       initialMaxPrice ||
-      initialMode !== 'sale' ||
+      initialModeExplicit ||
+      initialMode !== 'all' ||
       initialMinYear ||
       initialMaxYear ||
       initialMinMileage ||
@@ -594,21 +1239,46 @@ export default function VehicleSearchExperience({
       initialEquipmentQuery ||
       (initialSortBy && initialSortBy !== 'published'),
   )
-  const [mode, setMode] = useState<SearchMode>(initialMode === 'leasing' ? 'leasing' : 'sale')
+  const [mode, setMode] = useState<SearchMode>(normalizeSearchMode(initialMode))
   const [query, setQuery] = useState(initialChipQuery)
   const [searchInput, setSearchInput] = useState(initialQuery)
   const [debouncedSearchInput, setDebouncedSearchInput] = useState(initialQuery)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(safeInitialCategories)
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>(safeInitialMarkets)
-  const [marketOverride, setMarketOverride] = useState(!sameMarketSelection(safeInitialMarkets, [safeAutomaticCountry]))
+  const [marketOverride, setMarketOverride] = useState(initialMarkets.length > 0)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [desktopFilterMenu, setDesktopFilterMenu] = useState<DesktopFilterMenu>(null)
+  const [quickFilterPlacement, setQuickFilterPlacement] = useState<QuickFilterPlacement | null>(null)
+  const closeQuickFilterMenu = useCallback(() => {
+    setDesktopFilterMenu(null)
+    setQuickFilterPlacement(null)
+  }, [])
   const [priceYearOpen, setPriceYearOpen] = useState(true)
+  const [locationFiltersOpen, setLocationFiltersOpen] = useState(true)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [sellerFiltersOpen, setSellerFiltersOpen] = useState(false)
+  const [listOfferTypeOpen, setListOfferTypeOpen] = useState(true)
+  const [listCategoryOpen, setListCategoryOpen] = useState(true)
+  const [listVehicleOpen, setListVehicleOpen] = useState(true)
+  const [listMileageOpen, setListMileageOpen] = useState(true)
+  const [listBodyTypeOpen, setListBodyTypeOpen] = useState(true)
+  const [listSpecsOpen, setListSpecsOpen] = useState(true)
+  const [listSaleDriveOpen, setListSaleDriveOpen] = useState(false)
+  const [listEquipmentOpen, setListEquipmentOpen] = useState(false)
+  const [listBodyTypeQuery, setListBodyTypeQuery] = useState('')
+  const [listMakeQuery, setListMakeQuery] = useState('')
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
-  const [mobileDockVisible, setMobileDockVisible] = useState(true)
+  const [mobileSearchPinned, setMobileSearchPinned] = useState(false)
+  const [mobileFilterRailScrolled, setMobileFilterRailScrolled] = useState(false)
   const [sortBy, setSortBy] = useState(initialSortBy || 'published')
-  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('single')
+  const [resultsLayout, setResultsLayout] = useState<ResultsLayout>('split')
+  const [resultsLayoutTouched, setResultsLayoutTouched] = useState(false)
+  const [desktopListColumns, setDesktopListColumns] = useState<1 | 2>(1)
+  const [desktopMarketplaceView, setDesktopMarketplaceView] = useState<DesktopMarketplaceView>(initialPage > 1 ? 'list' : 'map')
+  const canonicalSearchBaselineRef = useRef<string | null>(null)
+  const categoryRouteSyncArmedRef = useRef(false)
+  const seoRouteSyncArmedRef = useRef(false)
+  const searchParamsInitializedRef = useRef(false)
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [minYear, setMinYear] = useState(initialMinYear)
@@ -619,9 +1289,12 @@ export default function VehicleSearchExperience({
   const [maxOperatingHours, setMaxOperatingHours] = useState(initialMaxOperatingHours)
   const [make, setMake] = useState(initialMake)
   const [model, setModel] = useState(initialModel)
-  const [region, setRegion] = useState(initialRegion)
+  const [region, setRegion] = useState(initialLocationSelection.region)
   const [city, setCity] = useState(initialCity)
-  const [municipality, setMunicipality] = useState(initialMunicipality)
+  const [municipality, setMunicipality] = useState(initialLocationSelection.municipality)
+  const [geoAreaId, setGeoAreaId] = useState(initialGeoAreaId)
+  const [geoBounds, setGeoBounds] = useState<MarketplaceBoundingBox | null>(initialGeoBounds)
+  const [geoFilterMode, setGeoFilterMode] = useState<GeoFilterMode>(initialGeoFilterMode)
   const [fuel, setFuel] = useState(initialFuel)
   const [gearbox, setGearbox] = useState(initialGearbox)
   const [bodyType, setBodyType] = useState(initialBodyType)
@@ -641,6 +1314,8 @@ export default function VehicleSearchExperience({
     )
   })
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const [compareOpen, setCompareOpen] = useState(false)
+  const [compareError, setCompareError] = useState('')
   const [savedSearchMessage, setSavedSearchMessage] = useState('')
   const [savingSearch, setSavingSearch] = useState(false)
   const [searchStateReady, setSearchStateReady] = useState(hasExplicitInitialFilters)
@@ -649,22 +1324,67 @@ export default function VehicleSearchExperience({
   const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>(initialSearchSuggestions)
   const [searchListings, setSearchListings] = useState<VehicleSearchListing[]>(listings)
   const [searchFacets, setSearchFacets] = useState<MarketplaceSearchApiResponse['facets']>({})
-  const [, setSearchTotalCount] = useState(listings.length)
-  const [searchPage, setSearchPage] = useState(1)
+  const [searchTotalCount, setSearchTotalCount] = useState(listings.length)
+  const [searchPage, setSearchPage] = useState(Math.max(1, initialPage))
   const [searchTotalPages, setSearchTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  const [desktopFilterPopoverPosition, setDesktopFilterPopoverPosition] = useState<{ left: number; top: number } | null>(null)
+  const desktopFilterBarRef = useRef<HTMLDivElement>(null)
+  const desktopResultsScrollRef = useRef<HTMLDivElement>(null)
+  const pendingMarketplaceRestoreRef = useRef<MarketplaceReturnSearchState | null>(null)
+  const mobileSortSelectRef = useRef<HTMLSelectElement>(null)
+  const mobileShortcutBarRef = useRef<HTMLDivElement | null>(null)
+  const [mobileShortcutOverMedia, setMobileShortcutOverMedia] = useState(false)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (window.matchMedia('(min-width: 768px)').matches) {
+        setResultsLayout('split')
+      } else if (listings.length > 1) {
+        setResultsLayout('split')
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [listings.length])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let frame = 0
+    const updateShortcutContrast = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        setMobileShortcutOverMedia((current) => (
+          !mobileMapOpen && shouldUseDarkFloatingGlass(mobileShortcutBarRef.current, current)
+        ))
+      })
+    }
+
+    updateShortcutContrast()
+    window.addEventListener('scroll', updateShortcutContrast, { passive: true })
+    document.addEventListener('scroll', updateShortcutContrast, { passive: true, capture: true })
+    window.addEventListener('resize', updateShortcutContrast)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateShortcutContrast)
+      document.removeEventListener('scroll', updateShortcutContrast, { capture: true })
+      window.removeEventListener('resize', updateShortcutContrast)
+    }
+  }, [mobileMapOpen, searchListings.length, compareIds.length])
 
   const currentSearchState = useMemo<MarketplaceReturnSearchState>(() => ({
     mode,
     query: query.trim(),
     categories: selectedCategories,
-    markets: marketOverride ? selectedMarkets : selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
+    markets: selectedMarkets,
     make,
     model,
     region,
     city,
     municipality,
+    geoAreaId,
+    geoBounds,
     minPrice,
     maxPrice,
     minYear,
@@ -685,7 +1405,7 @@ export default function VehicleSearchExperience({
     equipmentQuery: equipmentQuery.trim(),
     technicalFilters,
     sortBy,
-  }), [bodyType, city, color, condition, equipmentQuery, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, technicalFilters, verifiedOnly, fourWheelDrive])
+  }), [bodyType, city, color, condition, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, query, region, safeInitialMarkets, selectedCategories, selectedMarkets, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   const marketplaceSearchParams = useMemo(() => {
     const params = new URLSearchParams()
@@ -693,7 +1413,7 @@ export default function VehicleSearchExperience({
       const cleanValue = value.trim()
       if (cleanValue) params.set(key, cleanValue)
     }
-    if (mode !== 'sale') params.set('mode', mode)
+    applyMarketplaceSearchModeParams(params, mode)
     setParam('q', debouncedSearchInput)
     if (selectedSearchSuggestions.length) {
       params.set('chips', selectedSearchSuggestions.map((suggestion) => suggestion.title).join(','))
@@ -701,14 +1421,20 @@ export default function VehicleSearchExperience({
     if (selectedCategories.length) params.set('categories', selectedCategories.join(','))
     if (marketOverride) {
       params.set('markets', selectedMarkets.length ? selectedMarkets.join(',') : 'EU')
-    } else if (selectedMarkets.length && !sameMarketSelection(selectedMarkets, [safeAutomaticCountry])) {
-      params.set('markets', selectedMarkets.join(','))
     }
     setParam('make', make)
     setParam('model', model)
     setParam('region', region)
     setParam('city', city)
     setParam('municipality', municipality)
+    setParam('geoAreaId', geoAreaId)
+    if (geoAreaId && geoFilterMode === 'strict') params.set('geoFilterMode', 'strict')
+    if (geoBounds) {
+      setParam('north', formatGeoBound(geoBounds.north))
+      setParam('east', formatGeoBound(geoBounds.east))
+      setParam('south', formatGeoBound(geoBounds.south))
+      setParam('west', formatGeoBound(geoBounds.west))
+    }
     setParam('minPrice', minPrice)
     setParam('maxPrice', maxPrice)
     setParam('minYear', minYear)
@@ -725,12 +1451,12 @@ export default function VehicleSearchExperience({
     if (sellerType !== 'all') params.set('sellerType', sellerType)
     if (verifiedOnly) params.set('verifiedOnly', '1')
     if (fourWheelDrive) params.set('fourWheelDrive', '1')
-    if (leasingPossible) params.set('leasingPossible', '1')
+    if (leasingPossible && mode !== 'leasing') params.set('leasingPossible', '1')
     setParam('equipment', equipmentQuery)
     Object.entries(technicalFilters).forEach(([key, value]) => setParam(`technical_${key}`, value))
     if (sortBy && sortBy !== 'published') params.set('sort', sortBy)
     return params
-  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
+  }, [bodyType, city, color, condition, debouncedSearchInput, equipmentQuery, fourWheelDrive, fuel, gearbox, geoAreaId, geoBounds, geoFilterMode, leasingPossible, make, marketOverride, maxMileage, maxOperatingHours, maxPrice, maxYear, minMileage, minOperatingHours, minPrice, minYear, mode, model, municipality, region, safeAutomaticCountry, selectedCategories, selectedMarkets, selectedSearchSuggestions, sellerType, sortBy, technicalFilters, verifiedOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -741,27 +1467,53 @@ export default function VehicleSearchExperience({
   }, [searchInput])
 
   useEffect(() => {
-    if (hasExplicitInitialFilters) {
+    if (mode !== 'leasing') return
+    const timer = window.setTimeout(() => {
+      setSelectedCategories((current) => {
+        const next = current.filter((category) => isLeasingMarketplaceCategory(category))
+        if (next.length === current.length && next.length) return current
+        return next.length ? next : ['cars']
+      })
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [mode])
+
+  useEffect(() => {
+    const returnState = readMarketplaceReturnSearchState(locale)
+    if (hasExplicitInitialFilters && !returnState) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
       return () => window.clearTimeout(timer)
     }
     const restored =
-      readMarketplaceReturnSearchState(locale) ||
-      readPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
+      returnState ||
+      (!hasExplicitInitialFilters
+        ? readPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
+        : null)
     if (!restored) {
       const timer = window.setTimeout(() => setSearchStateReady(true), 0)
       return () => window.clearTimeout(timer)
     }
 
     const timer = window.setTimeout(() => {
-      setMode(restored.mode === 'leasing' ? 'leasing' : 'sale')
+      pendingMarketplaceRestoreRef.current = restored
+      const restoredMode = normalizeSearchMode(restored.mode)
+      if (restored.__desktopMarketplaceView) {
+        setDesktopMarketplaceView(restored.__desktopMarketplaceView)
+      }
+      setMode(restoredMode)
       setSelectedSearchSuggestions([])
       setSearchInput(restored.query || '')
       setDebouncedSearchInput(restored.query || '')
       setQuery(restored.query || '')
-      setSelectedCategories(normalizeSavedCategories(restored.categories).length ? normalizeSavedCategories(restored.categories) : ['cars'])
+      {
+        const restoredCategories = normalizeSavedCategories(restored.categories)
+        const nextCategories = restoredMode === 'leasing'
+          ? restoredCategories.filter((category) => isLeasingMarketplaceCategory(category))
+          : restoredCategories
+        setSelectedCategories(nextCategories.length ? nextCategories : ['cars'])
+      }
       setSelectedMarkets((restored.markets || []).length ? normalizeMarketSelection(restored.markets || [], safeAutomaticCountry) : [])
-      setMarketOverride(true)
+      setMarketOverride(Boolean(restored.markets?.length))
       setMinPrice(restored.minPrice || '')
       setMaxPrice(restored.maxPrice || '')
       setMinYear(restored.minYear || '')
@@ -772,9 +1524,17 @@ export default function VehicleSearchExperience({
       setMaxOperatingHours(restored.maxOperatingHours || '')
       setMake(restored.make || '')
       setModel(restored.model || '')
-      setRegion(restored.region || '')
+      const restoredLocation = normalizeMarketplaceLocationSelection({
+        countryCode: restored.markets?.find(Boolean) || safeAutomaticCountry,
+        region: restored.region,
+        municipality: restored.municipality,
+        city: restored.city,
+      })
+      setRegion(restoredLocation.region)
       setCity(restored.city || '')
-      setMunicipality(restored.municipality || '')
+      setMunicipality(restoredLocation.municipality)
+      setGeoAreaId(restored.geoAreaId || '')
+      setGeoBounds(restored.geoBounds || null)
       setFuel(restored.fuel || '')
       setGearbox(restored.gearbox || '')
       setBodyType(restored.bodyType || '')
@@ -793,32 +1553,121 @@ export default function VehicleSearchExperience({
   }, [hasExplicitInitialFilters, locale, safeAutomaticCountry])
 
   useEffect(() => {
+    if (!searchStateReady || searchLoading) return
+    const restored = pendingMarketplaceRestoreRef.current
+    if (!restored) return
+
+    const restorePosition = () => {
+      if (typeof restored.__windowScrollY === 'number') {
+        window.scrollTo({ top: restored.__windowScrollY, behavior: 'instant' })
+      }
+      if (desktopResultsScrollRef.current && typeof restored.__desktopResultsScrollTop === 'number') {
+        desktopResultsScrollRef.current.scrollTop = restored.__desktopResultsScrollTop
+      }
+    }
+    const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(restorePosition))
+    const settleTimer = window.setTimeout(() => {
+      restorePosition()
+      pendingMarketplaceRestoreRef.current = null
+    }, 420)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(settleTimer)
+    }
+  }, [desktopMarketplaceView, searchListings.length, searchLoading, searchStateReady])
+
+  useEffect(() => {
     if (!searchStateReady) return
     writePersistedMarketplaceSearchState(locale, safeAutomaticCountry, currentSearchState)
   }, [currentSearchState, locale, safeAutomaticCountry, searchStateReady])
 
   useEffect(() => {
-    if (!searchStateReady || typeof window === 'undefined') return
+    if (disableUrlSync || !searchStateReady || typeof window === 'undefined') return
     const timer = window.setTimeout(() => {
-      const nextQuery = marketplaceSearchParams.toString()
-      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
+      const browserSearchParams = new URLSearchParams(marketplaceSearchParams)
+      const routeCategory = selectedCategories.length === 1 ? selectedCategories[0] : ''
+      const categoryPathname = routeCategory
+        ? localizePublicHref(locale, `/marketplace/${routeCategory}`)
+        : ''
+      const serializedSearch = browserSearchParams.toString()
+      if (preserveCanonicalUrl && canonicalSearchBaselineRef.current === null) {
+        canonicalSearchBaselineRef.current = serializedSearch
+      }
+      const canonicalStateChanged = preserveCanonicalUrl && serializedSearch !== canonicalSearchBaselineRef.current
+      const shouldExitCanonicalRoute = canonicalStateChanged && Boolean(routeCategory)
+      const shouldSyncCategoryRoute = Boolean(routeCategory) && (
+        shouldExitCanonicalRoute || (syncCategoryRoute && !preserveCanonicalUrl && (
+          categoryRouteSyncArmedRef.current || window.location.pathname === categoryPathname
+        ))
+      )
+      if (shouldSyncCategoryRoute) browserSearchParams.delete('categories')
+      const currentQuery = browserSearchParams.toString()
+      const nextQuery = preserveCanonicalUrl && !shouldExitCanonicalRoute && serializedSearch === canonicalSearchBaselineRef.current
+        ? ''
+        : currentQuery
+      const nextPathname = shouldSyncCategoryRoute
+        ? categoryPathname
+        : window.location.pathname
+      const nextUrl = `${nextPathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`
       const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
       if (nextUrl !== currentUrl) {
+        if (nextPathname !== window.location.pathname || seoRouteSyncArmedRef.current || shouldExitCanonicalRoute) {
+          categoryRouteSyncArmedRef.current = false
+          seoRouteSyncArmedRef.current = false
+          router.replace(nextUrl, { scroll: false })
+          return
+        }
         try {
           window.history.replaceState(window.history.state, '', nextUrl)
         } catch (error) {
           console.warn('[marketplace] skipped URL sync after browser history limit', error)
         }
       }
+      categoryRouteSyncArmedRef.current = false
+      seoRouteSyncArmedRef.current = false
     }, 350)
 
     return () => window.clearTimeout(timer)
-  }, [marketplaceSearchParams, searchStateReady])
+  }, [disableUrlSync, locale, marketplaceSearchParams, preserveCanonicalUrl, router, searchStateReady, selectedCategories, syncCategoryRoute])
 
   useEffect(() => {
+    if (!searchParamsInitializedRef.current) {
+      searchParamsInitializedRef.current = true
+      return
+    }
     const timer = window.setTimeout(() => setSearchPage(1), 0)
     return () => window.clearTimeout(timer)
   }, [marketplaceSearchParams])
+
+  const changeSearchPage = useCallback((requestedPage: number) => {
+    const nextPage = Math.min(Math.max(1, requestedPage), Math.max(1, searchTotalPages))
+    setSearchPage(nextPage)
+    if (typeof window !== 'undefined') {
+      const nextUrl = new URL(window.location.href)
+      if (nextPage > 1) nextUrl.searchParams.set('page', String(nextPage))
+      else nextUrl.searchParams.delete('page')
+      window.history.pushState(
+        window.history.state,
+        '',
+        `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`,
+      )
+    }
+    if (desktopMarketplaceView === 'list') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      desktopResultsScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [desktopMarketplaceView, searchTotalPages])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const restoredPage = Number.parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10)
+      setSearchPage(Number.isFinite(restoredPage) ? Math.max(1, restoredPage) : 1)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     if (!filtersOpen) return undefined
@@ -833,6 +1682,26 @@ export default function VehicleSearchExperience({
   }, [filtersOpen])
 
   useEffect(() => {
+    if (!desktopFilterMenu) return undefined
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (target instanceof Element && target.closest('[data-marketplace-filter-surface]')) return
+      if (desktopFilterBarRef.current?.contains(target)) return
+      closeQuickFilterMenu()
+    }
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') closeQuickFilterMenu()
+    }
+    window.addEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [closeQuickFilterMenu, desktopFilterMenu])
+
+  useEffect(() => {
     if (!searchStateReady) return
     const controller = new AbortController()
     const timer = window.setTimeout(async () => {
@@ -840,7 +1709,7 @@ export default function VehicleSearchExperience({
       setSearchError(false)
       const params = new URLSearchParams(marketplaceSearchParams)
       params.set('page', String(searchPage))
-      params.set('limit', '48')
+      params.set('limit', desktopMarketplaceView === 'list' ? '24' : '48')
       params.set('locale', locale)
       params.set('displayMarket', safeAutomaticCountry || safeInitialCountry || 'EU')
 
@@ -852,7 +1721,7 @@ export default function VehicleSearchExperience({
         if (!response.ok) throw new Error('Search failed')
         const payload = (await response.json()) as MarketplaceSearchApiResponse
         const nextListings = payload.items.map((item) => mapApiListingToVehicleSearchListing(item, locale))
-        setSearchListings((current) => searchPage > 1 ? [...current, ...nextListings] : nextListings)
+        setSearchListings((current) => searchPage > 1 && desktopMarketplaceView !== 'list' ? [...current, ...nextListings] : nextListings)
         setSearchTotalCount(payload.totalCount ?? nextListings.length)
         setSearchTotalPages(payload.totalPages ?? 1)
         setSearchFacets(payload.facets || {})
@@ -869,11 +1738,14 @@ export default function VehicleSearchExperience({
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [debouncedSearchInput, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
+  }, [debouncedSearchInput, desktopMarketplaceView, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))
   const selectableCategories = categories.filter((item) => item.key !== 'all')
+  const visibleSelectableCategories = mode === 'leasing'
+    ? selectableCategories.filter((item) => isLeasingMarketplaceCategory(item.key))
+    : selectableCategories
   const activeCategoryItem = selectedCategoryItems[0] || categories.find((item) => item.key === 'cars')!
   const activeCategoryKey = activeCategoryItem.key
   const filterProfile = [
@@ -889,11 +1761,93 @@ export default function VehicleSearchExperience({
       ),
     [searchListings, selectedCategories, selectedMarkets],
   )
+  const bodyTypeTopOptions = useMemo(() => {
+    const liveValues = optionListings
+      .filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+      .map((listing) => listing.bodyType)
+      .filter((value): value is string => Boolean(value))
+    const facetValues = (searchFacets?.bodyTypes || [])
+      .map((item) => (typeof item === 'string' ? item : item.value))
+      .filter((value): value is string => Boolean(value))
+    return [...new Set(liveValues.length ? liveValues : facetValues)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
+  }, [mode, optionListings, searchFacets?.bodyTypes])
+  const bodyTypeCounts = useMemo(
+    () => countValues(
+      optionListings
+        .filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+        .map((listing) => listing.bodyType)
+        .filter((value): value is string => Boolean(value)),
+    ),
+    [mode, optionListings],
+  )
+  const makeModelOptions = useMemo(() => {
+    const scopedListings = optionListings.filter((listing) => mode !== 'leasing' || (isLeasingListing(listing) && isLeasingMarketplaceCategory(listing.category)))
+    const makeCounts = countValues(scopedListings.map((listing) => listing.make).filter(Boolean))
+    const modelCounts = countValues(
+      scopedListings
+        .filter((listing) => !make || normalizeSearchText(listing.make) === normalizeSearchText(make))
+        .map((listing) => listing.model)
+        .filter(Boolean),
+    )
+    return {
+      makes: Array.from(makeCounts.entries())
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((left, right) => left.value.localeCompare(right.value, locale)),
+      models: Array.from(modelCounts.entries())
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((left, right) => left.value.localeCompare(right.value, locale)),
+    }
+  }, [locale, make, mode, optionListings])
+  const locationMarketCountryCode = selectedMarkets.find(Boolean) || safeInitialMarkets[0] || safeAutomaticCountry
+  const locationCatalog = useMemo(
+    () => getMarketplaceCountryLocations(locationMarketCountryCode),
+    [locationMarketCountryCode],
+  )
+  const inferredOptionLocations = useMemo(
+    () => optionListings.map((listing) => inferMarketplaceLocation({
+      countryCode: listing.country,
+      region: listing.region,
+      municipality: listing.municipality,
+      city: listing.city,
+    })),
+    [optionListings],
+  )
+  const regionOptions = useMemo(() => {
+    const counts = countValues(inferredOptionLocations.map((location) => location.region))
+    return locationCatalog.regions.map((catalogRegion) => {
+      const count = counts.get(catalogRegion.name) || 0
+      return {
+        value: catalogRegion.name,
+        label: count ? `${catalogRegion.name} (${count})` : catalogRegion.name,
+      }
+    })
+  }, [inferredOptionLocations, locationCatalog.regions])
+  const municipalityOptions = useMemo(() => {
+    if (!region) return []
+    const catalogRegion = locationCatalog.regions.find(
+      (item) => normalizeSearchText(item.name) === normalizeSearchText(region),
+    )
+    if (!catalogRegion) return []
+    const counts = countValues(
+      inferredOptionLocations
+        .filter((location) => normalizeSearchText(location.region) === normalizeSearchText(region))
+        .map((location) => location.municipality),
+    )
+    return catalogRegion.municipalities.map((name) => {
+      const count = counts.get(name) || 0
+      return { value: name, label: count ? `${name} (${count})` : name }
+    })
+  }, [inferredOptionLocations, locationCatalog.regions, region])
+  const priceFilterCurrency = selectedMarkets.filter(Boolean).length === 1
+    ? currencyForCountry(selectedMarkets.filter(Boolean)[0])
+    : currencyForLocale(locale)
   const priceBounds = useMemo(() => {
-    const prices = searchListings.map((listing) => listing.priceValue).filter((value) => Number.isFinite(value) && value > 0)
-    const max = prices.length ? Math.max(...prices) : 700000
-    return { min: 0, max: Math.max(700000, Math.ceil(max / 10000) * 10000) }
-  }, [searchListings])
+    const prices = searchListings.map(priceFilterValue).filter((value) => Number.isFinite(value) && value > 0)
+    const defaultMax = defaultPriceFilterMax(priceFilterCurrency)
+    const step = priceFilterCurrency === 'EUR' ? 5000 : 10000
+    const max = prices.length ? Math.max(...prices) : defaultMax
+    return { min: 0, max: Math.max(defaultMax, Math.ceil(max / step) * step) }
+  }, [priceFilterCurrency, searchListings])
   const mileageBounds = useMemo(() => {
     const mileages = searchListings.map((listing) => listing.mileageKm).filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
     const max = mileages.length ? Math.max(...mileages) : 200000
@@ -912,20 +1866,22 @@ export default function VehicleSearchExperience({
     const minOperatingHoursValue = parseOptionalNumber(minOperatingHours)
     const maxOperatingHoursValue = parseOptionalNumber(maxOperatingHours)
     const matches = searchListings.filter((listing) => {
+      if (mode === 'sale' && !isSaleListing(listing)) return false
       if (mode === 'leasing' && !isLeasingListing(listing)) return false
+      if (mode === 'leasing' && !isLeasingMarketplaceCategory(listing.category)) return false
       if (selectedCategories.length && !selectedCategories.includes(listing.category)) return false
       if (!matchesSelectedMarkets(listing.country, selectedMarkets)) return false
-      if (make && listing.make !== make) return false
-      if (model && listing.model !== model) return false
-      if (region && !marketplaceListingMatchesLocationQuery({
-        query: region,
+      if (make && normalizeSearchText(listing.make) !== normalizeSearchText(make)) return false
+      if (model && normalizeSearchText(listing.model) !== normalizeSearchText(model)) return false
+      const inferredLocation = inferMarketplaceLocation({
         countryCode: listing.country,
-        city: listing.city,
+        region: listing.region,
         municipality: listing.municipality,
-        countryCodes: selectedMarkets.length ? selectedMarkets : safeInitialMarkets,
-      })) return false
+        city: listing.city,
+      })
+      if (region && normalizeSearchText(inferredLocation.region) !== normalizeSearchText(region)) return false
       if (city && normalizeSearchText(listing.city) !== normalizeSearchText(city)) return false
-      if (municipality && normalizeSearchText(listing.municipality) !== normalizeSearchText(municipality)) return false
+      if (municipality && normalizeSearchText(inferredLocation.municipality) !== normalizeSearchText(municipality)) return false
       if (fuel && listing.fuelType !== fuel) return false
       if (gearbox && listing.gearbox !== gearbox) return false
       if (bodyType && listing.bodyType !== bodyType) return false
@@ -935,10 +1891,11 @@ export default function VehicleSearchExperience({
       if (sellerType === 'private' && listing.sellerIsTrader) return false
       if (verifiedOnly && listing.sellerTrust !== 'verified') return false
       if (fourWheelDrive && !(listing.equipment || '').toLowerCase().includes('fyrhjuls')) return false
-      if (leasingPossible && !(listing.equipment || '').toLowerCase().includes('leasing')) return false
+      if (leasingPossible && !isLeasingListing(listing)) return false
       if (equipmentQuery.trim() && !(listing.equipment || '').toLowerCase().includes(equipmentQuery.trim().toLowerCase())) return false
-      if (minPriceValue !== null && listing.priceValue < minPriceValue) return false
-      if (maxPriceValue !== null && listing.priceValue > maxPriceValue) return false
+      const comparablePrice = priceFilterValue(listing)
+      if (minPriceValue !== null && comparablePrice < minPriceValue) return false
+      if (maxPriceValue !== null && comparablePrice > maxPriceValue) return false
       const listingYear = parseOptionalNumber(listing.year)
       if (minYearValue !== null && (listingYear === null || listingYear < minYearValue)) return false
       if (maxYearValue !== null && (listingYear === null || listingYear > maxYearValue)) return false
@@ -977,8 +1934,8 @@ export default function VehicleSearchExperience({
       if (sortBy === 'mileage-asc') return (a.mileageKm ?? Number.MAX_SAFE_INTEGER) - (b.mileageKm ?? Number.MAX_SAFE_INTEGER)
       if (sortBy === 'mileage-desc') return (b.mileageKm ?? -1) - (a.mileageKm ?? -1)
       if (sortBy === 'model') return [a.make, a.model].filter(Boolean).join(' ').localeCompare([b.make, b.model].filter(Boolean).join(' '), 'sv-SE')
-      if (sortBy === 'price-asc') return a.priceValue - b.priceValue
-      if (sortBy === 'price-desc') return b.priceValue - a.priceValue
+      if (sortBy === 'price-asc') return priceFilterValue(a) - priceFilterValue(b)
+      if (sortBy === 'price-desc') return priceFilterValue(b) - priceFilterValue(a)
       if (sortBy === 'year-desc') return (parseOptionalNumber(b.year) || 0) - (parseOptionalNumber(a.year) || 0)
       if (sortBy === 'year-asc') return (parseOptionalNumber(a.year) || Number.MAX_SAFE_INTEGER) - (parseOptionalNumber(b.year) || Number.MAX_SAFE_INTEGER)
       return 0
@@ -987,39 +1944,44 @@ export default function VehicleSearchExperience({
 
   const resetFilters = () => {
     clearPersistedMarketplaceSearchState(locale, safeAutomaticCountry)
-    setSelectedSearchSuggestions(initialSearchSuggestions)
-    setSearchInput(initialQuery)
-    setDebouncedSearchInput(initialQuery)
-    setQuery(initialChipQuery)
-    setSelectedCategories(safeInitialCategories)
-    setSelectedMarkets(normalizeMarketSelection([safeAutomaticCountry], safeAutomaticCountry))
+    setSelectedSearchSuggestions([])
+    setMode('all')
+    setSearchInput('')
+    setDebouncedSearchInput('')
+    setQuery('')
+    setSelectedCategories([])
+    setSelectedMarkets([])
     setMarketOverride(false)
-    setMinPrice(initialMinPrice)
-    setMaxPrice(initialMaxPrice)
-    setMinYear(initialMinYear)
-    setMaxYear(initialMaxYear)
-    setMinMileage(initialMinMileage)
-    setMaxMileage(initialMaxMileage)
-    setMinOperatingHours(initialMinOperatingHours)
-    setMaxOperatingHours(initialMaxOperatingHours)
-    setMake(initialMake)
-    setModel(initialModel)
-    setRegion(initialRegion)
-    setCity(initialCity)
-    setMunicipality(initialMunicipality)
-    setFuel(initialFuel)
-    setGearbox(initialGearbox)
-    setBodyType(initialBodyType)
-    setCondition(initialCondition)
-    setColor(initialColor)
-    setSellerType(initialSellerType || 'all')
-    setVerifiedOnly(initialVerifiedOnly)
-    setFourWheelDrive(initialFourWheelDrive)
-    setLeasingPossible(initialLeasingPossible)
-    setEquipmentQuery(initialEquipmentQuery)
+    setMinPrice('')
+    setMaxPrice('')
+    setMinYear('')
+    setMaxYear('')
+    setMinMileage('')
+    setMaxMileage('')
+    setMinOperatingHours('')
+    setMaxOperatingHours('')
+    setMake('')
+    setModel('')
+    setRegion('')
+    setCity('')
+    setMunicipality('')
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
+    setFuel('')
+    setGearbox('')
+    setBodyType('')
+    setCondition('')
+    setColor('')
+    setSellerType('all')
+    setVerifiedOnly(false)
+    setFourWheelDrive(false)
+    setLeasingPossible(false)
+    setEquipmentQuery('')
     setTechnicalFilters({})
-    setSortBy(initialSortBy || 'published')
+    setSortBy('published')
     setSavedSearchMessage('')
+    closeQuickFilterMenu()
   }
 
   function clearUnsupportedCategoryFilters(nextCategories: string[]) {
@@ -1036,37 +1998,74 @@ export default function VehicleSearchExperience({
     if (clearAllTechnical || !supported.has('equipment')) setEquipmentQuery('')
   }
 
-  function toggleCategory(nextCategory: string) {
-    if (nextCategory === 'all') return
-    if (nextCategory === activeCategoryKey) {
-      return
-    }
-    setMake('')
-    setModel('')
-    setMaxMileage('')
-    setMaxOperatingHours('')
-    setFuel('')
-    setGearbox('')
-    setBodyType('')
-    setColor('')
-    setFourWheelDrive(false)
-    setLeasingPossible(false)
-    setEquipmentQuery('')
-    setTechnicalFilters({})
-    const next = [nextCategory]
-    clearUnsupportedCategoryFilters(next)
-    setSelectedCategories(next)
-    setMoreFiltersOpen(false)
+  function afterQuickFilterMenuCloses(update: () => void) {
+    closeQuickFilterMenu()
+    window.requestAnimationFrame(update)
   }
 
-  function selectMarket(value: string) {
-    setMake('')
-    setModel('')
-    setRegion('')
-    setCity('')
+  function toggleCategory(nextCategory: string) {
+    if (nextCategory === 'all') return
+    if (mode === 'leasing' && !isLeasingMarketplaceCategory(nextCategory)) return
+    if (nextCategory === activeCategoryKey) {
+      closeQuickFilterMenu()
+      return
+    }
+    afterQuickFilterMenuCloses(() => {
+      setMake('')
+      setModel('')
+      setMaxMileage('')
+      setMaxOperatingHours('')
+      setFuel('')
+      setGearbox('')
+      setBodyType('')
+      setColor('')
+      setFourWheelDrive(false)
+      setLeasingPossible(false)
+      setEquipmentQuery('')
+      setTechnicalFilters({})
+      const next = [nextCategory]
+      clearUnsupportedCategoryFilters(next)
+      categoryRouteSyncArmedRef.current = true
+      seoRouteSyncArmedRef.current = true
+      setSelectedCategories(next)
+      setMoreFiltersOpen(false)
+    })
+  }
+
+  function changeMarketplaceMode(nextMode: SearchMode) {
+    if (nextMode === mode) {
+      closeQuickFilterMenu()
+      return
+    }
+
+    afterQuickFilterMenuCloses(() => {
+      seoRouteSyncArmedRef.current = true
+      setLeasingPossible(false)
+      if (nextMode === 'leasing') {
+        setSelectedCategories((current) => {
+          const supported = current.filter((category) => isLeasingMarketplaceCategory(category))
+          const next = supported.length ? supported : ['cars']
+          if (next.join(',') !== current.join(',')) categoryRouteSyncArmedRef.current = true
+          return next
+        })
+      }
+      setMode(nextMode)
+    })
+  }
+
+  function updateRegionFilter(value: string) {
+    setRegion(value)
     setMunicipality('')
-    setSelectedMarkets(value ? [value] : [])
-    setMarketOverride(true)
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
+  }
+
+  function updateMunicipalityFilter(value: string) {
+    setMunicipality(value)
+    setGeoAreaId('')
+    setGeoBounds(null)
+    setGeoFilterMode('legacy')
   }
 
   async function saveCurrentSearch() {
@@ -1132,6 +2131,8 @@ export default function VehicleSearchExperience({
         region,
         city,
         municipality,
+        geoAreaId,
+        geoBounds,
         minPrice,
         maxPrice,
         minYear,
@@ -1166,19 +2167,52 @@ export default function VehicleSearchExperience({
     }
   }
 
+  function focusMobileSortControl() {
+    const select = mobileSortSelectRef.current
+    select?.focus()
+    try {
+      ;(select as (HTMLSelectElement & { showPicker?: () => void }) | null)?.showPicker?.()
+    } catch {
+      // Some browsers only allow the native picker during the original tap event.
+    }
+    select?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+
   function rememberSearchBeforeListingNavigation() {
-    writeMarketplaceReturnSearchState(locale, currentSearchState)
+    writeMarketplaceReturnSearchState(locale, {
+      ...currentSearchState,
+      __windowScrollY: window.scrollY,
+      __desktopResultsScrollTop: desktopResultsScrollRef.current?.scrollTop || 0,
+      __desktopMarketplaceView: desktopMarketplaceView,
+    })
   }
 
   const toggleCompare = (listingId: string) => {
-    setCompareIds((current) =>
-      current.includes(listingId)
-        ? current.filter((id) => id !== listingId)
-        : [...current, listingId].slice(-4),
-    )
+    setCompareError('')
+    setCompareIds((current) => {
+      if (current.includes(listingId)) {
+        const next = current.filter((id) => id !== listingId)
+        if (next.length < 2) setCompareOpen(false)
+        return next
+      }
+      if (current.length >= maxCompareListings) {
+        setCompareError(getCompareCopy(locale).limit)
+        return current
+      }
+      const next = [...current, listingId]
+      if (next.length < 2) setCompareOpen(false)
+      return next
+    })
   }
 
   const visibleCount = filteredListings.length
+  const compareListings = compareIds
+    .map((id) => filteredListings.find((listing) => listing.id === id) || listings.find((listing) => listing.id === id))
+    .filter((listing): listing is VehicleSearchListing => Boolean(listing))
+  const compareCopy = getCompareCopy(locale)
+  const desktopListText = desktopListShellCopy[locale]
+  const listExtraText = listViewExtraCopy[locale]
+  const compareRows = buildVehicleCompareRows(compareListings, locale, compareCopy)
   const selectedMarketCodes = selectedMarkets.filter(Boolean)
   const primaryMapCountry = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : 'EU'
   const marketSummary = selectedMarketCodes.length
@@ -1192,7 +2226,7 @@ export default function VehicleSearchExperience({
   const resultLocationName = getResultLocationName(query, filteredListings, countryName)
   const resultCountSummary = formatSearchResultCountSummary({
     locale,
-    count: visibleCount,
+    count: searchError ? visibleCount : searchTotalCount,
     make,
     model,
     minYear,
@@ -1203,7 +2237,24 @@ export default function VehicleSearchExperience({
     city,
     municipality,
     region,
+    mode,
   })
+  const emptyStateSubject = getMarketplaceEmptySubject({
+    locale,
+    make,
+    model,
+    bodyType,
+    selectedCategoryItems,
+  })
+  const emptyStateLocation = selectedMarketCodes.length || city || municipality || region ? resultLocationName : ''
+  const emptyStateCopy = getMarketplaceEmptyCopy(locale, emptyStateSubject, emptyStateLocation)
+  const createListingParams = new URLSearchParams()
+  if (activeCategoryKey && activeCategoryKey !== 'all') createListingParams.set('category', activeCategoryKey)
+  const createListingHref = localizePublicHref(
+    locale,
+    `/account/listings/new${createListingParams.toString() ? `?${createListingParams.toString()}` : ''}`,
+  )
+  const loginForListingHref = localizePublicHref(locale, `/login?next=${encodeURIComponent(createListingHref)}`)
   const smartSearchMarketCode = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : safeAutomaticCountry
   const smartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
@@ -1212,6 +2263,74 @@ export default function VehicleSearchExperience({
     active: searchFocused,
   })
   const searchPlaceholder = getVehicleSearchPlaceholder(locale)
+  function renderMarketplaceSearchInput(className = '', compact = false, placeholderOverride = searchPlaceholder) {
+    return (
+      <div className={`relative ${className}`}>
+        <div className={`group relative flex items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 pr-10 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828] sm:pr-11 ${compact ? 'min-h-[44px] py-1' : 'min-h-[42px] py-1.5 sm:min-h-[50px] sm:py-2'}`}>
+          <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
+          {selectedSearchSuggestions.map((suggestion) => (
+            <span
+              key={suggestion.chipId}
+              className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)]"
+            >
+              <span className="truncate">{suggestion.title}</span>
+              <button
+                type="button"
+                onPointerDown={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setSelectedSearchSuggestions((current) => {
+                    const next = current.filter((item) => item.chipId !== suggestion.chipId)
+                    setQuery(buildSearchQueryFromSuggestions(next, searchInput))
+                    return next
+                  })
+                }}
+                className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
+                aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+          <input
+            value={searchInput}
+            onChange={(event) => {
+              const nextInput = event.target.value
+              setSearchInput(nextInput)
+              setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, nextInput))
+            }}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
+            placeholder=""
+            aria-label={placeholderOverride}
+            className="vehicle-search-control h-6 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#767676] [background:transparent] sm:h-7"
+          />
+          {searchInput || selectedSearchSuggestions.length ? null : (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
+            >
+              {placeholderOverride}
+            </span>
+          )}
+          <Search className="absolute right-3.5 top-1/2 h-[18px] w-[18px] shrink-0 -translate-y-1/2 text-[#101828] sm:right-4 sm:h-5 sm:w-5" />
+        </div>
+        <VehicleSmartSearchSuggestionPanel
+          query={searchInput}
+          suggestions={smartSearch.suggestions}
+          loading={smartSearch.loading}
+          searched={smartSearch.searched}
+          locale={locale}
+          onSelect={selectMarketplaceSuggestion}
+          active={searchFocused}
+        />
+      </div>
+    )
+  }
   const mobileMapSmartSearch = useVehicleSmartSearchSuggestions({
     query: searchInput,
     locale,
@@ -1268,7 +2387,7 @@ export default function VehicleSearchExperience({
 
   const priceYearSummary = [
     minPrice || maxPrice ? uiText(locale, 'Price', 'Pris', 'Preis') : '',
-    minYear || maxYear ? uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') : '',
+    minYear || maxYear ? translatePublic(locale, 'Model year') : '',
   ].filter(Boolean).join(' · ') || uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')
 
   const sellerSummary = [
@@ -1279,17 +2398,20 @@ export default function VehicleSearchExperience({
 
   function categoryScopedOptions(categoryKey: string, field: 'fuelType' | 'gearbox' | 'bodyType' | 'condition' | 'color') {
     const facetKey = field === 'fuelType' ? 'fuels' : field === 'gearbox' ? 'gearboxes' : field === 'bodyType' ? 'bodyTypes' : null
+    const optionLabel = (value: string) => field === 'bodyType' ? translateListingVehicleValue(locale, value) : value
     const dynamicValues = facetKey
       ? (searchFacets?.[facetKey] || []).map((item) => typeof item === 'string'
-        ? { value: item, label: item }
-        : { value: item.value, label: `${item.value} (${item.count})` })
+        ? { value: item, label: optionLabel(item) }
+        : { value: item.value, label: `${optionLabel(item.value)} (${item.count})` })
       : []
     if (dynamicValues.length) return dynamicValues
     const values = optionListings
       .filter((listing) => !categoryKey || listing.category === categoryKey)
       .map((listing) => listing[field])
       .filter((value): value is string => Boolean(value))
-    return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'sv-SE'))
+    return [...new Set(values)]
+      .sort((a, b) => optionLabel(a).localeCompare(optionLabel(b), 'sv-SE'))
+      .map((value) => ({ value, label: optionLabel(value) }))
   }
 
   function technicalFacetLabel(key: string) {
@@ -1300,7 +2422,7 @@ export default function VehicleSearchExperience({
     return translatePublic(locale, english)
   }
 
-  function renderDynamicTechnicalFacets() {
+  function renderDynamicTechnicalFacets(compact = false) {
     const knownKeys = new Set(['fuelType', 'gearbox', 'bodyType', 'condition', 'color', 'equipment'])
     const entries = Object.entries(searchFacets?.technical || {})
       .filter(([key, options]) => !knownKeys.has(key) && options.length > 0)
@@ -1308,10 +2430,11 @@ export default function VehicleSearchExperience({
     if (!entries.length) return null
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 sm:col-span-2">
+      <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2 sm:col-span-2'}`}>
         {entries.map(([key, options]) => (
           <FilterSelect
             key={key}
+            locale={locale}
             label={technicalFacetLabel(key)}
             value={technicalFilters[key] || ''}
             onChange={(value) => setTechnicalFilters((current) => ({ ...current, ...(value ? { [key]: value } : (() => { const next = { ...current }; delete next[key]; return next })()) }))}
@@ -1345,6 +2468,7 @@ export default function VehicleSearchExperience({
       return (
         <RangeFilter
           key={filter.key}
+          locale={locale}
           title={filterLabel(filter, locale)}
           minValue={minMileage}
           maxValue={maxMileage}
@@ -1361,6 +2485,7 @@ export default function VehicleSearchExperience({
       return (
         <RangeFilter
           key={filter.key}
+          locale={locale}
           title={filterLabel(filter, locale)}
           minValue={minOperatingHours}
           maxValue={maxOperatingHours}
@@ -1374,19 +2499,19 @@ export default function VehicleSearchExperience({
       )
     }
     if (filter.key === 'fuel') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={fuel} onChange={setFuel} options={categoryScopedOptions(categoryKey, 'fuelType')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={fuel} onChange={setFuel} options={categoryScopedOptions(categoryKey, 'fuelType')} />
     }
     if (filter.key === 'gearbox') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={gearbox} onChange={setGearbox} options={categoryScopedOptions(categoryKey, 'gearbox')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={gearbox} onChange={setGearbox} options={categoryScopedOptions(categoryKey, 'gearbox')} />
     }
     if (filter.key === 'bodyType') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={bodyType} onChange={setBodyType} options={categoryScopedOptions(categoryKey, 'bodyType')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={bodyType} onChange={setBodyType} options={categoryScopedOptions(categoryKey, 'bodyType')} />
     }
     if (filter.key === 'condition') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={condition} onChange={setCondition} options={categoryScopedOptions(categoryKey, 'condition')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={condition} onChange={setCondition} options={categoryScopedOptions(categoryKey, 'condition')} />
     }
     if (filter.key === 'color') {
-      return <FilterSelect key={filter.key} label={filterLabel(filter, locale)} value={color} onChange={setColor} options={categoryScopedOptions(categoryKey, 'color')} />
+      return <FilterSelect key={filter.key} locale={locale} label={filterLabel(filter, locale)} value={color} onChange={setColor} options={categoryScopedOptions(categoryKey, 'color')} />
     }
     if (filter.key === 'fourWheelDrive') {
       return <ToggleFilter key={filter.key} label={filterLabel(filter, locale)} checked={fourWheelDrive} onChange={setFourWheelDrive} />
@@ -1410,6 +2535,11 @@ export default function VehicleSearchExperience({
     return null
   }
 
+  function renderSidebarTechnicalFilter(key: VehicleFilterKey) {
+    const filter = categoryFilterProfile(activeCategoryKey).find((item) => item.key === key)
+    return filter ? renderTechnicalFilterControl(filter, activeCategoryKey) : null
+  }
+
   function renderCategoryFilterSections() {
     const profile = categoryFilterProfile(activeCategoryKey)
     const primaryKeys = new Set(categoryPrimaryFilterKeys(activeCategoryKey))
@@ -1420,13 +2550,25 @@ export default function VehicleSearchExperience({
     return (
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextFilterInput label={uiText(locale, 'Make', 'Märke', 'Marke')} value={make} onChange={(value) => {
-            setMake(value)
-            setModel('')
-          }} />
-          <TextFilterInput label={uiText(locale, 'Model', 'Modell', 'Modell')} value={model} onChange={setModel} />
+          <MakeModelFilter
+            locale={locale}
+            make={make}
+            model={model}
+            makeOptions={makeModelOptions.makes}
+            modelOptions={makeModelOptions.models}
+            onMakeChange={(value) => {
+              seoRouteSyncArmedRef.current = value !== make || Boolean(model)
+              setMake(value)
+              setModel('')
+            }}
+            onModelChange={(value) => {
+              seoRouteSyncArmedRef.current = value !== model
+              setModel(value)
+            }}
+          />
           <div className="grid gap-3 sm:col-span-2">
             <RangeFilter
+              locale={locale}
               title={uiText(locale, 'Price', 'Pris', 'Preis')}
               minValue={minPrice}
               maxValue={maxPrice}
@@ -1434,11 +2576,12 @@ export default function VehicleSearchExperience({
               onMaxChange={setMaxPrice}
               minLimit={priceBounds.min}
               maxLimit={priceBounds.max}
-              unit="SEK"
+              unit={priceFilterCurrency}
               step={1000}
             />
             <RangeFilter
-              title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+              locale={locale}
+              title={translatePublic(locale, 'Model year')}
               minValue={minYear}
               maxValue={maxYear}
               onMinChange={setMinYear}
@@ -1468,46 +2611,512 @@ export default function VehicleSearchExperience({
     )
   }
 
-  function renderQuickFilterSelectors(compact = false) {
-    const marketValue = selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''
+  function desktopMenuButton(placement: QuickFilterPlacement, menu: Exclude<DesktopFilterMenu, null>, label: string, active = false) {
+    const open = desktopFilterMenu === menu && quickFilterPlacement === placement
+    return (
+      <button
+        type="button"
+        onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+          const rect = event.currentTarget.getBoundingClientRect()
+          const estimatedWidth = menu === 'mode' ? 260 : menu === 'category' || menu === 'bodyType' || menu === 'market' ? 310 : menu === 'model' ? 340 : 420
+          setDesktopFilterPopoverPosition({
+            left: Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - estimatedWidth - 8)),
+            top: rect.bottom + 6,
+          })
+          if (open) {
+            closeQuickFilterMenu()
+            return
+          }
+          setQuickFilterPlacement(placement)
+          setDesktopFilterMenu(menu)
+        }}
+        className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium leading-none transition sm:h-8 sm:px-3 sm:text-[13px] ${
+          open || active
+            ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
+            : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
+        }`}
+      >
+        <span>{label}</span>
+        <ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} />
+      </button>
+    )
+  }
+
+  function renderLocationFilterSection() {
+    return (
+      <CollapsibleFilterSection
+        title={uiText(locale, 'County and municipality', 'L\u00e4n och kommun', 'Region und Kommune')}
+        summary={[region, municipality].filter(Boolean).join(' \u00b7 ') || uiText(locale, 'Filter by county or municipality', 'Filtrera p\u00e5 l\u00e4n eller kommun', 'Nach Region oder Kommune filtern')}
+        open={locationFiltersOpen}
+        onToggle={() => setLocationFiltersOpen((open) => !open)}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FilterSelect
+            locale={locale}
+            label={uiText(locale, 'County', 'L\u00e4n', 'Region')}
+            value={region}
+            onChange={updateRegionFilter}
+            options={regionOptions}
+          />
+          <FilterSelect
+            locale={locale}
+            label={uiText(locale, 'Municipality', 'Kommun', 'Kommune')}
+            value={municipality}
+            onChange={updateMunicipalityFilter}
+            options={municipalityOptions}
+          />
+        </div>
+      </CollapsibleFilterSection>
+    )
+  }
+
+  function renderDesktopFilterPopover(
+    placement: QuickFilterPlacement,
+    menu: Exclude<DesktopFilterMenu, null>,
+    title: string,
+    children: ReactNode,
+    width = 'w-[420px]',
+  ) {
+    if (desktopFilterMenu !== menu || quickFilterPlacement !== placement) return null
+    return (
+      <>
+        <button
+          type="button"
+          aria-label={filterDialogCopy[locale].close}
+          onClick={closeQuickFilterMenu}
+          className="fixed inset-0 z-[230] cursor-default bg-white/35 backdrop-blur-[2px]"
+        />
+        <div
+          data-marketplace-filter-surface
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          style={{
+            left: desktopFilterPopoverPosition?.left ?? 16,
+            top: desktopFilterPopoverPosition?.top ?? 112,
+          }}
+          className={`fixed z-[240] max-w-[calc(100vw-16px)] ${width} overflow-hidden rounded-[14px] border border-[#d0d5dd] bg-white shadow-[0_16px_38px_rgba(16,24,40,.14)] max-sm:!bottom-[calc(env(safe-area-inset-bottom)+76px)] max-sm:!left-3 max-sm:!right-3 max-sm:!top-auto max-sm:!w-auto max-sm:max-h-[min(74vh,560px)] max-sm:touch-pan-y max-sm:overscroll-contain max-sm:rounded-[18px]`}
+        >
+          <div className="flex min-h-16 items-center justify-between gap-4 border-b border-[#e4e7ec] px-4 py-3 sm:px-5">
+            <h2 className="min-w-0 text-[16px] !font-medium leading-6 text-[#101828] sm:text-[17px]">
+              {title}
+            </h2>
+            <button
+              type="button"
+              aria-label={filterDialogCopy[locale].close}
+              title={filterDialogCopy[locale].close}
+              onClick={closeQuickFilterMenu}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828] transition hover:border-[#0866ff] hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+            >
+              <X className="h-4.5 w-4.5" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="marketplace-scrollbar max-h-[calc(min(74vh,560px)-65px)] overflow-y-auto overscroll-contain p-4 font-normal [&_*]:!font-normal [&_[data-marketplace-filter-heading]]:!font-medium [&_button[data-marketplace-apply]]:!font-medium [&_button[data-marketplace-market-option]]:!font-medium sm:p-5">{children}</div>
+        </div>
+      </>
+    )
+  }
+
+  function handleDesktopFilterWheel(event: ReactWheelEvent<HTMLDivElement>) {
+    const element = event.currentTarget
+    if (element.scrollWidth <= element.clientWidth) return
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
+    element.scrollLeft += event.deltaY
+    event.preventDefault()
+  }
+
+  function renderDesktopFilterBar(placement: 'desktop' | 'mobile' = 'mobile') {
+    const categoryLabel = categoryText(
+      visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
+        visibleSelectableCategories[0] ||
+        selectableCategories[0],
+      locale,
+    )
+    const modeLabel = marketplaceModeLabel(locale, mode)
+    const modelLabel = [make, model].filter(Boolean).join(' / ') || uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell')
+    const activeCategoryProfile = categoryFilterProfile(activeCategoryKey)
+    const primaryFilterKeys = new Set(categoryPrimaryFilterKeys(activeCategoryKey))
+    const bodyTypeFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'bodyType')
+    const mileageFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'mileage')
+    const operatingHoursFilterDefinition = activeCategoryProfile.find((filter) => filter.key === 'operatingHours')
+    const showBodyTypeMenu = Boolean(bodyTypeFilterDefinition && primaryFilterKeys.has('bodyType'))
+    const showMileageMenu = Boolean(mileageFilterDefinition && primaryFilterKeys.has('mileage'))
+    const showOperatingHoursMenu = Boolean(operatingHoursFilterDefinition && primaryFilterKeys.has('operatingHours'))
+    const bodyTypeFilterLabel = bodyTypeFilterDefinition
+      ? filterLabel(bodyTypeFilterDefinition, locale)
+      : translatePublic(locale, 'Body type')
+    const bodyTypeLabel = bodyType
+      ? translateListingVehicleValue(locale, bodyType)
+      : bodyTypeFilterLabel
+    const mileageFilterLabel = mileageFilterDefinition
+      ? filterLabel(mileageFilterDefinition, locale)
+      : uiText(locale, 'Mileage', 'Miltal', 'Kilometerstand')
+    const operatingHoursFilterLabel = operatingHoursFilterDefinition
+      ? filterLabel(operatingHoursFilterDefinition, locale)
+      : uiText(locale, 'Operating hours', 'Drifttimmar', 'Betriebsstunden')
+    const marketLabel = selectedMarketCodes.length > 1
+      ? `${selectedMarketCodes.length} ${uiText(locale, 'markets', 'marknader', 'Märkte')}`
+      : selectedMarketCodes.length === 1
+        ? getEuCountryName(selectedMarketCodes[0], locale)
+        : uiText(locale, 'Market', 'Marknad', 'Markt')
+    const compactMobileFilterButton = placement === 'mobile' && mobileFilterRailScrolled
+    const wrapperClassName = placement === 'desktop'
+      ? 'hidden min-[1120px]:block max-w-full border-b border-[#eceff4] bg-white px-3 py-2 sm:px-5'
+      : 'relative -mx-4 mt-2 flex h-[44px] w-screen max-w-[100vw] min-w-0 items-center overflow-hidden border-t border-[#edf1f6] px-4 sm:-mx-6 sm:px-6 min-[1120px]:hidden'
+    const saveSearchButton = (
+      <button
+        type="button"
+        onClick={saveCurrentSearch}
+        disabled={savingSearch}
+        className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 text-[12px] font-semibold text-white transition sm:px-4 sm:text-[13px] ${
+          savedSearchMessage ? 'bg-[#079455]' : 'bg-[#0866ff] hover:bg-[#0757da]'
+        } disabled:cursor-wait disabled:opacity-70`}
+      >
+        <Bookmark className="h-4 w-4" strokeWidth={2} />
+        {saveSearchButtonLabel}
+      </button>
+    )
 
     return (
-      <div className={`grid min-w-0 gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-2'}`}>
-        <label className="relative min-w-0">
-          <span className="sr-only">{uiText(locale, 'Category', 'Kategori', 'Kategorie')}</span>
-          <select
-            value={activeCategoryKey}
-            onChange={(event) => toggleCategory(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
+      <div
+        ref={desktopFilterBarRef}
+        data-marketplace-filter-surface
+        className={wrapperClassName}
+      >
+        <div className={`flex h-full min-w-0 gap-2 ${placement === 'mobile' ? 'relative top-[3px] items-center' : 'items-start'}`}>
+          <div data-marketplace-filter-trigger className="relative z-20 shrink-0 bg-white">
+            <button
+              type="button"
+              onClick={() => {
+                setFiltersOpen((open) => !open)
+                closeQuickFilterMenu()
+              }}
+              className={`inline-flex h-8 items-center justify-center rounded-full border text-[12px] font-medium leading-none transition-all duration-200 ease-out sm:text-[13px] ${
+                compactMobileFilterButton
+                  ? 'w-8 justify-center gap-0 px-0'
+                  : 'gap-1.5 px-2.5 sm:px-3'
+              } ${
+                filtersOpen || activeFilters.length
+                  ? 'border-[#0866ff] bg-[#e8f1ff] text-[#101828]'
+                  : 'border-[#d0d5dd] bg-white text-[#101828] hover:border-[#0866ff] hover:bg-[#f8fbff]'
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-all duration-200 ease-out ${
+                  compactMobileFilterButton ? 'max-w-0 opacity-0' : 'max-w-[4.5rem] opacity-100'
+                }`}
+              >
+                {uiText(locale, 'Filter', 'Filter', 'Filter')}
+              </span>
+              {activeFilters.length && !compactMobileFilterButton ? (
+                <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
+                  {activeFilters.length}
+                </span>
+              ) : null}
+            </button>
+          </div>
+
+          <div
+            data-marketplace-filter-rail
+            className={`${placement === 'desktop' ? 'marketplace-scrollbar min-w-0 flex-1 overflow-x-auto overscroll-x-contain pr-1' : 'min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'} flex items-center gap-2`}
+            onWheel={placement === 'desktop' ? handleDesktopFilterWheel : undefined}
+            onScroll={placement === 'mobile' ? (event) => setMobileFilterRailScrolled(event.currentTarget.scrollLeft > 8) : undefined}
           >
-            {selectableCategories.map((item) => (
-              <option key={item.key} value={item.key}>
-                {categoryText(item, locale)}
-              </option>
+
+          <div className="relative order-10 shrink-0">
+            {desktopMenuButton(placement, 'mode', modeLabel, false)}
+            {renderDesktopFilterPopover(placement, 'mode', desktopListText.offerType, (
+              <div className="space-y-1">
+                {[
+                  { value: 'all' as SearchMode, label: marketplaceModeOptionLabel(locale, 'all') },
+                  { value: 'sale' as SearchMode, label: marketplaceModeOptionLabel(locale, 'sale') },
+                  { value: 'leasing' as SearchMode, label: marketplaceModeOptionLabel(locale, 'leasing') },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    // This callback runs only from the click event; it never reads route-sync refs during render.
+                    // eslint-disable-next-line react-hooks/refs
+                    onClick={() => changeMarketplaceMode(option.value)}
+                    className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[15px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                  >
+                    <span>{option.label}</span>
+                    {mode === option.value ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                  </button>
+                ))}
+              </div>
+            ), 'w-[260px]')}
+          </div>
+
+          <div className="relative order-50 shrink-0">
+            {desktopMenuButton(placement, 'price', minPrice || maxPrice ? `${uiText(locale, 'Price', 'Pris', 'Preis')}: ${minPrice || '0'}-${maxPrice || 'max'}` : uiText(locale, 'Price', 'Pris', 'Preis'), Boolean(minPrice || maxPrice))}
+            {renderDesktopFilterPopover(placement, 'price', uiText(locale, 'Price', 'Pris', 'Preis'), (
+              <div className="space-y-4">
+                <RangeFilter
+                  locale={locale}
+                  title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                  minValue={minPrice}
+                  maxValue={maxPrice}
+                  onMinChange={setMinPrice}
+                  onMaxChange={setMaxPrice}
+                  minLimit={priceBounds.min}
+                  maxLimit={priceBounds.max}
+                  unit={priceFilterCurrency}
+                  step={1000}
+                />
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
             ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-        </label>
-        <label className="relative min-w-0">
-          <span className="sr-only">{uiText(locale, 'Market', 'Marknad', 'Markt')}</span>
-          <select
-            value={marketValue}
-            onChange={(event) => selectMarket(event.target.value)}
-            className="h-11 w-full min-w-0 appearance-none rounded-full border border-[#d9e2ef] bg-white py-0 pl-4 pr-9 text-[14px] font-medium text-[#101828] outline-none shadow-[0_1px_2px_rgba(16,24,40,.04)] transition hover:border-[#b8c7dc] hover:bg-[#fbfdff] focus:border-[#0866ff] focus:ring-2 focus:ring-[#dbeafe]"
-          >
-            {countryFilterOptions.map((option) => (
-              <option key={option.value || 'eu'} value={option.value}>
-                {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
-              </option>
+          </div>
+
+          <div className="relative order-60 shrink-0">
+            {desktopMenuButton(placement, 'year', minYear || maxYear ? `${translatePublic(locale, 'Model year')}: ${minYear || '1950'}-${maxYear || 'max'}` : translatePublic(locale, 'Model year'), Boolean(minYear || maxYear))}
+            {renderDesktopFilterPopover(placement, 'year', translatePublic(locale, 'Model year'), (
+              <div className="space-y-4">
+                <RangeFilter
+                  locale={locale}
+                  title={translatePublic(locale, 'Model year')}
+                  minValue={minYear}
+                  maxValue={maxYear}
+                  onMinChange={setMinYear}
+                  onMaxChange={setMaxYear}
+                  minLimit={1950}
+                  maxLimit={new Date().getFullYear() + 1}
+                  step={1}
+                  startLabel={uiText(locale, 'Before 1950', 'Före 1950', 'Vor 1950')}
+                />
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
             ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
-        </label>
+          </div>
+
+          {showMileageMenu ? (
+          <div className="relative order-70 shrink-0">
+            {desktopMenuButton(placement, 'mileage', minMileage || maxMileage ? `${mileageFilterLabel}: ${formatMileageRangeLabel(minMileage, maxMileage, locale)}` : mileageFilterLabel, Boolean(minMileage || maxMileage))}
+            {renderDesktopFilterPopover(placement, 'mileage', mileageFilterLabel, (
+              <div className="space-y-4">
+                <RangeFilter
+                  locale={locale}
+                  title={mileageFilterLabel}
+                  minValue={minMileage}
+                  maxValue={maxMileage}
+                  onMinChange={setMinMileage}
+                  onMaxChange={setMaxMileage}
+                  minLimit={0}
+                  maxLimit={300000}
+                  unit="km"
+                  step={5000}
+                />
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+          ) : null}
+
+          {showOperatingHoursMenu ? (
+          <div className="relative order-70 shrink-0">
+            {desktopMenuButton(placement, 'operatingHours', minOperatingHours || maxOperatingHours ? `${operatingHoursFilterLabel}: ${formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale)}` : operatingHoursFilterLabel, Boolean(minOperatingHours || maxOperatingHours))}
+            {renderDesktopFilterPopover(placement, 'operatingHours', operatingHoursFilterLabel, (
+              <div className="space-y-4">
+                <RangeFilter
+                  locale={locale}
+                  title={operatingHoursFilterLabel}
+                  minValue={minOperatingHours}
+                  maxValue={maxOperatingHours}
+                  onMinChange={setMinOperatingHours}
+                  onMaxChange={setMaxOperatingHours}
+                  minLimit={0}
+                  maxLimit={20000}
+                  unit="h"
+                  step={250}
+                />
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ))}
+          </div>
+          ) : null}
+
+          <div className="relative order-20 shrink-0">
+            {desktopMenuButton(placement, 'category', categoryLabel, false)}
+            {renderDesktopFilterPopover(placement, 'category', desktopListText.vehicleCategory, (
+              <div className="grid gap-1">
+                {visibleSelectableCategories.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      // This callback runs only from the click event; it never reads route-sync refs during render.
+                      // eslint-disable-next-line react-hooks/refs
+                      onClick={() => toggleCategory(item.key)}
+                      className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eef5ff] text-[#101828]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{categoryText(item, locale)}</span>
+                      {activeCategoryKey === item.key ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          {showBodyTypeMenu ? (
+          <div className="relative order-30 shrink-0">
+            {desktopMenuButton(placement, 'bodyType', bodyTypeLabel, Boolean(bodyType))}
+            {renderDesktopFilterPopover(placement, 'bodyType', bodyTypeFilterLabel, (
+              <div className="space-y-3">
+                <div className="grid gap-1">
+                  {bodyTypeTopOptions.length ? bodyTypeTopOptions.map((option) => {
+                    const label = translateListingVehicleValue(locale, option)
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => {
+                          setBodyType(bodyType === option ? '' : option)
+                          closeQuickFilterMenu()
+                        }}
+                        className="flex w-full items-center justify-between rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                      >
+                        <span className="min-w-0 flex-1 truncate">{label}</span>
+                        {bodyType === option ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                      </button>
+                    )
+                  }) : (
+                    <p className="px-3 py-2 text-sm text-[#667085]">
+                      {uiText(locale, 'No body types available', 'Inga karosstyper tillgängliga', 'Keine Karosseriearten verfügbar')}
+                    </p>
+                  )}
+                </div>
+                {bodyType ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBodyType('')
+                      closeQuickFilterMenu()
+                    }}
+                    className="h-10 w-full rounded-[10px] border border-[#d0d5dd] bg-white text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                  >
+                    {uiText(locale, 'Clear body type', 'Rensa kaross', 'Karosserie löschen')}
+                  </button>
+                ) : null}
+              </div>
+            ), 'w-[310px]')}
+          </div>
+          ) : null}
+
+          <div className="relative order-80 shrink-0">
+            {desktopMenuButton(placement, 'market', marketLabel, selectedMarketCodes.length > 1)}
+            {renderDesktopFilterPopover(placement, 'market', uiText(locale, 'Market', 'Marknad', 'Markt'), (
+              <div className="space-y-3">
+                <div className="grid gap-1">
+                  {marketOptions.map((option) => {
+                    const selected = option.value
+                      ? selectedMarketCodes.includes(option.value)
+                      : selectedMarketCodes.length === 0
+                    return (
+                      <button
+                        data-marketplace-market-option
+                        key={option.value || 'all'}
+                        type="button"
+                        onClick={() => {
+                          setMarketOverride(true)
+                          if (!option.value) {
+                            setSelectedMarkets([])
+                            return
+                          }
+                          setSelectedMarkets((current) => {
+                            const normalized = normalizeMarketSelection(current)
+                            return normalized.includes(option.value)
+                              ? normalized.filter((code) => code !== option.value)
+                              : [...normalized, option.value]
+                          })
+                        }}
+                        className="flex w-full items-center gap-3 rounded-[10px] px-3 py-3 text-left text-[14px] font-medium text-[#101828] transition hover:bg-[#f3f7ff]"
+                      >
+                        <span className="min-w-0 flex-1 truncate">
+                          {option.value ? getEuCountryName(option.value, locale) : uiText(locale, 'All markets', 'Alla marknader', 'Alle Märkte')}
+                        </span>
+                        {selected ? <Check className="h-5 w-5 text-[#0866ff]" /> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ), 'w-[310px]')}
+          </div>
+
+          <div className="relative order-40 shrink-0">
+            {desktopMenuButton(placement, 'model', modelLabel, Boolean(make || model))}
+            {renderDesktopFilterPopover(placement, 'model', uiText(locale, 'Make and model', 'Märke och modell', 'Marke und Modell'), (
+              <div className="space-y-4">
+                <MakeModelFilter
+                  locale={locale}
+                  make={make}
+                  model={model}
+                  makeOptions={makeModelOptions.makes}
+                  modelOptions={makeModelOptions.models}
+                  onMakeChange={(value) => {
+                    seoRouteSyncArmedRef.current = value !== make || Boolean(model)
+                    setMake(value)
+                    setModel('')
+                  }}
+                  onModelChange={(value) => {
+                    seoRouteSyncArmedRef.current = value !== model
+                    setModel(value)
+                  }}
+                  compact
+                />
+                <button data-marketplace-apply type="button" onClick={closeQuickFilterMenu} className="h-11 w-full rounded-[10px] bg-[#0866ff] text-sm font-medium text-white transition hover:bg-[#0757da]">
+                  {uiText(locale, 'Apply', 'Tillämpa', 'Anwenden')}
+                </button>
+              </div>
+            ), 'w-[calc(100vw-16px)] sm:w-[640px]')}
+          </div>
+          {placement === 'mobile' ? <div className="order-last shrink-0">{saveSearchButton}</div> : null}
+          </div>
+          {placement === 'desktop' ? <div className="shrink-0">{saveSearchButton}</div> : null}
+        </div>
       </div>
     )
   }
 
   const activeFilterCandidates: Array<ActiveFilterChip | null> = [
+    selectedCategoryItems.length && selectedCategoryItems.some((item) => item.key !== safeInitialCategory)
+      ? {
+        key: 'categories',
+        label: selectedCategoryItems.map((item) => categoryText(item, locale)).join(', '),
+        onRemove: () => {
+          setSelectedCategories([])
+          clearUnsupportedCategoryFilters([])
+        },
+      }
+      : null,
+    marketOverride
+      ? {
+        key: 'markets',
+        label: marketSummary,
+        onRemove: () => {
+          setSelectedMarkets([])
+          setMarketOverride(false)
+        },
+      }
+      : null,
     make ? { key: 'make', label: make, onRemove: () => {
       setMake('')
       setModel('')
@@ -1515,23 +3124,23 @@ export default function VehicleSearchExperience({
     model ? { key: 'model', label: model, onRemove: () => setModel('') } : null,
     region ? { key: 'region', label: region, onRemove: () => setRegion('') } : null,
     city ? { key: 'city', label: city, onRemove: () => setCity('') } : null,
-    municipality ? { key: 'municipality', label: `${municipality} kommun`, onRemove: () => setMunicipality('') } : null,
+    municipality ? { key: 'municipality', label: municipality, onRemove: () => setMunicipality('') } : null,
     fuel ? { key: 'fuel', label: fuel, onRemove: () => setFuel('') } : null,
     gearbox ? { key: 'gearbox', label: gearbox, onRemove: () => setGearbox('') } : null,
-    bodyType ? { key: 'bodyType', label: bodyType, onRemove: () => setBodyType('') } : null,
+    bodyType ? { key: 'bodyType', label: translateListingVehicleValue(locale, bodyType), onRemove: () => setBodyType('') } : null,
     condition ? { key: 'condition', label: condition, onRemove: () => setCondition('') } : null,
     color ? { key: 'color', label: color, onRemove: () => setColor('') } : null,
     sellerType !== 'all'
       ? { key: 'sellerType', label: sellerType === 'business' ? uiText(locale, 'Business', 'Företag', 'Unternehmen') : uiText(locale, 'Private seller', 'Privatperson', 'Privatperson'), onRemove: () => setSellerType('all') }
       : null,
     minPrice || maxPrice
-      ? { key: 'price', label: uiText(locale, 'Price', 'Pris', 'Preis') + ' ' + (minPrice || '0') + '-' + (maxPrice || 'max') + ' SEK', onRemove: () => {
+      ? { key: 'price', label: uiText(locale, 'Price', 'Pris', 'Preis') + ' ' + (minPrice || '0') + '-' + (maxPrice || 'max') + ' ' + priceFilterCurrency, onRemove: () => {
         setMinPrice('')
         setMaxPrice('')
       } }
       : null,
     minYear || maxYear
-      ? { key: 'year', label: uiText(locale, 'Model year', 'Årsmodell', 'Baujahr') + ' ' + (minYear || '1950') + '-' + (maxYear || uiText(locale, 'newest', 'nyast', 'neueste')), onRemove: () => {
+      ? { key: 'year', label: translatePublic(locale, 'Model year') + ' ' + (minYear || '1950') + '-' + (maxYear || uiText(locale, 'newest', 'nyast', 'neueste')), onRemove: () => {
         setMinYear('')
         setMaxYear('')
       } }
@@ -1550,43 +3159,52 @@ export default function VehicleSearchExperience({
     equipmentQuery.trim() ? { key: 'equipment', label: equipmentQuery.trim(), onRemove: () => setEquipmentQuery('') } : null,
   ]
   const activeFilters = activeFilterCandidates.filter((filter): filter is ActiveFilterChip => filter !== null)
+  const listActiveFilters: ActiveFilterChip[] = !selectedCategoryItems.length || activeFilters.some((filter) => filter.key === 'categories')
+    ? activeFilters
+    : [
+      {
+        key: 'categories',
+        label: categoryText(activeCategoryItem, locale),
+        onRemove: () => {
+          setSelectedCategories([])
+          clearUnsupportedCategoryFilters([])
+        },
+      },
+      ...activeFilters,
+    ]
+  const listBodyTypeOptions = categoryScopedOptions(activeCategoryKey, 'bodyType')
+    .filter((option) => normalizeSearchText(option.label).includes(normalizeSearchText(listBodyTypeQuery)))
+    .map((option) => ({
+      ...option,
+      count: bodyTypeCounts.get(option.value) || 0,
+    }))
+  const listMakeOptions = makeModelOptions.makes.filter((option) =>
+    normalizeSearchText(option.label).includes(normalizeSearchText(listMakeQuery)),
+  )
   const saveSearchButtonLabel = savedSearchMessage || (
     activeFilters.length
       ? uiText(locale, 'Save', 'Spara', 'Speichern') + ' ' + activeFilters.length + ' ' + uiText(locale, 'filters', 'filter', 'Filter')
       : uiText(locale, 'Save search', 'Spara sökning', 'Suche speichern')
   )
   useEffect(() => {
-    let lastScrollY = window.scrollY
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const isNearTop = currentScrollY < 24
-      const scrollingUp = currentScrollY < lastScrollY
-      const scrollingDown = currentScrollY > lastScrollY + 6
-
-      if (isNearTop || scrollingUp) {
-        setMobileDockVisible(true)
-      } else if (scrollingDown) {
-        setMobileDockVisible(false)
-      }
-
-      lastScrollY = currentScrollY
+    const updatePinnedSearch = () => {
+      setMobileSearchPinned(window.scrollY > 56)
     }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    updatePinnedSearch()
+    window.addEventListener('scroll', updatePinnedSearch, { passive: true })
+    return () => window.removeEventListener('scroll', updatePinnedSearch)
   }, [])
 
   return (
-    <main className="min-h-[calc(100dvh-56px)] w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:h-[calc(100dvh-58px)] min-[1120px]:min-h-[calc(100dvh-58px)] min-[1120px]:w-full min-[1120px]:overflow-hidden min-[1120px]:pb-0">
-      <div className="flex min-h-[calc(100dvh-56px)] min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:h-full min-[1120px]:min-h-0 min-[1120px]:w-full min-[1120px]:overflow-hidden">
+    <main className={`min-h-dvh w-screen max-w-[100vw] overflow-x-hidden bg-white pb-[calc(18px+env(safe-area-inset-bottom))] text-[#101828] min-[1120px]:w-full min-[1120px]:pb-0 ${desktopMarketplaceView === 'map' ? 'min-[1120px]:!h-[calc(100dvh-62px)] min-[1120px]:!min-h-0 min-[1120px]:overflow-hidden' : 'min-[1120px]:overflow-visible'}`}>
+      <div className={`flex min-h-dvh min-w-0 w-screen max-w-[100vw] flex-col overflow-x-hidden min-[1120px]:w-full ${desktopMarketplaceView === 'map' ? 'min-[1120px]:!h-full min-[1120px]:!min-h-0 min-[1120px]:overflow-hidden' : 'min-[1120px]:overflow-visible'}`}>
         <header className="hidden min-h-[62px] items-center justify-between border-b border-[#eceff4] bg-white px-5 sm:px-7">
           <Link href={localizePublicHref(locale, '/')} aria-label="Autorell" className="shrink-0">
             <BrandLogo compact underline={false} />
           </Link>
           <nav className="hidden items-center gap-7 text-[14px] font-medium text-[#101828] md:flex">
             <span className="text-[#0866ff]">Sök fordon</span>
-            <Link href={localizePublicHref(locale, '/sell-vehicle')} className="transition hover:text-[#0866ff]">
+            <Link href={localizePublicHref(locale, '/account/listings/new')} className="transition hover:text-[#0866ff]">
               Sälj fordon
             </Link>
             <Link href={localizePublicHref(locale, '/business')} className="transition hover:text-[#0866ff]">
@@ -1602,196 +3220,593 @@ export default function VehicleSearchExperience({
               <Bookmark className="h-5 w-5" />
               Sökningar
             </span>
-            <span className="inline-flex items-center gap-2">
-              <CountryFlag code={primaryMapCountry || 'SE'} className="h-5 w-5" />
-              <span>{primaryMapCountry || 'EU'}</span>
-            </span>
+            <span>{primaryMapCountry || 'EU'}</span>
           </div>
         </header>
 
-        <section className="grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)]">
-          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
-            <div className="w-full max-w-full overflow-hidden border-b border-[#eceff4] px-5 pt-0 sm:px-6 lg:px-7">
-              <div className="grid grid-cols-2 border-b border-[#dfe4ec]">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setMode(tab.key)}
-                    className={`relative min-h-[40px] min-w-0 px-1 text-center text-[12px] !font-medium transition sm:min-h-[44px] sm:px-2 sm:text-[14px] ${
-                      mode === tab.key ? 'text-[#101828]' : 'text-[#475467] hover:text-[#101828]'
-                    }`}
-                  >
-                    <span className="block sm:hidden">
-                      {tab.key === 'sale'
-                        ? uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
-                        : uiText(locale, 'Leasing', 'Leasing', 'Leasing')}
-                    </span>
-                    <span className="hidden sm:block">
-                      {tab.key === 'sale'
-                        ? uiText(locale, 'Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen')
-                        : uiText(locale, 'Leasing', 'Leasing', 'Leasing')}
-                    </span>
-                    {mode === tab.key ? <span className="absolute inset-x-0 -bottom-px h-[3px] bg-[#0866ff]" /> : null}
-                  </button>
-                ))}
-              </div>
+        {desktopMarketplaceView === 'map' ? renderDesktopFilterBar('desktop') : null}
 
-            </div>
+        <section className={`grid min-h-0 min-w-0 w-screen max-w-[100vw] flex-1 overflow-x-hidden lg:w-full lg:max-w-full lg:grid-cols-[minmax(640px,clamp(680px,38vw,760px))_minmax(620px,1fr)] ${desktopMarketplaceView === 'list' ? 'bg-white min-[1120px]:!grid-cols-1 min-[1120px]:overflow-visible' : 'bg-white min-[1120px]:overflow-hidden'}`}>
+          {desktopMarketplaceView === 'list' ? (
+            <div
+              data-marketplace-desktop-list
+              className="marketplace-view-enter mx-auto hidden min-h-0 min-w-0 w-full max-w-[1170px] grid-cols-[320px_minmax(0,1fr)] gap-x-8 gap-y-5 bg-white px-6 py-7 min-[1120px]:grid 2xl:max-w-[1320px] 2xl:px-8"
+            >
+              <nav
+                data-marketplace-list-breadcrumbs
+                aria-label={translatePublic(locale, 'Breadcrumbs')}
+                className="col-span-2 flex min-h-7 items-center gap-2 text-[12px] font-medium text-[#667085]"
+              >
+                <Link
+                  href={localizePublicHref(locale, '/')}
+                  className="grid h-7 w-7 place-items-center rounded-[6px] text-[#344054] transition hover:bg-[#eef5ff] hover:text-[#0866ff]"
+                  aria-label={translatePublic(locale, 'Home')}
+                >
+                  <House className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+                <ChevronRight className="h-3.5 w-3.5 text-[#98a2b3]" aria-hidden="true" />
+                <span className="truncate font-semibold text-[#344054]">{categoryText(activeCategoryItem, locale)}</span>
+              </nav>
 
-            <div>
-              <div className="min-w-0 max-w-full overflow-visible">
-                <div className="w-full max-w-full overflow-visible border-b border-[#eceff4] px-4 py-3 sm:px-6">
-                <div className="relative">
-                <div className="group relative flex min-h-[50px] items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
-                  <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
-                  {selectedSearchSuggestions.map((suggestion) => (
-                    <span
-                      key={suggestion.chipId}
-                      className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)]"
+              <aside
+                data-marketplace-list-sidebar
+                aria-label={filterDialogCopy[locale].label}
+                className="flex min-h-0 self-start flex-col bg-white"
+              >
+                <div className="border-b border-[#d8dee8] bg-white pb-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <SlidersHorizontal className="h-5 w-5 text-[#0866ff]" aria-hidden="true" />
+                      <h2 className="text-[17px] font-semibold text-[#101828]">
+                        {desktopListText.filters}
+                      </h2>
+                      {listActiveFilters.length ? (
+                        <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#0866ff] px-1.5 text-[11px] font-semibold text-white">
+                          {listActiveFilters.length}
+                        </span>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="text-[12px] font-semibold text-[#0866ff] transition hover:text-[#0757da] hover:underline hover:underline-offset-4"
                     >
-                      <span className="truncate">{suggestion.title}</span>
-                      <button
-                        type="button"
-                        onPointerDown={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                        }}
-                        onClick={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          setSelectedSearchSuggestions((current) => {
-                            const next = current.filter((item) => item.chipId !== suggestion.chipId)
-                            setQuery(buildSearchQueryFromSuggestions(next, searchInput))
-                            return next
-                          })
-                        }}
-                        className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
-                        aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
-                      >
-                        <X className="h-3.5 w-3.5" />
+                      {desktopListText.clearAll}
+                    </button>
+                  </div>
+                  <div className="mt-3">{renderMarketplaceSearchInput('', true, translatePublic(locale, 'Search'))}</div>
+                </div>
+
+                {listActiveFilters.length ? (
+                  <div className="my-4 rounded-[7px] border border-[#d7dde7] bg-white px-3 py-3 shadow-[0_5px_16px_rgba(16,24,40,.06)]" data-marketplace-list-active-filters>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[12px] font-semibold text-[#101828]">
+                        {listActiveFilters.length} {listActiveFilters.length === 1
+                          ? listExtraText.activeFilter
+                          : listExtraText.activeFilters}
+                      </p>
+                      <button type="button" onClick={resetFilters} className="text-[11px] font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                        {desktopListText.clearAll}
                       </button>
-                    </span>
-                  ))}
-                  <input
-                    value={searchInput}
-                    onChange={(event) => {
-                      const nextInput = event.target.value
-                      setSearchInput(nextInput)
-                      setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, nextInput))
-                    }}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
-                    placeholder=""
-                    aria-label={searchPlaceholder}
-                    className="vehicle-search-control h-7 min-w-0 basis-full bg-transparent text-[14px] font-normal text-[#101828] outline-none [background:transparent]"
-                  />
-                  {searchInput || selectedSearchSuggestions.length ? null : (
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[14px] font-normal text-[#767676]"
+                    </div>
+                    <div className="mt-2"><ActiveFilterChips filters={listActiveFilters} locale={locale} /></div>
+                    <button
+                      type="button"
+                      onClick={saveCurrentSearch}
+                      disabled={savingSearch}
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 border-t border-[#e4e7ec] pt-3 text-[12px] font-semibold text-[#344054] transition hover:text-[#0866ff] disabled:cursor-wait disabled:opacity-70"
                     >
-                      {searchPlaceholder}
-                    </span>
+                      <Bookmark className="h-4 w-4" aria-hidden="true" />
+                      {saveSearchButtonLabel}
+                    </button>
+                  </div>
+                ) : null}
+
+                <div className="grid border-b border-[#d8dee8] bg-white">
+                  <Link href={localizePublicHref(locale, '/saved')} className="flex min-h-11 items-center gap-2.5 px-1 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc] hover:text-[#0866ff]">
+                    <Heart className="h-4 w-4 text-[#0866ff]" aria-hidden="true" />
+                    {listExtraText.savedListings}
+                  </Link>
+                  <button type="button" onClick={() => setSortBy('published')} className={`flex min-h-11 items-center gap-2.5 border-t border-[#e4e7ec] px-1 text-left text-[12px] font-medium transition hover:bg-[#f8fafc] hover:text-[#0866ff] ${sortBy === 'published' ? 'text-[#0866ff]' : 'text-[#344054]'}`}>
+                    <span className={`h-4 w-4 rounded-[3px] border ${sortBy === 'published' ? 'border-[#0866ff] bg-[#0866ff] shadow-[inset_0_0_0_3px_white]' : 'border-[#98a2b3]'}`} aria-hidden="true" />
+                    {listExtraText.latestListings}
+                  </button>
+                </div>
+
+                <div className="min-h-0 flex-1">
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<Scale className="h-4 w-4" aria-hidden="true" />}
+                    title={desktopListText.offerType}
+                    summary={marketplaceModeLabel(locale, mode)}
+                    open={listOfferTypeOpen}
+                    onToggle={() => setListOfferTypeOpen((open) => !open)}
+                  >
+                    <div className="grid gap-1.5" role="radiogroup" aria-label={desktopListText.offerType}>
+                      {(['all', 'sale', 'leasing'] as SearchMode[]).map((option) => (
+                        <label key={option} className="flex min-h-8 cursor-pointer items-center gap-2.5 rounded-[6px] px-2 text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc]">
+                          <input type="radio" name="desktop-list-offer-type" value={option} checked={mode === option} onChange={() => changeMarketplaceMode(option)} className="h-4 w-4 accent-[#0866ff]" />
+                          {marketplaceModeOptionLabel(locale, option)}
+                        </label>
+                      ))}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  {filterProfile.includes('bodyType') || listBodyTypeOptions.length || bodyType ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      title={listExtraText.typeLabel}
+                      summary={bodyType ? translateListingVehicleValue(locale, bodyType) : desktopListText.allVehicles}
+                      open={listBodyTypeOpen}
+                      onToggle={() => setListBodyTypeOpen((open) => !open)}
+                    >
+                      <SearchableSidebarOptions
+                        locale={locale}
+                        searchLabel={listExtraText.searchByType}
+                        query={listBodyTypeQuery}
+                        onQueryChange={setListBodyTypeQuery}
+                        options={listBodyTypeOptions}
+                        selectedValue={bodyType}
+                        emptyLabel={listExtraText.noOptions}
+                        onSelect={(value) => setBodyType(value === bodyType ? '' : value)}
+                      />
+                    </CollapsibleFilterSection>
+                  ) : null}
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<Layers className="h-4 w-4" aria-hidden="true" />}
+                    title={desktopListText.vehicleCategory}
+                    summary={categoryText(
+                      visibleSelectableCategories.find((item) => item.key === activeCategoryKey) ||
+                        visibleSelectableCategories[0] ||
+                        selectableCategories[0],
+                      locale,
+                    )}
+                    open={listCategoryOpen}
+                    onToggle={() => setListCategoryOpen((open) => !open)}
+                  >
+                    <FilterSelect
+                      locale={locale}
+                      label={uiText(locale, 'Category', 'Kategori', 'Kategorie')}
+                      value={activeCategoryKey}
+                      onChange={(value) => {
+                        if (value && value !== activeCategoryKey) toggleCategory(value)
+                      }}
+                      options={visibleSelectableCategories.map((item) => ({ value: item.key, label: categoryText(item, locale) }))}
+                    />
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<Search className="h-4 w-4" aria-hidden="true" />}
+                    title={desktopListText.makeModelYear}
+                    summary={[make, model, minYear || maxYear ? `${minYear || '1950'}-${maxYear || '+'}` : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listVehicleOpen}
+                    onToggle={() => setListVehicleOpen((open) => !open)}
+                  >
+                    <div
+                      className="grid min-w-0 gap-4 [&>*]:min-w-0"
+                      style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}
+                    >
+                      <SearchableSidebarOptions
+                        locale={locale}
+                        searchLabel={listExtraText.searchByMake}
+                        query={listMakeQuery}
+                        onQueryChange={setListMakeQuery}
+                        options={listMakeOptions}
+                        selectedValue={make}
+                        emptyLabel={listExtraText.noOptions}
+                        onSelect={(value) => {
+                          seoRouteSyncArmedRef.current = value !== make || Boolean(model)
+                          setMake(value === make ? '' : value)
+                          setModel('')
+                        }}
+                      />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Model', 'Modell', 'Modell')}
+                        value={model}
+                        onChange={(value) => {
+                          seoRouteSyncArmedRef.current = value !== model
+                          setModel(value)
+                        }}
+                        options={makeModelOptions.models.map((option) => ({ value: option.value, label: `${option.label} (${option.count})` }))}
+                      />
+                      <div className="min-w-0" data-marketplace-list-year-filter>
+                        <RangeFilter
+                          locale={locale}
+                          title={translatePublic(locale, 'Model year')}
+                          minValue={minYear}
+                          maxValue={maxYear}
+                          onMinChange={setMinYear}
+                          onMaxChange={setMaxYear}
+                          minLimit={1950}
+                          maxLimit={new Date().getFullYear() + 1}
+                          step={1}
+                          startLabel={desktopListText.before1950}
+                        />
+                      </div>
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<Star className="h-4 w-4" aria-hidden="true" />}
+                    title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                    summary={minPrice || maxPrice ? `${minPrice || '0'}-${maxPrice || '+'} ${priceFilterCurrency}` : desktopListText.anyPrice}
+                    open={priceYearOpen}
+                    onToggle={() => setPriceYearOpen((open) => !open)}
+                  >
+                    <RangeFilter
+                      locale={locale}
+                      title={uiText(locale, 'Price', 'Pris', 'Preis')}
+                      minValue={minPrice}
+                      maxValue={maxPrice}
+                      onMinChange={setMinPrice}
+                      onMaxChange={setMaxPrice}
+                      minLimit={priceBounds.min}
+                      maxLimit={priceBounds.max}
+                      unit={priceFilterCurrency}
+                      step={1000}
+                    />
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<MapPin className="h-4 w-4" aria-hidden="true" />}
+                    title={desktopListText.locationMarket}
+                    summary={[region, municipality, marketSummary].filter(Boolean).join(' · ')}
+                    open={locationFiltersOpen}
+                    onToggle={() => setLocationFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      <LocationHierarchyFilter
+                        regionLabel={desktopListText.county}
+                        municipalityLabel={desktopListText.municipality}
+                        region={region}
+                        municipality={municipality}
+                        regionOptions={regionOptions}
+                        municipalityOptions={municipalityOptions}
+                        onRegionChange={updateRegionFilter}
+                        onMunicipalityChange={updateMunicipalityFilter}
+                      />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Market', 'Marknad', 'Markt')}
+                        value={selectedMarketCodes.length === 1 ? selectedMarketCodes[0] : ''}
+                        onChange={(value) => {
+                          setMarketOverride(true)
+                          setSelectedMarkets(value ? [value] : [])
+                        }}
+                        options={marketOptions.filter((option) => option.value)}
+                      />
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  {renderSidebarTechnicalFilter('mileage') || renderSidebarTechnicalFilter('operatingHours') ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
+                      title={uiText(locale, 'Mileage and hours', 'Miltal och timmar', 'Kilometer und Stunden')}
+                      summary={minMileage || maxMileage ? formatMileageRangeLabel(minMileage, maxMileage, locale) : minOperatingHours || maxOperatingHours ? formatNumberRangeLabel(minOperatingHours, maxOperatingHours, 'h', locale) : desktopListText.allVehicles}
+                      open={listMileageOpen}
+                      onToggle={() => setListMileageOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        {renderSidebarTechnicalFilter('mileage')}
+                        {renderSidebarTechnicalFilter('operatingHours')}
+                      </div>
+                    </CollapsibleFilterSection>
+                  ) : null}
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
+                    title={uiText(locale, 'Fuel and gearbox', 'Drivmedel och växellåda', 'Kraftstoff und Getriebe')}
+                    summary={[fuel, gearbox].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listSpecsOpen}
+                    onToggle={() => setListSpecsOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      {renderSidebarTechnicalFilter('fuel')}
+                      {renderSidebarTechnicalFilter('gearbox')}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<Scale className="h-4 w-4" aria-hidden="true" />}
+                    title={uiText(locale, 'Sale form and drive', 'Försäljningsform och drivhjul', 'Verkaufsform und Antrieb')}
+                    summary={[mode !== 'all' ? marketplaceModeLabel(locale, mode) : '', fourWheelDrive ? uiText(locale, 'Four-wheel drive', 'Fyrhjulsdrift', 'Allrad') : '', leasingPossible ? uiText(locale, 'Leasing possible', 'Leasing möjlig', 'Leasing möglich') : ''].filter(Boolean).join(' · ') || desktopListText.allVehicles}
+                    open={listSaleDriveOpen}
+                    onToggle={() => setListSaleDriveOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3">
+                      {renderSidebarTechnicalFilter('fourWheelDrive')}
+                      {renderSidebarTechnicalFilter('leasingPossible')}
+                    </div>
+                  </CollapsibleFilterSection>
+
+                  {renderSidebarTechnicalFilter('color') || renderSidebarTechnicalFilter('equipment') || renderDynamicTechnicalFacets(true) ? (
+                    <CollapsibleFilterSection
+                      density="sidebar"
+                      icon={<Star className="h-4 w-4" aria-hidden="true" />}
+                      title={uiText(locale, 'Color and equipment', 'Färg och utrustning', 'Farbe und Ausstattung')}
+                      summary={[color, equipmentQuery.trim()].filter(Boolean).join(' · ') || uiText(locale, 'Equipment and details', 'Utrustning och detaljer', 'Ausstattung und Details')}
+                      open={listEquipmentOpen}
+                      onToggle={() => setListEquipmentOpen((open) => !open)}
+                    >
+                      <div className="grid gap-3">
+                        {renderSidebarTechnicalFilter('color')}
+                        {renderSidebarTechnicalFilter('equipment')}
+                        {renderDynamicTechnicalFacets(true)}
+                      </div>
+                    </CollapsibleFilterSection>
+                  ) : null}
+
+                  <CollapsibleFilterSection
+                    density="sidebar"
+                    icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />}
+                    title={uiText(locale, 'Advertiser and condition', 'Annonsör och skick', 'Anbieter und Zustand')}
+                    summary={sellerSummary}
+                    open={sellerFiltersOpen}
+                    onToggle={() => setSellerFiltersOpen((open) => !open)}
+                  >
+                    <div className="grid gap-3 pb-4">
+                      <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                      <FilterSelect
+                        locale={locale}
+                        label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
+                        value={sellerType}
+                        onChange={setSellerType}
+                        options={[
+                          { value: 'all', label: desktopListText.allSellers },
+                          { value: 'business', label: uiText(locale, 'Business', 'Företag', 'Unternehmen') },
+                          { value: 'private', label: uiText(locale, 'Private seller', 'Privatperson', 'Privatperson') },
+                        ]}
+                      />
+                      <ToggleFilter label={uiText(locale, 'Verified listings', 'Verifierade annonser', 'Verifizierte Anzeigen')} checked={verifiedOnly} onChange={setVerifiedOnly} />
+                    </div>
+                  </CollapsibleFilterSection>
+                </div>
+              </aside>
+
+              <section className="relative flex min-h-0 min-w-0 flex-col" aria-label={desktopListText.searchResults}>
+                <div className="border-b border-[#dfe5ee] bg-white px-0 pb-4 pt-1">
+                  <div className="flex min-h-12 items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h1 className="truncate text-[20px] font-semibold leading-6 text-[#101828]">
+                        {seoLanding?.h1 || categoryText(activeCategoryItem, locale)}
+                      </h1>
+                      <p className="mt-1 truncate text-[12px] font-medium text-[#475467]">
+                        {searchLoading && searchPage === 1
+                          ? desktopListText.updatingResults
+                          : searchError
+                            ? desktopListText.countFailure
+                            : resultCountSummary}
+                      </p>
+                      <span className="sr-only">{desktopListText.resultsUpdate}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDesktopListColumns((columns) => columns === 1 ? 2 : 1)}
+                      aria-label={desktopListColumns === 1
+                        ? uiText(locale, 'Show two vehicles per row', 'Visa två fordon per rad', 'Zwei Fahrzeuge pro Zeile anzeigen')
+                        : uiText(locale, 'Show one vehicle per row', 'Visa ett fordon per rad', 'Ein Fahrzeug pro Zeile anzeigen')}
+                      title={desktopListColumns === 1
+                        ? uiText(locale, 'Two vehicles per row', 'Två fordon per rad', 'Zwei Fahrzeuge pro Zeile')
+                        : uiText(locale, 'One vehicle per row', 'Ett fordon per rad', 'Ein Fahrzeug pro Zeile')}
+                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-[7px] border transition ${desktopListColumns === 2 ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'}`}
+                    >
+                      {desktopListColumns === 1 ? <Columns2 className="h-4 w-4" aria-hidden="true" /> : <List className="h-4 w-4" aria-hidden="true" />}
+                    </button>
+                    <label className="flex h-9 min-w-[250px] shrink-0 items-center rounded-[7px] border border-[#cfd7e4] bg-white transition focus-within:border-[#0866ff] focus-within:ring-2 focus-within:ring-[#0866ff]/15">
+                      <span className="sr-only">{desktopListText.sorting}</span>
+                      <span className="shrink-0 pl-3 text-[11px] font-normal text-[#667085]">{listExtraText.sortBy}:</span>
+                      <span className="relative min-w-0 flex-1">
+                        <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-8 w-full appearance-none border-0 bg-transparent pl-1.5 pr-8 text-[11px] font-semibold text-[#344054] outline-none">
+                          {sortOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{sortOptionLabel(option.value, option.label, locale)}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#667085]" aria-hidden="true" />
+                      </span>
+                    </label>
+                    <button type="button" onClick={() => { changeSearchPage(1); setDesktopMarketplaceView('map') }} className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[7px] bg-[#0866ff] px-3 text-[11px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                      <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                      {desktopListText.showMap}
+                    </button>
+                    <button type="button" onClick={saveCurrentSearch} disabled={savingSearch} className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[7px] border px-3 text-[11px] font-semibold transition ${savedSearchMessage ? 'border-[#079455] bg-[#ecfdf3] text-[#067647]' : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'} disabled:cursor-wait disabled:opacity-70`}>
+                      <Bookmark className="h-4 w-4" aria-hidden="true" />
+                      {saveSearchButtonLabel}
+                    </button>
+                  </div>
+                </div>
+
+                <div ref={desktopResultsScrollRef} className="min-h-0 flex-1 bg-white pt-5">
+                  {filteredListings.length ? (
+                    <>
+                      <MarketplacePagination
+                        locale={locale}
+                        page={searchPage}
+                        totalPages={searchTotalPages}
+                        onPageChange={changeSearchPage}
+                        className="mb-3 justify-end"
+                      />
+                    <ol className={`grid gap-3 ${desktopListColumns === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {filteredListings.map((listing) => (
+                        <li key={listing.id} className="min-w-0">
+                          <MarketplaceDesktopListingRow
+                            listing={listing}
+                            locale={locale}
+                            offerBadge={listingOfferBadge(locale, listing)}
+                            insuranceLabel={listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)}
+                            equipmentChips={listingEquipmentChips(listing.equipment, locale)}
+                            compareActive={compareIds.includes(listing.id)}
+                            onCompare={() => toggleCompare(listing.id)}
+                            onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                            compact={desktopListColumns === 2}
+                          />
+                        </li>
+                      ))}
+                    </ol>
+                    </>
+) : (
+                    <div className="mx-auto grid min-h-[calc(100dvh-320px)] max-w-[980px] place-items-center py-8" aria-label={seoLanding?.zeroResultsText || emptyStateCopy.title} data-marketplace-list-empty>
+                      <div className="w-full overflow-hidden rounded-[8px] border border-[#dbe3ee] bg-white shadow-[0_10px_34px_rgba(16,24,40,.055)]">
+                        <div className="grid min-h-[310px] grid-cols-[minmax(0,1fr)_260px] items-center gap-8 px-10 py-9 2xl:grid-cols-[minmax(0,1fr)_300px] 2xl:px-12">
+                          <div className="min-w-0 text-left">
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-3 py-1.5 text-[11px] font-semibold text-[#0866ff]">
+                              <List className="h-3.5 w-3.5" aria-hidden="true" />
+                              {desktopListText.searchResults}
+                            </span>
+                            <p className="mt-4 max-w-[560px] text-[28px] font-semibold leading-[1.12] tracking-[-.035em] text-[#101828]">
+                              {emptyStateCopy.title}
+                            </p>
+                            <p className="mt-3 max-w-[500px] text-[13px] font-normal leading-5 text-[#667085]">
+                              {emptyStateCopy.sellerText}
+                            </p>
+                            <div className="mt-6 flex flex-wrap items-center gap-3">
+                              <Link href={createListingHref} className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]">
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                                {emptyStateCopy.createLabel}
+                              </Link>
+                              <span className="text-xs font-medium text-[#667085]">
+                                {emptyStateCopy.quickStart}
+                              </span>
+                            </div>
+                            <p className="mt-3 text-xs font-medium text-[#667085]">
+                              {emptyStateCopy.loginIntro}{' '}
+                              <Link href={loginForListingHref} className="font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                                {emptyStateCopy.loginLabel}
+                              </Link>
+                            </p>
+                          </div>
+                          <div className="grid min-h-[220px] place-items-center border-l border-[#edf1f6] pl-8">
+                            <Image src="/autorell-empty-search.svg" alt="" aria-hidden="true" width={240} height={166} className="h-auto w-[220px]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                  <Search className="absolute right-4 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2 text-[#101828]" />
+                  {filteredListings.length ? (
+                    <MarketplacePagination
+                      locale={locale}
+                      page={searchPage}
+                      totalPages={searchTotalPages}
+                      onPageChange={changeSearchPage}
+                      className="mt-5 justify-center"
+                    />
+                  ) : null}
+                  {filteredListings.length ? (
+                    <div className="mx-auto mt-5 overflow-hidden rounded-[8px] border border-[#dfe5ee] bg-white"><VehicleSearchFooter locale={locale} /></div>
+                  ) : null}
                 </div>
-                <VehicleSmartSearchSuggestionPanel
-                  query={searchInput}
-                  suggestions={smartSearch.suggestions}
-                  loading={smartSearch.loading}
-                  searched={smartSearch.searched}
-                  locale={locale}
-                  onSelect={selectMarketplaceSuggestion}
-                  active={searchFocused}
-                />
-                </div>
+                {compareIds.length ? (
+                  <div className="absolute bottom-5 left-1/2 z-30 w-[min(640px,calc(100%_-_40px))] -translate-x-1/2 rounded-[10px] border border-[#c9d9ef] bg-white/96 px-4 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#101828]">
+                          {compareIds.length} {compareIds.length === 1 ? compareCopy.selectedSingular : compareCopy.selectedPlural}
+                        </p>
+                        <p className="truncate text-xs font-medium text-[#667085]">{compareError || compareCopy.helper}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCompareOpen(true)}
+                          disabled={compareIds.length < 2}
+                          className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0757da] disabled:bg-[#c8d2e2]"
+                        >
+                          <Scale className="h-4 w-4" />
+                          {compareCopy.action}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompareIds([])
+                            setCompareOpen(false)
+                            setCompareError('')
+                          }}
+                          aria-label={compareCopy.clear}
+                          className="grid h-9 w-9 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#475467]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </section>
+            </div>
+          ) : null}
 
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFiltersOpen((open) => !open)}
-                    style={{ fontWeight: 500 }}
-                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border px-3 text-[14px] font-[500] shadow-sm transition sm:min-h-10 sm:gap-2 sm:px-4 ${
-                      filtersOpen ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]' : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
-                    }`}
-                  >
-                    <SlidersHorizontal className="h-5 w-5" />
-                    {filtersOpen
-                      ? uiText(locale, 'Filters open', 'Filter öppna', 'Filter geöffnet')
-                      : uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileMapOpen(true)}
-                    style={{ fontWeight: 500 }}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff] sm:min-h-10 sm:gap-2 sm:px-4 lg:hidden"
-                  >
-                    <Map className="h-5 w-5" />
-                    <span className="sm:hidden">{uiText(locale, 'Map', 'Karta', 'Karte')}</span>
-                    <span className="hidden sm:inline">{uiText(locale, 'Show map', 'Visa karta', 'Karte anzeigen')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={saveCurrentSearch}
-                    disabled={savingSearch}
-                    style={{ fontWeight: 500 }}
-                    className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-3 rounded-[8px] px-5 text-[14px] font-[500] text-white transition lg:col-span-1 ${
-                      savedSearchMessage
-                        ? 'bg-[#079455]'
-                        : activeFilters.length
-                          ? 'bg-[#0866ff] hover:bg-[#0757da]'
-                          : 'bg-[#d1d3d8]'
-                    }`}
-                  >
-                    <Bookmark className="h-5 w-5" strokeWidth={1.8} />
-                    {saveSearchButtonLabel}
-                  </button>
+          <div className={`relative min-h-0 min-w-0 w-screen max-w-[100vw] overflow-x-hidden border-r border-[#eceff4] bg-white lg:w-full lg:max-w-full ${desktopMarketplaceView === 'list' ? 'min-[1120px]:hidden' : ''} ${filtersOpen ? 'overflow-y-hidden' : 'overflow-y-visible min-[1120px]:overflow-y-auto'}`}>
+            <div className="bg-white">
+              <div className="min-w-0 max-w-full overflow-visible bg-white">
+                <div className={`${mobileSearchPinned ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[90] w-full max-w-full overflow-visible border-y border-[#eceff4] bg-white px-4 pb-2 pt-3 sm:px-6 min-[1120px]:static min-[1120px]:z-auto min-[1120px]:border-t-0`}>
+                  {renderMarketplaceSearchInput()}
+                  {renderDesktopFilterBar('mobile')}
                 </div>
+                {mobileSearchPinned ? <div aria-hidden="true" className="h-[96px] bg-white min-[1120px]:hidden" /> : null}
 
-                  <div
+                <div
                     aria-hidden={!filtersOpen}
-                    className={`fixed inset-x-0 bottom-0 z-[180] h-[min(88vh,820px)] overflow-hidden rounded-t-[18px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out lg:absolute lg:inset-0 lg:z-50 lg:h-auto lg:rounded-none lg:border-t-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 top-0 bottom-[var(--autorell-mobile-browser-inset,0px)] z-[180] overflow-hidden rounded-none bg-white shadow-[0_-18px_48px_rgba(16,24,40,.18)] transition-[transform,opacity] duration-300 ease-out min-[1120px]:absolute min-[1120px]:inset-0 min-[1120px]:z-50 min-[1120px]:h-auto min-[1120px]:max-h-none min-[1120px]:rounded-none min-[1120px]:border-t-0 min-[1120px]:shadow-none ${
                       filtersOpen
                         ? 'translate-y-0 opacity-100'
-                        : 'pointer-events-none translate-y-full opacity-0 lg:translate-y-6'
+                        : 'pointer-events-none translate-y-full opacity-0 min-[1120px]:translate-y-6'
                     }`}
                   >
                     <div data-filter-profile={filterProfile.join(' ')} className="flex h-full min-h-0 flex-col bg-white">
-                    <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f5] bg-white px-4 pb-3 pt-6 sm:px-6 sm:py-4 relative">
+                    <div className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#e1e9f5] bg-white px-4 py-3 pr-3 sm:px-6 sm:py-4 sm:pr-16 relative">
                       <div className="flex min-w-0 items-center gap-3">
                         <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#101828]" />
-                        <p className="min-w-0 text-[19px] font-semibold text-[#101828]">{uiText(locale, 'Search filters', 'Sökfilter', 'Suchfilter')}</p>
+                        <p className="min-w-0 text-[17px] font-medium text-[#101828] sm:text-[19px]">{uiText(locale, 'Filter', 'Filter', 'Filter')}</p>
                         {activeFilters.length ? (
                           <span className="grid h-7 min-w-7 place-items-center rounded-full bg-[#101828] px-2 text-sm font-semibold text-white">
                             {activeFilters.length}
                           </span>
                         ) : null}
                       </div>
-                      <div className="order-3 w-full min-w-0 pr-12 sm:order-none sm:w-[min(420px,48%)] sm:pr-0">
-                        {renderQuickFilterSelectors()}
+                      <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:hidden">
+                        {activeFilters.length ? (
+                          <button
+                            type="button"
+                            onClick={resetFilters}
+                            className="h-9 max-w-[112px] truncate rounded-full px-2 text-[13px] font-medium text-[#0866ff] transition hover:bg-[#eef5ff]"
+                          >
+                            {uiText(locale, 'Clear filters', 'Rensa filter', 'Filter löschen')}
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => setFiltersOpen(false)}
+                          className="mr-0 grid h-9 w-9 shrink-0 translate-y-1 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff]"
+                          aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => setFiltersOpen(false)}
-                        className="absolute bottom-3 right-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:hidden"
-                        aria-label="Stäng filter"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFiltersOpen(false)}
-                        className="hidden h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:grid"
-                        aria-label="Stäng filter"
+                        className="absolute right-4 top-3 hidden h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd] transition hover:text-[#0866ff] sm:grid"
+                        aria-label={uiText(locale, 'Close filters', 'Stäng filter', 'Filter schließen')}
                       >
                         <X className="h-5 w-5" />
                       </button>
                     </div>
-                    <div className="border-b border-[#edf1f6] px-4 py-2.5 sm:px-6">
+                    {activeFilters.length ? (
+                      <div className="border-b border-[#edf1f6] bg-white px-4 py-2.5 font-normal [&_*]:!font-normal sm:hidden">
+                        <ActiveFilterChips filters={activeFilters} locale={locale} />
+                      </div>
+                    ) : null}
+                    <div className="border-b border-[#edf1f6] px-4 py-2.5 font-normal [&_*]:!font-normal sm:px-6 max-sm:hidden">
                       {activeFilters.length ? (
                         <div className="flex flex-wrap items-center gap-2">
-                          <ActiveFilterChips filters={activeFilters} />
+                          <ActiveFilterChips filters={activeFilters} locale={locale} />
                           <button
                             type="button"
                             onClick={resetFilters}
@@ -1801,11 +3816,12 @@ export default function VehicleSearchExperience({
                           </button>
                         </div>
                       ) : (
-                         <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle, market and equipment.', 'Avgränsa på fordon, marknad och utrustning.', 'Nach Fahrzeug, Markt und Ausstattung eingrenzen.')}</p>
+                         <p className="hidden text-sm font-normal text-[#667085] sm:block">{uiText(locale, 'Narrow by vehicle category, keyword and equipment.', 'Avgränsa på fordonskategori, sökord och utrustning.', 'Nach Fahrzeugkategorie, Suchbegriff und Ausstattung eingrenzen.')}</p>
                       )}
                     </div>
-                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-4 sm:px-6">
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 font-normal [scroll-padding-bottom:calc(6rem+env(safe-area-inset-bottom))] [&_*]:!font-normal [&_[data-marketplace-filter-heading]]:!font-medium sm:space-y-4 sm:px-6">
                     {renderCategoryFilterSections()}
+                    {renderLocationFilterSection()}
                     <div className="hidden">
                       <CollapsibleFilterSection
                         title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
@@ -1815,6 +3831,7 @@ export default function VehicleSearchExperience({
                       >
                         <div className="grid gap-3">
                           <RangeFilter
+                            locale={locale}
                             title={uiText(locale, 'Price', 'Pris', 'Preis')}
                             minValue={minPrice}
                             maxValue={maxPrice}
@@ -1822,11 +3839,12 @@ export default function VehicleSearchExperience({
                             onMaxChange={setMaxPrice}
                             minLimit={priceBounds.min}
                             maxLimit={priceBounds.max}
-                            unit="SEK"
+                            unit={priceFilterCurrency}
                             step={1000}
                           />
                           <RangeFilter
-                            title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                            locale={locale}
+                            title={translatePublic(locale, 'Model year')}
                             minValue={minYear}
                             maxValue={maxYear}
                             onMinChange={setMinYear}
@@ -1846,8 +3864,9 @@ export default function VehicleSearchExperience({
                       onToggle={() => setSellerFiltersOpen((open) => !open)}
                     >
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                        <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
                         <FilterSelect
+                          locale={locale}
                           label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                           value={sellerType}
                           onChange={setSellerType}
@@ -1861,7 +3880,7 @@ export default function VehicleSearchExperience({
                       </div>
                     </CollapsibleFilterSection>
                   </div>
-                      <div className="grid grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 py-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] sm:px-7 sm:py-4">
+                      <div className="grid shrink-0 grid-cols-[minmax(110px,160px)_1fr] gap-3 border-t border-[#edf1f6] bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 font-normal shadow-[0_-10px_30px_rgba(16,24,40,.08)] [&_*]:!font-normal [&_button]:!font-medium sm:px-7 sm:py-4">
                         <button
                           type="button"
                           onClick={resetFilters}
@@ -1874,16 +3893,15 @@ export default function VehicleSearchExperience({
                           onClick={() => setFiltersOpen(false)}
                           className="h-12 rounded-[8px] bg-[#0866ff] px-4 text-sm font-medium text-white transition hover:bg-[#0757da]"
                         >
-                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(locale === 'sv' ? 'sv-SE' : undefined)} {uiText(locale, 'vehicles for sale', 'fordon till salu', 'Fahrzeuge')}
+                          {uiText(locale, 'Show', 'Visa', 'Anzeigen')} {visibleCount.toLocaleString(countNumberLocale(locale))} {resultActionSubjectLabel(locale, mode)}
                         </button>
                       </div>
                     </div>
-                  </div>
-              </div>
+                </div>
 
-            <div className="px-5 py-4 sm:px-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="min-h-6 text-sm font-medium leading-6">
+            <div className="w-screen max-w-[100vw] overflow-hidden bg-white px-4 py-3 sm:px-6 sm:py-4 min-[1120px]:w-full min-[1120px]:max-w-full">
+              <div className="relative flex w-full items-center justify-between gap-2 sm:gap-3">
+                <p className="min-h-6 min-w-0 flex-1 truncate pr-[150px] text-sm font-medium leading-6 sm:pr-2">
                   {searchLoading && searchPage === 1 ? (
                     <span className="inline-block h-4 w-[min(320px,78vw)] animate-pulse rounded bg-[#e8eef6]" />
                   ) : searchError ? (
@@ -1892,26 +3910,31 @@ export default function VehicleSearchExperience({
                     resultCountSummary
                   )}
                 </p>
-                <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))}
-                  className={`grid h-10 w-10 place-items-center rounded-[8px] border text-[#101828] shadow-sm transition ${
-                    resultsLayout === 'split'
-                      ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                      : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
-                  }`}
-                  aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
-                  title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
-                >
-                  {resultsLayout === 'split' ? <List className="h-5 w-5" /> : <Columns2 className="h-5 w-5" />}
-                </button>
-                <label className="relative">
+                <div className="absolute right-0 top-1/2 ml-auto flex shrink-0 -translate-y-1/2 items-center justify-end gap-1 sm:static sm:translate-y-0 sm:gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResultsLayoutTouched(true)
+                      setResultsLayout((layout) => (layout === 'single' ? 'split' : 'single'))
+                    }}
+                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-[7px] border text-[#101828] transition sm:h-10 sm:w-10 sm:rounded-[8px] ${
+                      resultsLayoutTouched && resultsLayout === 'split'
+                        ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                        : 'border-[#d0d5dd] bg-white hover:border-[#0866ff]'
+                    }`}
+                    aria-label={resultsLayout === 'split' ? uiText(locale, 'Show listings in one column', 'Visa annonser i en kolumn', 'Anzeigen in einer Spalte anzeigen') : uiText(locale, 'Show two listings per row', 'Visa två annonser per rad', 'Zwei Anzeigen pro Zeile anzeigen')}
+                    title={resultsLayout === 'split' ? uiText(locale, 'One listing per row', 'En annons per rad', 'Eine Anzeige pro Zeile') : uiText(locale, 'Two listings per row', 'Två annonser per rad', 'Zwei Anzeigen pro Zeile')}
+                  >
+                    {resultsLayout === 'split' ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Columns2 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                  </button>
+                  <label className="relative block w-[108px] shrink-0 sm:w-auto">
                   <span className="sr-only">{uiText(locale, 'Sorting', 'Sortering', 'Sortierung')}</span>
                   <select
+                    ref={mobileSortSelectRef}
+                    data-marketplace-mobile-sort
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value)}
-                    className="h-10 min-w-[136px] appearance-none truncate rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-8 text-[13px] font-medium shadow-sm outline-none transition focus:border-[#0866ff] sm:min-w-[148px]"
+                    className="h-7 w-full appearance-none truncate rounded-[7px] border border-[#d0d5dd] bg-white px-2 pr-5 text-[10px] font-medium leading-none tracking-[-0.01em] outline-none transition focus:border-[#0866ff] sm:h-10 sm:w-auto sm:min-w-[148px] sm:px-3 sm:pr-8 sm:text-[13px] sm:tracking-normal"
                   >
                     {sortOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -1919,39 +3942,102 @@ export default function VehicleSearchExperience({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-                </label>
+                  <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 sm:right-3 sm:h-4 sm:w-4" />
+                  </label>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[#eceff4]">
+            <div className="border-t border-[#eceff4] bg-white">
               {filteredListings.length ? (
-                <div className={resultsLayout === 'split' ? 'grid grid-cols-1 min-[560px]:grid-cols-2' : ''}>
-                  {filteredListings.map((listing) => (
-                    <VehicleResultCard
-                      key={listing.id}
-                      listing={listing}
-                      locale={locale}
-                      compareActive={compareIds.includes(listing.id)}
-                      onCompare={() => toggleCompare(listing.id)}
-                      onBeforeNavigate={rememberSearchBeforeListingNavigation}
-                      layout={resultsLayout}
-                    />
-                  ))}
+                <div className={`${resultsLayout === 'split' && filteredListings.length > 1 ? 'grid grid-cols-2 gap-3 p-3' : ''}`}>
+                    {filteredListings.map((listing) => (
+                      <VehicleResultCard
+                        key={listing.id}
+                        listing={listing}
+                        locale={locale}
+                        compareActive={compareIds.includes(listing.id)}
+                        onCompare={() => toggleCompare(listing.id)}
+                        onBeforeNavigate={rememberSearchBeforeListingNavigation}
+                        layout={resultsLayout === 'split' && filteredListings.length > 1 ? 'split' : 'single'}
+                      />
+                    ))}
                 </div>
               ) : (
-                <div className="px-8 py-14">
-                  <div className="rounded-[8px] border border-[#d9e1ec] bg-[#f8fbff] p-7">
-                    <p className="text-xl font-semibold text-[#101828]">
-                      {uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')}
+                <div className="px-6 py-14 sm:px-8 sm:py-16">
+                  <div className="mx-auto flex max-w-[520px] flex-col items-center text-center">
+                    <Image
+                      src="/autorell-empty-search.svg"
+                      alt=""
+                      aria-hidden="true"
+                      width={220}
+                      height={150}
+                      className="h-auto w-[180px] max-w-[60vw] sm:w-[220px]"
+                    />
+                    <p className="mt-5 text-xl font-semibold text-[#101828] sm:text-2xl">
+                      {emptyStateCopy.title}
                     </p>
-                    <p className="mt-3 max-w-xl text-base leading-7 text-[#667085]">
-                      {uiText(locale, '0 listings', '0 annonser', '0 Anzeigen')}
+                    <p className="mt-2 max-w-[380px] text-[13px] leading-5 text-[#667085]">
+                      {emptyStateCopy.sellerText}
+                    </p>
+                    <Link
+                      href={createListingHref}
+                      className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      {emptyStateCopy.createLabel}
+                    </Link>
+                    <p className="mt-2 text-xs font-medium text-[#667085]">
+                      {emptyStateCopy.quickStart}
+                    </p>
+                    <p className="mt-3 text-xs font-medium text-[#667085]">
+                      {emptyStateCopy.loginIntro}{' '}
+                      <Link href={loginForListingHref} className="font-semibold text-[#0866ff] hover:underline hover:underline-offset-4">
+                        {emptyStateCopy.loginLabel}
+                      </Link>
                     </p>
                   </div>
                 </div>
               )}
+              {compareIds.length ? (
+                <div className="fixed inset-x-3 bottom-[calc(5.15rem+env(safe-area-inset-bottom))] z-[125] mx-auto max-w-[640px] rounded-[12px] border border-[#c9d9ef] bg-white/96 px-3 py-3 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur sm:bottom-5 sm:left-1/2 sm:right-auto sm:w-[min(640px,calc(100vw-32px))] sm:-translate-x-1/2 sm:px-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#101828]">
+                        {compareIds.length} {compareIds.length === 1
+                          ? compareCopy.selectedSingular
+                          : compareCopy.selectedPlural}
+                      </p>
+                      <p className="truncate text-xs font-medium text-[#667085]">
+                        {compareError || compareCopy.helper}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCompareOpen(true)}
+                        disabled={compareIds.length < 2}
+                        className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-xs font-semibold text-white transition hover:bg-[#0757da] disabled:bg-[#c8d2e2]"
+                      >
+                        <Scale className="h-4 w-4" />
+                        {compareCopy.action}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompareIds([])
+                          setCompareOpen(false)
+                          setCompareError('')
+                        }}
+                        aria-label={compareCopy.clear}
+                        className="grid h-9 w-9 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#475467]"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {filteredListings.length > 0 && searchPage < searchTotalPages ? (
                 <div className="border-t border-[#eceff4] px-5 py-5 text-center sm:px-6">
                   <button
@@ -1973,30 +4059,239 @@ export default function VehicleSearchExperience({
           </div>
 
           {!mobileMapOpen ? (
-            <button
-              type="button"
-              onClick={() => setMobileMapOpen(true)}
-              style={{ fontWeight: 500 }}
-              className={`${mobileDockVisible ? 'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(1rem+env(safe-area-inset-bottom))]'} fixed left-1/2 z-[80] inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-[500] text-white shadow-[0_14px_34px_rgba(8,102,255,.30)] transition-[bottom,transform] duration-200 active:scale-[.98] lg:hidden`}
+            <div
+              ref={mobileShortcutBarRef}
+              className={`pointer-events-none fixed left-1/2 z-[86] flex w-[min(960px,calc(100vw-32px))] -translate-x-1/2 items-center justify-between gap-2 lg:hidden ${
+                compareIds.length
+                  ? 'bottom-[calc(var(--autorell-mobile-bottom-gap,20px)+6.05rem)]'
+                  : 'bottom-[calc(var(--autorell-mobile-bottom-gap,20px)+3.75rem)]'
+              }`}
+              aria-label={uiText(locale, 'Marketplace shortcuts', 'Marknadsplatsgenvägar', 'Marktplatz-Schnellzugriffe')}
+              data-autorell-floating-shortcuts-tone={mobileShortcutOverMedia ? 'light' : 'dark'}
             >
-              <MapPin className="h-4 w-4" />
-              {uiText(locale, 'Map', 'Karta', 'Karte')}
-            </button>
+              <button
+                type="button"
+                onClick={() => setMobileMapOpen(true)}
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] ${
+                  mobileShortcutOverMedia
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
+                }`}
+                style={{ fontWeight: 400 }}
+              >
+                <MapPin className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}>{translatePublic(locale, 'Map')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={saveCurrentSearch}
+                disabled={savingSearch}
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-[1.35] items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] disabled:cursor-wait disabled:opacity-70 ${
+                  mobileShortcutOverMedia
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
+                }`}
+                style={{ fontWeight: 400 }}
+              >
+                <Bookmark className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={`truncate ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`}>{saveSearchButtonLabel}</span>
+              </button>
+              <button
+                type="button"
+                onClick={focusMobileSortControl}
+                className={`pointer-events-auto inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-normal backdrop-blur-[26px] backdrop-saturate-[160%] transition-[background-color,color,transform] duration-300 active:scale-[.98] ${
+                  mobileShortcutOverMedia
+                    ? 'bg-[#111827]/70 text-white supports-[backdrop-filter]:bg-[#111827]/58'
+                    : 'bg-white/78 text-[#111827] supports-[backdrop-filter]:bg-white/58'
+                }`}
+                style={{ fontWeight: 400 }}
+              >
+                <ChevronDown className={`h-[18px] w-[18px] ${mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}`} />
+                <span className={mobileShortcutOverMedia ? 'text-white' : 'text-[#111827]'}>{uiText(locale, 'Sort', 'Sortera', 'Sortieren')}</span>
+              </button>
+            </div>
           ) : null}
 
-          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full`}>
+          {compareOpen && compareListings.length >= 2 ? (
+            <div className="fixed inset-0 z-[260] grid place-items-center bg-[#101828]/35 px-3 py-4 backdrop-blur-[2px] sm:px-4 sm:py-6">
+              <div className="max-h-[min(860px,calc(100svh-32px))] w-full max-w-6xl overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,24,40,.22)] sm:max-h-[min(820px,calc(100svh-48px))]">
+                <div className="flex items-start justify-between gap-3 border-b border-[#edf1f6] px-4 py-3 sm:items-center sm:gap-4 sm:px-5">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#0866ff]">
+                      {compareCopy.eyebrow}
+                    </p>
+                    <h2 className="text-lg font-semibold leading-6 text-[#101828]">
+                      {compareCopy.title}
+                    </h2>
+                    <p className="mt-0.5 text-sm font-medium leading-5 text-[#667085]">{compareCopy.subtitle}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCompareOpen(false)}
+                    aria-label={compareCopy.close}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d0d5dd] bg-white text-[#101828]"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="max-h-[calc(min(860px,100svh-32px)-104px)] overflow-auto sm:max-h-[calc(min(820px,100svh-48px)-92px)]">
+                  <div className="grid gap-3 p-3 sm:hidden">
+                    <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
+                      {compareIds.length}/{maxCompareListings}
+                    </p>
+                    {compareListings.map((listing) => {
+                      const href = buildListingPath({
+                        id: listing.id,
+                        title: listing.title,
+                        make: listing.make,
+                        model: listing.model,
+                        year: listing.year,
+                        city: listing.city,
+                        country_code: listing.country,
+                      }, locale)
+                      return (
+                        <article key={listing.id} className="overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white">
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => toggleCompare(listing.id)}
+                              aria-label={compareCopy.remove}
+                              className="absolute right-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
+                              <div className="relative aspect-[16/9] overflow-hidden bg-[#eef3f8]">
+                                {listing.imageUrls.length ? (
+                                  <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="calc(100vw - 48px)" className="object-cover" />
+                                ) : (
+                                  <div className="grid h-full place-items-center text-[#0866ff]">
+                                    <AutorellCarIcon className="h-10 w-10" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-3">
+                                <h3 className="line-clamp-2 text-base font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                                <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
+                                <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff]">
+                                  {compareCopy.view}
+                                </span>
+                              </div>
+                            </Link>
+                          </div>
+                          <dl className="divide-y divide-[#edf1f6] border-t border-[#edf1f6]">
+                            {compareRows.map((row) => {
+                              const item = row.values.find((value) => value.id === listing.id)
+                              return (
+                                <div key={`${listing.id}-${row.label}`} className={`grid grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] gap-3 px-3 py-2.5 ${item?.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
+                                  <dt className="text-[11px] font-semibold uppercase tracking-[.12em] text-[#667085]">{row.label}</dt>
+                                  <dd className="min-w-0 text-sm font-semibold text-[#101828]">
+                                    <span className="break-words">{item?.value || '-'}</span>
+                                    {item?.highlight ? (
+                                      <span className="mt-1 block w-max rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
+                                        {compareCopy.best}
+                                      </span>
+                                    ) : null}
+                                  </dd>
+                                </div>
+                              )
+                            })}
+                          </dl>
+                        </article>
+                      )
+                    })}
+                  </div>
+                  <div className="hidden min-w-[860px] sm:block">
+                    <div className="border-b border-[#edf1f6] bg-[#f8fbff] px-4 py-2">
+                      <p className="text-xs font-semibold uppercase tracking-[.14em] text-[#667085]">
+                        {compareIds.length}/{maxCompareListings}
+                      </p>
+                    </div>
+                    <div
+                      className="grid"
+                      style={{ gridTemplateColumns: `repeat(${compareListings.length}, minmax(170px, 1fr))` }}
+                    >
+                      {compareListings.map((listing) => {
+                        const href = buildListingPath({
+                          id: listing.id,
+                          title: listing.title,
+                          make: listing.make,
+                          model: listing.model,
+                          year: listing.year,
+                          city: listing.city,
+                          country_code: listing.country,
+                        }, locale)
+                        return (
+                          <article key={listing.id} className="relative border-b border-r border-[#edf1f6] bg-white p-3 sm:p-4">
+                            <button
+                              type="button"
+                              onClick={() => toggleCompare(listing.id)}
+                              aria-label={compareCopy.remove}
+                              className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white text-[#101828] shadow-sm ring-1 ring-[#d0d5dd]"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <Link href={href} onClick={rememberSearchBeforeListingNavigation} className="block">
+                              <div className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-[#eef3f8]">
+                                {listing.imageUrls.length ? (
+                                  <Image src={listing.imageUrls[0]} alt={listing.title} fill sizes="(max-width: 640px) 50vw, 240px" className="object-cover" />
+                                ) : (
+                                  <div className="grid h-full place-items-center text-[#0866ff]">
+                                    <AutorellCarIcon className="h-10 w-10" />
+                                  </div>
+                                )}
+                              </div>
+                              <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-[#101828]">{listing.title}</h3>
+                              <p className="mt-1 text-sm font-semibold text-[#101828]">{listing.priceLabel}</p>
+                              <span className="mt-3 inline-flex min-h-9 items-center justify-center rounded-[8px] border border-[#cfd7e6] px-3 text-xs font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#f8fbff]">
+                                {compareCopy.view}
+                              </span>
+                            </Link>
+                          </article>
+                        )
+                      })}
+                    </div>
+                    <div
+                      className="grid"
+                      style={{ gridTemplateColumns: `minmax(150px, .55fr) repeat(${compareListings.length}, minmax(170px, 1fr))` }}
+                    >
+                      {compareRows.map((row) => (
+                        <div key={row.label} className="contents">
+                          <div className="sticky left-0 z-10 border-b border-r border-[#edf1f6] bg-[#f8fbff] px-4 py-3 text-xs font-semibold uppercase tracking-[.12em] text-[#667085]">
+                            {row.label}
+                          </div>
+                          {row.values.map((item) => (
+                            <div key={`${row.label}-${item.id}`} className={`min-h-14 border-b border-r border-[#edf1f6] px-3 py-3 text-sm font-semibold text-[#101828] ${item.highlight ? 'bg-[#ecfdf3]' : 'bg-white'}`}>
+                              <span className="block">{item.value}</span>
+                              {item.highlight ? (
+                                <span className="mt-1 inline-flex rounded-full bg-[#dcfae6] px-2 py-0.5 text-[11px] font-semibold text-[#027a48]">
+                                  {compareCopy.best}
+                                </span>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className={`${mobileMapOpen ? 'fixed inset-0 z-[140] block bg-white' : 'hidden'} lg:relative lg:block lg:h-full lg:min-h-0 lg:overflow-hidden ${desktopMarketplaceView === 'list' ? 'min-[1120px]:!hidden' : ''}`}>
             <VehicleSearchMap
               listings={filteredListings}
               country={primaryMapCountry}
               locale={locale}
               searchPlaceholder={searchPlaceholder}
-              query={query}
               onQueryChange={(value) => {
                 setSearchInput(value)
                 setQuery(buildSearchQueryFromSuggestions(selectedSearchSuggestions, value))
               }}
               searchInput={searchInput}
               selectedSearchSuggestions={selectedSearchSuggestions}
+              geoBounds={geoBounds}
               onRemoveSearchSuggestion={(suggestion) => {
                 setSelectedSearchSuggestions((current) => {
                   const next = current.filter((item) => item.chipId !== suggestion.chipId)
@@ -2007,38 +4302,38 @@ export default function VehicleSearchExperience({
               mobileOverlay={mobileMapOpen}
               onCloseMobileMap={() => setMobileMapOpen(false)}
               onOpenFilters={() => {
-                setFiltersOpen(true)
+                setFiltersOpen((open) => !open)
               }}
-              onSaveSearch={saveCurrentSearch}
               onBeforeListingNavigate={rememberSearchBeforeListingNavigation}
-              saveSearchButtonLabel={saveSearchButtonLabel}
-              saveSearchActive={Boolean(savedSearchMessage || activeFilters.length)}
-              saveSearchBusy={savingSearch}
               smartSearchSuggestions={mobileMapSmartSearch.suggestions}
               smartSearchLoading={mobileMapSmartSearch.loading}
               smartSearchSearched={mobileMapSmartSearch.searched}
               onSearchFocusChange={setMobileMapSearchFocused}
               onSmartSearchSelect={selectMarketplaceSuggestion}
+              onShowDesktopList={() => {
+                changeSearchPage(1)
+                setDesktopMarketplaceView('list')
+              }}
             />
             {mobileMapOpen && filtersOpen ? (
               <div className="absolute inset-x-0 bottom-0 top-[calc(7.25rem+env(safe-area-inset-top))] z-30 overflow-hidden rounded-t-[8px] border-t border-[#d9e6ff] bg-white shadow-[0_-18px_42px_rgba(16,24,40,.18)] lg:hidden">
                 <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f6] bg-white px-4 pb-3 pt-6 relative">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#101828]">Sökfilter</p>
-                    <p className="mt-0.5 text-xs font-medium text-[#667085]">Filtren uppdaterar kartan direkt.</p>
+                    <p className="text-[15px] font-semibold text-[#101828]">{translatePublic(locale, 'Search filters')}</p>
+                    <p className="mt-0.5 text-xs font-medium text-[#667085]">{translatePublic(locale, 'Filters update the map immediately.')}</p>
                   </div>
-                  <div className="w-full min-w-0 pr-12">{renderQuickFilterSelectors()}</div>
                   <button
                     type="button"
                     onClick={() => setFiltersOpen(false)}
-                    className="absolute bottom-3 right-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
-                    aria-label="Stäng filter"
+                    className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#101828] ring-1 ring-[#d0d5dd]"
+                    aria-label={translatePublic(locale, 'Close filters')}
                   >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
                 <div className="h-[calc(100%-156px)] space-y-7 overflow-y-auto px-4 py-5">
                   {renderCategoryFilterSections()}
+                  {renderLocationFilterSection()}
                   <div className="hidden">
                     <CollapsibleFilterSection
                       title={uiText(locale, 'Price and model year', 'Pris och årsmodell', 'Preis und Baujahr')}
@@ -2048,6 +4343,7 @@ export default function VehicleSearchExperience({
                     >
                       <div className="grid gap-3">
                         <RangeFilter
+                          locale={locale}
                           title={uiText(locale, 'Price', 'Pris', 'Preis')}
                           minValue={minPrice}
                           maxValue={maxPrice}
@@ -2055,11 +4351,12 @@ export default function VehicleSearchExperience({
                           onMaxChange={setMaxPrice}
                           minLimit={priceBounds.min}
                           maxLimit={priceBounds.max}
-                          unit="SEK"
+                          unit={priceFilterCurrency}
                           step={1000}
                         />
                         <RangeFilter
-                          title={uiText(locale, 'Model year', 'Årsmodell', 'Baujahr')}
+                          locale={locale}
+                          title={translatePublic(locale, 'Model year')}
                           minValue={minYear}
                           maxValue={maxYear}
                           onMinChange={setMinYear}
@@ -2079,8 +4376,9 @@ export default function VehicleSearchExperience({
                     onToggle={() => setSellerFiltersOpen((open) => !open)}
                   >
                     <div className="grid gap-3">
-                      <FilterSelect label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
+                      <FilterSelect locale={locale} label={uiText(locale, 'Condition', 'Skick', 'Zustand')} value={condition} onChange={setCondition} options={categoryScopedOptions(activeCategoryKey, 'condition')} />
                       <FilterSelect
+                        locale={locale}
                         label={uiText(locale, 'Seller type', 'Säljartyp', 'Verkäufertyp')}
                         value={sellerType}
                         onChange={setSellerType}
@@ -2121,43 +4419,66 @@ export default function VehicleSearchExperience({
 }
 
 function CollapsibleFilterSection({
+  icon,
   title,
   summary,
   open,
   onToggle,
   children,
+  density = 'default',
 }: {
+  icon?: ReactNode
   title: string
   summary?: string
   open: boolean
   onToggle: () => void
   children: ReactNode
+  density?: 'default' | 'sidebar'
 }) {
+  const sidebar = density === 'sidebar'
+
   return (
-    <section className="border-b border-[#edf1f6] pb-3 last:border-b-0">
+    <section
+      className={`${
+        sidebar
+          ? 'border-b border-[#e4e7ec] bg-white last:border-b-0'
+          : 'border-b border-[#edf1f6] pb-3 last:border-b-0'
+      }`}
+    >
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 rounded-[8px] bg-white px-0 py-0.5 text-left"
+        className={`flex w-full items-center justify-between gap-3 bg-white text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] ${
+          sidebar ? 'min-h-[48px] px-1 py-2' : 'rounded-[8px] px-0 py-0.5'
+        }`}
         aria-expanded={open}
       >
-        <span>
-          <span className="block text-[14px] font-semibold text-[#101828]">{title}</span>
-          {summary ? <span className="mt-0.5 block text-xs font-normal text-[#667085]">{summary}</span> : null}
+        <span className="flex min-w-0 items-center gap-2.5">
+          {icon ? (
+            <span className={`${sidebar ? 'hidden' : 'grid'} h-8 w-8 shrink-0 place-items-center rounded-[7px] transition-colors ${open ? 'bg-[#eaf2ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#667085]'}`}>
+              {icon}
+            </span>
+          ) : null}
+          <span className="min-w-0">
+            <span data-marketplace-filter-heading className={`block font-medium text-[#101828] ${sidebar ? 'text-[13px]' : 'text-[14px]'}`}>{title}</span>
+            {summary && !sidebar ? <span className="mt-0.5 block truncate text-[10px] font-normal text-[#667085]">{summary}</span> : null}
+          </span>
         </span>
-        <span className={`grid h-8 w-8 shrink-0 place-items-center text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
-          <ChevronDown className="h-4 w-4" />
+        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#667085] transition ${open ? 'rotate-180' : ''}`}>
+          <ChevronDown className="h-3.5 w-3.5" />
         </span>
       </button>
-      {open ? <div className="mt-3">{children}</div> : null}
+      {open ? <div className={sidebar ? 'px-1 pb-4 pt-1' : 'mt-3'}>{children}</div> : null}
     </section>
   )
 }
 
 function ActiveFilterChips({
   filters,
+  locale,
 }: {
   filters: ActiveFilterChip[]
+  locale: PublicLocale
 }) {
   if (!filters.length) return null
 
@@ -2169,13 +4490,72 @@ function ActiveFilterChips({
           type="button"
           onClick={filter.onRemove}
           className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#eef5ff] px-3 text-[12px] font-normal text-[#0866ff] transition hover:bg-[#dceaff]"
-          aria-label={`Ta bort filter ${filter.label}`}
+          aria-label={`${uiText(locale, 'Remove filter', 'Ta bort filter', 'Filter entfernen')} ${filter.label}`}
         >
           {filter.icon}
           <span>{filter.label}</span>
           <X className="h-3.5 w-3.5" />
         </button>
       ))}
+    </div>
+  )
+}
+
+function SearchableSidebarOptions({
+  locale,
+  searchLabel,
+  query,
+  onQueryChange,
+  options,
+  selectedValue,
+  emptyLabel,
+  onSelect,
+}: {
+  locale: PublicLocale
+  searchLabel: string
+  query: string
+  onQueryChange: (value: string) => void
+  options: Array<{ value: string; label: string; count?: number }>
+  selectedValue: string
+  emptyLabel: string
+  onSelect: (value: string) => void
+}) {
+  return (
+    <div className="grid min-w-0 w-full grid-cols-1 gap-2">
+      <label className="relative block min-w-0 w-full">
+        <span className="sr-only">{searchLabel}</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder={translatePublic(locale, 'Search')}
+          className="h-9 min-w-0 w-full rounded-[7px] border border-[#cfd7e4] bg-white px-3 pr-9 text-[12px] font-normal text-[#344054] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-2 focus:ring-[#0866ff]/15"
+        />
+        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#344054]" aria-hidden="true" />
+      </label>
+      <div className="grid max-h-[210px] gap-0.5 overflow-y-auto pr-1" role="listbox" aria-label={searchLabel}>
+        {options.length ? options.map((option) => {
+          const selected = option.value === selectedValue
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={selected}
+              onClick={() => onSelect(option.value)}
+              className="flex min-h-8 w-full items-center gap-2.5 rounded-[6px] px-2 text-left text-[12px] font-medium text-[#344054] transition hover:bg-[#f8fafc]"
+            >
+              <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border ${selected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white'}`} aria-hidden="true">
+                {selected ? <Check className="h-3 w-3" /> : null}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              {typeof option.count === 'number' ? <span className="shrink-0 tabular-nums text-[#667085]">({option.count})</span> : null}
+            </button>
+          )
+        }) : (
+          <p className="px-2 py-3 text-[11px] text-[#667085]">{emptyLabel}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -2219,7 +4599,7 @@ function FilterInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 hidden text-[13px] font-semibold text-[#101828] sm:block">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 hidden text-[13px] font-medium text-[#101828] sm:block">{label}</span>
       <span className="flex h-11 items-center rounded-[8px] border border-[#d0d5dd] bg-white px-3 focus-within:border-[#0866ff]">
         <input
           value={value}
@@ -2244,7 +4624,7 @@ function TextFilterInput({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 block text-[13px] font-medium text-[#101828]">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -2255,7 +4635,363 @@ function TextFilterInput({
   )
 }
 
+type MakeModelOption = {
+  value: string
+  label: string
+  count: number
+}
+
+function makeModelPickerCopy(locale: PublicLocale) {
+  const copy: Record<PublicLocale, {
+    title: string
+    intro: string
+    make: string
+    model: string
+    makes: string
+    models: string
+    noMakes: string
+    noModelsForMake: string
+    chooseMake: string
+    autoHint: string
+  }> = {
+    sv: {
+      title: 'Märke och modell',
+      intro: 'Sök fritt eller välj bland märken och modeller som finns i den här kategorin.',
+      make: 'Märke',
+      model: 'Modell',
+      makes: 'Märken',
+      models: 'Modeller',
+      noMakes: 'Inga märken matchar urvalet',
+      noModelsForMake: 'Inga modeller matchar märket',
+      chooseMake: 'Välj ett märke för att avgränsa modellerna',
+      autoHint: 'Listorna uppdateras automatiskt från annonserna i vald kategori och marknad.',
+    },
+    en: {
+      title: 'Make and model',
+      intro: 'Search freely or choose from the makes and models available in this category.',
+      make: 'Make',
+      model: 'Model',
+      makes: 'Makes',
+      models: 'Models',
+      noMakes: 'No makes match this selection',
+      noModelsForMake: 'No models match this make',
+      chooseMake: 'Choose a make to narrow the model list',
+      autoHint: 'The lists update automatically from listings in the selected category and market.',
+    },
+    de: {
+      title: 'Marke und Modell',
+      intro: 'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
+      make: 'Marke',
+      model: 'Modell',
+      makes: 'Marken',
+      models: 'Modelle',
+      noMakes: 'Keine Marken passen zu dieser Auswahl',
+      noModelsForMake: 'Keine Modelle passen zu dieser Marke',
+      chooseMake: 'Marke wählen, um die Modellliste einzugrenzen',
+      autoHint: 'Die Listen werden automatisch aus den Anzeigen der gewählten Kategorie und des Marktes aktualisiert.',
+    },
+    at: {
+      title: 'Marke und Modell',
+      intro: 'Frei suchen oder aus den Marken und Modellen dieser Kategorie wählen.',
+      make: 'Marke',
+      model: 'Modell',
+      makes: 'Marken',
+      models: 'Modelle',
+      noMakes: 'Keine Marken passen zu dieser Auswahl',
+      noModelsForMake: 'Keine Modelle passen zu dieser Marke',
+      chooseMake: 'Marke wählen, um die Modellliste einzugrenzen',
+      autoHint: 'Die Listen werden automatisch aus den Anzeigen der gewählten Kategorie und des Marktes aktualisiert.',
+    },
+    be: {
+      title: 'Merk en model',
+      intro: 'Zoek vrij of kies uit merken en modellen in deze categorie.',
+      make: 'Merk',
+      model: 'Model',
+      makes: 'Merken',
+      models: 'Modellen',
+      noMakes: 'Geen merken passen bij deze selectie',
+      noModelsForMake: 'Geen modellen passen bij dit merk',
+      chooseMake: 'Kies een merk om de modellenlijst te verfijnen',
+      autoHint: 'De lijsten worden automatisch bijgewerkt vanuit advertenties in de gekozen categorie en markt.',
+    },
+    nl: {
+      title: 'Merk en model',
+      intro: 'Zoek vrij of kies uit merken en modellen in deze categorie.',
+      make: 'Merk',
+      model: 'Model',
+      makes: 'Merken',
+      models: 'Modellen',
+      noMakes: 'Geen merken passen bij deze selectie',
+      noModelsForMake: 'Geen modellen passen bij dit merk',
+      chooseMake: 'Kies een merk om de modellenlijst te verfijnen',
+      autoHint: 'De lijsten worden automatisch bijgewerkt vanuit advertenties in de gekozen categorie en markt.',
+    },
+    fr: {
+      title: 'Marque et modèle',
+      intro: 'Recherchez librement ou choisissez parmi les marques et modèles de cette catégorie.',
+      make: 'Marque',
+      model: 'Modèle',
+      makes: 'Marques',
+      models: 'Modèles',
+      noMakes: 'Aucune marque ne correspond à cette sélection',
+      noModelsForMake: 'Aucun modèle ne correspond à cette marque',
+      chooseMake: 'Choisissez une marque pour filtrer les modèles',
+      autoHint: 'Les listes se mettent à jour automatiquement à partir des annonces de la catégorie et du marché choisis.',
+    },
+    es: {
+      title: 'Marca y modelo',
+      intro: 'Busca libremente o elige entre las marcas y modelos de esta categoría.',
+      make: 'Marca',
+      model: 'Modelo',
+      makes: 'Marcas',
+      models: 'Modelos',
+      noMakes: 'Ninguna marca coincide con esta selección',
+      noModelsForMake: 'Ningún modelo coincide con esta marca',
+      chooseMake: 'Elige una marca para acotar la lista de modelos',
+      autoHint: 'Las listas se actualizan automáticamente con los anuncios de la categoría y el mercado seleccionados.',
+    },
+    it: {
+      title: 'Marca e modello',
+      intro: 'Cerca liberamente o scegli tra marche e modelli disponibili in questa categoria.',
+      make: 'Marca',
+      model: 'Modello',
+      makes: 'Marche',
+      models: 'Modelli',
+      noMakes: 'Nessuna marca corrisponde a questa selezione',
+      noModelsForMake: 'Nessun modello corrisponde a questa marca',
+      chooseMake: 'Scegli una marca per restringere l’elenco dei modelli',
+      autoHint: 'Gli elenchi si aggiornano automaticamente dagli annunci nella categoria e nel mercato selezionati.',
+    },
+    pl: {
+      title: 'Marka i model',
+      intro: 'Wyszukaj ręcznie albo wybierz markę i model dostępne w tej kategorii.',
+      make: 'Marka',
+      model: 'Model',
+      makes: 'Marki',
+      models: 'Modele',
+      noMakes: 'Brak marek pasujących do tego wyboru',
+      noModelsForMake: 'Brak modeli pasujących do tej marki',
+      chooseMake: 'Wybierz markę, aby zawęzić listę modeli',
+      autoHint: 'Listy aktualizują się automatycznie na podstawie ogłoszeń w wybranej kategorii i rynku.',
+    },
+    fi: {
+      title: 'Merkki ja malli',
+      intro: 'Hae vapaasti tai valitse tämän kategorian merkeistä ja malleista.',
+      make: 'Merkki',
+      model: 'Malli',
+      makes: 'Merkit',
+      models: 'Mallit',
+      noMakes: 'Mikään merkki ei vastaa valintaa',
+      noModelsForMake: 'Mikään malli ei vastaa tätä merkkiä',
+      chooseMake: 'Valitse merkki rajataksesi mallilistaa',
+      autoHint: 'Listat päivittyvät automaattisesti valitun kategorian ja markkinan ilmoituksista.',
+    },
+    da: {
+      title: 'Mærke og model',
+      intro: 'Søg frit eller vælg blandt mærker og modeller i denne kategori.',
+      make: 'Mærke',
+      model: 'Model',
+      makes: 'Mærker',
+      models: 'Modeller',
+      noMakes: 'Ingen mærker matcher dette valg',
+      noModelsForMake: 'Ingen modeller matcher dette mærke',
+      chooseMake: 'Vælg et mærke for at indsnævre modellisten',
+      autoHint: 'Listerne opdateres automatisk fra annoncer i den valgte kategori og det valgte marked.',
+    },
+  }
+  return copy[locale] || copy.en
+}
+
+function MakeModelFilter({
+  locale,
+  make,
+  model,
+  makeOptions,
+  modelOptions,
+  onMakeChange,
+  onModelChange,
+  compact = false,
+}: {
+  locale: PublicLocale
+  make: string
+  model: string
+  makeOptions: MakeModelOption[]
+  modelOptions: MakeModelOption[]
+  onMakeChange: (value: string) => void
+  onModelChange: (value: string) => void
+  compact?: boolean
+}) {
+  const [mobilePanel, setMobilePanel] = useState<'make' | 'model'>('make')
+  const copy = makeModelPickerCopy(locale)
+  const normalizedMake = normalizeSearchText(make)
+  const normalizedModel = normalizeSearchText(model)
+  const visibleMakes = makeOptions.filter((option) => !normalizedMake || normalizeSearchText(option.value).includes(normalizedMake))
+  const visibleModels = modelOptions.filter((option) => !normalizedModel || normalizeSearchText(option.value).includes(normalizedModel))
+  const panelHeight = compact ? 'max-h-[280px]' : 'max-h-[340px]'
+  const modelIntro = copy.models
+  const noModelsLabel = make ? copy.noModelsForMake : copy.chooseMake
+
+  return (
+    <div className={`grid gap-3 ${compact ? '' : 'sm:col-span-2'}`}>
+      <div className="space-y-1">
+        <p data-marketplace-filter-heading className="text-[15px] font-medium text-[#101828]">{copy.title}</p>
+        <p className="text-[12px] font-medium leading-5 text-[#667085]">
+          {copy.intro}
+        </p>
+      </div>
+      <div className={`grid gap-2 ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
+        <TextFilterInput
+          label={copy.make}
+          value={make}
+          onChange={(value) => {
+            onMakeChange(value)
+            if (!value.trim()) onModelChange('')
+            setMobilePanel(value.trim() ? 'model' : 'make')
+          }}
+        />
+        <TextFilterInput
+          label={copy.model}
+          value={model}
+          onChange={onModelChange}
+        />
+      </div>
+
+      <div className="rounded-[14px] border border-[#d0d5dd] bg-[#f8fafc] p-2 shadow-[0_1px_2px_rgba(16,24,40,.04)] sm:hidden">
+        <div className="mb-2 grid grid-cols-2 gap-1 rounded-[999px] bg-[#eef2f7] p-1">
+          <button
+            type="button"
+            onClick={() => setMobilePanel('make')}
+            className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'make' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+          >
+            {copy.makes}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePanel('model')}
+            className={`h-9 rounded-full text-[13px] font-bold transition ${mobilePanel === 'model' ? 'bg-white text-[#0866ff] shadow-sm' : 'text-[#475467]'}`}
+          >
+            {copy.models}
+          </button>
+        </div>
+        {mobilePanel === 'make' ? (
+          <OptionSelectionList
+            title={copy.makes}
+            options={visibleMakes}
+            emptyLabel={copy.noMakes}
+            activeValue={make}
+            onSelect={(value) => {
+              onMakeChange(value)
+              onModelChange('')
+              setMobilePanel('model')
+            }}
+            className="max-h-[min(42vh,340px)] overscroll-contain"
+            showChevron
+          />
+        ) : (
+          <OptionSelectionList
+            title={modelIntro}
+            options={visibleModels}
+            emptyLabel={noModelsLabel}
+            activeValue={model}
+            onSelect={onModelChange}
+            className="max-h-[min(42vh,340px)] overscroll-contain"
+          />
+        )}
+      </div>
+
+      <div className={`hidden overflow-hidden rounded-[12px] border border-[#d0d5dd] bg-white sm:grid ${compact ? 'sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]' : 'sm:grid-cols-2'}`}>
+        <OptionSelectionList
+          title={copy.makes}
+          options={visibleMakes}
+          emptyLabel={copy.noMakes}
+          activeValue={make}
+          onSelect={(value) => {
+            onMakeChange(value)
+            onModelChange('')
+            setMobilePanel('model')
+          }}
+          className={`${panelHeight} border-b border-[#eaecf0] sm:border-b-0 sm:border-r`}
+          showChevron
+        />
+        <OptionSelectionList
+          title={modelIntro}
+          options={visibleModels}
+          emptyLabel={noModelsLabel}
+          activeValue={model}
+          onSelect={onModelChange}
+          className={panelHeight}
+        />
+      </div>
+      <p className="hidden text-[11px] font-medium leading-4 text-[#667085] sm:block">
+        {copy.autoHint}
+      </p>
+    </div>
+  )
+}
+
+function OptionSelectionList({
+  title,
+  options,
+  emptyLabel,
+  activeValue,
+  onSelect,
+  className = '',
+  showChevron = false,
+}: {
+  title: string
+  options: MakeModelOption[]
+  emptyLabel: string
+  activeValue: string
+  onSelect: (value: string) => void
+  className?: string
+  showChevron?: boolean
+}) {
+  const activeNormalized = normalizeSearchText(activeValue)
+
+  if (!options.length) {
+    return (
+      <div className={`${className} min-h-[120px] overflow-y-auto bg-white p-3`}>
+        <p data-marketplace-filter-heading className="text-[12px] font-medium text-[#101828]">{title}</p>
+        <p className="mt-3 rounded-[10px] bg-[#f8fafc] px-3 py-3 text-[12px] font-medium text-[#667085] ring-1 ring-[#e5ebf3]">
+          {emptyLabel}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`${className} overflow-y-auto bg-white p-2 [scrollbar-width:thin]`}>
+      <div className="sticky top-0 z-10 bg-white px-1 pb-2 pt-1">
+        <p data-marketplace-filter-heading className="text-[12px] font-medium text-[#101828]">{title}</p>
+      </div>
+      <div className="space-y-1">
+        {options.map((option) => {
+          const active = activeNormalized === normalizeSearchText(option.value)
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onSelect(option.value)}
+              className={`flex min-h-10 w-full items-center gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] font-semibold ring-inset transition ${
+                active
+                  ? 'bg-[#eef5ff] text-[#0866ff] ring-1 ring-[#a8ccff]'
+                  : 'text-[#101828] hover:bg-[#f8fafc] hover:ring-1 hover:ring-[#d0d5dd]'
+              }`}
+            >
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <span className={`min-w-7 rounded-full px-2 py-0.5 text-center text-[11px] font-bold ${active ? 'bg-white text-[#0866ff]' : 'bg-[#eef2f7] text-[#667085]'}`}>
+                {option.count}
+              </span>
+              {showChevron ? <ChevronRight className={`h-4 w-4 shrink-0 ${active ? 'text-[#0866ff]' : 'text-[#98a2b3]'}`} /> : null}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 function RangeFilter({
+  locale,
   title,
   minValue,
   maxValue,
@@ -2267,6 +5003,7 @@ function RangeFilter({
   step,
   startLabel,
 }: {
+  locale: PublicLocale
   title: string
   minValue: string
   maxValue: string
@@ -2279,7 +5016,7 @@ function RangeFilter({
   startLabel?: string
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const [activeHandle, setActiveHandle] = useState<'min' | 'max' | null>(null)
+  const activeHandleRef = useRef<'min' | 'max' | null>(null)
   const parsedMin = parseOptionalNumber(minValue)
   const parsedMax = parseOptionalNumber(maxValue)
   const safeMinLimit = Math.min(minLimit, maxLimit)
@@ -2292,6 +5029,9 @@ function RangeFilter({
   const lowerPercent = ((lowerValue - safeMinLimit) / rangeSpan) * 100
   const upperPercent = ((upperValue - safeMinLimit) / rangeSpan) * 100
   const trackBackground = `linear-gradient(to right, #e8eef6 0%, #e8eef6 ${lowerPercent}%, #0866ff ${lowerPercent}%, #0866ff ${upperPercent}%, #e8eef6 ${upperPercent}%, #e8eef6 100%)`
+  const clearLabel = translatePublic(locale, 'Clear')
+  const minLabel = translatePublic(locale, 'Min')
+  const maxLabel = translatePublic(locale, 'Max')
 
   const normalizeMinChange = useCallback((nextValue: string) => {
     const nextNumber = clampNumber(Number(nextValue), safeMinLimit, upperValue)
@@ -2320,27 +5060,17 @@ function RangeFilter({
     }
   }, [normalizeMaxChange, normalizeMinChange, valueFromClientX])
 
-  useEffect(() => {
-    if (!activeHandle) return
-    const handlePointerMove = (event: PointerEvent) => {
-      event.preventDefault()
-      updateHandleFromClientX(activeHandle, event.clientX)
+  const finishRangeDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    activeHandleRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    const handlePointerUp = () => setActiveHandle(null)
-    window.addEventListener('pointermove', handlePointerMove, { passive: false })
-    window.addEventListener('pointerup', handlePointerUp)
-    window.addEventListener('pointercancel', handlePointerUp)
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-      window.removeEventListener('pointercancel', handlePointerUp)
-    }
-  }, [activeHandle, lowerValue, upperValue, safeMinLimit, safeMaxLimit, step, updateHandleFromClientX])
+  }, [])
 
   return (
     <section className="border-b border-[#edf1f6] pb-4 last:border-b-0 sm:col-span-2">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
+        <h3 data-marketplace-filter-heading className="text-[15px] font-medium text-[#101828]">{title}</h3>
         {maxValue || minValue ? (
           <button
             type="button"
@@ -2350,49 +5080,60 @@ function RangeFilter({
             }}
             className="text-xs font-semibold text-[#0866ff]"
           >
-            Rensa
+            {clearLabel}
           </button>
         ) : null}
       </div>
       <div
         ref={trackRef}
-        className="relative h-9 touch-none"
+        className="relative mx-2 h-8 touch-none"
         onPointerDown={(event) => {
+          const handleTarget = (event.target as HTMLElement).closest<HTMLElement>('[data-range-handle]')
           const nextValue = valueFromClientX(event.clientX)
-          const nextHandle = Math.abs(nextValue - lowerValue) <= Math.abs(nextValue - upperValue) ? 'min' : 'max'
-          setActiveHandle(nextHandle)
+          const nextHandle = handleTarget?.dataset.rangeHandle === 'max'
+            ? 'max'
+            : handleTarget?.dataset.rangeHandle === 'min'
+              ? 'min'
+              : Math.abs(nextValue - lowerValue) <= Math.abs(nextValue - upperValue) ? 'min' : 'max'
+          activeHandleRef.current = nextHandle
+          event.currentTarget.setPointerCapture(event.pointerId)
           updateHandleFromClientX(nextHandle, event.clientX)
+        }}
+        onPointerMove={(event) => {
+          const activeHandle = activeHandleRef.current
+          if (!activeHandle) return
+          event.preventDefault()
+          updateHandleFromClientX(activeHandle, event.clientX)
+        }}
+        onPointerUp={finishRangeDrag}
+        onPointerCancel={finishRangeDrag}
+        onLostPointerCapture={() => {
+          activeHandleRef.current = null
         }}
       >
         <div className="absolute left-0 right-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full" style={{ background: trackBackground }} />
         <button
           type="button"
-          className="absolute top-1/2 z-20 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-20 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_1px_4px_rgba(8,102,255,.18)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${lowerPercent}%` }}
           aria-label={`${title} min`}
           aria-valuemin={safeMinLimit}
           aria-valuemax={upperValue}
           aria-valuenow={lowerValue}
           role="slider"
-          onPointerDown={(event) => {
-            event.stopPropagation()
-            setActiveHandle('min')
-          }}
+          data-range-handle="min"
           onKeyDown={(event) => handleRangeHandleKeyDown(event, lowerValue, step, safeMinLimit, upperValue, normalizeMinChange)}
         />
         <button
           type="button"
-          className="absolute top-1/2 z-30 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_2px_7px_rgba(8,102,255,.20)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
+          className="absolute top-1/2 z-30 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-0 bg-[#0866ff] shadow-[0_1px_4px_rgba(8,102,255,.18)] outline-none transition focus-visible:ring-[3px] focus-visible:ring-[#dbeafe]"
           style={{ left: `${upperPercent}%` }}
           aria-label={`${title} max`}
           aria-valuemin={lowerValue}
           aria-valuemax={safeMaxLimit}
           aria-valuenow={upperValue}
           role="slider"
-          onPointerDown={(event) => {
-            event.stopPropagation()
-            setActiveHandle('max')
-          }}
+          data-range-handle="max"
           onKeyDown={(event) => handleRangeHandleKeyDown(event, upperValue, step, lowerValue, safeMaxLimit, normalizeMaxChange)}
         />
       </div>
@@ -2401,19 +5142,21 @@ function RangeFilter({
         <span>{formatFilterNumber(upperValue)}{unit ? ` ${unit}` : ''}{!maxValue ? '+' : ''}</span>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <FilterInput label="Min" value={minValue} onChange={onMinChange} suffix={unit} />
-        <FilterInput label="Max" value={maxValue} onChange={onMaxChange} suffix={unit} />
+        <FilterInput label={minLabel} value={minValue} onChange={onMinChange} suffix={unit} />
+        <FilterInput label={maxLabel} value={maxValue} onChange={onMaxChange} suffix={unit} />
       </div>
     </section>
   )
 }
 
 function FilterSelect({
+  locale,
   label,
   value,
   onChange,
   options,
 }: {
+  locale: PublicLocale
   label: string
   value: string
   onChange: (value: string) => void
@@ -2421,13 +5164,13 @@ function FilterSelect({
 }) {
   return (
     <label className="relative block">
-      <span className="mb-1.5 block text-[13px] font-semibold text-[#101828]">{label}</span>
+      <span data-marketplace-filter-heading className="mb-1.5 block text-[13px] font-medium text-[#101828]">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-full appearance-none rounded-[8px] border border-[#d0d5dd] bg-white px-3 pr-9 text-[12px] font-normal outline-none transition focus:border-[#0866ff]"
       >
-        <option value="">Alla</option>
+        <option value="">{translatePublic(locale, 'All')}</option>
         {options.map((option) => {
           const optionValue = typeof option === 'string' ? option : option.value
           const optionLabel = typeof option === 'string' ? option : option.label
@@ -2443,6 +5186,75 @@ function FilterSelect({
   )
 }
 
+function LocationHierarchyFilter({
+  regionLabel,
+  municipalityLabel,
+  region,
+  municipality,
+  regionOptions,
+  municipalityOptions,
+  onRegionChange,
+  onMunicipalityChange,
+}: {
+  regionLabel: string
+  municipalityLabel: string
+  region: string
+  municipality: string
+  regionOptions: Array<{ value: string; label: string }>
+  municipalityOptions: Array<{ value: string; label: string }>
+  onRegionChange: (value: string) => void
+  onMunicipalityChange: (value: string) => void
+}) {
+  return (
+    <div>
+      <p data-marketplace-filter-heading className="mb-2 text-[13px] font-medium text-[#101828]">{regionLabel}</p>
+      <div className="space-y-0.5">
+        {regionOptions.map((option) => {
+          const selected = option.value === region
+          return (
+            <div key={option.value}>
+              <button
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onRegionChange(selected ? '' : option.value)}
+                className="flex min-h-8 w-full items-center gap-2 px-0.5 py-1 text-left text-[12px] font-normal text-[#344054] transition-colors hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+              >
+                <span className={`grid h-4 w-4 shrink-0 place-items-center border ${selected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white text-transparent'}`}>
+                  <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              </button>
+
+              {selected ? (
+                <div className="mb-1 ml-5 border-l border-[#e4e7ec] pl-2.5">
+                  <p className="sr-only">{municipalityLabel}</p>
+                  {municipalityOptions.map((municipalityOption) => {
+                    const municipalitySelected = municipalityOption.value === municipality
+                    return (
+                      <button
+                        key={municipalityOption.value}
+                        type="button"
+                        aria-pressed={municipalitySelected}
+                        onClick={() => onMunicipalityChange(municipalitySelected ? '' : municipalityOption.value)}
+                        className="flex min-h-8 w-full items-center gap-2 py-1 text-left text-[12px] font-normal text-[#475467] transition-colors hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                      >
+                        <span className={`grid h-4 w-4 shrink-0 place-items-center border ${municipalitySelected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#98a2b3] bg-white text-transparent'}`}>
+                          <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{municipalityOption.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   const termsHref = localizePublicHref(locale, '/terms')
   const columns = [
@@ -2452,16 +5264,14 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
         [uiText(locale, 'All vehicles', 'Alla fordon', 'Alle Fahrzeuge'), '/marketplace'],
         [uiText(locale, 'Cars', 'Bilar', 'Autos'), '/marketplace/cars'],
         [uiText(locale, 'Vans', 'Transportbilar', 'Transporter'), '/marketplace/vans'],
-        [uiText(locale, 'Compare vehicles', 'Jämför fordon', 'Fahrzeuge vergleichen'), '/compare-vehicles'],
       ],
     },
     {
       title: uiText(locale, 'Sell vehicle', 'Sälj fordon', 'Fahrzeug verkaufen'),
       links: [
-        [uiText(locale, 'Sell your vehicle', 'Sälj ditt fordon', 'Fahrzeug verkaufen'), '/sell-vehicle'],
+        [uiText(locale, 'Create listing', 'Skapa annons', 'Anzeige erstellen'), '/account/listings/new'],
         [uiText(locale, 'For businesses', 'Företag', 'Für Unternehmen'), '/business'],
-        [uiText(locale, 'Pricing', 'Priser', 'Preise'), '/pricing'],
-        [uiText(locale, 'Safety tips', 'Trygg affär', 'Sicherheitstipps'), '/safety-tips'],
+        [uiText(locale, 'Pricing', 'Priser', 'Preise'), '/help-center/payment/private-listing-prices'],
       ],
     },
     {
@@ -2476,7 +5286,7 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
   ]
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-8 pt-8 text-[#101828] sm:px-6">
+    <footer className="border-t border-[#dfe5ee] bg-white px-5 pb-[calc(8.25rem+env(safe-area-inset-bottom))] pt-8 text-[#101828] sm:px-6 min-[1120px]:pb-8">
       <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
@@ -2491,26 +5301,28 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           </div>
         ))}
       </div>
-      <div className="mt-8 grid gap-7 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+      <div className="mt-8 grid gap-5 border-t border-[#dfe5ee] pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
-          <div className="inline-flex w-[112px] flex-col items-center">
+          <div className="inline-flex w-[126px] flex-col items-center sm:w-[132px]">
             <BrandLogo compact underline={false} />
             <span className="mt-1 block text-center text-[8px] font-semibold uppercase leading-none tracking-[0.26em] text-[#101828]">
-              Marketplace
+              {marketplaceBrandSubtitle[locale]}
             </span>
           </div>
           <p className="mt-4 max-w-xl text-[13px] leading-6 text-[#475467]">
             {marketplaceFooterDescriptions[locale]}
           </p>
         </div>
-        <div className="flex flex-col gap-5 lg:items-end">
-          <MarketplaceAppBadges locale={locale} />
+        <div className="flex flex-col items-start gap-4 lg:items-end">
           <MarketplaceSocialLinks />
+          <InstallAutorellButton locale={locale} />
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-3 border-t border-[#eef2f6] pt-5 min-[560px]:flex-row min-[560px]:items-center min-[560px]:justify-between">
-        <p className="text-[12px] text-[#667085]">© 2026 Autorell</p>
-        <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467]">
+      <div className="mt-6 grid gap-4 border-t border-[#eef2f6] pt-5 min-[720px]:grid-cols-[auto_minmax(0,1fr)] min-[720px]:items-end">
+        <FooterMarketCurrencyControls locale={locale} className="min-[720px]:self-end" />
+        <div className="flex flex-col gap-3 min-[720px]:items-end">
+          <p className="text-[12px] text-[#667085]">© 2026 Autorell. {marketplaceFooterCopyright[locale]}</p>
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] font-semibold text-[#475467] min-[720px]:justify-end">
           <Link href={termsHref} className="hover:text-[#0866ff]">
             {uiText(locale, 'Terms', 'Villkor', 'Nutzungsbedingungen')}
           </Link>
@@ -2526,47 +5338,10 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
           <Link href={localizePublicHref(locale, '/refund-policy')} className="hover:text-[#0866ff]">
             {uiText(locale, 'Refund policy', 'Återbetalning', 'Erstattung')}
           </Link>
-        </nav>
+          </nav>
+        </div>
       </div>
     </footer>
-  )
-}
-
-function MarketplaceAppBadges({ locale }: { locale: PublicLocale }) {
-  return (
-    <div className="grid gap-2.5">
-      <p className="text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0866ff] max-lg:text-left">
-        {uiText(locale, 'Download Autorell', 'Ladda ner Autorell', 'Autorell herunterladen')}
-      </p>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <MarketplaceStoreBadge href={appStoreHref} src="/app-store-badge.svg" alt="Download on the App Store" width={120} height={36} />
-        <MarketplaceStoreBadge href={playStoreHref} src="/google-play-badge.svg" alt="Get it on Google Play" width={135} height={40} />
-      </div>
-    </div>
-  )
-}
-
-function MarketplaceStoreBadge({
-  href,
-  src,
-  alt,
-  width,
-  height,
-}: {
-  href: string
-  src: string
-  alt: string
-  width: number
-  height: number
-}) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex h-9 items-center transition hover:-translate-y-0.5 hover:opacity-85"
-      aria-label={alt}
-    >
-      <Image src={src} alt={alt} width={width} height={height} className="block h-full w-auto" />
-    </Link>
   )
 }
 
@@ -2590,26 +5365,121 @@ function MarketplaceSocialLinks() {
   ]
 
   return (
-    <nav className="flex items-center gap-4 lg:justify-end" aria-label="Social media">
+    <nav className="flex items-center gap-2.5 lg:justify-end" aria-label="Social media">
       {links.map((link) => (
-        <Link
+        <a
           key={link.label}
           href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label={link.label}
-          className="text-[#101828] transition hover:-translate-y-0.5 hover:text-[#0866ff]"
+          className="grid h-9 w-9 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[22px] w-[22px] fill-current">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
             <path d={link.path} />
           </svg>
-        </Link>
+        </a>
       ))}
     </nav>
   )
 }
 
+type CompareCopy = ReturnType<typeof getCompareCopy>
+type VehicleCompareRow = {
+  label: string
+  values: Array<{ id: string; value: string; highlight?: boolean }>
+}
+
+function buildVehicleCompareRows(
+  listings: VehicleSearchListing[],
+  locale: PublicLocale,
+  copy: CompareCopy,
+): VehicleCompareRow[] {
+  const finitePrices = listings
+    .map(priceFilterValue)
+    .filter((value) => Number.isFinite(value) && value > 0)
+  const years = listings
+    .map((listing) => Number(listing.year || 0))
+    .filter((value) => Number.isFinite(value) && value > 0)
+  const mileages = listings
+    .map((listing) => listing.mileageKm)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0)
+  const bestPrice = finitePrices.length ? Math.min(...finitePrices) : null
+  const newestYear = years.length ? Math.max(...years) : null
+  const lowestMileage = mileages.length ? Math.min(...mileages) : null
+  const valueOrDash = (value: string | null | undefined) => value?.trim() || '-'
+  const offerLabel = (listing: VehicleSearchListing) => listingOfferBadge(locale, listing).label
+
+  return [
+    {
+      label: copy.price,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.priceLabel || '-',
+        highlight: bestPrice !== null && priceFilterValue(listing) === bestPrice,
+      })),
+    },
+    {
+      label: copy.year,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: valueOrDash(listing.year),
+        highlight: newestYear !== null && Number(listing.year || 0) === newestYear,
+      })),
+    },
+    {
+      label: copy.mileage,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : '-',
+        highlight: lowestMileage !== null && listing.mileageKm === lowestMileage,
+      })),
+    },
+    {
+      label: copy.fuel,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.fuelType) })),
+    },
+    {
+      label: copy.gearbox,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.gearbox) })),
+    },
+    {
+      label: copy.bodyType,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.bodyType) })),
+    },
+    {
+      label: copy.condition,
+      values: listings.map((listing) => ({ id: listing.id, value: valueOrDash(listing.condition) })),
+    },
+    {
+      label: copy.offer,
+      values: listings.map((listing) => ({ id: listing.id, value: offerLabel(listing) })),
+    },
+    {
+      label: copy.seller,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: listing.sellerIsTrader
+          ? valueOrDash(listing.sellerName)
+          : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer'),
+      })),
+    },
+    {
+      label: copy.location,
+      values: listings.map((listing) => ({
+        id: listing.id,
+        value: [listing.city || listing.municipality, getEuCountryName(listing.country, locale)]
+          .filter(Boolean)
+          .join(', ') || '-',
+      })),
+    },
+  ]
+}
+
 function VehicleResultCard({
   listing,
   locale,
+  marketCountryCode,
   compareActive,
   onCompare,
   onBeforeNavigate,
@@ -2617,6 +5487,7 @@ function VehicleResultCard({
 }: {
   listing: VehicleSearchListing
   locale: PublicLocale
+  marketCountryCode?: string
   compareActive: boolean
   onCompare: () => void
   onBeforeNavigate: () => void
@@ -2633,49 +5504,136 @@ function VehicleResultCard({
   }, locale)
   const location = Array.from(new Set([listing.city, listing.municipality, getEuCountryName(listing.country, locale)].filter(Boolean)))
     .join(', ')
-  const categoryLabel = categoryText(
-    categories.find((item) => item.key === listing.category) || categories[0],
-    locale,
-  )
-  const subtitle = [categoryLabel, location].filter(Boolean).join(' · ')
-  const equipmentChips = listingEquipmentChips(listing.equipment)
+  const subtitle = location
+  const equipmentChips = listingEquipmentChips(listing.equipment, locale)
+  const visibleEquipmentChips = equipmentChips.slice(0, 4)
+  const remainingEquipmentCount = Math.max(0, equipmentChips.length - visibleEquipmentChips.length)
   const sellerTypeLabel = listing.sellerIsTrader
     ? uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
     : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')
   const countryLabel = getEuCountryName(listing.country, locale)
+  const showCountryChip = shouldShowListingCountryChip(listing.country, marketCountryCode)
   const meta = [
     listing.year,
     listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
-  const sellerTrustLabel = listing.sellerTrust === 'verified'
-    ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
-    : listing.sellerIsTrader
-      ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
-      : uiText(locale, 'Unverified', 'Ej verifierad', 'Nicht verifiziert')
-  const sellerTrustClass = listing.sellerTrust === 'verified'
-    ? 'bg-[#0866ff] text-white'
-    : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'
+  const visibleMeta = meta
+  const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+  const offerBadge = listingOfferBadge(locale, listing)
+  const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
-  return (
-    <article className={`group relative overflow-hidden border-b border-[#e5ebf3] bg-white transition hover:bg-[#fbfdff] ${
-      layout === 'split' ? 'mx-0 px-3 py-4 min-[560px]:border-r sm:px-4' : 'mx-0 px-4 py-5 sm:mx-6 sm:px-0'
-    }`}>
-      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
-      <div className={`pointer-events-none relative z-20 grid gap-4 ${
-        layout === 'split' ? 'grid-cols-1' : 'sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start'
-      }`}>
-        <div className={`relative overflow-hidden rounded-[8px] bg-[#eef3f8] ${
-          layout === 'split' ? 'aspect-[4/3] min-h-[138px]' : 'h-[246px] sm:h-[174px]'
-        }`}>
+  if (layout === 'split') {
+    const headline = marketplaceCardHeadline(listing)
+    const versionLabel = marketplaceCardVersionLabel(listing, headline)
+    const details = [
+      listing.mileageKm !== null ? formatMileageAsMil(listing.mileageKm, locale) : null,
+      listing.gearbox ? translateListingVehicleValue(locale, listing.gearbox) : null,
+      listing.fuelType ? translateListingVehicleValue(locale, listing.fuelType) : null,
+    ].filter((item): item is string => Boolean(item))
+    const sellerDetail = listing.sellerIsTrader ? listing.sellerName.trim() : ''
+
+    return (
+      <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d7dee8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.10)]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
               images={listing.imageUrls}
               title={listing.title}
               href={href}
               onNavigate={onBeforeNavigate}
-              sizes={layout === 'split' ? '(max-width: 560px) 100vw, 50vw' : '(max-width: 640px) 100vw, 260px'}
+              sizes="(max-width: 640px) 50vw, (max-width: 1120px) 50vw, 360px"
+              previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
+              nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
+              showDotsOnDesktop
+              showDotsOnMobile
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-[#0866ff]">
+              <AutorellCarIcon className="h-12 w-12" />
+            </div>
+          )}
+          {listing.sellerTrust === 'verified' ? (
+            <span className="absolute left-2 top-2 rounded-[6px] bg-[#0866ff] px-2 py-1 text-[10px] font-semibold text-white">
+              {sellerTrustLabel}
+            </span>
+          ) : null}
+          <div className="pointer-events-auto absolute right-2 top-2 z-30 scale-[.86] origin-top-right">
+            <SavedListingButton listingId={listing.id} />
+          </div>
+          <button
+            type="button"
+            aria-pressed={compareActive}
+            aria-label={uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onCompare()
+            }}
+            className={`absolute bottom-2 right-2 z-30 grid h-8 w-8 place-items-center rounded-full text-[#101828] transition ${
+              compareActive ? 'bg-[#0866ff] text-white' : 'bg-white hover:text-[#0866ff]'
+            }`}
+          >
+            <Scale className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div className="flex min-h-[190px] flex-1 flex-col px-3 py-3 sm:min-h-[205px] sm:px-3.5">
+          <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+            {offerBadge.label}
+          </span>
+          <Link href={href} prefetch onClick={onBeforeNavigate} className="block">
+            <h2 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
+              {headline}
+            </h2>
+          </Link>
+          {versionLabel ? (
+            <p className="mt-1 line-clamp-1 text-[13px] font-normal leading-5 text-[#101828] sm:text-[14px]">
+              {versionLabel}
+            </p>
+          ) : null}
+          <p className="mt-2 text-[17px] font-semibold leading-6 text-[#050b18] no-underline [text-decoration:none] sm:text-[18px]">
+            {listing.priceLabel}
+          </p>
+          {location ? (
+            <p className="mt-1 flex min-w-0 items-center gap-1 text-[12px] font-normal leading-5 text-[#667085] sm:text-[13px]">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
+              <span className="truncate">{location}</span>
+            </p>
+          ) : null}
+          {details.length ? (
+            <p className="mt-2 line-clamp-1 text-[12px] font-normal leading-5 text-[#344054] sm:text-[13px]">
+              {details.join(' | ')}
+            </p>
+          ) : null}
+          <div className="mt-2 border-t border-[#e4e7ec]" />
+          <div className="mt-auto min-w-0 pt-2 text-[12px] font-normal leading-4 text-[#050b18]">
+            <p className="truncate">{sellerTypeLabel}</p>
+            {sellerDetail || showCountryChip ? (
+              <p className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                {showCountryChip ? <span className="truncate">{countryLabel}</span> : null}
+                {sellerDetail ? <span className="truncate">{sellerDetail}</span> : null}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </article>
+    )
+  }
+
+  return (
+    <article className="group relative mx-0 overflow-hidden border-b border-[#e5ebf3] bg-white px-4 py-5 transition hover:bg-[#fbfdff] sm:mx-6 sm:px-0">
+      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
+      <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
+        <div className="relative h-[246px] overflow-hidden rounded-[8px] bg-[#eef3f8] sm:h-[174px]">
+          {listing.imageUrls.length ? (
+            <ListingCardImageCarousel
+              images={listing.imageUrls}
+              title={listing.title}
+              href={href}
+              onNavigate={onBeforeNavigate}
+              sizes="(max-width: 640px) 100vw, 260px"
               previousLabel={uiText(locale, 'Previous photo', 'Föregående bild', 'Vorheriges Foto')}
               nextLabel={uiText(locale, 'Next photo', 'Nästa bild', 'Nächstes Foto')}
             />
@@ -2684,9 +5642,11 @@ function VehicleResultCard({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          <span className={`absolute left-3 top-3 rounded-[8px] px-2.5 py-1 text-xs font-semibold shadow-sm ${sellerTrustClass}`}>
-            {sellerTrustLabel}
-          </span>
+          {listing.sellerTrust === 'verified' ? (
+            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+              {sellerTrustLabel}
+            </span>
+          ) : null}
           <div className="pointer-events-auto absolute right-3 top-3 z-30 scale-[.91] origin-top-right">
             <SavedListingButton listingId={listing.id} />
           </div>
@@ -2698,27 +5658,39 @@ function VehicleResultCard({
               event.stopPropagation()
               onCompare()
             }}
-            className={`pointer-events-auto absolute bottom-3 right-3 z-30 hidden h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold shadow-md transition sm:inline-flex ${
+            className={`pointer-events-auto absolute bottom-2 right-2 z-30 inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-full text-xs font-semibold shadow-md transition sm:bottom-3 sm:right-3 sm:h-9 sm:w-auto sm:px-3 ${
               compareActive ? 'bg-[#0866ff] text-white' : 'bg-white text-[#101828] hover:text-[#0866ff]'
             }`}
           >
-            <Scale className="h-4 w-4" />
-            <span>Jämför</span>
+            <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{uiText(locale, 'Compare', 'Jämför', 'Vergleichen')}</span>
           </button>
         </div>
 
         <div className="min-w-0">
           <div className="grid min-w-0 gap-1.5">
-            <span className={`${layout === 'split' ? 'text-[16px]' : 'text-[18px]'} line-clamp-1 font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline`}>
+            <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[11px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+              {offerBadge.label}
+            </span>
+            <span className="line-clamp-1 text-[18px] font-semibold leading-tight text-[#101828] underline-offset-2 group-hover:text-[#0866ff] group-hover:underline">
               {listing.title}
             </span>
             <p className="line-clamp-1 text-[14px] font-light leading-5 text-[#667085]">
               {subtitle}
             </p>
-            <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+            <p className="text-[17px] font-semibold leading-6 text-[#101828] no-underline [text-decoration:none]">
               {listing.priceLabel}
             </p>
-            <MetaSeparatorList items={meta} className="text-[14px] font-light leading-5 text-[#101828]" />
+            {insuranceLabel ? (
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
+                <span className="truncate">{insuranceLabel}</span>
+              </span>
+            ) : null}
+            <MetaSeparatorList
+              items={visibleMeta}
+              className="text-[14px] font-light leading-5 text-[#101828]"
+            />
             <p className="hidden">
               {listing.sellerIsTrader
                 ? listing.sellerName
@@ -2726,20 +5698,23 @@ function VehicleResultCard({
                   : uiText(locale, 'Business seller', 'Företagssäljare', 'Gewerblicher Verkäufer')
                 : uiText(locale, 'Private seller', 'Privat säljare', 'Privatverkäufer')}
             </p>
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              {equipmentChips.map((item) => (
-                <span key={item} className="max-w-[150px] truncate rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                  {item}
-                </span>
-              ))}
-              <span className="rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                {sellerTypeLabel}
-              </span>
-              <span className="inline-flex min-w-0 items-center gap-1.5 rounded-[6px] bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
-                <CountryFlag code={listing.country || 'eu'} className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
-                <span className="truncate">{countryLabel}</span>
-              </span>
-            </div>
+            {visibleEquipmentChips.length ? (
+              <div className="flex max-h-[58px] min-w-0 flex-wrap items-center gap-1.5 overflow-hidden">
+                {visibleEquipmentChips.map((item) => (
+                  <span key={item} className="max-w-[150px] truncate rounded-full bg-[#f2f4f7] px-2 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                    {item}
+                  </span>
+                ))}
+                {remainingEquipmentCount ? (
+                  <span className="rounded-full bg-[#eef5ff] px-2 py-1 text-[12px] font-medium leading-4 text-[#0866ff]">
+                    +{remainingEquipmentCount}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            <p className="line-clamp-1 text-[12px] font-normal leading-5 text-[#667085]">
+              {[sellerTypeLabel, showCountryChip ? countryLabel : null].filter(Boolean).join(' | ')}
+            </p>
             {listing.sellerRatingAverage && listing.sellerRatingCount ? (
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475467]">
                 <Star className="h-3.5 w-3.5 text-[#0866ff]" fill="currentColor" />
@@ -2748,11 +5723,10 @@ function VehicleResultCard({
             ) : null}
             <div className="mt-1 flex min-w-0 flex-wrap items-end justify-between gap-3">
               <p className="hidden">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                 <span className="truncate">{location}</span>
               </p>
               {listing.sellerIsTrader && listing.sellerLogoUrl ? (
-                  <span className={`${layout === 'split' ? 'hidden' : 'relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block'}`}>
+                  <span className="relative hidden h-8 w-32 overflow-hidden rounded-[8px] bg-[#eef3f8] sm:block">
                   <Image src={listing.sellerLogoUrl} alt={listing.sellerName} fill sizes="128px" className="object-contain" />
                 </span>
               ) : null}
@@ -2764,52 +5738,69 @@ function VehicleResultCard({
   )
 }
 
+function marketplaceCardHeadline(listing: VehicleSearchListing) {
+  const generated = [listing.year, listing.make, listing.model]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(' ')
+  return generated || listing.title
+}
+
+function marketplaceCardVersionLabel(listing: VehicleSearchListing, headline: string) {
+  const title = listing.title.trim()
+  if (!title || title.toLocaleLowerCase() === headline.toLocaleLowerCase()) return null
+  const prefixParts = [listing.year, listing.make, listing.model]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+  let version = title
+  for (const part of prefixParts) {
+    if (version.toLocaleLowerCase().startsWith(part.toLocaleLowerCase())) {
+      version = version.slice(part.length).trim()
+    }
+  }
+  return version || null
+}
+
 function VehicleSearchMap({
   listings,
   country,
   locale,
   searchPlaceholder,
-  query,
   onQueryChange,
   searchInput,
   selectedSearchSuggestions,
+  geoBounds,
   onRemoveSearchSuggestion,
   mobileOverlay = false,
   onCloseMobileMap,
   onOpenFilters,
-  onSaveSearch,
   onBeforeListingNavigate,
-  saveSearchButtonLabel,
-  saveSearchActive,
-  saveSearchBusy,
   smartSearchSuggestions,
   smartSearchLoading,
   smartSearchSearched,
   onSearchFocusChange,
   onSmartSearchSelect,
+  onShowDesktopList,
 }: {
   listings: VehicleSearchListing[]
   country: string
   locale: PublicLocale
   searchPlaceholder: string
-  query: string
   onQueryChange: (value: string) => void
   searchInput: string
   selectedSearchSuggestions: SelectedSearchSuggestion[]
+  geoBounds?: MarketplaceBoundingBox | null
   onRemoveSearchSuggestion: (suggestion: SelectedSearchSuggestion) => void
   mobileOverlay?: boolean
   onCloseMobileMap?: () => void
   onOpenFilters: () => void
-  onSaveSearch: () => void
   onBeforeListingNavigate: () => void
-  saveSearchButtonLabel: string
-  saveSearchActive: boolean
-  saveSearchBusy: boolean
   smartSearchSuggestions: VehicleSmartSearchSuggestion[]
   smartSearchLoading: boolean
   smartSearchSearched: boolean
   onSearchFocusChange: (focused: boolean) => void
   onSmartSearchSelect: (suggestion: VehicleSmartSearchSuggestion) => void | boolean
+  onShowDesktopList: () => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -2817,8 +5808,9 @@ function VehicleSearchMap({
   const [mapReady, setMapReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
-  const [fullscreen, setFullscreen] = useState(false)
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
+  const [selectedListingGroup, setSelectedListingGroup] = useState<VehicleSearchListing[]>([])
+  const [selectedListingIndex, setSelectedListingIndex] = useState(0)
   const mapListings = useMemo(
     () =>
       listings.slice(0, 150).map((listing, index) => ({
@@ -2872,22 +5864,6 @@ function VehicleSearchMap({
   }, [country, mapLayer])
 
   useEffect(() => {
-    if (!fullscreen) return undefined
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [fullscreen])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      mapRef.current?.resize()
-    }, 80)
-    return () => window.clearTimeout(timer)
-  }, [fullscreen])
-
-  useEffect(() => {
     let cancelled = false
 
     async function syncMarkers() {
@@ -2897,15 +5873,23 @@ function VehicleSearchMap({
       if (cancelled) return
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = mapListings.map(({ listing, coordinates }) => {
-        const markerElement = createAutorellMapMarker(listing, selectedListing?.id === listing.id)
+        const markerElement = createAutorellMapMarker(listing, false)
         markerElement.addEventListener('click', () => {
-          setSelectedListing(listing)
+          const nearbyListings = getNearbyMapListings(map, mapListings, coordinates)
+          const nextGroup = nearbyListings.length ? nearbyListings.map((item) => item.listing) : [listing]
+          const nextIndex = Math.max(0, nextGroup.findIndex((item) => item.id === listing.id))
+          setSelectedListingGroup(nextGroup)
+          setSelectedListingIndex(nextIndex)
+          setSelectedListing(nextGroup[nextIndex] || listing)
         })
         return new maplibregl.Marker({ element: markerElement })
           .setLngLat(coordinates)
           .addTo(map)
       })
-      if (mapListings.length) {
+      if (geoBounds) {
+        const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
+        map.fitBounds(bounds, { padding: 70, maxZoom: 10.5, duration: 500 })
+      } else if (mapListings.length) {
         const bounds = new maplibregl.LngLatBounds()
         mapListings.forEach(({ coordinates }) => bounds.extend(coordinates))
         map.fitBounds(bounds, { padding: 70, maxZoom: 8.8, duration: 500 })
@@ -2918,10 +5902,10 @@ function VehicleSearchMap({
     return () => {
       cancelled = true
     }
-  }, [country, mapListings, mapReady, selectedListing?.id])
+  }, [country, geoBounds, mapListings, mapReady])
 
   return (
-    <div className={`${fullscreen ? 'fixed inset-0 z-[240] h-screen min-h-screen' : mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-[calc(100vh-62px)]'} bg-[#dce7ed]`}>
+    <div className={`${mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
       <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
@@ -2940,7 +5924,7 @@ function VehicleSearchMap({
         </button>
       ) : null}
       <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      {mobileOverlay && !fullscreen ? (
+      {mobileOverlay ? (
         <>
           <div className="absolute inset-x-0 top-0 z-20 bg-white/96 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] shadow-[0_1px_12px_rgba(16,24,40,.14)] backdrop-blur">
             <div className="flex items-center gap-2">
@@ -2948,13 +5932,13 @@ function VehicleSearchMap({
                 type="button"
                 onClick={onCloseMobileMap}
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-[#d0d5dd] bg-white text-[#101828] shadow-sm"
-                aria-label="Visa lista"
+                aria-label={translatePublic(locale, 'Show list')}
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div className="relative min-w-0 flex-1">
               <div className="group relative flex min-h-[50px] min-w-0 flex-1 items-center justify-start gap-2 rounded-[8px] bg-[#f1f2f4] px-3 py-2 pr-11 text-[#667085] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#101828]">
-                <span className="sr-only">Sök</span>
+                <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
                 {selectedSearchSuggestions.map((suggestion) => (
                   <span
                     key={suggestion.chipId}
@@ -2973,7 +5957,7 @@ function VehicleSearchMap({
                         onRemoveSearchSuggestion(suggestion)
                       }}
                       className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
-                      aria-label="Ta bort valt sökförslag"
+                      aria-label={uiText(locale, 'Remove selected search suggestion', 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen')}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -3018,9 +6002,9 @@ function VehicleSearchMap({
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Sökfilter
+                {translatePublic(locale, 'Search filters')}
               </button>
-              <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} compact />
+              <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} compact />
             </div>
           </div>
           <button
@@ -3028,86 +6012,58 @@ function VehicleSearchMap({
             onClick={onCloseMobileMap}
             className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#0866ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(8,102,255,.30)]"
           >
-            Visa lista
+            {translatePublic(locale, 'Show list')}
           </button>
-        </>
-      ) : fullscreen ? (
-        <>
-          <div className="absolute inset-x-0 top-0 z-20 flex min-h-[64px] items-center gap-2 bg-white/96 px-3 shadow-[0_1px_10px_rgba(16,24,40,.14)] backdrop-blur sm:gap-3 sm:px-4">
-            <label className="relative flex h-[50px] min-w-0 flex-1 items-center gap-3 rounded-[8px] bg-[#f1f2f4] px-4 text-[#667085]">
-              <BrandLogo compact underline={false} />
-              <span className="sr-only">{uiText(locale, 'Search', 'Sök', 'Suche')}</span>
-              <input
-                value={query}
-                onChange={(event) => onQueryChange(event.target.value)}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="vehicle-search-control min-w-0 flex-1 bg-transparent text-[16px] font-normal text-[#101828] outline-none placeholder:text-[#767676] sm:text-sm"
-              />
-              <Search className="h-5 w-5 shrink-0 text-[#101828]" />
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setFullscreen(false)
-                window.setTimeout(onOpenFilters, 0)
-              }}
-              style={{ fontWeight: 500 }}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#d0d5dd] bg-white px-3 text-[14px] font-[500] text-[#101828] shadow-sm transition hover:border-[#0866ff]"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Sökfilter</span>
-            </button>
-            <button
-              type="button"
-              onClick={onSaveSearch}
-              disabled={saveSearchBusy}
-              style={{ fontWeight: 500 }}
-              className={`hidden h-11 items-center gap-2 rounded-[8px] px-4 text-[14px] font-[500] text-white shadow-sm transition sm:inline-flex ${
-                saveSearchActive ? 'bg-[#0866ff] hover:bg-[#0757da]' : 'bg-[#d1d3d8]'
-              }`}
-            >
-              <Bookmark className="h-4 w-4" />
-              {saveSearchButtonLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFullscreen(false)}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#0866ff] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0757da]"
-            >
-              <List className="h-4 w-4" />
-              <span className="hidden sm:inline">Visa lista</span>
-            </button>
-          </div>
-          <div className="absolute right-4 top-[78px] z-20 flex gap-2">
-            <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
-          </div>
         </>
       ) : (
         <div className="absolute right-4 top-4 z-20 flex gap-2">
           <button
             type="button"
-            onClick={() => setFullscreen(true)}
-            className="inline-flex h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da]"
+            onClick={onShowDesktopList}
+            className="hidden h-10 min-w-[112px] items-center justify-center gap-1.5 rounded-[8px] bg-[#0866ff] px-3 text-[13px] font-semibold text-white shadow-lg shadow-[#0866ff]/20 transition hover:bg-[#0757da] min-[1120px]:inline-flex"
           >
-            <Expand className="h-4 w-4" />
-            Fullskärm
+            <List className="h-4 w-4" />
+            {translatePublic(locale, 'Show list')}
           </button>
-          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+          <MapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} locale={locale} />
         </div>
       )}
-      <div className={`${fullscreen ? 'top-[74px]' : mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
-        {listings.length.toLocaleString('sv-SE')} fordon i kartvyn
+      <div className={`${mobileOverlay ? 'top-[calc(7.5rem+env(safe-area-inset-top))] hidden sm:block' : 'top-4'} hidden absolute left-4 z-20 rounded-[8px] bg-white/95 px-4 py-3 text-sm font-medium shadow-lg backdrop-blur`}>
+        {listings.length.toLocaleString(countNumberLocale(locale))} {uiText(locale, 'vehicles in map view', 'fordon i kartvyn', 'Fahrzeuge in der Kartenansicht')}
       </div>
-      <button className={`${mobileOverlay ? 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]' : 'bottom-5'} hidden absolute left-1/2 z-20 -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0866ff] shadow-lg`}>
-        <SlidersHorizontal className="h-4 w-4" />
-        Sök i detta område
-      </button>
       {selectedListing ? (
         <MapListingPreview
           listing={selectedListing}
+          previewCount={selectedListingGroup.length || 1}
+          previewIndex={selectedListingIndex}
+          onPrevious={
+            selectedListingGroup.length > 1
+              ? () => {
+                  setSelectedListingIndex((current) => {
+                    const next = (current - 1 + selectedListingGroup.length) % selectedListingGroup.length
+                    setSelectedListing(selectedListingGroup[next] || null)
+                    return next
+                  })
+                }
+              : undefined
+          }
+          onNext={
+            selectedListingGroup.length > 1
+              ? () => {
+                  setSelectedListingIndex((current) => {
+                    const next = (current + 1) % selectedListingGroup.length
+                    setSelectedListing(selectedListingGroup[next] || null)
+                    return next
+                  })
+                }
+              : undefined
+          }
           locale={locale}
-          onClose={() => setSelectedListing(null)}
+          onClose={() => {
+            setSelectedListing(null)
+            setSelectedListingGroup([])
+            setSelectedListingIndex(0)
+          }}
           onBeforeNavigate={onBeforeListingNavigate}
           mobileOverlay={mobileOverlay}
         />
@@ -3118,12 +6074,20 @@ function VehicleSearchMap({
 
 function MapListingPreview({
   listing,
+  previewCount = 1,
+  previewIndex = 0,
+  onPrevious,
+  onNext,
   locale,
   onClose,
   onBeforeNavigate,
   mobileOverlay,
 }: {
   listing: VehicleSearchListing
+  previewCount?: number
+  previewIndex?: number
+  onPrevious?: () => void
+  onNext?: () => void
   locale: PublicLocale
   onClose: () => void
   onBeforeNavigate: () => void
@@ -3147,24 +6111,45 @@ function MapListingPreview({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
-  const sellerTrustLabel = listing.sellerTrust === 'verified'
-    ? uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
-    : listing.sellerIsTrader
-      ? uiText(locale, 'Unverified company', 'Overifierat företag', 'Nicht verifiziertes Unternehmen')
-      : uiText(locale, 'Unverified', 'Ej verifierad', 'Nicht verifiziert')
-  const sellerTrustClass = listing.sellerTrust === 'verified'
-    ? 'bg-[#0866ff] text-white'
-    : 'bg-white text-[#475467] ring-1 ring-[#d7deed]'
+  const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
+  const offerBadge = listingOfferBadge(locale, listing)
+  const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
   return (
     <div className={`${mobileOverlay ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-6'} absolute left-1/2 z-30 w-[min(680px,calc(100%-2rem))] -translate-x-1/2 overflow-hidden rounded-[8px] bg-white shadow-[0_18px_50px_rgba(16,24,40,.24)]`}>
-      <div className="flex justify-end border-b border-[#edf1f6] px-3 py-2">
+      <div className="flex items-center justify-between gap-3 border-b border-[#edf1f6] px-3 py-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
+            {offerBadge.label}
+          </span>
+          {previewCount > 1 ? (
+            <div className="inline-flex items-center gap-1 rounded-full border border-[#dfe6f2] bg-[#f8fbff] px-1 py-0.5 text-xs font-semibold text-[#475467]">
+              <button
+                type="button"
+                onClick={onPrevious}
+                aria-label={uiText(locale, 'Previous listing', 'Föregående annons', 'Vorherige Anzeige')}
+                className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="min-w-9 text-center">{previewIndex + 1}/{previewCount}</span>
+              <button
+                type="button"
+                onClick={onNext}
+                aria-label={uiText(locale, 'Next listing', 'Nästa annons', 'Nächste Anzeige')}
+                className="grid h-6 w-6 place-items-center rounded-full text-[#667085] transition hover:bg-white hover:text-[#0866ff]"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={onClose}
           className="inline-flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-xs font-semibold text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff]"
         >
-          Stäng
+          {uiText(locale, 'Close', 'St\u00e4ng', 'Schlie\u00dfen')}
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -3185,16 +6170,17 @@ function MapListingPreview({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          <span className={`absolute left-3 top-3 rounded-[8px] px-2.5 py-1 text-xs font-semibold shadow-sm ${sellerTrustClass}`}>
-            {sellerTrustLabel}
-          </span>
+          {listing.sellerTrust === 'verified' ? (
+            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+              {sellerTrustLabel}
+            </span>
+          ) : null}
         </div>
         <div className="min-w-0 pb-1 sm:py-1">
           <div className="flex items-start justify-between gap-3">
             <Link href={href} onClick={onBeforeNavigate} className="min-w-0">
               <p className="line-clamp-1 text-[17px] font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</p>
               <p className="mt-1 flex min-w-0 items-center gap-2 text-sm font-medium text-[#667085]">
-                <CountryFlag code={listing.country || 'eu'} className="h-4 w-4 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                 <span className="truncate">{location}</span>
               </p>
             </Link>
@@ -3202,7 +6188,15 @@ function MapListingPreview({
               <SavedListingButton listingId={listing.id} />
             </div>
           </div>
-          <p className="mt-4 text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <p className="text-[18px] font-semibold text-[#101828]">{listing.priceLabel}</p>
+            {insuranceLabel ? (
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8e6ff] bg-[#f7faff] px-2.5 py-1 text-[12px] font-medium leading-4 text-[#344054]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#0866ff]" />
+                <span className="truncate">{insuranceLabel}</span>
+              </span>
+            ) : null}
+          </div>
           <MetaSeparatorList items={facts} className="mt-3 text-sm font-medium text-[#475467]" />
           <div className="mt-4 flex items-center justify-between gap-3">
             <div className="min-w-0">
@@ -3229,11 +6223,42 @@ function MapListingPreview({
 function MetaSeparatorList({
   items,
   className = '',
+  compact = false,
 }: {
   items: Array<string | number | null | undefined>
   className?: string
+  compact?: boolean
 }) {
   const visibleItems = items.filter((item): item is string | number => item !== null && item !== undefined && item !== '')
+
+  if (compact) {
+    return (
+      <div className={`min-w-0 ${className}`}>
+        <div className="flex min-w-0 flex-wrap items-center gap-1 sm:hidden">
+          {visibleItems.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className="inline-flex max-w-full shrink-0 rounded-full bg-[#f2f4f7] px-2 py-0.5 text-[11px] font-medium leading-4 text-[#475467]"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+        <p className="hidden min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap sm:flex">
+          {visibleItems.map((item, index) => (
+            <span key={`${item}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
+              {index > 0 ? (
+                <span aria-hidden="true" className="shrink-0 px-0.5 font-semibold text-[#98a2b3]">
+                  |
+                </span>
+              ) : null}
+              <span className="min-w-0 truncate">{item}</span>
+            </span>
+          ))}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <p className={`flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap ${className}`}>
@@ -3254,12 +6279,17 @@ function MetaSeparatorList({
 function MapLayerPicker({
   mapLayer,
   onMapLayerChange,
+  locale,
   compact = false,
 }: {
   mapLayer: AutorellMapLayer
   onMapLayerChange: (layer: AutorellMapLayer) => void
+  locale: PublicLocale
   compact?: boolean
 }) {
+  const mapText = translatePublic(locale, 'Map')
+  const satelliteText = translatePublic(locale, 'Satellite')
+
   return (
     <div className={`${compact ? 'h-10 w-full min-w-0 border border-[#0866ff] bg-white shadow-sm' : 'h-10 border border-[#0866ff] bg-white shadow-lg shadow-[#0866ff]/15'} inline-flex overflow-hidden rounded-[8px] p-1`}>
       <button
@@ -3273,7 +6303,7 @@ function MapLayerPicker({
         }`}
       >
         <Layers className="h-4 w-4" />
-        <span>{compact ? 'Karta' : <span className="hidden sm:inline">Karta</span>}</span>
+        <span>{compact ? mapText : <span className="hidden sm:inline">{mapText}</span>}</span>
       </button>
       <button
         type="button"
@@ -3284,7 +6314,7 @@ function MapLayerPicker({
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
         }`}
       >
-        <span className="truncate">Satellit</span>
+        <span className="truncate">{satelliteText}</span>
       </button>
     </div>
   )
@@ -3307,34 +6337,31 @@ function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, lay
   return tiles
 }
 
+function getNearbyMapListings(
+  map: MapLibreMap,
+  mapListings: Array<{ listing: VehicleSearchListing; coordinates: [number, number] }>,
+  coordinates: [number, number],
+) {
+  const origin = map.project(coordinates)
+  return mapListings
+    .map((item) => {
+      const point = map.project(item.coordinates)
+      return {
+        ...item,
+        distance: Math.hypot(point.x - origin.x, point.y - origin.y),
+      }
+    })
+    .filter((item) => item.distance <= 54)
+    .sort((left, right) => left.distance - right.distance)
+}
+
 function createAutorellMapMarker(listing: VehicleSearchListing, active: boolean) {
-  const leasing = isLeasingListing(listing)
-  const baseColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const pointColorClass = leasing ? 'bg-[#16a34a] group-hover:bg-[#15803d]' : 'bg-[#0866ff] group-hover:bg-[#0757da]'
-  const markerElement = document.createElement('button')
-  markerElement.type = 'button'
-  markerElement.setAttribute('aria-label', listing.title)
-  markerElement.className = [
-    'group relative grid h-11 w-11 cursor-pointer place-items-center rounded-full bg-transparent focus:outline-none focus:ring-2 focus:ring-[#0866ff]/30',
-  ].filter(Boolean).join(' ')
-
-  const dot = document.createElement('span')
-  dot.className = [
-    'relative z-10 block h-5 w-5 rounded-full border-2 border-white shadow-[0_8px_22px_rgba(16,24,40,.25)] transition-[background-color,box-shadow] duration-200 group-hover:shadow-[0_14px_34px_rgba(16,24,40,.28)]',
-    baseColorClass,
-    active ? 'bg-[#101828] shadow-[0_18px_40px_rgba(16,24,40,.34)]' : '',
-  ].filter(Boolean).join(' ')
-  markerElement.appendChild(dot)
-
-  const point = document.createElement('span')
-  point.className = [
-    'absolute left-1/2 top-[31px] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-white transition-colors duration-200',
-    pointColorClass,
-    active ? 'bg-[#101828]' : '',
-  ].filter(Boolean).join(' ')
-  markerElement.appendChild(point)
-
-  return markerElement
+  return createCategoryMapMarker({
+    category: listing.category,
+    title: listing.title,
+    offerType: listing.offerType,
+    active,
+  })
 }
 
 function getTileCoordinate(latitude: number, longitude: number, zoom: number) {
@@ -3408,7 +6435,7 @@ const categoryFilterDefinitions: Record<string, CategoryFilterDefinition[]> = {
     { key: 'mileage', type: 'range', label: { en: 'Mileage', sv: 'Miltal', de: 'Kilometerstand' }, apiParam: 'maxMileage', order: 10, unit: 'km' },
     { key: 'fuel', type: 'select', label: { en: 'Fuel', sv: 'Drivmedel', de: 'Kraftstoff' }, apiParam: 'fuel', order: 20 },
     { key: 'gearbox', type: 'select', label: { en: 'Gearbox', sv: 'Växellåda', de: 'Getriebe' }, apiParam: 'gearbox', order: 30 },
-    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Kaross', de: 'Karosserie' }, apiParam: 'bodyType', order: 40 },
+    { key: 'bodyType', type: 'select', label: { en: 'Body type', sv: 'Karosstyp', de: 'Karosserie' }, apiParam: 'bodyType', order: 40 },
     { key: 'fourWheelDrive', type: 'toggle', label: { en: 'Four-wheel drive', sv: 'Fyrhjulsdrift', de: 'Allrad' }, apiParam: 'fourWheelDrive', order: 50 },
     { key: 'leasingPossible', type: 'toggle', label: { en: 'Leasing possible', sv: 'Leasing möjlig', de: 'Leasing möglich' }, apiParam: 'leasingPossible', order: 60 },
     { key: 'color', type: 'select', label: { en: 'Color', sv: 'Färg', de: 'Farbe' }, apiParam: 'color', order: 70 },
@@ -3494,8 +6521,8 @@ function categoryPrimaryFilterKeys(category: string): VehicleFilterKey[] {
 
 function filterLabel(filter: CategoryFilterDefinition, locale: PublicLocale) {
   if (locale === 'sv') return filter.label.sv
-  if (locale === 'de') return filter.label.de
-  return filter.label.en
+  if (locale === 'de' || locale === 'at') return filter.label.de
+  return translatePublic(locale, filter.label.en)
 }
 
 function mapApiListingToVehicleSearchListing(
@@ -3521,12 +6548,14 @@ function mapApiListingToVehicleSearchListing(
     gearbox: stringOrNull(listing.gearbox),
     bodyType: stringOrNull(listing.body_type),
     country: String(listing.country_code || ''),
+    region: stringOrNull(listing.region),
     city: stringOrNull(listing.city),
     municipality: stringOrNull(listing.municipality),
     latitude: numberOrNull(listing.latitude),
     longitude: numberOrNull(listing.longitude),
     priceLabel: stringOrNull(listing.price_label) || formatApiPrice(priceValue, currency, locale),
     priceValue,
+    displayPriceValue: numberOrNull(listing.display_price_value),
     imageUrl: images[0] || null,
     imageUrls: images,
     sellerLogoUrl: null,
@@ -3538,18 +6567,105 @@ function mapApiListingToVehicleSearchListing(
     condition: stringOrNull(listing.condition),
     color: stringOrNull(listing.color),
     equipment: stringOrNull(listing.equipment),
+    description: stringOrNull(listing.description),
     offerType: listing.offer_type === 'lease' || listing.offer_type === 'sale_and_lease' || listing.offer_type === 'sale'
       ? listing.offer_type
       : null,
     leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
       ? listing.lease_data as Record<string, unknown>
       : null,
+    insuranceOffers: normalizeVehicleInsuranceOffers(listing.insurance_offers),
   }
 }
 
 function formatApiPrice(amount: number, currency: string, locale: PublicLocale) {
   if (!Number.isFinite(amount) || amount <= 0) return uiText(locale, 'Price on request', 'Pris på begäran', 'Preis auf Anfrage')
   return `${amount.toLocaleString(countNumberLocale(locale), { maximumFractionDigits: 0 })} ${currency.toUpperCase()}`
+}
+
+function MarketplacePagination({
+  locale,
+  page,
+  totalPages,
+  onPageChange,
+  className = '',
+}: {
+  locale: PublicLocale
+  page: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  className?: string
+}) {
+  if (totalPages <= 1) return null
+  const copy = paginationCopy[locale]
+  return (
+    <nav aria-label={copy.pagination} className={`flex items-center gap-1.5 ${className}`}>
+      <button
+        type="button"
+        aria-label={copy.previous}
+        title={copy.previous}
+        disabled={page <= 1}
+        onClick={() => onPageChange(page - 1)}
+        className="grid h-8 w-8 place-items-center rounded-[6px] border border-[#cfd7e4] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {paginationItems(page, totalPages).map((item) => item.kind === 'ellipsis' ? (
+        <span key={item.key} className="grid h-8 min-w-6 place-items-center text-xs font-semibold text-[#667085]" aria-hidden="true">...</span>
+      ) : (
+        <button
+          key={item.page}
+          type="button"
+          aria-current={item.page === page ? 'page' : undefined}
+          onClick={() => onPageChange(item.page)}
+          className={`grid h-8 min-w-8 place-items-center rounded-[6px] border px-2 text-xs font-semibold transition ${
+            item.page === page
+              ? 'border-[#0866ff] bg-[#0866ff] text-white'
+              : 'border-[#cfd7e4] bg-white text-[#344054] hover:border-[#0866ff] hover:text-[#0866ff]'
+          }`}
+        >
+          {item.page}
+        </button>
+      ))}
+      <button
+        type="button"
+        aria-label={copy.next}
+        title={copy.next}
+        disabled={page >= totalPages}
+        onClick={() => onPageChange(page + 1)}
+        className="grid h-8 w-8 place-items-center rounded-[6px] border border-[#cfd7e4] bg-white text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff] disabled:cursor-not-allowed disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+      >
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </nav>
+  )
+}
+
+function paginationItems(page: number, totalPages: number) {
+  const pages = new Set([1, totalPages, page - 1, page, page + 1])
+  const visible = Array.from(pages).filter((item) => item >= 1 && item <= totalPages).sort((a, b) => a - b)
+  const items: Array<{ kind: 'page'; page: number } | { kind: 'ellipsis'; key: string }> = []
+  visible.forEach((visiblePage, index) => {
+    const previous = visible[index - 1]
+    if (previous && visiblePage - previous > 1) items.push({ kind: 'ellipsis', key: `${previous}-${visiblePage}` })
+    items.push({ kind: 'page', page: visiblePage })
+  })
+  return items
+}
+
+const paginationCopy: Record<PublicLocale, { pagination: string; previous: string; next: string }> = {
+  en: { pagination: 'Search result pages', previous: 'Previous page', next: 'Next page' },
+  sv: { pagination: 'Sidor med sökresultat', previous: 'Föregående sida', next: 'Nästa sida' },
+  de: { pagination: 'Suchergebnisseiten', previous: 'Vorherige Seite', next: 'Nächste Seite' },
+  at: { pagination: 'Suchergebnisseiten', previous: 'Vorherige Seite', next: 'Nächste Seite' },
+  be: { pagination: 'Pagina\'s met zoekresultaten', previous: 'Vorige pagina', next: 'Volgende pagina' },
+  nl: { pagination: 'Pagina\'s met zoekresultaten', previous: 'Vorige pagina', next: 'Volgende pagina' },
+  fr: { pagination: 'Pages de résultats', previous: 'Page précédente', next: 'Page suivante' },
+  es: { pagination: 'Páginas de resultados', previous: 'Página anterior', next: 'Página siguiente' },
+  it: { pagination: 'Pagine dei risultati', previous: 'Pagina precedente', next: 'Pagina successiva' },
+  pl: { pagination: 'Strony wyników wyszukiwania', previous: 'Poprzednia strona', next: 'Następna strona' },
+  fi: { pagination: 'Hakutulossivut', previous: 'Edellinen sivu', next: 'Seuraava sivu' },
+  da: { pagination: 'Sider med søgeresultater', previous: 'Forrige side', next: 'Næste side' },
 }
 
 function formatSearchResultCountSummary({
@@ -3565,6 +6681,7 @@ function formatSearchResultCountSummary({
   city,
   municipality,
   region,
+  mode,
 }: {
   locale: PublicLocale
   count: number
@@ -3578,8 +6695,9 @@ function formatSearchResultCountSummary({
   city: string
   municipality: string
   region: string
+  mode: SearchMode
 }) {
-  if (count === 0) return uiText(locale, 'No listings match your search', 'Inga annonser matchar din sökning', 'Keine Anzeigen passen zu Ihrer Suche')
+  if (count === 0) return translatePublic(locale, 'No listings match your search')
 
   const formatted = count.toLocaleString(countNumberLocale(locale))
   const subject =
@@ -3596,13 +6714,321 @@ function formatSearchResultCountSummary({
     ? countYearRangeText(locale, minYear, maxYear)
     : ''
 
-  if (locale === 'sv') {
-    return `${formatted} ${subject} till salu${location ? ` i ${location}` : ''}${yearText}`
+  if (mode === 'leasing') return formatLeasingCountText(locale, formatted, subject, location, yearText)
+  if (mode === 'sale') return formatForSaleCountText(locale, formatted, subject, location, yearText)
+  return formatAllCountText(locale, formatted, subject, location, yearText)
+}
+
+function marketplaceModeLabel(locale: PublicLocale, mode: SearchMode) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const labels = {
+    all: marketplaceModeOptionLabel(locale, 'all'),
+    sale: ({
+      sv: 'Till salu',
+      de: 'Kaufen',
+      fr: '\u00c0 vendre',
+      es: 'En venta',
+      it: 'In vendita',
+      pl: 'Na sprzeda\u017c',
+      nl: 'Te koop',
+      da: 'Til salg',
+      fi: 'Myynniss\u00e4',
+      en: 'For sale',
+    } satisfies Record<Exclude<PublicLocale, 'at' | 'be'>, string>)[effectiveLocale],
+    leasing: ({
+      sv: 'Leasing',
+      de: 'Leasing',
+      fr: 'Leasing',
+      es: 'Leasing',
+      it: 'Leasing',
+      pl: 'Leasing',
+      nl: 'Leasing',
+      da: 'Leasing',
+      fi: 'Leasing',
+      en: 'Leasing',
+    } satisfies Record<Exclude<PublicLocale, 'at' | 'be'>, string>)[effectiveLocale],
+  } satisfies Record<SearchMode, string>
+  return labels[mode]
+}
+
+function marketplaceModeOptionLabel(locale: PublicLocale, mode: SearchMode) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const labels = {
+    all: {
+      sv: 'Alla',
+      de: 'Alle',
+      fr: 'Tous',
+      es: 'Todos',
+      it: 'Tutti',
+      pl: 'Wszystkie',
+      nl: 'Alles',
+      da: 'Alle',
+      fi: 'Kaikki',
+      en: 'All',
+    },
+    sale: {
+      sv: 'Fordon till salu',
+      de: 'Fahrzeuge kaufen',
+      fr: 'V\u00e9hicules \u00e0 vendre',
+      es: 'Veh\u00edculos en venta',
+      it: 'Veicoli in vendita',
+      pl: 'Pojazdy na sprzeda\u017c',
+      nl: 'Voertuigen te koop',
+      da: 'K\u00f8ret\u00f8jer til salg',
+      fi: 'Myyt\u00e4v\u00e4t ajoneuvot',
+      en: 'Vehicles for sale',
+    },
+    leasing: {
+      sv: 'Leasing av fordon',
+      de: 'Leasingfahrzeuge',
+      fr: 'V\u00e9hicules en leasing',
+      es: 'Veh\u00edculos en leasing',
+      it: 'Veicoli in leasing',
+      pl: 'Pojazdy w leasingu',
+      nl: 'Voertuigen leasen',
+      da: 'K\u00f8ret\u00f8jer til leasing',
+      fi: 'Leasingajoneuvot',
+      en: 'Leasing vehicles',
+    },
+  } satisfies Record<SearchMode, Record<Exclude<PublicLocale, 'at' | 'be'>, string>>
+  return labels[mode][effectiveLocale]
+}
+
+function resultActionSubjectLabel(locale: PublicLocale, mode: SearchMode) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const labels = {
+    all: {
+      sv: 'fordon', de: 'Fahrzeuge', fr: 'v\u00e9hicules', es: 'veh\u00edculos', it: 'veicoli',
+      pl: 'pojazdy', nl: 'voertuigen', da: 'k\u00f8ret\u00f8jer', fi: 'ajoneuvoa', en: 'vehicles',
+    },
+    sale: {
+      sv: 'fordon till salu', de: 'Fahrzeuge zum Kauf', fr: 'v\u00e9hicules \u00e0 vendre', es: 'veh\u00edculos en venta', it: 'veicoli in vendita',
+      pl: 'pojazdy na sprzeda\u017c', nl: 'voertuigen te koop', da: 'k\u00f8ret\u00f8jer til salg', fi: 'myyt\u00e4v\u00e4\u00e4 ajoneuvoa', en: 'vehicles for sale',
+    },
+    leasing: {
+      sv: 'leasingfordon', de: 'Leasingfahrzeuge', fr: 'v\u00e9hicules en leasing', es: 'veh\u00edculos en leasing', it: 'veicoli in leasing',
+      pl: 'pojazdy w leasingu', nl: 'leasevoertuigen', da: 'leasingk\u00f8ret\u00f8jer', fi: 'leasingajoneuvoa', en: 'leasing vehicles',
+    },
+  } satisfies Record<SearchMode, Record<Exclude<PublicLocale, 'at' | 'be'>, string>>
+  return labels[mode][effectiveLocale]
+}
+
+function formatAllCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject}${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject}${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject}${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject}${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject}${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject}${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject}${place ? ` in ${place}` : ''}${yearText}`
   }
-  if (locale === 'de') {
-    return `${formatted} ${subject} zum Verkauf${location ? ` in ${location}` : ''}${yearText}`
+}
+
+function formatForSaleCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject} till salu${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject} zum Verkauf${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject} \u00e0 vendre${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject} en venta${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject} in vendita${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject} na sprzeda\u017c${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject} te koop${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject} til salg${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject} myynniss\u00e4${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject} for sale${place ? ` in ${place}` : ''}${yearText}`
   }
-  return `${formatted} ${subject} for sale${location ? ` in ${location}` : ''}${yearText}`
+}
+
+function formatLeasingCountText(locale: PublicLocale, formatted: string, subject: string, location: string, yearText: string) {
+  const place = location ? location.trim() : ''
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+
+  switch (effectiveLocale) {
+    case 'sv':
+      return `${formatted} ${subject} f\u00f6r leasing${place ? ` i ${place}` : ''}${yearText}`
+    case 'de':
+      return `${formatted} ${subject} zum Leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'fr':
+      return `${formatted} ${subject} en leasing${place ? ` en ${place}` : ''}${yearText}`
+    case 'es':
+      return `${formatted} ${subject} en leasing${place ? ` en ${place}` : ''}${yearText}`
+    case 'it':
+      return `${formatted} ${subject} in leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'pl':
+      return `${formatted} ${subject} w leasingu${place ? ` w ${place}` : ''}${yearText}`
+    case 'nl':
+      return `${formatted} ${subject} voor leasing${place ? ` in ${place}` : ''}${yearText}`
+    case 'da':
+      return `${formatted} ${subject} til leasing${place ? ` i ${place}` : ''}${yearText}`
+    case 'fi':
+      return `${formatted} ${subject} leasingiin${place ? ` alueella ${place}` : ''}${yearText}`
+    default:
+      return `${formatted} ${subject} for leasing${place ? ` in ${place}` : ''}${yearText}`
+  }
+}
+
+function listingOfferBadge(locale: PublicLocale, listing: VehicleSearchListing) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const saleLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Till salu',
+    de: 'Zum Verkauf',
+    fr: '\u00c0 vendre',
+    es: 'En venta',
+    it: 'In vendita',
+    pl: 'Na sprzeda\u017c',
+    nl: 'Te koop',
+    da: 'Til salg',
+    fi: 'Myynniss\u00e4',
+    en: 'For sale',
+  }
+  const leaseLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Till leasing',
+    de: 'Leasing',
+    fr: 'Leasing',
+    es: 'Leasing',
+    it: 'Leasing',
+    pl: 'Leasing',
+    nl: 'Leasing',
+    da: 'Leasing',
+    fi: 'Leasing',
+    en: 'For leasing',
+  }
+  const bothLabels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Salu eller leasing',
+    de: 'Kauf oder Leasing',
+    fr: 'Vente ou leasing',
+    es: 'Venta o leasing',
+    it: 'Vendita o leasing',
+    pl: 'Sprzeda\u017c lub leasing',
+    nl: 'Koop of leasing',
+    da: 'Salg eller leasing',
+    fi: 'Myynti tai leasing',
+    en: 'Sale or leasing',
+  }
+  if (listing.offerType === 'sale_and_lease') {
+    return {
+      label: bothLabels[effectiveLocale] || translatePublic(locale, 'Sale or leasing'),
+      className: 'bg-[#eef4ff] text-[#084dbb] ring-[#c9dcff]',
+    }
+  }
+  if (isLeasingListing(listing)) {
+    return {
+      label: leaseLabels[effectiveLocale] || translatePublic(locale, 'For leasing'),
+      className: 'bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]',
+    }
+  }
+  return {
+    label: saleLabels[effectiveLocale] || translatePublic(locale, 'For sale'),
+    className: 'bg-[#eef5ff] text-[#0757da] ring-[#c7dbff]',
+  }
+}
+
+function listingInsuranceOfferLabel(
+  locale: PublicLocale,
+  offers: ListingInsuranceOffer[] | null | undefined,
+  countryCode?: string | null,
+) {
+  if (!shouldShowLocalFinancing(locale, countryCode)) return null
+  const bestOffer = lowestMonthlyInsuranceOffer(offers)
+  if (!bestOffer) return null
+  const monthly = formatMonthlyInsurancePrice(
+    bestOffer.monthlyCost,
+    bestOffer.currency || currencyForCountry(countryCode),
+    locale,
+  )
+  if (!monthly) return null
+
+  switch (locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale) {
+    case 'sv':
+      return `Lån från ${monthly}/mån`
+    case 'de':
+      return `Finanzierung ab ${monthly}/Mon.`
+    case 'fr':
+      return `Financement dès ${monthly}/mois`
+    case 'es':
+      return `Financiación desde ${monthly}/mes`
+    case 'it':
+      return `Finanziamento da ${monthly}/mese`
+    case 'pl':
+      return `Finansowanie od ${monthly}/mies.`
+    case 'nl':
+      return `Financiering vanaf ${monthly}/mnd`
+    case 'da':
+      return `Finansiering fra ${monthly}/md.`
+    case 'fi':
+      return `Rahoitus alkaen ${monthly}/kk`
+    default:
+      return `Loan from ${monthly}/mo`
+  }
+}
+
+function lowestMonthlyInsuranceOffer(offers: ListingInsuranceOffer[] | null | undefined) {
+  if (!offers?.length) return null
+  return offers
+    .map((offer) => ({ ...offer, monthlyCost: numberOrNull(offer.monthlyCost) }))
+    .filter((offer): offer is ListingInsuranceOffer & { monthlyCost: number } => Boolean(offer.monthlyCost && offer.monthlyCost > 0))
+    .sort((left, right) => left.monthlyCost - right.monthlyCost)[0] || null
+}
+
+function formatMonthlyInsurancePrice(
+  amount: number | string | null | undefined,
+  currency: string | null | undefined,
+  locale: PublicLocale,
+) {
+  const parsedAmount = numberOrNull(amount)
+  if (!parsedAmount || parsedAmount <= 0) return null
+  const normalizedCurrency = (currency || '').toUpperCase()
+  const formattedAmount = parsedAmount.toLocaleString(countNumberLocale(locale), {
+    maximumFractionDigits: 0,
+  })
+  if (normalizedCurrency === 'SEK' && locale === 'sv') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'DKK' && locale === 'da') return `${formattedAmount} kr.`
+  if (normalizedCurrency === 'NOK') return `${formattedAmount} kr`
+  if (normalizedCurrency === 'EUR') return `${formattedAmount} €`
+  if (normalizedCurrency === 'PLN') return `${formattedAmount} zł`
+  return `${formattedAmount} ${normalizedCurrency || 'EUR'}`
+}
+
+function shouldShowLocalFinancing(locale: PublicLocale, listingCountryCode?: string | null) {
+  const marketCountryCode = countryForLocale(locale).toUpperCase()
+  const normalizedListingCountry = (listingCountryCode || '').toUpperCase()
+  return Boolean(marketCountryCode && marketCountryCode !== 'EU' && normalizedListingCountry === marketCountryCode)
+}
+
+function shouldShowListingCountryChip(listingCountryCode?: string | null, marketCountryCode?: string | null) {
+  const listingCountry = (listingCountryCode || '').toUpperCase()
+  const marketCountry = (marketCountryCode || '').toUpperCase()
+  return Boolean(listingCountry && (!marketCountry || marketCountry === 'EU' || listingCountry !== marketCountry))
 }
 
 function countCategoryLabel(item: (typeof categories)[number], locale: PublicLocale, count: number) {
@@ -3626,21 +7052,51 @@ function countCategoryLabel(item: (typeof categories)[number], locale: PublicLoc
 }
 
 function countYearRangeText(locale: PublicLocale, minYear: string, maxYear: string) {
-  if (locale === 'sv') {
-    if (minYear && maxYear) return ` från ${minYear} till ${maxYear}`
-    if (minYear) return ` från ${minYear}`
-    return ` till ${maxYear}`
-  }
-  if (locale === 'de') {
-    if (minYear && maxYear) return ` von ${minYear} bis ${maxYear}`
-    if (minYear) return ` ab ${minYear}`
-    return ` bis ${maxYear}`
-  }
-  if (minYear && maxYear) return ` from ${minYear} to ${maxYear}`
-  if (minYear) return ` from ${minYear}`
-  return ` up to ${maxYear}`
-}
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
 
+  switch (effectiveLocale) {
+    case 'sv':
+      if (minYear && maxYear) return ` från ${minYear} till ${maxYear}`
+      if (minYear) return ` från ${minYear}`
+      return ` till ${maxYear}`
+    case 'de':
+      if (minYear && maxYear) return ` von ${minYear} bis ${maxYear}`
+      if (minYear) return ` ab ${minYear}`
+      return ` bis ${maxYear}`
+    case 'fr':
+      if (minYear && maxYear) return ` de ${minYear} à ${maxYear}`
+      if (minYear) return ` à partir de ${minYear}`
+      return ` jusqu'à ${maxYear}`
+    case 'es':
+      if (minYear && maxYear) return ` de ${minYear} a ${maxYear}`
+      if (minYear) return ` desde ${minYear}`
+      return ` hasta ${maxYear}`
+    case 'it':
+      if (minYear && maxYear) return ` da ${minYear} a ${maxYear}`
+      if (minYear) return ` dal ${minYear}`
+      return ` fino a ${maxYear}`
+    case 'pl':
+      if (minYear && maxYear) return ` od ${minYear} do ${maxYear}`
+      if (minYear) return ` od ${minYear}`
+      return ` do ${maxYear}`
+    case 'nl':
+      if (minYear && maxYear) return ` van ${minYear} tot ${maxYear}`
+      if (minYear) return ` vanaf ${minYear}`
+      return ` tot ${maxYear}`
+    case 'da':
+      if (minYear && maxYear) return ` fra ${minYear} til ${maxYear}`
+      if (minYear) return ` fra ${minYear}`
+      return ` til ${maxYear}`
+    case 'fi':
+      if (minYear && maxYear) return ` vuosilta ${minYear}-${maxYear}`
+      if (minYear) return ` alkaen ${minYear}`
+      return ` enintään ${maxYear}`
+    default:
+      if (minYear && maxYear) return ` from ${minYear} to ${maxYear}`
+      if (minYear) return ` from ${minYear}`
+      return ` up to ${maxYear}`
+  }
+}
 function countNumberLocale(locale: PublicLocale) {
   if (locale === 'sv') return 'sv-SE'
   if (locale === 'de' || locale === 'at') return 'de-DE'
@@ -3662,6 +7118,23 @@ function numberOrNull(value: unknown) {
 
 function stringOrNull(value: unknown) {
   return typeof value === 'string' && value ? value : null
+}
+
+function normalizeVehicleInsuranceOffers(value: unknown): ListingInsuranceOffer[] | null {
+  if (!Array.isArray(value)) return null
+  const offers: ListingInsuranceOffer[] = []
+  for (const offer of value) {
+    if (!offer || typeof offer !== 'object' || Array.isArray(offer)) continue
+    const record = offer as Record<string, unknown>
+    const monthlyCost = numberOrNull(record.monthlyCost)
+    if (!monthlyCost || monthlyCost <= 0) continue
+    offers.push({
+      provider: stringOrNull(record.provider),
+      monthlyCost,
+      currency: stringOrNull(record.currency),
+    })
+  }
+  return offers.length ? offers : null
 }
 
 function parseOptionalNumber(value: string | number | null | undefined) {

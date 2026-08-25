@@ -1,21 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useMemo, useState } from 'react'
-import { BadgeCheck, BarChart3, Check, Info, RefreshCw, Rocket, Star, X } from 'lucide-react'
+import { Check, ChevronDown, Info, Mail, X } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
 import PricingAnchorScroll from '@/app/components/PricingAnchorScroll'
 import {
-  billingProductCatalog,
   currencyForMarket,
   formatMoneyMinor,
-  getProductAmount,
-  listingCategoryLabels,
   type BillingMarket,
-  type BillingProduct,
-  type ListingCategory,
 } from '@/lib/billing/product-catalog'
 import {
   businessSubscriptionCopy,
@@ -25,7 +19,7 @@ import {
   type BillingPeriod,
   type BusinessSubscriptionPlan,
 } from '@/lib/business-subscription-plans'
-import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translationLocale, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 
 type PricingPageProps = {
   locale: PublicLocale
@@ -33,170 +27,189 @@ type PricingPageProps = {
   marketCode?: string
 }
 
-const localeMap: Record<PublicLocale, string> = {
-  sv: 'sv-SE',
-  en: 'en-GB',
-  de: 'de-DE',
-  at: 'de-AT',
-  be: 'nl-BE',
-  fr: 'fr-FR',
-  es: 'es-ES',
-  it: 'it-IT',
-  pl: 'pl-PL',
-  nl: 'nl-NL',
-  fi: 'fi-FI',
-  da: 'da-DK',
+type BusinessFaqCopy = {
+  faqEyebrow: string
+  faqTitle: string
+  faqIntro: string
+  faqs: Array<{ question: string; answer: string }>
+  contactEyebrow: string
+  contactTitle: string
+  contactText: string
+  contactCta: string
 }
 
-const copyByLocale: Partial<Record<PublicLocale, typeof copyByLocaleBase>> = {
+const businessFaqCopyByLocale: Record<string, BusinessFaqCopy> = {
+  en: {
+    faqEyebrow: 'Questions for businesses',
+    faqTitle: 'FAQ for dealers and companies',
+    faqIntro: 'Short answers about plans, inventory limits, users, imports and support.',
+    faqs: [
+      { question: 'Which plan should a smaller dealer choose?', answer: 'Starter is built for companies that want a professional company page and up to 25 active listings without a larger team setup.' },
+      { question: 'When does Growth make sense?', answer: 'Growth fits teams that publish continuously, need up to 100 active listings and want several users working in the same company account.' },
+      { question: 'Can Autorell handle larger inventories?', answer: 'Yes. Professional supports up to 500 active listings, more users, reports, export and stronger follow-up for larger stock.' },
+      { question: 'Do you support inventory import?', answer: 'Import and more automated inventory flows are handled in the higher plans and can be tailored for Enterprise customers.' },
+      { question: 'Can chains, importers or multi-location companies use Autorell?', answer: 'Yes. Enterprise is adapted for companies with several locations, custom integration needs, larger teams or a separate commercial agreement.' },
+    ],
+    contactEyebrow: 'Need help choosing?',
+    contactTitle: 'Questions about business plans?',
+    contactText: 'Tell us about your inventory, market and team. We will help you choose the right setup for your company.',
+    contactCta: 'Contact us',
+  },
   sv: {
-    title: 'Annonspriser',
-    intro: 'Fasta lokala priser. Samma belopp visas i Checkout.',
-    privateHeading: 'Privatannonser',
-    addonsHeading: 'Synlighetstjänster',
-    businessHeading: 'Företagsabonnemang',
-    category: 'Kategori',
-    start: 'Start',
-    standard: 'Standard',
-    premium: 'Premium',
-    free: 'Gratis',
-    days: 'dagar',
-    perMonth: 'per månad',
-    included: 'Ingår',
-    recommended: 'Rekommenderad',
-    startText: '5 dagar, standardplacering.',
-    standardText: '15 dagar och utökad annonsstatistik.',
-    premiumText: '30 dagar, Premium-badge och 7 dagars toppplacering.',
-    topPlacement: 'Toppplacering',
-    topPlacementText: 'Sponsrad placering i relevanta sökresultat.',
-    featured: 'Utvald annons',
-    featuredText: 'Visas i särskilda moduler och rekommendationer.',
-    refresh: 'Förnyelse',
-    refreshText: 'Flyttar upp annonsen bland vanliga annonser utan att ändra skapandedatum.',
-    activeListings: 'aktiva annonser',
-    contactUs: 'Kontakta oss',
-    enterprise: 'Enterprise',
-    sellCta: 'Skapa annons',
+    faqEyebrow: 'Frågor för företag',
+    faqTitle: 'FAQ för handlare och företag',
+    faqIntro: 'Korta svar om planer, annonsgränser, användare, import och support.',
+    faqs: [
+      { question: 'Vilken plan passar en mindre handlare?', answer: 'Starter passar företag som vill ha en professionell företagssida och upp till 25 aktiva annonser utan ett större teamupplägg.' },
+      { question: 'När är Growth rätt val?', answer: 'Growth passar team som publicerar löpande, behöver upp till 100 aktiva annonser och vill att flera användare arbetar i samma företagskonto.' },
+      { question: 'Kan Autorell hantera större lager?', answer: 'Ja. Professional stödjer upp till 500 aktiva annonser, fler användare, rapporter, export och bättre uppföljning för större lager.' },
+      { question: 'Stödjer ni lagerimport?', answer: 'Import och mer automatiserade lagerflöden ingår i de högre planerna och kan anpassas för Enterprise-kunder.' },
+      { question: 'Kan kedjor, importörer eller företag med flera anläggningar använda Autorell?', answer: 'Ja. Enterprise anpassas för företag med flera anläggningar, egna integrationsbehov, större team eller separat kommersiellt avtal.' },
+    ],
+    contactEyebrow: 'Behöver ni hjälp att välja?',
+    contactTitle: 'Har ni frågor om företagsplaner?',
+    contactText: 'Berätta om ert lager, er marknad och ert team. Vi hjälper er välja rätt upplägg för företaget.',
+    contactCta: 'Kontakta oss',
+  },
+  de: {
+    faqEyebrow: 'Fragen für Unternehmen',
+    faqTitle: 'FAQ für Händler und Unternehmen',
+    faqIntro: 'Kurze Antworten zu Tarifen, Anzeigenlimits, Nutzern, Importen und Support.',
+    faqs: [
+      { question: 'Welcher Tarif passt zu kleineren Händlern?', answer: 'Starter eignet sich für Unternehmen, die eine professionelle Unternehmensseite und bis zu 25 aktive Anzeigen ohne größeren Teamaufbau benötigen.' },
+      { question: 'Wann ist Growth sinnvoll?', answer: 'Growth passt zu Teams, die laufend veröffentlichen, bis zu 100 aktive Anzeigen benötigen und mit mehreren Nutzern im selben Unternehmenskonto arbeiten.' },
+      { question: 'Kann Autorell größere Bestände verwalten?', answer: 'Ja. Professional unterstützt bis zu 500 aktive Anzeigen, mehr Nutzer, Berichte, Export und bessere Nachverfolgung für größere Bestände.' },
+      { question: 'Unterstützen Sie Bestandsimport?', answer: 'Importe und stärker automatisierte Bestandsabläufe sind in den höheren Tarifen enthalten und können für Enterprise-Kunden angepasst werden.' },
+      { question: 'Können Ketten, Importeure oder Unternehmen mit mehreren Standorten Autorell nutzen?', answer: 'Ja. Enterprise wird für Unternehmen mit mehreren Standorten, eigenen Integrationsanforderungen, größeren Teams oder separater kommerzieller Vereinbarung angepasst.' },
+    ],
+    contactEyebrow: 'Hilfe bei der Auswahl?',
+    contactTitle: 'Fragen zu Unternehmenstarifen?',
+    contactText: 'Beschreiben Sie Bestand, Markt und Team. Wir helfen beim passenden Setup für Ihr Unternehmen.',
+    contactCta: 'Kontakt aufnehmen',
+  },
+  fr: {
+    faqEyebrow: 'Questions pour les entreprises',
+    faqTitle: 'FAQ pour distributeurs et entreprises',
+    faqIntro: 'Réponses courtes sur les offres, limites d’annonces, utilisateurs, imports et support.',
+    faqs: [
+      { question: 'Quelle offre convient à un petit distributeur ?', answer: 'Starter convient aux entreprises qui veulent une page professionnelle et jusqu’à 25 annonces actives sans organisation d’équipe complexe.' },
+      { question: 'Quand choisir Growth ?', answer: 'Growth convient aux équipes qui publient régulièrement, ont besoin de 100 annonces actives maximum et travaillent à plusieurs dans le même compte entreprise.' },
+      { question: 'Autorell peut-il gérer de grands stocks ?', answer: 'Oui. Professional prend en charge jusqu’à 500 annonces actives, plus d’utilisateurs, rapports, export et suivi renforcé.' },
+      { question: 'L’import de stock est-il pris en charge ?', answer: 'Les imports et flux de stock plus automatisés sont inclus dans les offres supérieures et peuvent être adaptés pour Enterprise.' },
+      { question: 'Les réseaux, importateurs ou sociétés multi-sites peuvent-ils utiliser Autorell ?', answer: 'Oui. Enterprise est adapté aux sociétés avec plusieurs sites, besoins d’intégration spécifiques, équipes plus larges ou accord commercial séparé.' },
+    ],
+    contactEyebrow: 'Besoin d’aide pour choisir ?',
+    contactTitle: 'Des questions sur les offres entreprise ?',
+    contactText: 'Parlez-nous de votre stock, de votre marché et de votre équipe. Nous vous aidons à choisir la bonne configuration.',
+    contactCta: 'Nous contacter',
+  },
+  es: {
+    faqEyebrow: 'Preguntas para empresas',
+    faqTitle: 'FAQ para concesionarios y empresas',
+    faqIntro: 'Respuestas breves sobre planes, límites de anuncios, usuarios, importaciones y soporte.',
+    faqs: [
+      { question: '¿Qué plan conviene a un concesionario pequeño?', answer: 'Starter está pensado para empresas que quieren una página profesional y hasta 25 anuncios activos sin una configuración amplia de equipo.' },
+      { question: '¿Cuándo tiene sentido Growth?', answer: 'Growth encaja con equipos que publican de forma continua, necesitan hasta 100 anuncios activos y trabajan con varios usuarios en la misma cuenta de empresa.' },
+      { question: '¿Autorell puede gestionar inventarios grandes?', answer: 'Sí. Professional admite hasta 500 anuncios activos, más usuarios, informes, exportación y mejor seguimiento para inventarios grandes.' },
+      { question: '¿Admiten importación de inventario?', answer: 'La importación y los flujos de inventario más automatizados están incluidos en los planes superiores y pueden adaptarse para Enterprise.' },
+      { question: '¿Pueden usar Autorell grupos, importadores o empresas con varias sedes?', answer: 'Sí. Enterprise se adapta a empresas con varias sedes, necesidades de integración propias, equipos grandes o un acuerdo comercial separado.' },
+    ],
+    contactEyebrow: '¿Necesitas ayuda para elegir?',
+    contactTitle: '¿Tienes preguntas sobre planes de empresa?',
+    contactText: 'Cuéntanos sobre tu inventario, mercado y equipo. Te ayudamos a elegir la configuración adecuada.',
+    contactCta: 'Contactar',
+  },
+  it: {
+    faqEyebrow: 'Domande per aziende',
+    faqTitle: 'FAQ per rivenditori e aziende',
+    faqIntro: 'Risposte brevi su piani, limiti annunci, utenti, importazioni e supporto.',
+    faqs: [
+      { question: 'Quale piano scegliere per un rivenditore piccolo?', answer: 'Starter è pensato per aziende che vogliono una pagina professionale e fino a 25 annunci attivi senza un’organizzazione ampia del team.' },
+      { question: 'Quando ha senso Growth?', answer: 'Growth è adatto a team che pubblicano continuamente, hanno bisogno di fino a 100 annunci attivi e lavorano con più utenti nello stesso account aziendale.' },
+      { question: 'Autorell può gestire inventari grandi?', answer: 'Sì. Professional supporta fino a 500 annunci attivi, più utenti, report, export e un follow-up più completo.' },
+      { question: 'Supportate l’importazione dell’inventario?', answer: 'Importazioni e flussi inventario più automatizzati sono inclusi nei piani superiori e possono essere adattati per Enterprise.' },
+      { question: 'Gruppi, importatori o aziende multi-sede possono usare Autorell?', answer: 'Sì. Enterprise viene adattato ad aziende con più sedi, esigenze di integrazione specifiche, team più grandi o accordo commerciale separato.' },
+    ],
+    contactEyebrow: 'Serve aiuto per scegliere?',
+    contactTitle: 'Domande sui piani aziendali?',
+    contactText: 'Raccontaci inventario, mercato e team. Ti aiutiamo a scegliere la configurazione giusta.',
+    contactCta: 'Contattaci',
+  },
+  nl: {
+    faqEyebrow: 'Vragen voor bedrijven',
+    faqTitle: 'FAQ voor dealers en bedrijven',
+    faqIntro: 'Korte antwoorden over plannen, advertentielimieten, gebruikers, import en support.',
+    faqs: [
+      { question: 'Welk plan past bij een kleinere dealer?', answer: 'Starter is bedoeld voor bedrijven die een professionele bedrijfspagina en tot 25 actieve advertenties willen zonder uitgebreide teaminrichting.' },
+      { question: 'Wanneer is Growth logisch?', answer: 'Growth past bij teams die doorlopend publiceren, tot 100 actieve advertenties nodig hebben en met meerdere gebruikers in hetzelfde bedrijfsaccount werken.' },
+      { question: 'Kan Autorell grotere voorraden beheren?', answer: 'Ja. Professional ondersteunt tot 500 actieve advertenties, meer gebruikers, rapporten, export en betere opvolging.' },
+      { question: 'Ondersteunen jullie voorraadimport?', answer: 'Import en meer geautomatiseerde voorraadstromen zitten in de hogere plannen en kunnen voor Enterprise worden aangepast.' },
+      { question: 'Kunnen ketens, importeurs of bedrijven met meerdere vestigingen Autorell gebruiken?', answer: 'Ja. Enterprise wordt aangepast voor bedrijven met meerdere vestigingen, eigen integratiebehoeften, grotere teams of een aparte commerciële overeenkomst.' },
+    ],
+    contactEyebrow: 'Hulp nodig bij kiezen?',
+    contactTitle: 'Vragen over zakelijke plannen?',
+    contactText: 'Vertel ons over je voorraad, markt en team. We helpen je de juiste inrichting kiezen.',
+    contactCta: 'Contact opnemen',
+  },
+  fi: {
+    faqEyebrow: 'Kysymyksiä yrityksille',
+    faqTitle: 'FAQ jälleenmyyjille ja yrityksille',
+    faqIntro: 'Lyhyet vastaukset paketeista, ilmoitusrajoista, käyttäjistä, tuonneista ja tuesta.',
+    faqs: [
+      { question: 'Mikä paketti sopii pienemmälle jälleenmyyjälle?', answer: 'Starter sopii yrityksille, jotka haluavat ammattimaisen yrityssivun ja enintään 25 aktiivista ilmoitusta ilman laajaa tiimirakennetta.' },
+      { question: 'Milloin Growth on oikea valinta?', answer: 'Growth sopii tiimeille, jotka julkaisevat jatkuvasti, tarvitsevat enintään 100 aktiivista ilmoitusta ja työskentelevät samalla yritystilillä.' },
+      { question: 'Voiko Autorell hallita suurempia varastoja?', answer: 'Kyllä. Professional tukee enintään 500 aktiivista ilmoitusta, useampia käyttäjiä, raportteja, vientiä ja parempaa seurantaa.' },
+      { question: 'Tuetteko varaston tuontia?', answer: 'Tuonti ja automatisoidummat varastovirrat sisältyvät ylempiin paketteihin ja voidaan räätälöidä Enterprise-asiakkaille.' },
+      { question: 'Voivatko ketjut, maahantuojat tai monen toimipisteen yritykset käyttää Autorellia?', answer: 'Kyllä. Enterprise räätälöidään yrityksille, joilla on useita toimipisteitä, omia integraatiotarpeita, suurempia tiimejä tai erillinen kaupallinen sopimus.' },
+    ],
+    contactEyebrow: 'Tarvitsetteko apua valintaan?',
+    contactTitle: 'Kysymyksiä yrityspaketeista?',
+    contactText: 'Kertokaa varastosta, markkinasta ja tiimistä. Autamme valitsemaan oikean kokonaisuuden.',
+    contactCta: 'Ota yhteyttä',
   },
   da: {
-    title: 'Annoncepriser',
-    intro: 'Faste lokale priser. Samme beløb vises i Checkout.',
-    privateHeading: 'Private annoncer',
-    addonsHeading: 'Synlighedstjenester',
-    businessHeading: 'Virksomhedsabonnementer',
-    category: 'Kategori',
-    start: 'Start',
-    standard: 'Standard',
-    premium: 'Premium',
-    free: 'Gratis',
-    days: 'dage',
-    perMonth: 'pr. måned',
-    included: 'Inkluderet',
-    recommended: 'Anbefalet',
-    startText: '5 dage, standardplacering.',
-    standardText: '15 dage og udvidet annoncestatistik.',
-    premiumText: '30 dage, Premium-badge og 7 dages topplacering.',
-    topPlacement: 'Topplacering',
-    topPlacementText: 'Sponsoreret placering i relevante søgeresultater.',
-    featured: 'Udvalgt annonce',
-    featuredText: 'Vises i særlige moduler og anbefalinger.',
-    refresh: 'Fornyelse',
-    refreshText: 'Flytter annoncen op blandt almindelige annoncer uden at ændre oprettelsesdatoen.',
-    activeListings: 'aktive annoncer',
-    contactUs: 'Kontakt os',
-    enterprise: 'Enterprise',
-    sellCta: 'Opret annonce',
+    faqEyebrow: 'Spørgsmål for virksomheder',
+    faqTitle: 'FAQ for forhandlere og virksomheder',
+    faqIntro: 'Korte svar om planer, annoncegrænser, brugere, import og support.',
+    faqs: [
+      { question: 'Hvilken plan passer til en mindre forhandler?', answer: 'Starter passer til virksomheder, der ønsker en professionel virksomhedsside og op til 25 aktive annoncer uden et større teamsetup.' },
+      { question: 'Hvornår giver Growth mening?', answer: 'Growth passer til teams, der publicerer løbende, har brug for op til 100 aktive annoncer og arbejder med flere brugere på samme virksomhedskonto.' },
+      { question: 'Kan Autorell håndtere større lagre?', answer: 'Ja. Professional understøtter op til 500 aktive annoncer, flere brugere, rapporter, eksport og bedre opfølgning.' },
+      { question: 'Understøtter I lagerimport?', answer: 'Import og mere automatiserede lagerflows indgår i de højere planer og kan tilpasses Enterprise-kunder.' },
+      { question: 'Kan kæder, importører eller virksomheder med flere lokationer bruge Autorell?', answer: 'Ja. Enterprise tilpasses virksomheder med flere lokationer, egne integrationsbehov, større teams eller separat kommerciel aftale.' },
+    ],
+    contactEyebrow: 'Brug for hjælp til at vælge?',
+    contactTitle: 'Spørgsmål om virksomhedsplaner?',
+    contactText: 'Fortæl os om lager, marked og team. Vi hjælper jer med at vælge den rigtige opsætning.',
+    contactCta: 'Kontakt os',
   },
   pl: {
-    title: 'Cennik',
-    intro: 'Stale lokalne ceny. Ta sama kwota jest widoczna w Checkout.',
-    privateHeading: 'Ogloszenia prywatne',
-    addonsHeading: 'Uslugi widocznosci',
-    businessHeading: 'Abonamenty firmowe',
-    category: 'Kategoria',
-    start: 'Start',
-    standard: 'Standard',
-    premium: 'Premium',
-    free: 'Bezpłatnie',
-    days: 'dni',
-    perMonth: 'miesiecznie',
-    included: 'W cenie',
-    recommended: 'Polecane',
-    startText: '5 dni, standardowa pozycja.',
-    standardText: '15 dni i rozszerzone statystyki ogloszenia.',
-    premiumText: '30 dni, odznaka Premium i 7 dni topowej pozycji.',
-    topPlacement: 'Topowa pozycja',
-    topPlacementText: 'Sponsorowana pozycja w trafnych wynikach wyszukiwania.',
-    featured: 'Wyroznione ogloszenie',
-    featuredText: 'Widoczne w specjalnych modulach i rekomendacjach.',
-    refresh: 'Odnowienie',
-    refreshText: 'Przesuwa ogloszenie wyzej wsrod zwyklych ogloszen bez zmiany daty utworzenia.',
-    activeListings: 'aktywnych ogloszen',
-    contactUs: 'Skontaktuj sie',
-    enterprise: 'Enterprise',
-    sellCta: 'Dodaj ogloszenie',
+    faqEyebrow: 'Pytania dla firm',
+    faqTitle: 'FAQ dla dealerów i firm',
+    faqIntro: 'Krótkie odpowiedzi o planach, limitach ogłoszeń, użytkownikach, imporcie i wsparciu.',
+    faqs: [
+      { question: 'Jaki plan wybrać dla mniejszego dealera?', answer: 'Starter jest dla firm, które chcą profesjonalnej strony firmowej i do 25 aktywnych ogłoszeń bez rozbudowanej konfiguracji zespołu.' },
+      { question: 'Kiedy Growth ma sens?', answer: 'Growth pasuje do zespołów, które publikują regularnie, potrzebują do 100 aktywnych ogłoszeń i pracują z wieloma użytkownikami na jednym koncie firmowym.' },
+      { question: 'Czy Autorell obsługuje większe zapasy?', answer: 'Tak. Professional obsługuje do 500 aktywnych ogłoszeń, więcej użytkowników, raporty, eksport i lepsze monitorowanie.' },
+      { question: 'Czy wspieracie import zapasów?', answer: 'Import i bardziej zautomatyzowane przepływy zapasów są dostępne w wyższych planach i mogą być dostosowane dla klientów Enterprise.' },
+      { question: 'Czy sieci, importerzy lub firmy z wieloma lokalizacjami mogą używać Autorell?', answer: 'Tak. Enterprise jest dostosowywany do firm z wieloma lokalizacjami, własnymi potrzebami integracji, większymi zespołami lub osobną umową handlową.' },
+    ],
+    contactEyebrow: 'Potrzebujesz pomocy w wyborze?',
+    contactTitle: 'Pytania o plany firmowe?',
+    contactText: 'Opowiedz nam o zapasach, rynku i zespole. Pomożemy wybrać właściwą konfigurację.',
+    contactCta: 'Skontaktuj się',
   },
 }
 
-const copyByLocaleBase = {
-  title: 'Pricing',
-  intro: 'Fixed local prices. The same amount is shown in Checkout.',
-  privateHeading: 'Private listings',
-  addonsHeading: 'Visibility services',
-  businessHeading: 'Business subscriptions',
-  category: 'Category',
-  start: 'Start',
-  standard: 'Standard',
-  premium: 'Premium',
-  free: 'Free',
-  days: 'days',
-  perMonth: 'per month',
-  included: 'Included',
-  recommended: 'Recommended',
-  startText: '5 days, standard placement.',
-  standardText: '15 days and extended listing statistics.',
-  premiumText: '30 days, Premium badge and 7 days of top placement.',
-  topPlacement: 'Top placement',
-  topPlacementText: 'Sponsored placement in relevant search results.',
-  featured: 'Featured listing',
-  featuredText: 'Shown in special modules and recommendation sections.',
-  refresh: 'Refresh',
-  refreshText: 'Moves the listing up among regular listings without changing its creation date.',
-  activeListings: 'active listings',
-  contactUs: 'Contact us',
-  enterprise: 'Enterprise',
-  sellCta: 'Create listing',
-}
-
-const packageCards = [
-  { key: 'start', icon: BadgeCheck, recommended: false },
-  { key: 'standard', icon: BarChart3, recommended: false },
-  { key: 'premium', icon: Rocket, recommended: true },
-] as const
-
-const addOnKeys = [
-  'addon.top_placement.3_days',
-  'addon.top_placement.7_days',
-  'addon.top_placement.14_days',
-  'addon.featured.7_days',
-  'addon.featured.30_days',
-  'addon.refresh.single',
-  'addon.refresh.pack_5',
-  'addon.refresh.pack_10',
-] as const
-
 export default function PricingPage({ locale, market, marketCode }: PricingPageProps) {
-  const copy = copyByLocale[locale] || copyByLocaleBase
-  const numberLocale = localeMap[locale] || 'en-GB'
-  const categoryEntries = Object.entries(listingCategoryLabels) as Array<[ListingCategory, string]>
   const businessCopy = useMemo(() => translatePublicObject(locale, {
     ...businessSubscriptionCopy,
-    eyebrow: 'Business subscriptions',
-    heading: 'Choose a plan for the company',
-    intro: 'Compare what is included in each company plan. Switch between monthly and annual pricing to see the yearly discount.',
-    adsOnly: 'Ads only',
+    eyebrow: 'Business plans',
+    heading: 'Choose a plan for your company',
+    intro: 'Compare the company plans and choose monthly or annual billing. All prices are shown in the local currency for the selected market.',
     noCheckout: 'Create a business account to activate a plan.',
   }), [locale])
+  const faqCopy = businessFaqCopyByLocale[translationLocale(locale)] || businessFaqCopyByLocale.en
   const businessPlans = useMemo(() => translatePublicObject(locale, businessSubscriptionPlans), [locale])
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly')
   const businessLocaleTag = localeToIntl(locale)
@@ -205,116 +218,23 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
     <main className="overflow-x-hidden bg-white text-[#101828] [&_*]:min-w-0">
       <PublicHeader locale={locale} marketCode={marketCode} />
       <PricingAnchorScroll />
-      <section className="relative min-h-[320px] overflow-hidden border-b border-[#d8e0ec] bg-[#101828] sm:min-h-[400px] lg:min-h-[440px]">
-        <Image
-          src="/autorell-pricing-mobile-hero.jpg"
-          alt="Autorell mobile listing form"
-          fill
-          priority
-          quality={95}
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,12,24,.24)_0%,rgba(7,12,24,.14)_42%,rgba(7,12,24,.03)_76%,rgba(7,12,24,0)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,12,24,.04)_0%,rgba(7,12,24,0)_42%)]" />
-        <div className="relative z-10 mx-auto flex min-h-[320px] max-w-[var(--autorell-page-max)] items-end px-5 py-8 sm:min-h-[400px] sm:px-8 sm:py-11 lg:min-h-[440px] lg:py-12">
-          <div className="min-w-0">
-              <h1 className="max-w-full break-words text-[40px] font-semibold leading-[1.02] tracking-[-.045em] text-white [overflow-wrap:anywhere] sm:max-w-4xl sm:text-[64px]">
-                {copy.title}
-              </h1>
-              <p className="mt-4 max-w-2xl text-[16px] leading-7 text-white/82 sm:text-[18px] sm:leading-8">
-                {copy.intro}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Link href="#private" className="rounded-full border border-white/55 bg-white px-4 py-2 text-sm font-medium text-[#101828] shadow-[0_12px_30px_rgba(7,12,24,.18)] transition hover:bg-[#f7faff]">
-                  {copy.privateHeading}
-                </Link>
-                <Link href="#business" className="rounded-full border border-white/45 bg-white/12 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/18">
-                  {copy.businessHeading}
-                </Link>
-              </div>
-            </div>
-        </div>
-      </section>
 
-      <section id="private" className="scroll-mt-28 mx-auto max-w-[var(--autorell-page-max)] px-5 py-14 sm:px-8 sm:py-20">
-        <h2 className="text-[28px] font-semibold leading-tight tracking-[-.03em] sm:text-[36px]">{copy.privateHeading}</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {packageCards.map(({ key, icon: Icon, recommended }) => (
-            <article key={key} className={`rounded-[14px] border bg-white p-6 shadow-[0_18px_44px_rgba(16,24,40,.045)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(16,24,40,.07)] sm:p-7 ${recommended ? 'border-[#aebed3]' : 'border-[#d9e2ef]'}`}>
-              <div className="flex items-center justify-between gap-3">
-                <Icon className="h-4 w-4 text-[#0866ff]" />
-                {recommended ? (
-                  <span className="rounded-full border border-[#c9d8ef] bg-[#f7faff] px-3 py-1 text-[11px] font-semibold text-[#0756cf]">
-                    {copy.recommended}
-                  </span>
-                ) : null}
-              </div>
-              <h3 className="mt-7 text-[26px] font-semibold tracking-[-.025em]">{copy[key]}</h3>
-              <p className="mt-3 text-[15px] leading-7 text-[#5f6b7a]">{copy[`${key}Text` as keyof typeof copy]}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-9 overflow-x-auto rounded-[14px] border border-[#d9e2ef] bg-white shadow-[0_18px_46px_rgba(16,24,40,.045)]">
-          <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-            <thead className="bg-[#f8fafc] text-[11px] uppercase tracking-[.14em] text-[#667085]">
-              <tr>
-                <th className="px-5 py-4 font-semibold sm:px-6">{copy.category}</th>
-                <th className="px-5 py-4 font-semibold sm:px-6">{copy.start}</th>
-                <th className="px-5 py-4 font-semibold sm:px-6">{copy.standard}</th>
-                <th className="px-5 py-4 font-semibold sm:px-6">{copy.premium}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categoryEntries.map(([category, label]) => (
-                <tr key={category} className="border-t border-[#edf1f7] transition hover:bg-[#fbfcff]">
-                  <th className="px-5 py-4 font-medium sm:px-6">{label}</th>
-                  <td className="px-5 py-4 font-semibold text-[#15803d] sm:px-6">{copy.free}</td>
-                  <td className="px-5 py-4 sm:px-6">{formatProduct(`listing.${category}.standard`, market, numberLocale)}</td>
-                  <td className="px-5 py-4 font-semibold sm:px-6">{formatProduct(`listing.${category}.premium`, market, numberLocale)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 sm:py-12">
-        <h2 className="text-[26px] font-semibold tracking-[-.025em] sm:text-[32px]">{copy.addonsHeading}</h2>
-        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {addOnKeys.map((productKey) => {
-            const product = findProduct(productKey)
-            return (
-              <article key={productKey} className="rounded-[14px] border border-[#d9e2ef] bg-white p-5 transition hover:border-[#c8d4e5] hover:shadow-[0_16px_38px_rgba(16,24,40,.045)]">
-                <div className="flex items-center justify-between gap-3">
-                  {product?.addon?.startsWith('featured') ? <Star className="h-4 w-4 text-[#0866ff]" /> : <RefreshCw className="h-4 w-4 text-[#0866ff]" />}
-                  <span className="text-[15px] font-semibold tracking-[-.01em]">{formatProduct(productKey, market, numberLocale)}</span>
-                </div>
-                <h3 className="mt-5 text-base font-semibold">{addOnTitle(product, copy)}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{addOnDescription(product, copy)}</p>
-              </article>
-            )
-          })}
-        </div>
-      </section>
-
-      <section id="business" className="scroll-mt-28 bg-[#f5f7fb] px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-[1380px]">
+      <section id="business" className="scroll-mt-28 overflow-hidden bg-[#f5f7fb] px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mx-auto w-full max-w-[1380px]">
           <div className="grid gap-6 border-b border-[#dde6f2] pb-7 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div>
+            <div className="w-full max-w-full">
               <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">{businessCopy.eyebrow}</p>
-              <h2 className="mt-3 text-[34px] font-semibold leading-tight tracking-[-.04em] text-[#101828] sm:text-[48px]">
+              <h1 className="mt-3 max-w-full break-words text-[34px] font-semibold leading-tight tracking-[-.04em] text-[#101828] sm:text-[48px]">
                 {businessCopy.heading}
-              </h2>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-[#5f6b7a]">{businessCopy.intro}</p>
+              </h1>
+              <p className="mt-4 max-w-[330px] text-base leading-7 text-[#5f6b7a] sm:max-w-3xl">{businessCopy.intro}</p>
             </div>
-            <div className="w-full rounded-[14px] border border-[#d8e2f0] bg-white p-2 shadow-[0_18px_46px_rgba(16,24,40,.06)] lg:w-[430px]">
+            <div className="w-full max-w-full overflow-hidden rounded-[14px] border border-[#d8e2f0] bg-white p-2 shadow-[0_18px_46px_rgba(16,24,40,.06)] lg:w-[430px]">
               <div className="grid grid-cols-2 rounded-[10px] bg-[#eef3f9] p-1">
                 <button
                   type="button"
                   onClick={() => setBillingPeriod('monthly')}
-                  className={`min-h-11 rounded-[8px] text-sm font-bold transition ${
+                  className={`min-h-11 min-w-0 rounded-[8px] px-2 text-[11px] font-bold leading-tight transition sm:text-sm ${
                     billingPeriod === 'monthly' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
                   }`}
                 >
@@ -323,7 +243,7 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
                 <button
                   type="button"
                   onClick={() => setBillingPeriod('annual')}
-                  className={`min-h-11 rounded-[8px] text-sm font-bold transition ${
+                  className={`min-h-11 min-w-0 rounded-[8px] px-2 text-[11px] font-bold leading-tight transition sm:text-sm ${
                     billingPeriod === 'annual' ? 'bg-white text-[#101828] shadow-sm' : 'text-[#667085] hover:text-[#101828]'
                   }`}
                 >
@@ -349,6 +269,52 @@ export default function PricingPage({ locale, market, marketCode }: PricingPageP
         </div>
       </section>
 
+      <section className="bg-white px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto grid max-w-[1120px] gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">{faqCopy.faqEyebrow}</p>
+            <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-.04em] text-[#101828] sm:text-[40px]">
+              {faqCopy.faqTitle}
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[#667085]">{faqCopy.faqIntro}</p>
+          </div>
+          <div className="space-y-3">
+            {faqCopy.faqs.map((item, index) => (
+              <details
+                key={item.question}
+                className="group rounded-[12px] border border-[#d9e2ef] bg-[#f8fafc] shadow-[0_14px_34px_rgba(16,24,40,.035)] open:bg-white"
+                open={index === 0}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-base font-semibold text-[#101828] marker:hidden">
+                  <span>{item.question}</span>
+                  <ChevronDown className="h-5 w-5 shrink-0 text-[#667085] transition group-open:rotate-180 group-open:text-[#0866ff]" />
+                </summary>
+                <div className="border-t border-[#e4ebf5] px-5 pb-5 pt-4 text-sm leading-7 text-[#667085]">
+                  {item.answer}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-14 sm:px-8 sm:pb-20">
+        <div className="mx-auto flex max-w-[1120px] flex-col gap-5 rounded-[14px] border border-[#d8e2f0] bg-[#f5f9ff] p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#0866ff]">{faqCopy.contactEyebrow}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-.035em] text-[#101828]">{faqCopy.contactTitle}</h2>
+            <p className="mt-3 text-sm leading-6 text-[#667085]">{faqCopy.contactText}</p>
+          </div>
+          <Link
+            href={localizePublicHref(locale, '/contact')}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-sm font-bold text-white transition hover:bg-[#075ce5] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"
+          >
+            <Mail className="h-4 w-4" />
+            {faqCopy.contactCta}
+          </Link>
+        </div>
+      </section>
+
       <PublicFooter locale={locale} />
     </main>
   )
@@ -366,7 +332,6 @@ function PublicBusinessPlanCard({
   market: BillingMarket
   localeTag: string
   copy: typeof businessSubscriptionCopy & {
-    adsOnly: string
     noCheckout: string
     eyebrow: string
     heading: string
@@ -460,33 +425,6 @@ function PublicBusinessPlanCard({
   )
 }
 
-function findProduct(productKey: string) {
-  return billingProductCatalog.find((product) => product.productKey === productKey) || null
-}
-
-function formatProduct(productKey: string, market: BillingMarket, locale: string) {
-  const product = findProduct(productKey)
-  if (!product) return ''
-  const amount = getProductAmount(product, market)
-  if (!amount) return ''
-  if (amount.amountMinor === 0) return '0'
-  return formatMoneyMinor(amount.amountMinor, amount.currency, locale)
-}
-
 function formatBusinessPrice(amountMinor: number, currency: ReturnType<typeof currencyForMarket>, locale: string) {
   return formatMoneyMinor(amountMinor, currency, locale).replace(/\s+/g, ' ')
-}
-
-function addOnTitle(product: BillingProduct | null, copy: typeof copyByLocaleBase) {
-  if (!product) return ''
-  if (product.addon?.startsWith('top_placement')) return `${copy.topPlacement} ${product.durationDays} ${copy.days}`
-  if (product.addon?.startsWith('featured')) return `${copy.featured} ${product.durationDays} ${copy.days}`
-  return product.refreshCredits === 1 ? copy.refresh : `${copy.refresh} x ${product.refreshCredits}`
-}
-
-function addOnDescription(product: BillingProduct | null, copy: typeof copyByLocaleBase) {
-  if (!product) return ''
-  if (product.addon?.startsWith('top_placement')) return copy.topPlacementText
-  if (product.addon?.startsWith('featured')) return copy.featuredText
-  return copy.refreshText
 }

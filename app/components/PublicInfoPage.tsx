@@ -9,8 +9,11 @@ import {
   CheckCircle2,
   CreditCard,
   FileSearch,
+  Globe2,
   Handshake,
   Heart,
+  Mail,
+  MapPin,
   Newspaper,
   Route,
   Scale,
@@ -27,6 +30,7 @@ import {
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { publicUrlForLocale } from '@/lib/public-seo'
 import {
   formatListingPrice,
   marketplaceCategories as listingPriceCategories,
@@ -1041,11 +1045,402 @@ const infoPageCopy = {
   },
 } satisfies Record<'en' | 'sv' | 'de', Record<PublicInfoPageKey, PublicInfoPageCopy>>
 
+type AboutPageCopy = PublicInfoPageCopy & {
+  facts: readonly {
+    label: string
+    value: string
+    href?: string
+  }[]
+}
+
+const aboutPageCopy = {
+  en: {
+    metaTitle: 'About Autorell | European vehicle marketplace',
+    metaDescription:
+      'Meet Autorell, the Stockholm-based vehicle marketplace making it easier to discover, buy and sell vehicles across European markets.',
+    eyebrow: 'About Autorell',
+    title: "Autorell makes Europe's vehicle market easier to navigate.",
+    intro:
+      'Built in Stockholm, Autorell is a marketplace where private sellers, companies and buyers can present, discover and compare vehicles across local European markets.',
+    primaryCta: 'Explore vehicles',
+    secondaryCta: 'Contact us',
+    highlights: [
+      'Built in Stockholm',
+      'For private sellers and companies',
+      'Local experiences across Europe',
+    ],
+    sections: [
+      {
+        title: 'Who we are',
+        text: 'Autorell is a Swedish technology company focused on one practical problem: making vehicle listings easier to understand and relevant buyers easier to reach.',
+      },
+      {
+        title: 'What we build',
+        text: 'Cars, vans, trucks, motorcycles, motorhomes, caravans and specialist vehicles come together in one structured marketplace with local language, currency and search context.',
+      },
+      {
+        title: 'Our vision',
+        text: 'A European vehicle market where distance and borders create fewer obstacles, information is clearer and every contact starts from a better basis.',
+      },
+    ],
+    finalTitle: 'Built in Stockholm. Made for Europe.',
+    finalText:
+      'Autorell has its registered office in Stockholm, Sweden. For questions, partnerships or feedback, contact info@autorell.se.',
+    facts: [
+      { label: 'Head office', value: 'Stockholm, Sweden' },
+      { label: 'Market', value: 'Europe' },
+      { label: 'Contact', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  sv: {
+    metaTitle: 'Om Autorell | Europeisk fordonsmarknad',
+    metaDescription:
+      'Lär känna Autorell, fordonsmarknaden från Stockholm som gör det enklare att hitta, köpa och sälja fordon på europeiska marknader.',
+    eyebrow: 'Om Autorell',
+    title: 'Autorell gör Europas fordonsmarknad enklare att överblicka.',
+    intro:
+      'Autorell byggs i Stockholm och är en marknadsplats där privatpersoner, företag och köpare kan presentera, hitta och jämföra fordon på lokala europeiska marknader.',
+    primaryCta: 'Utforska fordon',
+    secondaryCta: 'Kontakta oss',
+    highlights: [
+      'Byggt i Stockholm',
+      'För privatpersoner och företag',
+      'Lokalt anpassat för Europa',
+    ],
+    sections: [
+      {
+        title: 'Vilka vi är',
+        text: 'Autorell är ett svenskt teknikföretag med fokus på ett praktiskt problem: att göra fordonsannonser lättare att förstå och relevanta köpare enklare att nå.',
+      },
+      {
+        title: 'Vad vi bygger',
+        text: 'Bilar, transportbilar, lastbilar, motorcyklar, husbilar, husvagnar och specialfordon samlas i en strukturerad marknadsplats med rätt språk, valuta och söksammanhang.',
+      },
+      {
+        title: 'Vår vision',
+        text: 'En europeisk fordonsmarknad där avstånd och gränser skapar färre hinder, informationen är tydligare och varje kontakt börjar med ett bättre underlag.',
+      },
+    ],
+    finalTitle: 'Byggt i Stockholm. Skapat för Europa.',
+    finalText:
+      'Autorell har sitt säte i Stockholm, Sverige. För frågor, samarbeten eller synpunkter är du välkommen att kontakta info@autorell.se.',
+    facts: [
+      { label: 'Säte', value: 'Stockholm, Sverige' },
+      { label: 'Marknad', value: 'Europa' },
+      { label: 'Kontakt', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  de: {
+    metaTitle: 'Über Autorell | Europäischer Fahrzeugmarkt',
+    metaDescription:
+      'Lernen Sie Autorell kennen: den Fahrzeugmarktplatz aus Stockholm, der Kauf und Verkauf auf europäischen Märkten einfacher macht.',
+    eyebrow: 'Über Autorell',
+    title: 'Autorell macht den europäischen Fahrzeugmarkt übersichtlicher.',
+    intro:
+      'Autorell wird in Stockholm entwickelt und verbindet private Verkäufer, Unternehmen und Käufer auf lokal angepassten europäischen Fahrzeugmärkten.',
+    primaryCta: 'Fahrzeuge entdecken',
+    secondaryCta: 'Kontakt',
+    highlights: [
+      'In Stockholm entwickelt',
+      'Für Private und Unternehmen',
+      'Lokal für Europa angepasst',
+    ],
+    sections: [
+      {
+        title: 'Wer wir sind',
+        text: 'Autorell ist ein schwedisches Technologieunternehmen mit einem klaren Ziel: Fahrzeuganzeigen verständlicher zu machen und relevante Käufer leichter zu erreichen.',
+      },
+      {
+        title: 'Was wir bauen',
+        text: 'Autos, Transporter, Lkw, Motorräder, Wohnmobile, Wohnwagen und Spezialfahrzeuge finden in einem strukturierten Marktplatz mit passender Sprache, Währung und Suche zusammen.',
+      },
+      {
+        title: 'Unsere Vision',
+        text: 'Ein europäischer Fahrzeugmarkt mit weniger Hürden durch Entfernungen und Grenzen, klareren Informationen und einer besseren Grundlage für jeden Kontakt.',
+      },
+    ],
+    finalTitle: 'In Stockholm entwickelt. Für Europa gemacht.',
+    finalText:
+      'Autorell hat seinen Sitz in Stockholm, Schweden. Bei Fragen, Partnerschaften oder Feedback schreiben Sie an info@autorell.se.',
+    facts: [
+      { label: 'Sitz', value: 'Stockholm, Schweden' },
+      { label: 'Markt', value: 'Europa' },
+      { label: 'Kontakt', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  fr: {
+    metaTitle: 'À propos d’Autorell | Marché européen de véhicules',
+    metaDescription:
+      'Découvrez Autorell, la marketplace automobile basée à Stockholm qui simplifie l’achat et la vente de véhicules sur les marchés européens.',
+    eyebrow: 'À propos d’Autorell',
+    title: 'Autorell simplifie la lecture du marché européen des véhicules.',
+    intro:
+      'Conçu à Stockholm, Autorell réunit particuliers, entreprises et acheteurs sur des marchés automobiles européens adaptés à chaque pays.',
+    primaryCta: 'Découvrir les véhicules',
+    secondaryCta: 'Nous contacter',
+    highlights: [
+      'Conçu à Stockholm',
+      'Pour particuliers et entreprises',
+      'Adapté aux marchés européens',
+    ],
+    sections: [
+      {
+        title: 'Qui sommes-nous ?',
+        text: 'Autorell est une entreprise technologique suédoise avec un objectif concret : rendre les annonces plus faciles à comprendre et les acheteurs pertinents plus simples à atteindre.',
+      },
+      {
+        title: 'Ce que nous construisons',
+        text: 'Voitures, utilitaires, camions, motos, camping-cars, caravanes et véhicules spécialisés sont réunis dans une marketplace structurée, avec la langue, la devise et la recherche locales.',
+      },
+      {
+        title: 'Notre vision',
+        text: 'Un marché européen des véhicules où la distance et les frontières créent moins d’obstacles, avec des informations plus claires et de meilleurs échanges.',
+      },
+    ],
+    finalTitle: 'Conçu à Stockholm. Pensé pour l’Europe.',
+    finalText:
+      'Le siège d’Autorell est à Stockholm, en Suède. Pour toute question, collaboration ou remarque, écrivez à info@autorell.se.',
+    facts: [
+      { label: 'Siège', value: 'Stockholm, Suède' },
+      { label: 'Marché', value: 'Europe' },
+      { label: 'Contact', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  es: {
+    metaTitle: 'Sobre Autorell | Mercado europeo de vehículos',
+    metaDescription:
+      'Conoce Autorell, el marketplace de vehículos de Estocolmo que facilita encontrar, comprar y vender vehículos en los mercados europeos.',
+    eyebrow: 'Sobre Autorell',
+    title: 'Autorell facilita explorar el mercado europeo de vehículos.',
+    intro:
+      'Creado en Estocolmo, Autorell reúne a vendedores particulares, empresas y compradores en mercados europeos adaptados a cada país.',
+    primaryCta: 'Explorar vehículos',
+    secondaryCta: 'Contactar',
+    highlights: [
+      'Creado en Estocolmo',
+      'Para particulares y empresas',
+      'Adaptado a los mercados europeos',
+    ],
+    sections: [
+      {
+        title: 'Quiénes somos',
+        text: 'Autorell es una empresa tecnológica sueca con un objetivo práctico: hacer que los anuncios sean más fáciles de entender y que sea más sencillo llegar a compradores relevantes.',
+      },
+      {
+        title: 'Qué construimos',
+        text: 'Coches, furgonetas, camiones, motos, autocaravanas, caravanas y vehículos especiales se reúnen en un marketplace estructurado con idioma, moneda y búsqueda locales.',
+      },
+      {
+        title: 'Nuestra visión',
+        text: 'Un mercado europeo de vehículos donde la distancia y las fronteras creen menos obstáculos, la información sea más clara y cada contacto parta de una base mejor.',
+      },
+    ],
+    finalTitle: 'Creado en Estocolmo. Pensado para Europa.',
+    finalText:
+      'Autorell tiene su sede en Estocolmo, Suecia. Para consultas, colaboraciones o comentarios, escribe a info@autorell.se.',
+    facts: [
+      { label: 'Sede', value: 'Estocolmo, Suecia' },
+      { label: 'Mercado', value: 'Europa' },
+      { label: 'Contacto', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  it: {
+    metaTitle: 'Chi è Autorell | Mercato europeo dei veicoli',
+    metaDescription:
+      'Scopri Autorell, il marketplace di veicoli con sede a Stoccolma che semplifica acquisto e vendita nei mercati europei.',
+    eyebrow: 'Chi è Autorell',
+    title: 'Autorell rende più semplice orientarsi nel mercato europeo dei veicoli.',
+    intro:
+      'Nato a Stoccolma, Autorell riunisce venditori privati, aziende e acquirenti in mercati europei adattati a ogni Paese.',
+    primaryCta: 'Scopri i veicoli',
+    secondaryCta: 'Contattaci',
+    highlights: [
+      'Nato a Stoccolma',
+      'Per privati e aziende',
+      'Adattato ai mercati europei',
+    ],
+    sections: [
+      {
+        title: 'Chi siamo',
+        text: 'Autorell è un’azienda tecnologica svedese con un obiettivo concreto: rendere gli annunci più facili da capire e gli acquirenti giusti più semplici da raggiungere.',
+      },
+      {
+        title: 'Cosa costruiamo',
+        text: 'Auto, furgoni, camion, moto, camper, roulotte e veicoli speciali si incontrano in un marketplace strutturato con lingua, valuta e ricerca locali.',
+      },
+      {
+        title: 'La nostra visione',
+        text: 'Un mercato europeo dei veicoli con meno ostacoli legati a distanza e confini, informazioni più chiare e una base migliore per ogni contatto.',
+      },
+    ],
+    finalTitle: 'Nato a Stoccolma. Pensato per l’Europa.',
+    finalText:
+      'Autorell ha sede a Stoccolma, in Svezia. Per domande, collaborazioni o commenti, scrivi a info@autorell.se.',
+    facts: [
+      { label: 'Sede', value: 'Stoccolma, Svezia' },
+      { label: 'Mercato', value: 'Europa' },
+      { label: 'Contatto', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  pl: {
+    metaTitle: 'O Autorell | Europejski rynek pojazdów',
+    metaDescription:
+      'Poznaj Autorell, sztokholmski marketplace pojazdów, który ułatwia ich wyszukiwanie, kupowanie i sprzedaż na rynkach europejskich.',
+    eyebrow: 'O Autorell',
+    title: 'Autorell ułatwia poruszanie się po europejskim rynku pojazdów.',
+    intro:
+      'Autorell powstaje w Sztokholmie i łączy prywatnych sprzedawców, firmy oraz kupujących na lokalnie dopasowanych rynkach europejskich.',
+    primaryCta: 'Przeglądaj pojazdy',
+    secondaryCta: 'Kontakt',
+    highlights: [
+      'Tworzone w Sztokholmie',
+      'Dla osób prywatnych i firm',
+      'Dopasowane do rynków europejskich',
+    ],
+    sections: [
+      {
+        title: 'Kim jesteśmy',
+        text: 'Autorell to szwedzka firma technologiczna skupiona na praktycznym celu: czytelniejszych ogłoszeniach i łatwiejszym docieraniu do właściwych kupujących.',
+      },
+      {
+        title: 'Co tworzymy',
+        text: 'Samochody, auta dostawcze, ciężarówki, motocykle, kampery, przyczepy i pojazdy specjalistyczne spotykają się na uporządkowanym rynku z lokalnym językiem, walutą i wyszukiwaniem.',
+      },
+      {
+        title: 'Nasza wizja',
+        text: 'Europejski rynek pojazdów, na którym odległość i granice tworzą mniej przeszkód, informacje są czytelniejsze, a każdy kontakt zaczyna się od lepszych danych.',
+      },
+    ],
+    finalTitle: 'Tworzone w Sztokholmie. Z myślą o Europie.',
+    finalText:
+      'Siedziba Autorell znajduje się w Sztokholmie w Szwecji. Pytania, propozycje współpracy i uwagi prosimy kierować na info@autorell.se.',
+    facts: [
+      { label: 'Siedziba', value: 'Sztokholm, Szwecja' },
+      { label: 'Rynek', value: 'Europa' },
+      { label: 'Kontakt', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  nl: {
+    metaTitle: 'Over Autorell | Europese voertuigmarktplaats',
+    metaDescription:
+      'Maak kennis met Autorell, de voertuigmarktplaats uit Stockholm die kopen en verkopen op Europese markten eenvoudiger maakt.',
+    eyebrow: 'Over Autorell',
+    title: 'Autorell maakt de Europese voertuigmarkt overzichtelijker.',
+    intro:
+      'Autorell wordt gebouwd in Stockholm en brengt particuliere verkopers, bedrijven en kopers samen op lokaal afgestemde Europese markten.',
+    primaryCta: 'Voertuigen bekijken',
+    secondaryCta: 'Contact',
+    highlights: [
+      'Gebouwd in Stockholm',
+      'Voor particulieren en bedrijven',
+      'Lokaal afgestemd op Europa',
+    ],
+    sections: [
+      {
+        title: 'Wie we zijn',
+        text: 'Autorell is een Zweeds technologiebedrijf met een praktisch doel: voertuigadvertenties duidelijker maken en relevante kopers eenvoudiger bereiken.',
+      },
+      {
+        title: 'Wat we bouwen',
+        text: 'Auto’s, bestelwagens, vrachtwagens, motoren, campers, caravans en specialistische voertuigen komen samen in één gestructureerde marktplaats met lokale taal, valuta en zoekcontext.',
+      },
+      {
+        title: 'Onze visie',
+        text: 'Een Europese voertuigmarkt waar afstand en grenzen minder obstakels vormen, informatie duidelijker is en ieder contact met een betere basis begint.',
+      },
+    ],
+    finalTitle: 'Gebouwd in Stockholm. Gemaakt voor Europa.',
+    finalText:
+      'Autorell is gevestigd in Stockholm, Zweden. Voor vragen, samenwerkingen of feedback kun je mailen naar info@autorell.se.',
+    facts: [
+      { label: 'Vestiging', value: 'Stockholm, Zweden' },
+      { label: 'Markt', value: 'Europa' },
+      { label: 'Contact', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  fi: {
+    metaTitle: 'Tietoa Autorellista | Euroopan ajoneuvomarkkina',
+    metaDescription:
+      'Tutustu Autorelliin, Tukholmasta lähtöisin olevaan ajoneuvomarkkinaan, joka helpottaa ostamista ja myymistä Euroopassa.',
+    eyebrow: 'Tietoa Autorellista',
+    title: 'Autorell tekee Euroopan ajoneuvomarkkinasta helpommin hahmotettavan.',
+    intro:
+      'Tukholmassa rakennettu Autorell yhdistää yksityiset myyjät, yritykset ja ostajat paikallisesti mukautetuilla Euroopan markkinoilla.',
+    primaryCta: 'Selaa ajoneuvoja',
+    secondaryCta: 'Ota yhteyttä',
+    highlights: [
+      'Rakennettu Tukholmassa',
+      'Yksityisille ja yrityksille',
+      'Mukautettu Euroopan markkinoille',
+    ],
+    sections: [
+      {
+        title: 'Keitä olemme',
+        text: 'Autorell on ruotsalainen teknologiayritys, jolla on käytännöllinen tavoite: tehdä ajoneuvoilmoituksista selkeämpiä ja oikeiden ostajien tavoittamisesta helpompaa.',
+      },
+      {
+        title: 'Mitä rakennamme',
+        text: 'Autot, pakettiautot, kuorma-autot, moottoripyörät, matkailuautot, asuntovaunut ja erikoisajoneuvot löytyvät yhdeltä rakenteiselta markkinapaikalta paikallisella kielellä, valuutalla ja haulla.',
+      },
+      {
+        title: 'Visiomme',
+        text: 'Eurooppalainen ajoneuvomarkkina, jossa etäisyys ja rajat aiheuttavat vähemmän esteitä, tiedot ovat selkeämpiä ja jokainen yhteydenotto alkaa paremmista lähtökohdista.',
+      },
+    ],
+    finalTitle: 'Rakennettu Tukholmassa. Tehty Eurooppaa varten.',
+    finalText:
+      'Autorellin kotipaikka on Tukholma, Ruotsi. Kysymykset, yhteistyöehdotukset ja palaute voi lähettää osoitteeseen info@autorell.se.',
+    facts: [
+      { label: 'Kotipaikka', value: 'Tukholma, Ruotsi' },
+      { label: 'Markkina', value: 'Eurooppa' },
+      { label: 'Yhteys', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+  da: {
+    metaTitle: 'Om Autorell | Europæisk køretøjsmarked',
+    metaDescription:
+      'Mød Autorell, køretøjsmarkedspladsen fra Stockholm, som gør det enklere at finde, købe og sælge køretøjer i Europa.',
+    eyebrow: 'Om Autorell',
+    title: 'Autorell gør Europas køretøjsmarked lettere at navigere.',
+    intro:
+      'Autorell bygges i Stockholm og samler private sælgere, virksomheder og købere på lokalt tilpassede europæiske markeder.',
+    primaryCta: 'Se køretøjer',
+    secondaryCta: 'Kontakt os',
+    highlights: [
+      'Bygget i Stockholm',
+      'For private og virksomheder',
+      'Lokalt tilpasset Europa',
+    ],
+    sections: [
+      {
+        title: 'Hvem vi er',
+        text: 'Autorell er en svensk teknologivirksomhed med ét praktisk mål: at gøre køretøjsannoncer lettere at forstå og relevante købere lettere at nå.',
+      },
+      {
+        title: 'Hvad vi bygger',
+        text: 'Biler, varevogne, lastbiler, motorcykler, autocampere, campingvogne og specialkøretøjer samles på én struktureret markedsplads med lokalt sprog, valuta og søgekontekst.',
+      },
+      {
+        title: 'Vores vision',
+        text: 'Et europæisk køretøjsmarked, hvor afstand og grænser skaber færre hindringer, informationen er tydeligere, og hver kontakt begynder på et bedre grundlag.',
+      },
+    ],
+    finalTitle: 'Bygget i Stockholm. Skabt til Europa.',
+    finalText:
+      'Autorell har hjemsted i Stockholm, Sverige. Spørgsmål, samarbejder og feedback kan sendes til info@autorell.se.',
+    facts: [
+      { label: 'Hjemsted', value: 'Stockholm, Sverige' },
+      { label: 'Marked', value: 'Europa' },
+      { label: 'Kontakt', value: 'info@autorell.se', href: 'mailto:info@autorell.se' },
+    ],
+  },
+} satisfies Record<'en' | 'sv' | 'de' | 'fr' | 'es' | 'it' | 'pl' | 'nl' | 'fi' | 'da', AboutPageCopy>
+
 const ctaLinks = {
   primary: {
     'sell-vehicle': '/account/listings/new',
-    'how-selling-works': '/sell-vehicle',
-    pricing: '/sell-vehicle',
+    'how-selling-works': '/account/listings/new',
+    pricing: '/account/listings/new',
     'dealer-solutions': '/register?account=business',
     'saved-searches': '/marketplace',
     'compare-vehicles': '/marketplace',
@@ -1056,7 +1451,7 @@ const ctaLinks = {
     press: '/contact',
     partners: '/contact',
     'safety-tips': '/report',
-    payments: '/safety-tips',
+    payments: '/help-center',
     'shipping-delivery': '/buying-guide',
   },
   secondary: {
@@ -1066,12 +1461,12 @@ const ctaLinks = {
     'dealer-solutions': '/contact',
     'saved-searches': '/register',
     'compare-vehicles': '/buying-guide',
-    'vehicle-history': '/safety-tips',
-    'buying-guide': '/safety-tips',
+    'vehicle-history': '/help-center',
+    'buying-guide': '/help-center',
     about: '/contact',
     careers: '/about',
     press: '/about',
-    partners: '/dealer-solutions',
+    partners: '/business',
     'safety-tips': '/buying-guide',
     payments: '/contact',
     'shipping-delivery': '/contact',
@@ -1086,7 +1481,7 @@ export function generatePublicInfoMetadata(page: PublicInfoPageKey) {
     const canonicalPath =
       headerStore.get('x-autorell-pathname') ||
       `${locale === 'sv' ? '/se' : locale === 'de' ? '/de' : ''}/${page}`
-    const canonical = `https://www.autorell.com${canonicalPath}`
+    const canonical = publicUrlForLocale(locale, canonicalPath)
     const title = cleanSeoText(copy.metaTitle, 65)
     const description = cleanSeoText(copy.metaDescription, 150)
     return {
@@ -1727,6 +2122,117 @@ export default async function PublicInfoPage({
     )
   }
 
+  if (page === 'about') {
+    const aboutCopy = getAboutPageCopy(locale)
+    const sectionIcons = [Building2, Route, Handshake] as const
+    const factIcons = [MapPin, Globe2, Mail] as const
+
+    return (
+      <main className="bg-white text-[#101828]">
+        <PublicHeader locale={locale} marketCode={marketCode} />
+
+        <section className="border-b border-[#dce5f2] bg-[#f4f8ff]">
+          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,.55fr)] lg:items-end lg:gap-16">
+            <div>
+              <p className="text-sm font-semibold text-[#0866ff]">{aboutCopy.eyebrow}</p>
+              <h1 className="mt-4 max-w-4xl text-[42px] font-semibold leading-[1.08] sm:text-[64px]">
+                {aboutCopy.title}
+              </h1>
+              <p className="mt-6 max-w-3xl text-lg font-normal leading-8 text-[#526071]">
+                {aboutCopy.intro}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={localizePublicHref(locale, ctaLinks.primary.about)}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#0757da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                >
+                  {aboutCopy.primaryCta}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href={localizePublicHref(locale, ctaLinks.secondary.about)}
+                  className="inline-flex min-h-12 items-center rounded-[8px] border border-[#aebbd0] bg-white px-6 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0866ff]"
+                >
+                  {aboutCopy.secondaryCta}
+                </Link>
+              </div>
+            </div>
+
+            <dl className="grid gap-6 border-t border-[#cbd8ea] pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+              {aboutCopy.facts.map((fact, index) => {
+                const FactIcon = factIcons[index] || Building2
+                return (
+                  <div key={fact.label} className="grid grid-cols-[36px_1fr] gap-3">
+                    <span className="grid h-9 w-9 place-items-center rounded-[8px] bg-white text-[#0866ff] ring-1 ring-[#cbd8ea]">
+                      <FactIcon className="h-4.5 w-4.5" strokeWidth={1.8} aria-hidden="true" />
+                    </span>
+                    <div>
+                      <dt className="text-xs font-semibold text-[#667085]">{fact.label}</dt>
+                      <dd className="mt-1 text-[15px] font-semibold text-[#101828]">
+                        {fact.href ? (
+                          <a href={fact.href} className="transition hover:text-[#0866ff]">
+                            {fact.value}
+                          </a>
+                        ) : fact.value}
+                      </dd>
+                    </div>
+                  </div>
+                )
+              })}
+            </dl>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 sm:py-18">
+          <div className="grid border-y border-[#dce5f2] md:grid-cols-3">
+            {aboutCopy.sections.map((section, index) => {
+              const SectionIcon = sectionIcons[index] || Building2
+              return (
+                <article
+                  key={section.title}
+                  className="border-b border-[#dce5f2] px-1 py-8 last:border-b-0 md:border-b-0 md:border-r md:px-7 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
+                >
+                  <SectionIcon className="h-6 w-6 text-[#0866ff]" strokeWidth={1.7} aria-hidden="true" />
+                  <h2 className="mt-5 text-2xl font-semibold leading-tight">{section.title}</h2>
+                  <p className="mt-3 text-[15px] font-normal leading-7 text-[#667085]">{section.text}</p>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+
+        <section className="bg-[#0866ff] text-white">
+          <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-7 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.7fr)] lg:items-center lg:gap-16">
+            <div>
+              <h2 className="max-w-3xl text-3xl font-semibold leading-tight sm:text-5xl">
+                {aboutCopy.finalTitle}
+              </h2>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {aboutCopy.highlights.map((highlight) => (
+                  <span key={highlight} className="inline-flex min-h-9 items-center rounded-full border border-white/40 px-4 text-sm font-medium">
+                    {highlight}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[16px] font-normal leading-7 text-white/90">{aboutCopy.finalText}</p>
+              <a
+                href="mailto:info@autorell.se"
+                className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-[8px] bg-white px-5 text-sm font-semibold text-[#0866ff] transition hover:bg-[#eef5ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <Mail className="h-4 w-4" aria-hidden="true" />
+                info@autorell.se
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <PublicFooter locale={locale} />
+      </main>
+    )
+  }
+
   return (
     <main className="bg-[#f7f8fb] text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
@@ -1815,11 +2321,19 @@ function getInfoPageCopy(
   page: PublicInfoPageKey,
   locale: PublicLocale,
 ): PublicInfoPageCopy {
+  if (page === 'about') return getAboutPageCopy(locale)
+
   if (locale === 'sv' || locale === 'de' || locale === 'en') {
     return infoPageCopy[locale][page]
   }
 
   return translatePublicObject(locale, infoPageCopy.en[page])
+}
+
+function getAboutPageCopy(locale: PublicLocale): AboutPageCopy {
+  if (locale === 'at') return aboutPageCopy.de
+  if (locale === 'be') return aboutPageCopy.nl
+  return aboutPageCopy[locale]
 }
 
 function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): PublicLocale {

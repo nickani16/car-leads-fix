@@ -34,10 +34,11 @@ function isRateLimited(key: string) {
 }
 
 export async function POST(request: Request) {
+  let locale = localeFromRequest(request)
   try {
     const body = (await request.json()) as { email?: string; locale?: string; purpose?: string }
     const email = normalizeEmail(body.email)
-    const locale = localeFromRequest(request, body.locale)
+    locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
 
     if (!isValidEmail(email)) {
@@ -81,13 +82,24 @@ export async function POST(request: Request) {
     }
 
     const code = generateEmailCode()
-    const { error: insertError } = await admin.from('auth_email_codes').insert({
+    const challengeRow: Record<string, string | number | null> = {
       email,
       email_hash: hashedEmail,
       code_hash: codeHash(email, code),
-      redirect_path: body.purpose === 'email_verification' ? 'email_verification' : null,
       expires_at: codeExpiresAt(),
-    })
+    }
+    if (body.purpose === 'email_verification') {
+      challengeRow.redirect_path = 'email_verification'
+    }
+
+    let { error: insertError } = await admin.from('auth_email_codes').insert(challengeRow)
+    if (
+      (insertError?.code === 'PGRST204' || insertError?.code === '42703') &&
+      'redirect_path' in challengeRow
+    ) {
+      delete challengeRow.redirect_path
+      ;({ error: insertError } = await admin.from('auth_email_codes').insert(challengeRow))
+    }
     if (insertError) throw insertError
 
     const emailCopy = body.purpose === 'email_verification'
@@ -117,7 +129,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Email code request failed', error)
     return NextResponse.json(
-      { error: 'The code could not be sent. Try again in a moment.' },
+      { error: getAuthApiCopy(locale).sendError },
       { status: 500 },
     )
   }

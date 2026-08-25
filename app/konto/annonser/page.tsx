@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import {
   AlertTriangle,
   CalendarClock,
@@ -20,7 +22,8 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, translationLocale, type PublicLocale } from '@/lib/public-i18n'
+import { accountListingObject, accountListingText } from '@/lib/account-listings-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { listingLifecycle } from '@/lib/listing-lifecycle'
 import {
@@ -29,6 +32,7 @@ import {
   getProductAmount,
   legacyListingPackageToProductKey,
   normalizeBillingMarket,
+  type BillingMarket,
   type BillingProduct,
 } from '@/lib/billing/product-catalog'
 import {
@@ -44,6 +48,7 @@ import ListingsFilters from './ListingsFilters'
 import BulkListingActions from './BulkListingActions'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { listingReviewNotice } from '@/lib/listing-review-notice'
 
 export const generateMetadata = generateAccountMetadata('listings')
 
@@ -62,6 +67,13 @@ export default async function AccountListingsPage({
   const query = await searchParams
   const renderedAt = new Date().getTime()
   const locale = await getRequestLocale()
+  const requestHeaders = await headers()
+  const requestPathname = requestHeaders.get('x-autorell-pathname') || ''
+  const companyMode = /\/account\/company\/listings(?:\/|$)/.test(requestPathname)
+  const billingMarket = normalizeBillingMarket(
+    requestHeaders.get('x-autorell-market') ||
+    billingMarketForLocale(locale),
+  )
   const copy = listingPageCopy(locale)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -74,6 +86,7 @@ export default async function AccountListingsPage({
     .eq('user_id', user.id)
     .maybeSingle()
   const accountType = profile?.account_type || 'private'
+  if (companyMode && accountType !== 'business') redirect(localizePublicHref(locale, '/account/listings'))
   let listingOwnerUserIds = [user.id]
   if (accountType === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)
@@ -103,7 +116,7 @@ export default async function AccountListingsPage({
     redirect(`${localizePublicHref(locale, '/account/listings')}?${params.toString()}`)
   }
 
-  const markets = [...new Set(result.items.map((listing) => normalizeBillingMarket(listing.country_code)))]
+  const markets = [billingMarket]
   const productKeys = billingProductCatalog
     .filter((product) => product.kind === 'listing_package' || product.kind === 'addon')
     .map((product) => product.productKey)
@@ -128,6 +141,14 @@ export default async function AccountListingsPage({
   return (
     <main className="min-h-screen bg-[#f7f9fc]">
       <div className="mx-auto max-w-[var(--autorell-page-max)] px-4 py-6 sm:px-8 lg:py-9">
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: companyMode ? 'companyListings' : 'listings' }]}
+          className="mb-5"
+        />
+        {companyMode ? (
+          <CompanyListingsHero summary={summary} totalCount={result.totalCount} locale={locale} />
+        ) : (
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{copy.eyebrow}</p>
@@ -138,12 +159,13 @@ export default async function AccountListingsPage({
             <Plus className="h-4 w-4" />{copy.create}
           </Link>
         </header>
+        )}
 
         {query.payment === 'cancelled' ? <StatusNotice tone="warning" title={copy.paymentCancelledTitle} text={copy.paymentCancelledText} /> : null}
         {query.payment === 'processing' ? <StatusNotice tone="info" title={copy.paymentProcessingTitle} text={copy.paymentProcessingText} /> : null}
         {query.published === '1' ? <StatusNotice tone="info" title={copy.listingCreatedTitle} text={copy.listingCreatedText} /> : null}
 
-        <CompactSummary summary={summary} locale={locale} />
+        {companyMode ? null : <CompactSummary summary={summary} locale={locale} />}
         <AttentionSection summary={summary} locale={locale} />
 
         <ListingsFilters
@@ -163,18 +185,35 @@ export default async function AccountListingsPage({
 
         {accountType === 'business' && result.items.some((listing) => canBulkManage(listing.status)) ? <BulkListingActions pageItemCount={result.items.filter((listing) => canBulkManage(listing.status)).length} locale={locale} /> : null}
 
-        <section id="listing-results" role="tabpanel" aria-labelledby={`listing-tab-${filters.status}`} className="mt-4 grid gap-3">
+        <section id="listing-results" role="tabpanel" aria-labelledby={`listing-tab-${filters.status}`} className={accountType === 'business' ? 'mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'mt-4 grid gap-3'}>
           {result.items.length ? result.items.map((listing) => (
+            accountType === 'business' ? (
+            <BusinessListingCard
+              key={listing.id}
+              listing={listing}
+              locale={locale}
+              accountType={accountType}
+              billingMarket={billingMarket}
+              packages={packageOptions(listing, locale, priceMap, billingMarket)}
+              marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
+              autoOpen={query.choosePackage === '1' && query.listing === listing.id}
+              autoOpenReview={query.review === '1' && query.listing === listing.id}
+              renderedAt={renderedAt}
+            />
+            ) : (
             <ListingCard
               key={listing.id}
               listing={listing}
               locale={locale}
               accountType={accountType}
-              packages={packageOptions(listing, locale, priceMap)}
-              marketing={marketingOptions(listing, locale, priceMap)}
+              billingMarket={billingMarket}
+              packages={packageOptions(listing, locale, priceMap, billingMarket)}
+              marketing={marketingOptions(listing, locale, priceMap, billingMarket)}
               autoOpen={query.choosePackage === '1' && query.listing === listing.id}
+              autoOpenReview={query.review === '1' && query.listing === listing.id}
               renderedAt={renderedAt}
             />
+            )
           )) : <EmptyState filters={filters} locale={locale} />}
         </section>
 
@@ -184,13 +223,15 @@ export default async function AccountListingsPage({
   )
 }
 
-function ListingCard({ listing, locale, accountType, packages, marketing, autoOpen, renderedAt }: {
+function ListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, autoOpenReview, renderedAt }: {
   listing: ManagedListing
-  locale: string
+  locale: PublicLocale
   accountType: string
+  billingMarket: BillingMarket
   packages: PackageOption[]
   marketing: MarketingOption[]
   autoOpen: boolean
+  autoOpenReview: boolean
   renderedAt: number
 }) {
   const lifecycle = listingLifecycle(listing.status, listing.review_status)
@@ -213,7 +254,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
           <div className="flex flex-wrap items-center gap-2">
             <LifecycleBadge label={localizedLifecycleLabel(lifecycle.group, listing.status, locale)} tone={lifecycle.tone} />
             {activeBoost ? <PromotionBadge label={copy.topPlacement} /> : null}
-            {activeFeatured ? <PromotionBadge label="Featured" /> : null}
+            {activeFeatured ? <PromotionBadge label={copy.featured} /> : null}
           </div>
           <h2 className="mt-3 truncate text-xl font-semibold tracking-[-.025em] text-[#101828]">{listing.title}</h2>
           <p className="mt-1 text-lg font-semibold text-[#101828]">{new Intl.NumberFormat(locale, { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.price)}</p>
@@ -227,7 +268,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-[#667085]">
             <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">ID: {listing.reference_number || listing.id.slice(0, 8)}</span>
             {listing.listing_number ? <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{copy.stockNumber}: {listing.listing_number}</span> : null}
-            <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{packageLabel(listing.package_id)}</span>
+            <span className="rounded-[8px] bg-[#f4f6f9] px-2.5 py-1.5">{packageLabel(listing.package_id, locale)}</span>
           </div>
 
           <div className="mt-4 flex items-center gap-4 border-t border-[#eef2f7] pt-3 text-xs text-[#667085]">
@@ -242,7 +283,7 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
             listingId={listing.id}
             status={listing.status}
             packageId={listing.package_id}
-            market={listing.country_code.toLowerCase()}
+            market={billingMarket}
             packages={packages}
             marketingOptions={marketing}
             lastRefreshedAt={listing.last_refreshed_at}
@@ -253,6 +294,176 @@ function ListingCard({ listing, locale, accountType, packages, marketing, autoOp
             featuredExpiresAt={listing.featured_expires_at}
             reviewMessage={reviewMessage}
             autoOpen={autoOpen}
+            autoOpenReview={autoOpenReview}
+            locale={locale}
+          />
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function CompanyListingsHero({
+  summary,
+  totalCount,
+  locale,
+}: {
+  summary: AccountListingSummary
+  totalCount: number
+  locale: PublicLocale
+}) {
+  const copy = listingPageCopy(locale)
+  const activeRate = totalCount ? Math.round((summary.counts.active / totalCount) * 100) : 0
+  const items = [
+    { label: copy.active, value: summary.counts.active, icon: CheckCircle2, tone: 'text-[#027a48]', bg: 'bg-[#ecfdf3]' },
+    { label: copy.payment, value: summary.counts.payment, icon: ReceiptText, tone: 'text-[#c2410c]', bg: 'bg-[#fff7ed]' },
+    { label: copy.totalViews, value: summary.totalViews, icon: Eye, tone: 'text-[#0866ff]', bg: 'bg-[#eef5ff]' },
+    { label: copy.totalFavorites, value: summary.totalFavorites, icon: Heart, tone: 'text-[#7c3aed]', bg: 'bg-[#f5f3ff]' },
+  ]
+  return (
+    <header className="overflow-hidden rounded-[28px] border border-[#d9e5f6] bg-white shadow-[0_18px_60px_rgba(16,24,40,.06)]">
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">{translateText(locale, 'Company inventory', 'Företagslager')}</p>
+          <div className="mt-3 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-[-.045em] text-[#101828] sm:text-4xl">
+                {translateText(locale, 'Listings that are ready to manage', 'Annonser som är redo att styras')}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#667085]">
+                {translateText(locale, 'A denser company inventory view with faster scanning, bulk actions, listing status and marketing controls in one place.', 'En tätare företagsvy för snabbare överblick, bulkåtgärder, annonsstatus och marknadsföring på samma plats.')}
+              </p>
+            </div>
+            <Link href={localizePublicHref(locale, '/account/company/listings/create')} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white outline-none transition hover:bg-[#075be3] focus-visible:ring-4 focus-visible:ring-[#0866ff]/30">
+              <Plus className="h-4 w-4" />{copy.create}
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {items.map((item) => (
+              <div key={item.label} className="rounded-[18px] border border-[#e2e8f3] bg-[#fbfdff] p-4">
+                <span className={`grid h-10 w-10 place-items-center rounded-[12px] ${item.bg} ${item.tone}`}>
+                  <item.icon className="h-4 w-4" />
+                </span>
+                <strong className="mt-3 block text-2xl font-semibold tracking-[-.04em] text-[#101828]">{item.value.toLocaleString(locale)}</strong>
+                <span className="mt-1 block truncate text-xs font-medium text-[#667085]">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-[#e4eaf3] bg-[#f6f9fe] p-5 sm:p-7 lg:border-l lg:border-t-0">
+          <div className="rounded-[22px] border border-[#d9e5f6] bg-white p-5">
+            <p className="text-sm font-semibold text-[#101828]">{translateText(locale, 'Inventory health', 'Lagerstatus')}</p>
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#edf2f7]">
+              <div className="h-full rounded-full bg-[#0866ff]" style={{ width: `${Math.max(4, activeRate)}%` }} />
+            </div>
+            <p className="mt-3 text-sm font-medium text-[#475467]">
+              {activeRate}% {translateText(locale, 'active out of all listings', 'aktiva av alla annonser')}
+            </p>
+            <div className="mt-5 grid gap-2 text-sm">
+              <Link href={`${localizePublicHref(locale, '/account/company/listings')}?status=review`} className="flex items-center justify-between rounded-[12px] bg-[#f8fbff] px-3 py-2 font-medium text-[#475467] hover:text-[#0866ff]">
+                <span>{copy.review}</span><strong>{summary.counts.review.toLocaleString(locale)}</strong>
+              </Link>
+              <Link href={`${localizePublicHref(locale, '/account/company/listings')}?status=expired`} className="flex items-center justify-between rounded-[12px] bg-[#f8fbff] px-3 py-2 font-medium text-[#475467] hover:text-[#0866ff]">
+                <span>{translateText(locale, 'Expired', 'Utgångna')}</span><strong>{summary.counts.expired.toLocaleString(locale)}</strong>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+function BusinessListingCard({ listing, locale, accountType, billingMarket, packages, marketing, autoOpen, autoOpenReview, renderedAt }: {
+  listing: ManagedListing
+  locale: PublicLocale
+  accountType: string
+  billingMarket: BillingMarket
+  packages: PackageOption[]
+  marketing: MarketingOption[]
+  autoOpen: boolean
+  autoOpenReview: boolean
+  renderedAt: number
+}) {
+  const lifecycle = listingLifecycle(listing.status, listing.review_status)
+  const copy = listingPageCopy(locale)
+  const image = listing.images[0]
+  const canBulk = accountType === 'business' && canBulkManage(listing.status)
+  const reviewMessage = reviewReason(listing, locale)
+  const activeBoost = listing.boost_status === 'active' && isFuture(listing.boost_expires_at)
+  const activeFeatured = listing.featured_status === 'active' && isFuture(listing.featured_expires_at)
+
+  return (
+    <article className="flex min-w-0 flex-col overflow-visible rounded-[22px] border border-[#dfe6f1] bg-white shadow-[0_12px_36px_rgba(16,24,40,.055)]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-[21px] bg-[#eef2f7]">
+        {image ? (
+          <Image src={image} alt={listing.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" quality={78} className="object-cover" />
+        ) : (
+          <div className="grid h-full place-items-center text-center text-sm text-[#667085]">
+            <span><FileImage className="mx-auto mb-2 h-6 w-6" />{copy.noImage}</span>
+          </div>
+        )}
+        {canBulk ? (
+          <label className="absolute left-3 top-3 grid h-10 w-10 place-items-center rounded-[12px] bg-white/95 shadow-[0_10px_28px_rgba(16,24,40,.18)]">
+            <span className="sr-only">{copy.selectListing} {listing.title}</span>
+            <input form="bulk-listing-form" type="checkbox" name="listingId" value={listing.id} className="h-4 w-4 rounded accent-[#0866ff]" />
+          </label>
+        ) : null}
+        <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
+          <LifecycleBadge label={localizedLifecycleLabel(lifecycle.group, listing.status, locale)} tone={lifecycle.tone} />
+          {activeBoost ? <PromotionBadge label={copy.topPlacement} /> : null}
+          {activeFeatured ? <PromotionBadge label={copy.featured} /> : null}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <div className="min-w-0">
+          <h2 className="line-clamp-2 min-h-[3.25rem] text-lg font-semibold leading-[1.35] tracking-[-.025em] text-[#101828]">{listing.title}</h2>
+          <p className="mt-2 text-xl font-semibold tracking-[-.035em] text-[#101828]">
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: listing.currency, maximumFractionDigits: 0 }).format(listing.price)}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[#667085]">
+            <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">{categoryLabel(listing.category, locale)}</span>
+            <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">{listing.country_code.toUpperCase()}</span>
+            {listing.listing_number ? <span className="rounded-full bg-[#f4f6f9] px-2.5 py-1.5">#{listing.listing_number}</span> : null}
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-[12px] bg-[#f8fbff] p-3">
+              <span className="block text-[#667085]">{copy.views}</span>
+              <strong className="mt-1 block text-base font-semibold text-[#101828]">{listing.view_count.toLocaleString(locale)}</strong>
+            </div>
+            <div className="rounded-[12px] bg-[#f8fbff] p-3">
+              <span className="block text-[#667085]">{copy.favorites}</span>
+              <strong className="mt-1 block text-base font-semibold text-[#101828]">{listing.favorite_count.toLocaleString(locale)}</strong>
+            </div>
+          </div>
+          <p className="mt-3 text-xs font-medium text-[#667085]">
+            {copy.expires} {listing.expires_at ? formatDate(listing.expires_at, locale) : formatDate(listing.created_at, locale)}
+          </p>
+        </div>
+
+        <div className="mt-auto grid gap-2 pt-4">
+          {!['deleted', 'removed'].includes(listing.status) ? (
+            <Link href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] border border-[#cbd7e8] bg-white px-3 text-sm font-semibold text-[#0866ff] outline-none transition hover:bg-[#f2f6ff] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20">
+              <Pencil className="h-4 w-4" />{copy.edit}
+            </Link>
+          ) : null}
+          <ListingStatusActions
+            listingId={listing.id}
+            status={listing.status}
+            packageId={listing.package_id}
+            market={billingMarket}
+            packages={packages}
+            marketingOptions={marketing}
+            lastRefreshedAt={listing.last_refreshed_at}
+            refreshLocked={Boolean(listing.last_refreshed_at && new Date(listing.last_refreshed_at).getTime() + 24 * 60 * 60 * 1000 > renderedAt)}
+            boostStartedAt={listing.boost_started_at}
+            boostExpiresAt={listing.boost_expires_at}
+            featuredStartedAt={listing.featured_started_at}
+            featuredExpiresAt={listing.featured_expires_at}
+            reviewMessage={reviewMessage}
+            autoOpen={autoOpen}
+            autoOpenReview={autoOpenReview}
             locale={locale}
           />
         </div>
@@ -283,11 +494,34 @@ function AttentionSection({ summary, locale }: { summary: AccountListingSummary;
     summary.counts.payment ? { icon: ReceiptText, title: `${summary.counts.payment} ${copy.attentionPayment}`, cta: copy.completePayment, href: '?status=payment' } : null,
     summary.missingImages && summary.firstMissingImageId ? { icon: FileImage, title: `${summary.missingImages} ${copy.attentionImages}`, cta: copy.addImages, href: `/${summary.firstMissingImageId}/edit` } : null,
     summary.expiringSoon ? { icon: CalendarClock, title: `${summary.expiringSoon} ${copy.attentionExpiring}`, cta: copy.renew, href: '?status=active&sort=expires_asc' } : null,
-    summary.flagged ? { icon: AlertTriangle, title: `${summary.flagged} ${copy.attentionReview}`, cta: copy.readReason, href: '?status=review' } : null,
+    summary.flagged ? {
+      icon: AlertTriangle,
+      title: `${summary.flagged} ${summary.flagged === 1 ? singularReviewAttention(locale) : copy.attentionReview}`,
+      cta: copy.readReason,
+      href: summary.firstFlaggedListingId
+        ? `?status=review&review=1&listing=${encodeURIComponent(summary.firstFlaggedListingId)}`
+        : '?status=review',
+    } : null,
     summary.failedPayments ? { icon: ReceiptText, title: `${summary.failedPayments} ${copy.attentionFailed}`, cta: copy.tryAgain, href: '?status=payment' } : null,
   ].filter(Boolean) as Array<{ icon: typeof AlertTriangle; title: string; cta: string; href: string }>
   if (!alerts.length) return null
   return <section className="mt-6 rounded-[18px] border border-[#fed7aa] bg-[#fffaf5] p-4 sm:p-5" aria-labelledby="attention-title"><h2 id="attention-title" className="text-base font-semibold text-[#9a3412]">{copy.needsAttention}</h2><div className="mt-3 grid gap-2 lg:grid-cols-2">{alerts.map((alert) => <Link key={alert.title} href={`${localizePublicHref(locale, '/account/listings')}${alert.href}`} className="flex flex-col items-start gap-2 rounded-[12px] bg-white p-3 text-sm outline-none transition hover:ring-1 hover:ring-[#fdba74] focus-visible:ring-4 focus-visible:ring-[#fb923c]/20 sm:flex-row sm:items-center sm:gap-3"><span className="flex min-w-0 flex-1 items-center gap-3"><alert.icon className="h-4 w-4 shrink-0 text-[#ea580c]" /><span className="font-medium text-[#7c2d12]">{alert.title}</span></span><span className="pl-7 font-semibold text-[#c2410c] sm:shrink-0 sm:pl-0">{alert.cta}</span></Link>)}</div></section>
+}
+
+function singularReviewAttention(locale: PublicLocale) {
+  const copy: Record<string, string> = {
+    en: 'listing needs review or action',
+    sv: 'annons behöver granskas eller åtgärdas',
+    de: 'Anzeige muss geprüft oder bearbeitet werden',
+    fr: 'annonce doit être vérifiée ou corrigée',
+    es: 'anuncio necesita revisión o corrección',
+    it: 'annuncio richiede una verifica o una correzione',
+    nl: 'advertentie vraagt beoordeling of actie',
+    pl: 'ogłoszenie wymaga sprawdzenia lub poprawy',
+    fi: 'ilmoitus vaatii tarkistuksen tai toimenpiteitä',
+    da: 'annonce skal gennemgås eller rettes',
+  }
+  return copy[translationLocale(locale)] || copy.en
 }
 
 function EmptyState({ filters, locale }: { filters: AccountListingFilters; locale: PublicLocale }) {
@@ -326,24 +560,31 @@ function PromotionBadge({ label }: { label: string }) {
   return <span className="inline-flex items-center gap-1 rounded-full bg-[#f5f3ff] px-2.5 py-1 text-[11px] font-semibold text-[#6d28d9]"><Megaphone className="h-3 w-3" />{label}</span>
 }
 
-function packageOptions(listing: ManagedListing, locale: string, prices: Map<string, BillingPriceRow>): PackageOption[] {
-  const market = normalizeBillingMarket(listing.country_code)
+function packageOptions(listing: ManagedListing, locale: PublicLocale, prices: Map<string, BillingPriceRow>, market: BillingMarket): PackageOption[] {
+  const copy = optionCopy(locale)
   const definitions = [
-    { id: 'free_7d', title: 'Start', duration: 5, description: locale === 'sv' ? 'En vanlig annons för att komma igång.' : 'A standard listing to get started.' },
-    { id: 'standard_15d', title: 'Standard', duration: 15, description: locale === 'sv' ? 'Längre annonstid för en seriös försäljning.' : 'A longer listing period for a serious sale.' },
-    { id: 'premium_30d', title: 'Premium', duration: 30, description: locale === 'sv' ? 'Extra synlighet och inkluderad toppplacering.' : 'Extra visibility and included top placement.' },
+    { id: 'free_7d', title: copy.start, duration: 5, description: copy.startDescription },
+    { id: 'standard_15d', title: copy.standard, duration: 15, description: copy.standardDescription },
+    { id: 'premium_30d', title: copy.premium, duration: 30, description: copy.premiumDescription },
   ]
   return definitions.map((definition) => {
     const key = legacyListingPackageToProductKey(listing.category, definition.id)
     const product = key ? billingProductCatalog.find((item) => item.productKey === key) : null
     const amount = product ? configuredAmount(product, market, prices) : null
     if (!amount) console.error('[account-listings] Missing package price', { productKey: key, market })
-    return { id: definition.id, title: definition.title, duration: `${definition.duration} ${locale === 'sv' ? 'dagar' : 'days'}`, description: definition.description, price: amount ? amount.amountMinor === 0 ? locale === 'sv' ? 'Gratis' : 'Free' : formatMoneyMinor(amount.amountMinor, amount.currency, locale) : locale === 'sv' ? 'Ej tillgängligt' : 'Unavailable', available: Boolean(amount) }
+    return {
+      id: definition.id,
+      title: definition.title,
+      duration: `${definition.duration} ${copy.days}`,
+      description: definition.description,
+      price: amount ? amount.amountMinor === 0 ? copy.free : formatMoneyMinor(amount.amountMinor, amount.currency, locale) : copy.unavailable,
+      available: Boolean(amount),
+    }
   })
 }
 
-function marketingOptions(listing: ManagedListing, locale: string, prices: Map<string, BillingPriceRow>): MarketingOption[] {
-  const market = normalizeBillingMarket(listing.country_code)
+function marketingOptions(listing: ManagedListing, locale: PublicLocale, prices: Map<string, BillingPriceRow>, market: BillingMarket): MarketingOption[] {
+  const copy = optionCopy(locale)
   return billingProductCatalog.flatMap((product): MarketingOption[] => {
     if (product.kind !== 'addon' || !product.addon) return []
     if (product.addon.startsWith('refresh') && product.addon !== 'refresh_single') return []
@@ -353,18 +594,18 @@ function marketingOptions(listing: ManagedListing, locale: string, prices: Map<s
       return []
     }
     const type = product.addon.startsWith('refresh') ? 'refresh' : product.addon.startsWith('top_placement') ? 'top' : 'featured'
-    const period = type === 'refresh' ? (locale === 'sv' ? '1 direkt lyft' : '1 instant boost') : `${product.durationDays} ${locale === 'sv' ? 'dagar' : 'days'}`
-    const title = type === 'refresh' ? (locale === 'sv' ? 'Lyft annons' : 'Boost listing') : type === 'top' ? (locale === 'sv' ? 'Toppplacering' : 'Top placement') : 'Featured'
+    const period = type === 'refresh' ? copy.instantBoost : `${product.durationDays} ${copy.days}`
+    const title = type === 'refresh' ? copy.boostTitle : type === 'top' ? copy.topPlacement : copy.featured
     const description = type === 'refresh'
-      ? (locale === 'sv' ? 'Flyttar upp annonsen bland de senaste resultaten. Ett nytt lyft kan göras efter 24 timmar.' : 'Moves the listing among the newest results. Available again after 24 hours.')
+      ? copy.boostDescription
       : type === 'top'
-        ? (locale === 'sv' ? 'Ger prioriterad placering högst upp i relevanta sökresultat. Flera toppannonser kan rotera.' : 'Prioritized placement at the top of relevant search results. Multiple top listings may rotate.')
-        : (locale === 'sv' ? 'Ger annonskortet en tydlig Featured-markering och exponering i utvalda ytor.' : 'Adds a clear Featured treatment and exposure in selected placements.')
+        ? copy.topDescription
+        : copy.featuredDescription
     const detail = type === 'refresh'
-      ? (locale === 'sv' ? 'Effekten startar när Stripe-betalningen har verifierats via webhook.' : 'Starts after Stripe payment is verified by webhook.')
+      ? copy.boostDetail
       : type === 'top'
-        ? `${locale === 'sv' ? 'Gäller annonsens kategori och marknad' : 'Applies to the listing category and market'} · ${listing.country_code.toUpperCase()}`
-        : (locale === 'sv' ? 'Skiljer sig från toppplacering: visuell markering och utvald exponering, inte fast topprioritet.' : 'Unlike top placement: visual treatment and selected exposure, not fixed top priority.')
+        ? `${copy.topDetail} · ${listing.country_code.toUpperCase()}`
+        : copy.featuredDetail
     return [{ productKey: product.productKey, type, title, price: formatMoneyMinor(amount.amountMinor, amount.currency, locale), period, description, detail }]
   })
 }
@@ -398,36 +639,108 @@ function paginationWindow(current: number, total: number) {
 }
 
 function reviewReason(listing: ManagedListing, locale: string) {
-  if (!listing.risk_flags.length) return null
-  const labels: Record<string, [string, string]> = {
-    price_outlier: ['Priset avviker tydligt och behöver kontrolleras.', 'The price differs significantly and needs review.'],
-    duplicate_identifier: ['Fordonsidentifieraren används redan i en annan annons.', 'The vehicle identifier is already used by another listing.'],
-    duplicate_listing: ['Annonsen liknar en befintlig annons och behöver kontrolleras.', 'The listing resembles an existing listing and needs review.'],
-  }
-  return listing.risk_flags.map((flag) => labels[flag]?.[locale === 'sv' ? 0 : 1] || (locale === 'sv' ? 'Annonsuppgifterna behöver kontrolleras innan publicering.' : 'The listing details need review before publication.')).join(' ')
+  return listingReviewNotice(locale as PublicLocale, listing.risk_flags)
 }
 
 function canBulkManage(status: string) { return ['published', 'paused', 'draft', 'pending_payment', 'expired', 'sold', 'rejected'].includes(status) }
 function localizedLifecycleLabel(group: ReturnType<typeof listingLifecycle>['group'], status: string, locale: string) {
   if (locale === 'sv') return listingLifecycle(status).label
   const labels: Record<ReturnType<typeof listingLifecycle>['group'], string> = {
-    active: 'Active', review: status === 'rejected' ? 'Action required' : 'In review', payment: 'Awaiting payment',
-    draft: 'Draft', paused: 'Paused', sold: 'Sold', expired: 'Expired', deleted: 'Deleted',
+    active: accountListingText(locale as PublicLocale, 'Active'),
+    review: status === 'rejected' ? accountListingText(locale as PublicLocale, 'Action required') : accountListingText(locale as PublicLocale, 'In review'),
+    payment: accountListingText(locale as PublicLocale, 'Awaiting payment'),
+    draft: accountListingText(locale as PublicLocale, 'Drafts'),
+    paused: accountListingText(locale as PublicLocale, 'Paused'),
+    sold: accountListingText(locale as PublicLocale, 'Sold'),
+    expired: accountListingText(locale as PublicLocale, 'Expired'),
+    deleted: accountListingText(locale as PublicLocale, 'Deleted'),
   }
   return labels[group]
 }
 function isFuture(value: string | null) { return Boolean(value && new Date(value).getTime() > Date.now()) }
 function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) }
-function packageLabel(value: string) { return value === 'premium_30d' ? 'Premium · 30' : value === 'standard_15d' ? 'Standard · 15' : 'Start · 5' }
-function categoryLabel(value: string, locale: string) { const labels: Record<string, [string, string]> = { cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'], motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'], agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'], 'electric-bikes': ['Elcyklar', 'Electric bikes'] }; return labels[value]?.[locale === 'sv' ? 0 : 1] || value }
+function packageLabel(value: string, locale: PublicLocale) {
+  const copy = optionCopy(locale)
+  return value === 'premium_30d' ? `${copy.premium} · 30` : value === 'standard_15d' ? `${copy.standard} · 15` : `${copy.start} · 5`
+}
+function categoryLabel(value: string, locale: PublicLocale) {
+  const labels: Record<string, string> = {
+    cars: 'Cars',
+    vans: 'Vans',
+    motorcycles: 'Motorcycles',
+    motorhomes: 'Motorhomes',
+    caravans: 'Caravans',
+    trucks: 'Trucks',
+    agriculture: 'Agriculture',
+    construction: 'Construction',
+    'electric-bikes': 'Electric bikes',
+  }
+  return translateText(locale, labels[value] || value, value)
+}
+
+function billingMarketForLocale(locale: PublicLocale) {
+  const marketByLocale: Record<PublicLocale, BillingMarket> = {
+    sv: 'se',
+    de: 'de',
+    en: 'de',
+    at: 'at',
+    be: 'be',
+    fr: 'fr',
+    es: 'es',
+    it: 'it',
+    pl: 'pl',
+    nl: 'nl',
+    fi: 'fi',
+    da: 'dk',
+  }
+  return marketByLocale[locale] || 'de'
+}
+
+function translateText(locale: PublicLocale, en: string, sv?: string) {
+  return accountListingText(locale, en, sv)
+}
+
+function optionCopy(locale: PublicLocale) {
+  return {
+    start: translateText(locale, 'Start'),
+    standard: translateText(locale, 'Standard'),
+    premium: translateText(locale, 'Premium'),
+    days: translateText(locale, 'days', 'dagar'),
+    free: translateText(locale, 'Free', 'Gratis'),
+    unavailable: translateText(locale, 'Unavailable', 'Ej tillgängligt'),
+    startDescription: translateText(locale, 'A standard listing to get started.', 'En vanlig annons för att komma igång.'),
+    standardDescription: translateText(locale, 'A longer listing period for a serious sale.', 'Längre annonstid för en seriös försäljning.'),
+    premiumDescription: translateText(locale, 'Extra visibility and included top placement.', 'Extra synlighet och inkluderad toppplacering.'),
+    instantBoost: translateText(locale, '1 instant boost', '1 direkt lyft'),
+    boostTitle: translateText(locale, 'Boost listing', 'Lyft annons'),
+    topPlacement: translateText(locale, 'Top placement', 'Toppplacering'),
+    featured: translateText(locale, 'Featured', 'Utvald'),
+    boostDescription: translateText(locale, 'Moves the listing among the newest results. Available again after 24 hours.', 'Flyttar upp annonsen bland de senaste resultaten. Ett nytt lyft kan göras efter 24 timmar.'),
+    topDescription: translateText(locale, 'Prioritized placement at the top of relevant search results. Multiple top listings may rotate.', 'Ger prioriterad placering högst upp i relevanta sökresultat. Flera toppannonser kan rotera.'),
+    featuredDescription: translateText(locale, 'Adds a clear Featured treatment and exposure in selected placements.', 'Ger annonskortet en tydlig utvald markering och exponering i utvalda ytor.'),
+    boostDetail: translateText(locale, 'Starts after Stripe payment is verified by webhook.', 'Effekten startar när Stripe-betalningen har verifierats via webhook.'),
+    topDetail: translateText(locale, 'Applies to the listing category and market', 'Gäller annonsens kategori och marknad'),
+    featuredDetail: translateText(locale, 'Unlike top placement: visual treatment and selected exposure, not fixed top priority.', 'Skiljer sig från toppplacering: visuell markering och utvald exponering, inte fast topprioritet.'),
+  }
+}
 
 function listingPageCopy(locale: PublicLocale) {
+  if (locale !== 'sv') {
+    return accountListingObject(locale, {
+      eyebrow: 'Account · Listing management', title: 'My listings', intro: 'Search, filter and manage your vehicle inventory without long lists or dead ends.', create: 'Create listing',
+      summary: 'Summary', active: 'Active listings', payment: 'Awaiting payment', review: 'In review', sold: 'Sold', totalViews: 'Total views', totalFavorites: 'Total favorites',
+      needsAttention: 'Needs your attention', attentionPayment: 'listings await payment', attentionImages: 'listings have no images', attentionExpiring: 'listings expire within three days', attentionReview: 'listings need review or action', attentionFailed: 'listings have a failed payment', completePayment: 'Complete payment', addImages: 'Add images', renew: 'Renew', readReason: 'Read reason', tryAgain: 'Try again',
+      results: 'listings', page: 'Page', of: 'of', noImage: 'No image', selectListing: 'Select listing', expires: 'Expires', stockNumber: 'Stock number', views: 'views', favorites: 'favorites', edit: 'Edit', topPlacement: 'Top placement', featured: 'Featured',
+      noSearchResults: 'No listings matched your search', noSearchText: 'Try another search or clear search and filters.', clearFilters: 'Clear search and filters', emptyAll: 'You have no listings yet', emptyActive: 'You have no active listings', emptyPayment: 'No listings await payment', emptyReview: 'No listings are in review', emptyDraft: 'You have no saved drafts', emptyPaused: 'You have no paused listings', emptyExpired: 'You have no expired listings', emptySold: 'You have no sold listings', emptyDeleted: 'You have no deleted listings', emptyText: 'Create a listing when you are ready to reach buyers on Autorell.',
+      pagination: 'Pagination', previous: 'Previous', next: 'Next', paymentCancelledTitle: 'Payment cancelled - nothing was published.', paymentCancelledText: 'The listing is saved and can be resumed below.', paymentProcessingTitle: 'We are confirming the payment.', paymentProcessingText: 'Status updates after the verified Stripe webhook is processed.', listingCreatedTitle: 'The listing has been created.', listingCreatedText: 'If approved, it is visible now. Otherwise it stays here while Autorell reviews the details.', loadError: 'My listings could not be loaded.',
+    })
+  }
   const sv = locale === 'sv'
   return {
     eyebrow: sv ? 'Konto · Annonshantering' : 'Account · Listing management', title: sv ? 'Mina annonser' : 'My listings', intro: sv ? 'Sök, filtrera och hantera hela ditt fordonslager utan långa listor eller återvändsgränder.' : 'Search, filter and manage your vehicle inventory without long lists or dead ends.', create: sv ? 'Skapa annons' : 'Create listing',
     summary: sv ? 'Sammanfattning' : 'Summary', active: sv ? 'Aktiva annonser' : 'Active listings', payment: sv ? 'Väntar på betalning' : 'Awaiting payment', review: sv ? 'Under granskning' : 'In review', sold: sv ? 'Sålda' : 'Sold', totalViews: sv ? 'Totala visningar' : 'Total views', totalFavorites: sv ? 'Totala favoriter' : 'Total favorites',
     needsAttention: sv ? 'Behöver din uppmärksamhet' : 'Needs your attention', attentionPayment: sv ? 'annonser väntar på betalning' : 'listings await payment', attentionImages: sv ? 'annonser saknar bilder' : 'listings have no images', attentionExpiring: sv ? 'annonser löper ut inom tre dagar' : 'listings expire within three days', attentionReview: sv ? 'annonser behöver granskas eller åtgärdas' : 'listings need review or action', attentionFailed: sv ? 'annonser har en misslyckad betalning' : 'listings have a failed payment', completePayment: sv ? 'Slutför betalning' : 'Complete payment', addImages: sv ? 'Lägg till bilder' : 'Add images', renew: sv ? 'Förnya' : 'Renew', readReason: sv ? 'Läs orsak' : 'Read reason', tryAgain: sv ? 'Försök igen' : 'Try again',
-    results: sv ? 'annonser' : 'listings', page: sv ? 'Sida' : 'Page', of: sv ? 'av' : 'of', noImage: sv ? 'Ingen bild' : 'No image', selectListing: sv ? 'Välj annons' : 'Select listing', expires: sv ? 'Utgår' : 'Expires', stockNumber: sv ? 'Lagernummer' : 'Stock number', views: sv ? 'visningar' : 'views', favorites: sv ? 'favoriter' : 'favorites', edit: sv ? 'Redigera' : 'Edit', topPlacement: sv ? 'Toppplacering' : 'Top placement',
+    results: sv ? 'annonser' : 'listings', page: sv ? 'Sida' : 'Page', of: sv ? 'av' : 'of', noImage: sv ? 'Ingen bild' : 'No image', selectListing: sv ? 'Välj annons' : 'Select listing', expires: sv ? 'Utgår' : 'Expires', stockNumber: sv ? 'Lagernummer' : 'Stock number', views: sv ? 'visningar' : 'views', favorites: sv ? 'favoriter' : 'favorites', edit: sv ? 'Redigera' : 'Edit', topPlacement: sv ? 'Toppplacering' : 'Top placement', featured: sv ? 'Utvald' : 'Featured',
     noSearchResults: sv ? 'Inga annonser matchade din sökning' : 'No listings matched your search', noSearchText: sv ? 'Prova ett annat sökord eller rensa sökning och filter.' : 'Try another search or clear search and filters.', clearFilters: sv ? 'Rensa sökning och filter' : 'Clear search and filters', emptyAll: sv ? 'Du har inga annonser ännu' : 'You have no listings yet', emptyActive: sv ? 'Du har inga aktiva annonser just nu' : 'You have no active listings', emptyPayment: sv ? 'Inga annonser väntar på betalning' : 'No listings await payment', emptyReview: sv ? 'Inga annonser är under granskning' : 'No listings are in review', emptyDraft: sv ? 'Du har inga sparade utkast' : 'You have no saved drafts', emptyPaused: sv ? 'Du har inga pausade annonser' : 'You have no paused listings', emptyExpired: sv ? 'Du har inga utgångna annonser' : 'You have no expired listings', emptySold: sv ? 'Du har inga sålda annonser' : 'You have no sold listings', emptyDeleted: sv ? 'Du har inga borttagna annonser' : 'You have no deleted listings', emptyText: sv ? 'Skapa en annons när du är redo att nå köpare på Autorell.' : 'Create a listing when you are ready to reach buyers on Autorell.',
     pagination: sv ? 'Sidnavigering' : 'Pagination', previous: sv ? 'Föregående' : 'Previous', next: sv ? 'Nästa' : 'Next', paymentCancelledTitle: sv ? 'Betalningen avbröts – inget publicerades.' : 'Payment cancelled — nothing was published.', paymentCancelledText: sv ? 'Annonsen är sparad och kan återupptas nedan.' : 'The listing is saved and can be resumed below.', paymentProcessingTitle: sv ? 'Vi bekräftar betalningen.' : 'We are confirming the payment.', paymentProcessingText: sv ? 'Status uppdateras när den verifierade Stripe-webhooken har behandlats.' : 'Status updates after the verified Stripe webhook is processed.', listingCreatedTitle: sv ? 'Annonsen är skapad.' : 'The listing has been created.', listingCreatedText: sv ? 'Om den är godkänd syns den direkt. Annars visas den här medan Autorell granskar uppgifterna.' : 'If approved, it is visible now. Otherwise it stays here while Autorell reviews the details.', loadError: sv ? 'Mina annonser kunde inte laddas just nu.' : 'My listings could not be loaded.',
   }

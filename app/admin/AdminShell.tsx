@@ -102,11 +102,11 @@ export default function AdminShell({
   function navigationContent(isCompact = false) {
     return (
       <>
-        <div className={`flex min-h-[78px] items-center border-b border-white/10 ${isCompact ? 'justify-center px-3' : 'px-5'}`}>
+        <div className={`flex min-h-[78px] items-center border-b border-[#d9e2ef] bg-white ${isCompact ? 'justify-center px-3' : 'px-5'}`}>
           <Link
             href="/admin"
             aria-label="Autorell admin"
-            className={`inline-flex items-center rounded-xl bg-white ${isCompact ? 'p-2' : 'px-3 py-2.5'}`}
+            className={`inline-flex items-center rounded-xl border border-[#d9e2ef] bg-white shadow-sm ${isCompact ? 'p-2' : 'px-3 py-2.5'}`}
           >
             <BrandLogo compact underline={false} />
           </Link>
@@ -116,7 +116,7 @@ export default function AdminShell({
           {navigation.map((group) => (
             <div key={group.label} className="mb-5 last:mb-0">
               {!isCompact ? (
-                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-[#7a8797]">
                   {group.label}
                 </p>
               ) : null}
@@ -124,14 +124,14 @@ export default function AdminShell({
                 {group.items.map((item) => {
                   const Icon = ICONS[item.icon] || LayoutDashboard
                   const activeItem = item.available && isActive(pathname, item.href)
-                  const className = `group flex min-h-11 w-full items-center rounded-xl text-sm font-semibold transition ${
+                  const className = `group flex min-h-11 w-full items-center rounded-xl text-sm font-medium transition ${
                     isCompact ? 'justify-center px-2' : 'justify-between gap-3 px-3'
                   } ${
                     activeItem
-                      ? 'bg-white text-slate-950 shadow-sm'
+                      ? 'bg-[#0866ff] text-white shadow-[0_10px_24px_rgba(8,102,255,.18)]'
                       : item.available
-                        ? 'text-slate-300 hover:bg-white/8 hover:text-white'
-                        : 'cursor-not-allowed text-slate-600'
+                        ? 'text-[#475467] hover:bg-[#eef5ff] hover:text-[#0866ff]'
+                        : 'cursor-not-allowed text-[#98a2b3]'
                   }`
 
                   const content = (
@@ -141,7 +141,7 @@ export default function AdminShell({
                         {!isCompact ? <span className="truncate">{item.label}</span> : null}
                       </span>
                       {!isCompact && item.badge ? (
-                        <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide ${activeItem ? 'border-white/25 text-white/80' : 'border-[#d9e2ef] text-[#7a8797]'}`}>
                           {item.badge}
                         </span>
                       ) : null}
@@ -164,31 +164,31 @@ export default function AdminShell({
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-3">
+        <div className="border-t border-[#d9e2ef] bg-white p-3">
           {!isCompact ? (
-            <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.05] p-3">
+            <div className="mb-3 rounded-xl border border-[#d9e2ef] bg-[#f8fbff] p-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 text-xs font-bold text-white">
-                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span className="flex items-center gap-2 text-xs font-semibold text-[#101828]">
+                  <ShieldCheck className="h-4 w-4 text-[#0866ff]" />
                   {ADMIN_ROLE_LABELS[primaryRole]}
                 </span>
-                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${mfaReady ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-400/15 text-amber-300'}`}>
+                <span className={`rounded-full px-2 py-0.5 text-[9px] font-medium uppercase ${mfaReady ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}`}>
                   {mfaReady ? 'MFA' : 'AAL1'}
                 </span>
               </div>
-              <p className="mt-2 truncate text-xs text-slate-400">{email}</p>
+              <p className="mt-2 truncate text-xs text-[#667085]">{email}</p>
               {primaryRole === 'super_admin' ? (
-                <span className="mt-2 inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-amber-200">
-                  God Mode
+                <span className="mt-2 inline-flex rounded-full border border-[#b9cff7] bg-[#eef5ff] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.14em] text-[#0866ff]">
+                  Full åtkomst
                 </span>
               ) : null}
-              <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-slate-600">
+              <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#98a2b3]">
                 {accessSource === 'rbac' ? 'RBAC aktiv' : 'Legacy-åtkomst'}
               </p>
             </div>
           ) : (
             <div className="mb-3 grid place-items-center" title={ADMIN_ROLE_LABELS[primaryRole]}>
-              <ShieldCheck className="h-5 w-5 text-emerald-400" />
+              <ShieldCheck className="h-5 w-5 text-[#0866ff]" />
             </div>
           )}
           <div className={isCompact ? 'flex justify-center' : ''}>
@@ -200,9 +200,9 @@ export default function AdminShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-[#101828]">
+    <div className="min-h-screen bg-[#f4f8ff] text-[#101828]">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden border-r border-slate-800 bg-[#0b1220] text-white transition-[width] duration-200 lg:flex lg:flex-col ${collapsed ? 'w-[88px]' : 'w-[280px]'}`}
+        className={`fixed inset-y-0 left-0 z-40 hidden border-r border-[#d9e2ef] bg-[#f7fbff] text-[#101828] transition-[width] duration-200 lg:flex lg:flex-col ${collapsed ? 'w-[88px]' : 'w-[280px]'}`}
       >
         {navigationContent(collapsed)}
         <button
@@ -224,7 +224,7 @@ export default function AdminShell({
             aria-label="Stäng meny"
           />
           <aside
-            className="absolute inset-y-0 left-0 flex w-[min(90vw,360px)] flex-col bg-[#0b1220] text-white shadow-2xl"
+            className="absolute inset-y-0 left-0 flex w-[min(90vw,360px)] flex-col bg-[#f7fbff] text-[#101828] shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-label="Adminmeny"
@@ -232,7 +232,7 @@ export default function AdminShell({
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="absolute right-4 top-5 z-10 grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-white"
+              className="absolute right-4 top-5 z-10 grid h-10 w-10 place-items-center rounded-xl border border-[#d9e2ef] bg-white text-[#475467]"
               aria-label="Stäng meny"
             >
               <X className="h-5 w-5" />
@@ -249,35 +249,35 @@ export default function AdminShell({
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#d8e0eb] bg-white text-slate-700 lg:hidden"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#d8e0eb] bg-white text-[#475467] lg:hidden"
                 aria-label="Öppna adminmeny"
                 aria-expanded={mobileOpen}
               >
                 <Menu className="h-5 w-5" />
               </button>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#667085]">
+                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#667085]">
                   Autorell kontrollcenter
                 </p>
-                <h1 className="mt-0.5 truncate text-base font-bold text-[#101828] sm:text-lg">
+                <h1 className="mt-0.5 truncate text-base font-semibold text-[#101828] sm:text-lg">
                   {active?.label || 'Admin'}
                 </h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {primaryRole === 'super_admin' ? (
-                <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-800 sm:inline-flex">
-                  God Mode
+                <span className="hidden rounded-full border border-[#b9cff7] bg-[#eef5ff] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#0866ff] sm:inline-flex">
+                  Full åtkomst
                 </span>
               ) : null}
               {!mfaReady ? (
-                <span className="hidden items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 sm:flex">
+                <span className="hidden items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 sm:flex">
                   <LockKeyhole className="h-4 w-4" />
                   MFA behöver aktiveras
                 </span>
               ) : null}
               {permissions.includes('dashboard.view') ? (
-                <Link href="/admin/notifications" className="grid h-11 w-11 place-items-center rounded-xl border border-[#d8e0eb] text-[#475467] hover:border-[#0866ff] hover:text-[#0866ff]" aria-label="Öppna notiscenter">
+                <Link href="/admin/notifications" className="grid h-11 w-11 place-items-center rounded-xl border border-[#d8e0eb] bg-white text-[#475467] hover:border-[#0866ff] hover:text-[#0866ff]" aria-label="Öppna notiscenter">
                   <BellRing className="h-[18px] w-[18px]" />
                 </Link>
               ) : null}

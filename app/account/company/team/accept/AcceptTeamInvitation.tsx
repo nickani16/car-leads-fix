@@ -1,8 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { createClient } from '@/lib/supabase/client'
+
+const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 export default function AcceptTeamInvitation({
   locale,
@@ -23,8 +27,19 @@ export default function AcceptTeamInvitation({
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const attemptedRef = useRef(false)
+
+  async function redirectToInviteAuth() {
+    const next = `${window.location.pathname}${window.location.search}`
+    window.localStorage.removeItem(REMEMBERED_LOGIN_KEY)
+    await createClient().auth.signOut().catch(() => undefined)
+    window.dispatchEvent(new CustomEvent('autorell:auth-changed'))
+    router.push(localizePublicHref(locale, `/register?next=${encodeURIComponent(next)}`))
+    router.refresh()
+  }
 
   async function accept() {
+    if (loading || !token) return
     setLoading(true)
     setError('')
     setMessage('')
@@ -36,10 +51,13 @@ export default function AcceptTeamInvitation({
       })
       const result = (await response.json()) as { error?: string; destination?: string }
       if (!response.ok) {
-        setError(response.status === 401 ? copy.signInFirst : result.error || copy.failed)
-        if (response.status === 401) {
-          const next = `${window.location.pathname}${window.location.search}`
-          window.setTimeout(() => router.push(localizePublicHref(locale, `/login?next=${encodeURIComponent(next)}`)), 500)
+        if (response.status === 401 || response.status === 403) {
+          setError(copy.signInFirst)
+          window.setTimeout(() => {
+            void redirectToInviteAuth()
+          }, 500)
+        } else {
+          setError(localizedAccountError(locale, result, copy.failed))
         }
         return
       }
@@ -51,6 +69,13 @@ export default function AcceptTeamInvitation({
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (attemptedRef.current || !token) return
+    attemptedRef.current = true
+    void accept()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
   return (
     <div>

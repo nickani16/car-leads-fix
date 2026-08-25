@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock3, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import type { CompanyImportLimits } from '@/lib/company-import-limits'
 
 type ImportRow = {
   rowNumber: number
@@ -17,6 +18,7 @@ type ImportRow = {
     currency: string
     countryCode: string
     city: string
+    branchName: string | null
   }
 }
 
@@ -31,6 +33,7 @@ type ImportPreview = {
     used: number
     remaining: number
   }
+  importLimits?: CompanyImportLimits
 }
 
 type ImportResult = {
@@ -64,14 +67,46 @@ type Copy = {
   quota: string
   created: string
   openListings: string
+  quotaNote: string
+  planLimitsTitle: string
+  rowsPerImport: string
+  imagesPerListing: string
+  recurringFeedTitle: string
+  recurringFeedText: string
+  importHistory: string
+  importHistoryEmpty: string
+  completed: string
+  completedWithWarnings: string
+  failed: string
+  running: string
+  importedImages: string
+  skippedImages: string
+}
+
+type ImportJob = {
+  id: string
+  status: string | null
+  file_name: string | null
+  requested_rows: number | null
+  valid_rows: number | null
+  invalid_rows: number | null
+  created_count: number | null
+  image_imported_count: number | null
+  image_skipped_count: number | null
+  created_at: string | null
+  finished_at: string | null
 }
 
 export function CompanyImportClient({
   locale,
   copy,
+  importLimits,
+  importJobs,
 }: {
   locale: PublicLocale
   copy: Copy
+  importLimits: CompanyImportLimits
+  importJobs: ImportJob[]
 }) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<ImportPreview | null>(null)
@@ -119,12 +154,18 @@ export function CompanyImportClient({
           </div>
           <h2 className="mt-4 text-xl font-semibold tracking-[-.025em] text-[#101828]">{copy.templateTitle}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#667085]">{copy.templateText}</p>
+          <p className="mt-3 rounded-[12px] bg-[#f8fbff] px-3 py-2 text-sm font-medium leading-6 text-[#475467]">{copy.quotaNote}</p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <PlanMetric value={importLimits.maxRows} label={copy.rowsPerImport} />
+            <PlanMetric value={importLimits.maxImagesPerListing} label={copy.imagesPerListing} />
+          </div>
           <a href="/templates/autorell-business-import.csv" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-bold text-white">
             <FileSpreadsheet className="h-4 w-4" />
             {copy.downloadTemplate}
           </a>
         </div>
 
+        <div className="grid gap-4">
         <div className="rounded-[16px] border border-[#d9e2ef] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
           <div className="grid h-11 w-11 place-items-center rounded-[13px] bg-[#eef5ff] text-[#0866ff]">
             <Upload className="h-5 w-5" />
@@ -166,6 +207,38 @@ export function CompanyImportClient({
             </button>
           </div>
         </div>
+        <div className="rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+          <p className="text-sm font-semibold text-[#101828]">{copy.recurringFeedTitle}</p>
+          <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.recurringFeedText}</p>
+          <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-bold ${importLimits.recurringFeeds ? 'bg-[#e9f9ef] text-[#067647]' : 'bg-[#f2f4f7] text-[#667085]'}`}>
+            {importLimits.recurringFeeds ? copy.completed : 'Professional / Enterprise'}
+          </span>
+        </div>
+        </div>
+      </section>
+
+      <section className="rounded-[16px] border border-[#d9e2ef] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)]">
+        <div className="flex items-center gap-2">
+          <Clock3 className="h-4 w-4 text-[#0866ff]" />
+          <h2 className="text-lg font-semibold tracking-[-.025em] text-[#101828]">{copy.importHistory}</h2>
+        </div>
+        {importJobs.length ? (
+          <div className="mt-4 grid gap-2">
+            {importJobs.map((job) => (
+              <div key={job.id} className="grid gap-2 rounded-[12px] border border-[#e4ebf5] bg-[#fbfdff] p-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-[#101828]">{job.file_name || 'CSV'}</p>
+                  <p className="mt-1 text-[#667085]">{job.created_count || 0}/{job.valid_rows || 0} {copy.created.toLowerCase()} · {job.image_imported_count || 0} {copy.importedImages} · {job.image_skipped_count || 0} {copy.skippedImages}</p>
+                </div>
+                <span className={`inline-flex justify-self-start rounded-full px-3 py-1 text-xs font-bold sm:justify-self-end ${statusClass(job.status)}`}>
+                  {statusLabel(job.status, copy)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm leading-6 text-[#667085]">{copy.importHistoryEmpty}</p>
+        )}
       </section>
 
       {error ? (
@@ -224,7 +297,10 @@ export function CompanyImportClient({
                     </td>
                     <td className="px-5 py-4 text-[#475467]">{row.data.category}</td>
                     <td className="px-5 py-4 text-[#475467]">{row.data.price ? `${row.data.price} ${row.data.currency}` : '-'}</td>
-                    <td className="px-5 py-4 text-[#475467]">{row.data.city}, {row.data.countryCode}</td>
+                    <td className="px-5 py-4 text-[#475467]">
+                      <p>{row.data.city}, {row.data.countryCode}</p>
+                      {row.data.branchName ? <p className="mt-1 text-xs font-semibold text-[#0866ff]">{row.data.branchName}</p> : null}
+                    </td>
                     <td className="px-5 py-4">
                       {row.valid ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-2.5 py-1 text-xs font-bold text-[#0866ff]">
@@ -246,4 +322,27 @@ export function CompanyImportClient({
       ) : null}
     </div>
   )
+}
+
+function PlanMetric({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-[12px] border border-[#e4ebf5] bg-white px-3 py-3">
+      <p className="text-2xl font-semibold tracking-[-.04em] text-[#101828]">{value}</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-[.12em] text-[#667085]">{label}</p>
+    </div>
+  )
+}
+
+function statusLabel(status: string | null, copy: Copy) {
+  if (status === 'completed') return copy.completed
+  if (status === 'completed_with_warnings') return copy.completedWithWarnings
+  if (status === 'failed') return copy.failed
+  return copy.running
+}
+
+function statusClass(status: string | null) {
+  if (status === 'completed') return 'bg-[#e9f9ef] text-[#067647]'
+  if (status === 'completed_with_warnings') return 'bg-[#fff7ed] text-[#9a3412]'
+  if (status === 'failed') return 'bg-[#fff5f5] text-[#b42318]'
+  return 'bg-[#eef5ff] text-[#0866ff]'
 }

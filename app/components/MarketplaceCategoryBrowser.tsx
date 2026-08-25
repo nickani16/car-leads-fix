@@ -26,7 +26,6 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import SavedListingButton from './SavedListingButton'
-import CountryFlag from './CountryFlag'
 import ListingCardImageCarousel from './ListingCardImageCarousel'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import { buildListingSpecChips, formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
@@ -373,7 +372,7 @@ export default function MarketplaceCategoryBrowser({
       if (current.includes(listing.id)) {
         return current.filter((id) => id !== listing.id)
       }
-      if (current.length >= 3) {
+      if (current.length >= 4) {
         setCompareError(copy.compareLimit)
         return current
       }
@@ -790,7 +789,7 @@ export default function MarketplaceCategoryBrowser({
             </div>
             <div className="hidden gap-3 sm:flex">
               <Link
-                href={localizePublicHref(locale, `/sell-vehicle?category=${category.slug}`)}
+                href={localizePublicHref(locale, `/account/listings/new?category=${category.slug}`)}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white shadow-[0_10px_26px_rgba(8,102,255,.2)]"
               >
                 {copy.sell} {localizedCategory.singular}
@@ -1108,7 +1107,7 @@ export default function MarketplaceCategoryBrowser({
           ) : null}
 
           {compareEnabled && compareIds.length ? (
-            <div className="mb-5 overflow-hidden rounded-[8px] border border-[#c9d9ef] bg-[#f7fbff] shadow-sm">
+            <div className="fixed inset-x-3 bottom-[calc(5.15rem+env(safe-area-inset-bottom))] z-[125] mx-auto max-w-[640px] overflow-hidden rounded-[12px] border border-[#c9d9ef] bg-white/96 shadow-[0_16px_44px_rgba(16,24,40,.18)] backdrop-blur sm:bottom-5 sm:left-1/2 sm:right-auto sm:w-[min(640px,calc(100vw-32px))] sm:-translate-x-1/2">
               <div className="h-1 bg-[#0866ff]" />
               <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
@@ -1272,7 +1271,6 @@ export default function MarketplaceCategoryBrowser({
                       {listing.sellerIsTrader ? `${copy.businessSeller} | ${sellerLabel}` : sellerLabel}
                     </p>
                     <div className={listingLayout === 'grid' ? 'mt-4 hidden items-start gap-3 border-t border-[#edf1f6] pt-4 sm:flex' : 'mt-5 flex items-start gap-3 border-t border-[#edf1f6] pt-4'}>
-                      <CountryFlag code={listing.country || 'eu'} className="mt-0.5 h-5 w-5 shrink-0 rounded-full shadow-sm ring-1 ring-black/5" />
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#667085]">{copy.listingCountry}</p>
                         <p className="mt-1 text-sm font-bold text-[#101828]">
@@ -1314,7 +1312,7 @@ export default function MarketplaceCategoryBrowser({
                   {copy.noResultsText} {localizedCategory.singular}.
                 </p>
                 <Link
-                  href={localizePublicHref(locale, `/sell-vehicle?category=${category.slug}`)}
+                  href={localizePublicHref(locale, `/account/listings/new?category=${category.slug}`)}
                   className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-[15px] bg-[#0866ff] px-6 text-sm font-bold text-white"
                 >
                   {copy.createListing}
@@ -2298,8 +2296,8 @@ const marketplaceCopy = {
     compareClose: 'Stäng jämförelse',
     compareClear: 'Rensa jämförelse',
     compareRemove: 'Ta bort från jämförelse',
-    compareLimit: 'Du kan jämföra max 3 bilar.',
-    compareHelper: 'Välj upp till 3 bilar och jämför nyckeldata sida vid sida.',
+    compareLimit: 'Du kan jämföra max 4 annonser.',
+    compareHelper: 'Välj 2-4 annonser och jämför nyckeldata sida vid sida.',
     compareSelectedSingular: 'annons vald',
     compareSelectedPlural: 'annonser valda',
     compareStrengths: 'Styrkor',
@@ -2425,8 +2423,8 @@ const marketplaceCopy = {
     compareClose: 'Close comparison',
     compareClear: 'Clear comparison',
     compareRemove: 'Remove from comparison',
-    compareLimit: 'You can compare up to 3 cars.',
-    compareHelper: 'Select up to 3 cars and compare key data side by side.',
+    compareLimit: 'You can compare up to 4 listings.',
+    compareHelper: 'Select 2-4 listings and compare key data side by side.',
     compareSelectedSingular: 'listing selected',
     compareSelectedPlural: 'listings selected',
     compareStrengths: 'Strengths',
@@ -2552,8 +2550,8 @@ const marketplaceCopy = {
     compareClose: 'Vergleich schließen',
     compareClear: 'Vergleich löschen',
     compareRemove: 'Aus Vergleich entfernen',
-    compareLimit: 'Sie können maximal 3 Autos vergleichen.',
-    compareHelper: 'Wählen Sie bis zu 3 Autos und vergleichen Sie die wichtigsten Daten.',
+    compareLimit: 'Sie können maximal 4 Anzeigen vergleichen.',
+    compareHelper: 'Wählen Sie 2-4 Anzeigen und vergleichen Sie die wichtigsten Daten.',
     compareSelectedSingular: 'Anzeige ausgewählt',
     compareSelectedPlural: 'Anzeigen ausgewählt',
     compareStrengths: 'Stärken',
@@ -2618,8 +2616,8 @@ const svMarketplaceCopyFixes = {
   compareClose: 'Stäng jämförelse',
   compareClear: 'Rensa jämförelse',
   compareRemove: 'Ta bort från jämförelse',
-  compareLimit: 'Du kan jämföra max 3 bilar.',
-  compareHelper: 'Välj upp till 3 bilar och jämför nyckeldata sida vid sida.',
+  compareLimit: 'Du kan jämföra max 4 annonser.',
+  compareHelper: 'Välj 2-4 annonser och jämför nyckeldata sida vid sida.',
   compareNoStrengths: 'Inga tydliga fördelar hittades i annonsdatan.',
   compareBestPrice: 'Lägst pris',
   compareNewest: 'Nyast årsmodell',

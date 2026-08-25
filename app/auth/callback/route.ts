@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { accountIntentFromRequest, ensureMarketplaceProfile } from '@/lib/account-profile-bootstrap'
+import { localeFromRequest } from '@/lib/auth-locale'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
@@ -6,9 +8,34 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
+  const mode = requestUrl.searchParams.get('mode') === 'register' ? 'register' : 'login'
+  const oauthError = requestUrl.searchParams.get('error')
+  const oauthErrorCode = requestUrl.searchParams.get('error_code')
+  const isOauthFlow = requestUrl.searchParams.get('flow') === 'oauth'
   const next = requestUrl.searchParams.get('next') || '/account'
   const safeNext =
-    next.startsWith('/') && !next.startsWith('//') ? next : '/account'
+    next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
+      ? next
+      : '/account'
+  const localePrefix = safeNext.match(/^\/(at|be|fr|es|it|pl|nl|fi|dk)(?:\/|$)/)?.[1]
+  const authEntryPath = localePrefix ? `/${localePrefix}` : '/'
+
+  const oauthFailureRedirect = (status: 'oauth-cancelled' | 'oauth-error') => {
+    const destination = new URL(authEntryPath, requestUrl.origin)
+    destination.searchParams.set('auth', mode)
+    destination.searchParams.set('status', status)
+    destination.searchParams.set('next', safeNext)
+    return NextResponse.redirect(destination)
+  }
+
+  if (oauthError || oauthErrorCode) {
+    return oauthFailureRedirect(
+      oauthError === 'access_denied' || oauthErrorCode === 'access_denied'
+        ? 'oauth-cancelled'
+        : 'oauth-error',
+    )
+  }
+
   const supabase = await createClient()
 
   if (tokenHash && type === 'recovery') {
@@ -22,13 +49,74 @@ export async function GET(request: Request) {
     }
   }
 
+  if (tokenHash && type === 'signup') {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'signup',
+    })
+
+    if (!error && data.user) {
+      try {
+        const profile = await ensureMarketplaceProfile({
+          user: data.user,
+          locale: localeFromRequest(request),
+          intent: accountIntentFromRequest(request, data.user),
+        })
+        const destination = safeNext.includes('/company/team/accept')
+          ? safeNext
+          : profile.accountType === 'business'
+            ? safeNext.replace(/\/account(?=$|\?)/, '/account/company')
+            : safeNext
+        return NextResponse.redirect(new URL(destination, requestUrl.origin))
+      } catch (profileError) {
+        console.error('Signup profile bootstrap failed', profileError)
+        return oauthFailureRedirect('oauth-error')
+      }
+    }
+  }
+
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      return NextResponse.redirect(new URL(safeNext, requestUrl.origin))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) {
+        try {
+          const profile = await ensureMarketplaceProfile({
+            user,
+            locale: localeFromRequest(request),
+            intent: mode === 'register'
+              ? accountIntentFromRequest(request, user)
+              : { accountType: 'private', companyName: '', registrationNumber: '' },
+          })
+          const destination = safeNext.includes('/company/team/accept')
+            ? safeNext
+            : profile.accountType === 'business' && /\/account(?:$|\?)/.test(safeNext)
+              ? safeNext.replace(/\/account(?=$|\?)/, '/account/company')
+              : safeNext
+          return NextResponse.redirect(new URL(destination, requestUrl.origin))
+        } catch (profileError) {
+          console.error('OAuth profile bootstrap failed', profileError)
+          await supabase.auth.signOut()
+          return oauthFailureRedirect('oauth-error')
+        }
+      }
+      await supabase.auth.signOut()
     }
+
+    if (error) {
+      console.error('OAuth callback exchange failed', {
+        name: error.name,
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      })
+    }
+
+    return oauthFailureRedirect('oauth-error')
   }
+
+  if (isOauthFlow) return oauthFailureRedirect('oauth-error')
 
   return NextResponse.redirect(
     new URL('/?auth=forgot-password&status=invalid-link', requestUrl.origin)

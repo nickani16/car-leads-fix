@@ -59,7 +59,7 @@ export default async function AdminAdministratorsPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {ADMIN_ROLES.map((role) => (
           <article key={role} className="rounded-2xl border border-[#dce3ee] bg-white p-5 shadow-sm">
-            <p className="text-sm font-black text-[#101828]">{ADMIN_ROLE_LABELS[role]}</p>
+            <p className="text-sm font-semibold text-[#101828]">{ADMIN_ROLE_LABELS[role]}</p>
             <p className="mt-2 text-xs leading-5 text-[#667085]">{roleDescription(role)}</p>
             <p className="mt-4 text-xs font-bold text-[#0866ff]">{permissionCountForRole(role)} permissions</p>
           </article>

@@ -123,6 +123,27 @@ export async function PATCH(
     return NextResponse.json({ error: listingError.message }, { status: 400 })
   }
 
+  const moderationCaseStatus = action === 'approve'
+    ? 'closed'
+    : action === 'reject'
+      ? 'rejected'
+      : action === 'request_info'
+        ? 'awaiting_information'
+        : action === 'delete'
+          ? 'closed'
+          : null
+  if (moderationCaseStatus) {
+    await adminClient
+      .from('moderation_cases')
+      .update({
+        status: moderationCaseStatus,
+        closed_at: ['closed', 'rejected'].includes(moderationCaseStatus) ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('listing_id', id)
+      .in('status', ['open', 'assigned', 'awaiting_information'])
+  }
+
   if (action === 'close_account' || action === 'reopen_account') {
     const { error } = await adminClient
       .from('marketplace_profiles')

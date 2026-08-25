@@ -1,19 +1,27 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
+import Image from 'next/image'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import {
   ArrowRight,
   BarChart3,
-  Building2,
-  CheckCircle2,
-  FilePlus2,
+  Check,
+  ChevronRight,
+  FileSpreadsheet,
   Globe2,
-  MessageCircle,
+  Layers3,
   ShieldCheck,
-  Warehouse,
+  Store,
+  Users2,
 } from 'lucide-react'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import BrandLogo from '@/app/components/BrandLogo'
+import BusinessPilotPromo from '@/app/business/pilot/BusinessPilotPromo'
+import BusinessFaqClient from './BusinessFaqClient'
+import { getBusinessPilotCopy } from '@/lib/business-pilot-i18n'
+import { isBusinessFeatureEnabled } from '@/lib/business-feature-flags'
+import { getBusinessPlanCopy, type BusinessPlanCopy } from '@/lib/business-plan-i18n'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -24,215 +32,347 @@ import { cleanSeoText } from '@/lib/market-seo'
 
 const businessPageCopy = {
   sv: {
-    metaTitle: 'Företagskonto för fordonsförsäljare | Autorell',
+    metaTitle: 'Företagslösningar för fordonsföretag | Autorell',
     metaDescription:
-      'Publicera fordonslager, hantera annonser och nå köpare i hela EU med Autorells företagskonto.',
-    eyebrow: 'Autorell för företag',
-    title: 'Sälj fordon till köpare i hela Europa.',
-    intro:
-      'Autorell ger handlare, verkstäder, åkerier, maskinföretag och återkommande säljare en tydlig plats att publicera lager, hantera förfrågningar och nå rätt marknad utan krångliga flöden.',
-    primaryCta: 'Skapa företagskonto',
-    secondaryCta: 'Publicera fordon',
-    proof: [
-      'Byggt för EU-marknader',
-      'Privata och professionella köpare',
-      'Ett konto för hela lagret',
+      'Autorells företagslösningar samlar lagerflöde, team, import och europeisk räckvidd för professionella fordonsföretag.',
+    heroEyebrow: 'Autorell för företag',
+    heroTitle: 'Lager, team och annonser. Allt på en plats.',
+    heroIntro:
+      'Samla lagerflöde, säljare, import och marknadsdata i en arbetsyta byggd för professionell fordonsförsäljning.',
+    primaryCta: 'Starta företagskonto',
+    secondaryCta: 'Se abonnemang',
+    learnMoreCta: 'Läs mer',
+    discoverTitle: 'Insikter och verktyg för företag som säljer fordon.',
+    discoverIntro: 'Samla företagets lager, säljare, kontaktvägar och marknadsdata i ett flöde som går att växa med.',
+    globeTitle: 'Ett europeiskt skyltfönster för ert lager.',
+    globeText:
+      'Autorell gör företagets annonser synliga lokalt och över marknader med rätt språk, valuta och länkar tillbaka till er företagssida.',
+    stepTitle: 'Ta nästa steg.',
+    faqTitle: 'Frågor? Svar.',
+    allMarkets: '11 marknader',
+    liveListings: 'Annonser',
+    companyPage: 'Företagslösningar',
+    cards: [
+      ['Företagsprofil', 'Visa varumärke, adress, allmän kontakt, karta och hela lagret på en samlad företagssida.'],
+      ['Annonskvalitet', 'Strukturerade fält, bilder, pris, tekniska data och säljarkontakt gör varje annons lättare att jämföra.'],
+      ['Säljarteam', 'Låt varje säljare få egna leads och kontaktuppgifter medan företaget behåller en gemensam profil.'],
+      ['Lagerimport', 'Förbered många fordon med CSV, kontroller och granskningsflöde innan annonser publiceras.'],
+      ['Lead-insikter', 'Följ intresse via visningar, sparade annonser, kontaktstarter och vilka fordon som driver efterfrågan.'],
+      ['Marknadsnärvaro', 'Anpassa språk, valuta och marknadslänkar så köpare i Europa möter rätt information direkt.'],
     ],
-    featureTitle: 'Verktygen företag behöver från första annonsen.',
-    features: [
-      {
-        title: 'Företagsprofil',
-        text: 'Samla företagsnamn, kontaktuppgifter och annonser på en professionell säljarprofil.',
-        icon: Building2,
-      },
-      {
-        title: 'Lagerannonsering',
-        text: 'Publicera bilar, transportbilar, maskiner, lastbilar och andra fordonskategorier med strukturerad data.',
-        icon: Warehouse,
-      },
-      {
-        title: 'Köparförfrågningar',
-        text: 'Få meddelanden från seriösa köpare och håll kontakten samlad i Autorell.',
-        icon: MessageCircle,
-      },
-      {
-        title: 'EU-räckvidd',
-        text: 'Visa fordon på rätt språk, valuta och marknad när köpare söker över landsgränser.',
-        icon: Globe2,
-      },
-      {
-        title: 'Trygg presentation',
-        text: 'Tydliga annonser, fordonsdata och säljarinformation gör affären enklare att förstå.',
-        icon: ShieldCheck,
-      },
-      {
-        title: 'Bättre överblick',
-        text: 'Följ publicerade, pausade, sålda och utgångna annonser från samma konto.',
-        icon: BarChart3,
-      },
+    plans: [
+      ['Start', 'För handlare som vill komma igång med en ren dealer-profil och grundannonser.', 'Skapa konto'],
+      ['Standard', 'För team som vill hantera fler annonser, säljare och uppföljning.', 'Se priser'],
+      ['Premium', 'För växande lager med mer synlighet, struktur och prioriterad hantering.', 'Kontakta oss'],
     ],
-    stepsTitle: 'Så kommer företaget igång',
-    steps: [
-      {
-        title: 'Skapa företagskonto',
-        text: 'Registrera organisationen och välj kontaktuppgifter som köpare ska se.',
-      },
-      {
-        title: 'Lägg upp fordon',
-        text: 'Fyll i pris, bilder, plats, specifikationer och den beskrivning säljaren vill visa.',
-      },
-      {
-        title: 'Hantera dialogen',
-        text: 'Köpare kontaktar er via Autorell och ni slutför affären enligt era egna villkor.',
-      },
+    faqs: [
+      ['Vad ingår i företagslösningarna?', 'Företagslösningarna visar företagets logotyp, adress, webbplats, allmänna kontaktuppgifter och samlade annonser.'],
+      ['Kan säljare ha egna kontaktuppgifter?', 'Ja. Annonskort och annonssidor kan visa säljarens direkta kontakt, medan företagssidan visar företagets gemensamma kontaktuppgifter.'],
+      ['Fungerar Autorell i flera marknader?', 'Ja. Sidan är byggd för elva marknader med lokaliserade länkar, språk och valuta där det behövs.'],
+      ['Kan vi börja enkelt?', 'Ja. Börja med Start och uppgradera när fler annonser, säljare eller importflöden behövs.'],
     ],
-    ctaTitle: 'Redo att visa ert lager för fler köpare?',
-    ctaText:
-      'Starta med ett företagskonto och publicera första fordonet när allt är klart.',
   },
   en: {
-    metaTitle: 'Business account for vehicle sellers | Autorell',
+    metaTitle: 'Dealer solutions for vehicle companies | Autorell',
     metaDescription:
-      'Publish vehicle inventory, manage listings and reach buyers across the EU with an Autorell business account.',
-    eyebrow: 'Autorell for business',
-    title: 'Sell vehicles to buyers across Europe.',
-    intro:
-      'Autorell gives dealers, workshops, transport companies, machinery businesses and recurring sellers a clear place to publish inventory, manage enquiries and reach the right market without complicated flows.',
-    primaryCta: 'Create business account',
-    secondaryCta: 'Advertise a vehicle',
-    proof: [
-      'Built for EU markets',
-      'Private and professional buyers',
-      'One account for full inventory',
+      'Autorell Dealer solutions brings inventory flows, teams, imports and European reach together for professional vehicle sellers.',
+    heroEyebrow: 'Autorell Dealer solutions',
+    heroTitle: 'Dealer solutions for inventory, teams and listings. All in one place.',
+    heroIntro:
+      'Bring inventory flows, sellers, imports and market data into one workspace built for professional vehicle sales.',
+    primaryCta: 'Start business account',
+    secondaryCta: 'View plans',
+    learnMoreCta: 'Learn more',
+    discoverTitle: 'Insights and tools for companies selling vehicles.',
+    discoverIntro: 'Bring inventory, sellers, contact routes and market data into one flow that can grow with the business.',
+    globeTitle: 'A European showroom for your inventory.',
+    globeText:
+      'Autorell makes company listings visible locally and across markets with the right language, currency and links back to your company page.',
+    stepTitle: 'Take the next step.',
+    faqTitle: 'Questions? Answers.',
+    allMarkets: '11 markets',
+    liveListings: 'Listings',
+    companyPage: 'Dealer solutions',
+    cards: [
+      ['Company profile', 'Show brand, address, general contact, map and full inventory on one company page.'],
+      ['Listing quality', 'Structured fields, images, price, technical data and seller contact make each listing easier to compare.'],
+      ['Seller teams', 'Give each seller direct leads and contact details while the company keeps one shared profile.'],
+      ['Inventory import', 'Prepare many vehicles with CSV, checks and review flow before listings are published.'],
+      ['Lead insights', 'Track interest through views, saved listings, contact starts and which vehicles drive demand.'],
+      ['Market presence', 'Adapt language, currency and market links so buyers in Europe see the right information immediately.'],
     ],
-    featureTitle: 'The tools businesses need from the first listing.',
-    features: [
-      {
-        title: 'Business profile',
-        text: 'Keep company name, contact details and listings together on a professional seller profile.',
-        icon: Building2,
-      },
-      {
-        title: 'Inventory listings',
-        text: 'Publish cars, vans, machines, trucks and other vehicle categories with structured data.',
-        icon: Warehouse,
-      },
-      {
-        title: 'Buyer enquiries',
-        text: 'Receive messages from serious buyers and keep the conversation organised in Autorell.',
-        icon: MessageCircle,
-      },
-      {
-        title: 'EU reach',
-        text: 'Show vehicles with the right language, currency and market context when buyers search across borders.',
-        icon: Globe2,
-      },
-      {
-        title: 'Trusted presentation',
-        text: 'Clear listings, vehicle data and seller information make each deal easier to understand.',
-        icon: ShieldCheck,
-      },
-      {
-        title: 'Better overview',
-        text: 'Track published, paused, sold and expired listings from the same account.',
-        icon: BarChart3,
-      },
+    plans: [
+      ['Start', 'For dealers that want a clean dealer profile and basic listings.', 'Create account'],
+      ['Standard', 'For teams that need more listings, sellers and follow-up.', 'View pricing'],
+      ['Premium', 'For growing inventory with more visibility, structure and priority handling.', 'Contact us'],
     ],
-    stepsTitle: 'How your company gets started',
-    steps: [
-      {
-        title: 'Create a business account',
-        text: 'Register the organisation and choose the contact details buyers should see.',
-      },
-      {
-        title: 'Add vehicles',
-        text: 'Enter price, images, location, specifications and the description the seller wants to show.',
-      },
-      {
-        title: 'Manage the dialogue',
-        text: 'Buyers contact you through Autorell and you complete the deal on your own terms.',
-      },
+    faqs: [
+      ['What does Dealer solutions include?', 'Dealer solutions shows logo, address, website, general contact details and all published listings.'],
+      ['Can sellers use their own contact details?', 'Yes. Listing cards and listing pages can show the direct seller contact while the company page shows company-wide details.'],
+      ['Does Autorell work across markets?', 'Yes. The page is built for eleven markets with localized links, language and currency where needed.'],
+      ['Can we start simple?', 'Yes. Start with the basic plan and upgrade when more listings, sellers or import flows are needed.'],
     ],
-    ctaTitle: 'Ready to show your inventory to more buyers?',
-    ctaText:
-      'Start with a business account and publish the first vehicle when everything is ready.',
   },
   de: {
-    metaTitle: 'Unternehmenskonto für Fahrzeugverkäufer | Autorell',
+    metaTitle: 'Händlerlösungen für Fahrzeugfirmen | Autorell',
     metaDescription:
-      'Fahrzeugbestand veröffentlichen, Anzeigen verwalten und Käufer in der EU mit einem Autorell-Unternehmenskonto erreichen.',
-    eyebrow: 'Autorell für Unternehmen',
-    title: 'Fahrzeuge an Käufer in ganz Europa verkaufen.',
-    intro:
-      'Autorell bietet Händlern, Werkstätten, Transportunternehmen, Maschinenbetrieben und regelmäßigen Verkäufern einen klaren Ort, um Bestand zu veröffentlichen, Anfragen zu verwalten und den richtigen Markt ohne komplizierte Abläufe zu erreichen.',
-    primaryCta: 'Unternehmenskonto erstellen',
-    secondaryCta: 'Fahrzeug inserieren',
-    proof: [
-      'Für EU-Märkte gebaut',
-      'Private und professionelle Käufer',
-      'Ein Konto für den gesamten Bestand',
+      'Autorell bündelt Bestand, Teams, Import und europäische Reichweite für professionelle Fahrzeugverkäufer.',
+    heroEyebrow: 'Autorell für Unternehmen',
+    heroTitle: 'Bestand, Teams und Anzeigen. Alles an einem Ort.',
+    heroIntro:
+      'Bündeln Sie Bestand, Verkäufer, Import und Marktdaten in einer Arbeitsfläche für professionellen Fahrzeugverkauf.',
+    primaryCta: 'Unternehmenskonto starten',
+    secondaryCta: 'Pläne ansehen',
+    learnMoreCta: 'Mehr erfahren',
+    discoverTitle: 'Einblicke und Werkzeuge für Unternehmen im Fahrzeugverkauf.',
+    discoverIntro: 'Bündeln Sie Bestand, Verkäufer, Kontaktwege und Marktdaten in einem Ablauf, der mit dem Unternehmen wächst.',
+    globeTitle: 'Ein europäisches Schaufenster für Ihren Bestand.',
+    globeText:
+      'Autorell zeigt Dealer-Anzeigen lokal und marktübergreifend mit passender Sprache, Währung und Links zur Dealer-Präsenz.',
+    stepTitle: 'Der nächste Schritt.',
+    faqTitle: 'Fragen? Antworten.',
+    allMarkets: '11 Märkte',
+    liveListings: 'Anzeigen',
+    companyPage: 'Händlerlösungen',
+    cards: [
+      ['Unternehmensprofil', 'Marke, Adresse, allgemeine Kontaktdaten, Karte und gesamten Bestand auf einer Unternehmensseite zeigen.'],
+      ['Anzeigenqualität', 'Strukturierte Felder, Bilder, Preis, technische Daten und Verkäuferkontakt machen Anzeigen vergleichbarer.'],
+      ['Verkäuferteams', 'Jeder Verkäufer erhält direkte Leads und Kontaktdaten, während das Unternehmen ein gemeinsames Profil behält.'],
+      ['Bestandsimport', 'Viele Fahrzeuge per CSV, Prüfung und Freigabefluss vorbereiten, bevor Anzeigen veröffentlicht werden.'],
+      ['Lead-Einblicke', 'Interesse über Ansichten, gespeicherte Anzeigen, Kontaktstarts und nachfragestarke Fahrzeuge verfolgen.'],
+      ['Marktpräsenz', 'Sprache, Währung und Marktlinks anpassen, damit Käufer in Europa sofort die richtigen Informationen sehen.'],
     ],
-    featureTitle: 'Die Werkzeuge, die Unternehmen ab der ersten Anzeige brauchen.',
-    features: [
-      {
-        title: 'Unternehmensprofil',
-        text: 'Firmenname, Kontaktdaten und Anzeigen in einem professionellen Verkäuferprofil bündeln.',
-        icon: Building2,
-      },
-      {
-        title: 'Bestandsanzeigen',
-        text: 'Autos, Transporter, Maschinen, Lkw und weitere Fahrzeugkategorien mit strukturierten Daten veröffentlichen.',
-        icon: Warehouse,
-      },
-      {
-        title: 'Käuferanfragen',
-        text: 'Nachrichten von ernsthaften Käufern erhalten und die Kommunikation in Autorell organisiert halten.',
-        icon: MessageCircle,
-      },
-      {
-        title: 'EU-Reichweite',
-        text: 'Fahrzeuge mit passender Sprache, Währung und Marktsicht zeigen, wenn Käufer grenzüberschreitend suchen.',
-        icon: Globe2,
-      },
-      {
-        title: 'Vertrauensvolle Darstellung',
-        text: 'Klare Anzeigen, Fahrzeugdaten und Verkäuferinformationen machen jedes Geschäft leichter verständlich.',
-        icon: ShieldCheck,
-      },
-      {
-        title: 'Bessere Übersicht',
-        text: 'Veröffentlichte, pausierte, verkaufte und abgelaufene Anzeigen über dasselbe Konto verfolgen.',
-        icon: BarChart3,
-      },
+    plans: [
+      ['Start', 'Für Händler mit sauberem Dealer-Profil und Basisanzeigen.', 'Konto erstellen'],
+      ['Standard', 'Für Teams mit mehr Anzeigen, Verkäufern und Auswertung.', 'Preise ansehen'],
+      ['Premium', 'Für wachsende Bestände mit mehr Sichtbarkeit, Struktur und Priorität.', 'Kontakt aufnehmen'],
     ],
-    stepsTitle: 'So startet Ihr Unternehmen',
-    steps: [
-      {
-        title: 'Unternehmenskonto erstellen',
-        text: 'Organisation registrieren und festlegen, welche Kontaktdaten Käufer sehen sollen.',
-      },
-      {
-        title: 'Fahrzeuge hinzufügen',
-        text: 'Preis, Bilder, Standort, Spezifikationen und die Beschreibung eintragen, die der Verkäufer zeigen möchte.',
-      },
-      {
-        title: 'Dialog verwalten',
-        text: 'Käufer kontaktieren Sie über Autorell und Sie schließen das Geschäft zu Ihren eigenen Bedingungen ab.',
-      },
+    faqs: [
+      ['Was ist in den Händlerlösungen enthalten?', 'Die Händlerlösungen zeigen Logo, Adresse, Website, allgemeine Kontaktdaten und alle Anzeigen.'],
+      ['Können Verkäufer eigene Kontaktdaten nutzen?', 'Ja. Anzeigen können den direkten Verkäuferkontakt zeigen, während die Unternehmensseite allgemeine Kontaktdaten zeigt.'],
+      ['Funktioniert Autorell in mehreren Märkten?', 'Ja. Die Seite ist für elf Märkte mit lokalisierten Links, Sprache und Währung gebaut.'],
+      ['Können wir einfach starten?', 'Ja. Starten Sie mit dem Basispaket und erweitern Sie bei mehr Anzeigen, Verkäufern oder Importbedarf.'],
     ],
-    ctaTitle: 'Bereit, Ihren Bestand mehr Käufern zu zeigen?',
-    ctaText:
-      'Starten Sie mit einem Unternehmenskonto und veröffentlichen Sie das erste Fahrzeug, sobald alles bereit ist.',
   },
 } as const
 
-type BusinessCopy = (typeof businessPageCopy)[keyof typeof businessPageCopy]
+type BusinessInfoCard = readonly [string, string]
+type BusinessPlanTeaser = readonly [string, string, string]
+type BusinessCopy = {
+  metaTitle: string
+  metaDescription: string
+  heroEyebrow: string
+  heroTitle: string
+  heroIntro: string
+  primaryCta: string
+  secondaryCta: string
+  learnMoreCta: string
+  discoverTitle: string
+  discoverIntro: string
+  globeTitle: string
+  globeText: string
+  stepTitle: string
+  faqTitle: string
+  allMarkets: string
+  liveListings: string
+  companyPage: string
+  cards: readonly BusinessInfoCard[]
+  plans: readonly BusinessPlanTeaser[]
+  faqs: readonly BusinessInfoCard[]
+}
+type BusinessCopyTextKey = {
+  [Key in keyof BusinessCopy]: BusinessCopy[Key] extends string ? Key : never
+}[keyof BusinessCopy]
+type BusinessCopyOverride = Partial<Record<BusinessCopyTextKey, string>> & {
+  faqs?: BusinessCopy['faqs']
+}
+
+const businessCopyOverrides: Partial<
+  Record<PublicLocale, BusinessCopyOverride>
+> = {
+  fr: {
+    metaTitle: 'Solutions pour professionnels de l’automobile | Autorell',
+    metaDescription: 'Autorell réunit stock, équipes, import et visibilité européenne pour les professionnels de l’automobile.',
+    heroEyebrow: 'Solutions Autorell pour professionnels',
+    heroTitle: 'Gérez votre stock, votre équipe et vos annonces au même endroit.',
+    heroIntro: 'Regroupez vos véhicules, vendeurs, imports et données de marché dans un espace conçu pour la vente automobile professionnelle.',
+    primaryCta: 'Créer un compte professionnel',
+    secondaryCta: 'Voir les abonnements',
+    learnMoreCta: 'En savoir plus',
+    discoverTitle: 'Des outils et des données pour les professionnels de l’automobile.',
+    discoverIntro: 'Centralisez le stock, les vendeurs, les contacts et les données de marché dans un flux qui évolue avec votre entreprise.',
+    globeTitle: 'Une vitrine européenne pour votre stock.',
+    globeText: 'Autorell rend vos annonces visibles localement et en Europe avec la bonne langue, la bonne devise et un lien vers votre page entreprise.',
+    stepTitle: 'Passez à l’étape suivante.',
+    faqTitle: 'Des questions ? Nos réponses.',
+    allMarkets: '11 marchés',
+    liveListings: 'Annonces',
+    companyPage: 'Solutions professionnelles',
+    faqs: [
+      ['Que comprennent les solutions professionnelles ?', 'Elles affichent votre logo, adresse, site web, contacts principaux et toutes vos annonces publiées sur une page entreprise claire.'],
+      ['Les vendeurs peuvent-ils avoir leurs propres coordonnées ?', 'Oui. Les annonces peuvent afficher le contact direct du vendeur, tandis que la page entreprise conserve les coordonnées générales.'],
+      ['Autorell fonctionne-t-il sur plusieurs marchés ?', 'Oui. Autorell prend en charge onze marchés avec des liens, langues et devises adaptés lorsque nécessaire.'],
+      ['Peut-on commencer simplement ?', 'Oui. Commencez avec une formule de base et passez à une formule supérieure lorsque le volume, l’équipe ou l’import augmente.'],
+    ],
+  },
+  es: {
+    metaTitle: 'Soluciones para empresas de vehículos | Autorell',
+    metaDescription: 'Autorell reúne inventario, equipos, importación y alcance europeo para vendedores profesionales de vehículos.',
+    heroEyebrow: 'Soluciones Autorell para profesionales',
+    heroTitle: 'Gestiona inventario, equipo y anuncios en un solo lugar.',
+    heroIntro: 'Reúne vehículos, vendedores, importaciones y datos de mercado en un espacio creado para la venta profesional de vehículos.',
+    primaryCta: 'Crear cuenta de empresa',
+    secondaryCta: 'Ver planes',
+    learnMoreCta: 'Más información',
+    discoverTitle: 'Herramientas y datos para empresas que venden vehículos.',
+    discoverIntro: 'Centraliza inventario, vendedores, contactos y datos de mercado en un flujo que crece con tu empresa.',
+    globeTitle: 'Un escaparate europeo para tu inventario.',
+    globeText: 'Autorell muestra tus anuncios localmente y en Europa con el idioma, la moneda y los enlaces adecuados.',
+    stepTitle: 'Da el siguiente paso.',
+    faqTitle: 'Preguntas y respuestas.',
+    allMarkets: '11 mercados',
+    liveListings: 'Anuncios',
+    companyPage: 'Soluciones profesionales',
+    faqs: [
+      ['¿Qué incluyen las soluciones para empresas?', 'Muestran el logotipo, la dirección, el sitio web, los datos de contacto principales y todos los anuncios publicados en una página de empresa clara.'],
+      ['¿Los vendedores pueden usar sus propios datos de contacto?', 'Sí. Los anuncios pueden mostrar el contacto directo del vendedor, mientras que la página de empresa mantiene los datos generales.'],
+      ['¿Autorell funciona en varios mercados?', 'Sí. Autorell admite once mercados con enlaces, idiomas y monedas localizados cuando hace falta.'],
+      ['¿Podemos empezar de forma sencilla?', 'Sí. Empezad con una fórmula básica y ampliadla cuando crezcan el volumen, el equipo o las necesidades de importación.'],
+    ],
+  },
+  it: {
+    metaTitle: 'Soluzioni per aziende di veicoli | Autorell',
+    metaDescription: 'Autorell riunisce inventario, team, importazione e visibilità europea per i venditori professionali di veicoli.',
+    heroEyebrow: 'Soluzioni Autorell per professionisti',
+    heroTitle: 'Gestisci inventario, team e annunci in un unico posto.',
+    heroIntro: 'Riunisci veicoli, venditori, importazioni e dati di mercato in uno spazio creato per la vendita professionale di veicoli.',
+    primaryCta: 'Crea un account aziendale',
+    secondaryCta: 'Vedi i piani',
+    learnMoreCta: 'Scopri di più',
+    discoverTitle: 'Strumenti e dati per le aziende che vendono veicoli.',
+    discoverIntro: 'Centralizza inventario, venditori, contatti e dati di mercato in un flusso che cresce con la tua azienda.',
+    globeTitle: 'Una vetrina europea per il tuo inventario.',
+    globeText: 'Autorell rende visibili i tuoi annunci localmente e in Europa con lingua, valuta e collegamenti corretti.',
+    stepTitle: 'Fai il passo successivo.',
+    faqTitle: 'Domande e risposte.',
+    allMarkets: '11 mercati',
+    liveListings: 'Annunci',
+    companyPage: 'Soluzioni professionali',
+    faqs: [
+      ['Cosa includono le soluzioni aziendali?', 'Mostrano logo, indirizzo, sito web, contatti principali e tutti gli annunci pubblicati in una pagina aziendale chiara.'],
+      ['I venditori possono usare i propri contatti?', 'Sì. Gli annunci possono mostrare il contatto diretto del venditore, mentre la pagina aziendale mantiene i dati generali.'],
+      ['Autorell funziona su più mercati?', 'Sì. Autorell supporta undici mercati con link, lingue e valute localizzati quando necessario.'],
+      ['Possiamo iniziare in modo semplice?', 'Sì. Iniziate con un piano base e passate a un piano superiore quando crescono volume, team o importazioni.'],
+    ],
+  },
+  pl: {
+    metaTitle: 'Rozwiązania dla firm motoryzacyjnych | Autorell',
+    metaDescription: 'Autorell łączy zapasy, zespoły, import i zasięg europejski dla profesjonalnych sprzedawców pojazdów.',
+    heroEyebrow: 'Rozwiązania Autorell dla firm',
+    heroTitle: 'Zarządzaj zapasami, zespołem i ogłoszeniami w jednym miejscu.',
+    heroIntro: 'Połącz pojazdy, sprzedawców, import i dane rynkowe w przestrzeni stworzonej do profesjonalnej sprzedaży pojazdów.',
+    primaryCta: 'Utwórz konto firmowe',
+    secondaryCta: 'Zobacz plany',
+    learnMoreCta: 'Dowiedz się więcej',
+    discoverTitle: 'Narzędzia i dane dla firm sprzedających pojazdy.',
+    discoverIntro: 'Zarządzaj zapasami, sprzedawcami, kontaktami i danymi rynkowymi w procesie, który rośnie wraz z firmą.',
+    globeTitle: 'Europejska witryna dla Twoich pojazdów.',
+    globeText: 'Autorell prezentuje ogłoszenia lokalnie i w Europie we właściwym języku, walucie i z linkiem do strony firmy.',
+    stepTitle: 'Zrób kolejny krok.',
+    faqTitle: 'Pytania i odpowiedzi.',
+    allMarkets: '11 rynków',
+    liveListings: 'Ogłoszenia',
+    companyPage: 'Rozwiązania dla firm',
+    faqs: [
+      ['Co obejmują rozwiązania dla firm?', 'Pokazują logo, adres, stronę internetową, główne dane kontaktowe i wszystkie opublikowane ogłoszenia na czytelnej stronie firmy.'],
+      ['Czy sprzedawcy mogą mieć własne dane kontaktowe?', 'Tak. Ogłoszenia mogą pokazywać bezpośredni kontakt do sprzedawcy, a strona firmy zachowuje dane ogólne.'],
+      ['Czy Autorell działa na wielu rynkach?', 'Tak. Autorell obsługuje jedenaście rynków z lokalnymi linkami, językami i walutami tam, gdzie to potrzebne.'],
+      ['Czy możemy zacząć prosto?', 'Tak. Zacznijcie od podstawowego planu i przejdźcie wyżej, gdy wzrośnie liczba ogłoszeń, zespół lub potrzeby importu.'],
+    ],
+  },
+  nl: {
+    metaTitle: 'Oplossingen voor voertuigbedrijven | Autorell',
+    metaDescription: 'Autorell brengt voorraad, teams, import en Europees bereik samen voor professionele voertuigverkopers.',
+    heroEyebrow: 'Autorell-oplossingen voor bedrijven',
+    heroTitle: 'Beheer voorraad, teams en advertenties op één plek.',
+    heroIntro: 'Breng voertuigen, verkopers, import en marktgegevens samen in een werkruimte voor professionele voertuigverkoop.',
+    primaryCta: 'Zakelijk account aanmaken',
+    secondaryCta: 'Abonnementen bekijken',
+    learnMoreCta: 'Meer informatie',
+    discoverTitle: 'Tools en inzichten voor bedrijven die voertuigen verkopen.',
+    discoverIntro: 'Centraliseer voorraad, verkopers, contactroutes en marktgegevens in een proces dat met je bedrijf meegroeit.',
+    globeTitle: 'Een Europese etalage voor je voorraad.',
+    globeText: 'Autorell toont advertenties lokaal en in Europa met de juiste taal, valuta en links naar je bedrijfspagina.',
+    stepTitle: 'Zet de volgende stap.',
+    faqTitle: 'Vragen en antwoorden.',
+    allMarkets: '11 markten',
+    liveListings: 'Advertenties',
+    companyPage: 'Zakelijke oplossingen',
+    faqs: [
+      ['Wat omvatten de zakelijke oplossingen?', 'Ze tonen logo, adres, website, algemene contactgegevens en alle gepubliceerde advertenties op één duidelijke bedrijfspagina.'],
+      ['Kunnen verkopers eigen contactgegevens gebruiken?', 'Ja. Advertenties kunnen het directe verkoperscontact tonen, terwijl de bedrijfspagina de algemene gegevens behoudt.'],
+      ['Werkt Autorell in meerdere markten?', 'Ja. Autorell ondersteunt elf markten met lokale links, talen en valuta waar dat nodig is.'],
+      ['Kunnen we eenvoudig beginnen?', 'Ja. Begin met een basisformule en schaal op wanneer voorraad, team of importbehoefte groeit.'],
+    ],
+  },
+  fi: {
+    metaTitle: 'Ratkaisut ajoneuvoalan yrityksille | Autorell',
+    metaDescription: 'Autorell yhdistää ajoneuvot, tiimit, tuonnin ja eurooppalaisen näkyvyyden ammattimaisille myyjille.',
+    heroEyebrow: 'Autorell-ratkaisut yrityksille',
+    heroTitle: 'Hallitse ajoneuvoja, tiimejä ja ilmoituksia yhdessä paikassa.',
+    heroIntro: 'Yhdistä ajoneuvot, myyjät, tuonti ja markkinatiedot ammattimaiseen ajoneuvomyyntiin rakennetussa työtilassa.',
+    primaryCta: 'Luo yritystili',
+    secondaryCta: 'Katso tilaukset',
+    learnMoreCta: 'Lue lisää',
+    discoverTitle: 'Työkalut ja tiedot ajoneuvoja myyville yrityksille.',
+    discoverIntro: 'Keskitä ajoneuvot, myyjät, yhteydenotot ja markkinatiedot prosessiin, joka kasvaa yrityksesi mukana.',
+    globeTitle: 'Eurooppalainen näyteikkuna ajoneuvoillesi.',
+    globeText: 'Autorell näyttää ilmoitukset paikallisesti ja Euroopassa oikealla kielellä, valuutalla ja yrityssivun linkeillä.',
+    stepTitle: 'Ota seuraava askel.',
+    faqTitle: 'Kysymyksiä ja vastauksia.',
+    allMarkets: '11 markkinaa',
+    liveListings: 'Ilmoitukset',
+    companyPage: 'Yritysratkaisut',
+    faqs: [
+      ['Mitä yritysratkaisut sisältävät?', 'Ne näyttävät logon, osoitteen, verkkosivun, yleiset yhteystiedot ja kaikki julkaistut ilmoitukset selkeällä yrityssivulla.'],
+      ['Voivatko myyjät käyttää omia yhteystietojaan?', 'Kyllä. Ilmoituksissa voidaan näyttää myyjän suora yhteystieto, kun yrityssivu säilyttää yleiset tiedot.'],
+      ['Toimiiko Autorell useilla markkinoilla?', 'Kyllä. Autorell tukee yhtätoista markkinaa paikallisilla linkeillä, kielillä ja valuutoilla tarvittaessa.'],
+      ['Voimmeko aloittaa yksinkertaisesti?', 'Kyllä. Aloittakaa peruspaketilla ja laajentakaa, kun varasto, tiimi tai tuontitarve kasvaa.'],
+    ],
+  },
+  da: {
+    metaTitle: 'Løsninger til køretøjsvirksomheder | Autorell',
+    metaDescription: 'Autorell samler lager, teams, import og europæisk rækkevidde for professionelle køretøjssælgere.',
+    heroEyebrow: 'Autorell-løsninger til virksomheder',
+    heroTitle: 'Administrer lager, teams og annoncer ét sted.',
+    heroIntro: 'Saml køretøjer, sælgere, import og markedsdata i et arbejdsområde til professionelt køretøjssalg.',
+    primaryCta: 'Opret virksomhedskonto',
+    secondaryCta: 'Se abonnementer',
+    learnMoreCta: 'Læs mere',
+    discoverTitle: 'Værktøjer og indsigt til virksomheder, der sælger køretøjer.',
+    discoverIntro: 'Saml lager, sælgere, kontaktveje og markedsdata i et flow, der vokser med virksomheden.',
+    globeTitle: 'Et europæisk udstillingsvindue til jeres lager.',
+    globeText: 'Autorell viser annoncer lokalt og i Europa med korrekt sprog, valuta og links til virksomhedssiden.',
+    stepTitle: 'Tag det næste skridt.',
+    faqTitle: 'Spørgsmål og svar.',
+    allMarkets: '11 markeder',
+    liveListings: 'Annoncer',
+    companyPage: 'Virksomhedsløsninger',
+    faqs: [
+      ['Hvad indeholder virksomhedsløsningerne?', 'De viser logo, adresse, hjemmeside, generelle kontaktoplysninger og alle offentliggjorte annoncer på én tydelig virksomhedsside.'],
+      ['Kan sælgere bruge egne kontaktoplysninger?', 'Ja. Annoncer kan vise sælgerens direkte kontakt, mens virksomhedssiden beholder de generelle kontaktoplysninger.'],
+      ['Fungerer Autorell på flere markeder?', 'Ja. Autorell understøtter elleve markeder med lokale links, sprog og valuta, hvor det er nødvendigt.'],
+      ['Kan vi starte enkelt?', 'Ja. Start med en basisplan og skaler op, når lager, team eller importbehov vokser.'],
+    ],
+  },
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const headerStore = await headers()
   const locale = getRequestedLocale(headerStore)
   const copy = getBusinessCopy(locale)
   const canonicalPath = headerStore.get('x-autorell-pathname') || '/business'
+
   return {
     title: { absolute: cleanSeoText(copy.metaTitle, 65) },
     description: cleanSeoText(copy.metaDescription, 150),
@@ -245,109 +385,267 @@ export default async function BusinessPage() {
   const locale = getRequestedLocale(headerStore)
   const marketCode = headerStore.get('x-autorell-market') || undefined
   const copy = getBusinessCopy(locale)
-  const createAccountHref = localizePublicHref(locale, '/register?account=business')
-  const createListingHref = localizePublicHref(
-    locale,
-    locale === 'sv' ? '/konto/annonser/ny' : '/account/listings/new',
-  )
+  const registerHref = localizePublicHref(locale, '/register?account=business')
+  const pricingHref = localizePublicHref(locale, '/pricing#business')
+  const contactHref = localizePublicHref(locale, '/contact')
+  const pilotEnabled = await isBusinessFeatureEnabled('business_pilot_program', {
+    marketCode: String(marketCode || 'en').toLowerCase(),
+  })
+  const pilotCopy = getBusinessPilotCopy(locale).businessSection
+  const pilotHref = localizePublicHref(locale, '/business/pilot')
+  const inventoryImportHref = localizePublicHref(locale, '/business/inventory-import')
 
   return (
-    <main className="bg-[#f7f8fb] text-[#101828]">
+    <main className="overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
-      <section className="border-b border-[#dce3ef] bg-[linear-gradient(135deg,#f8fbff,#eef5ff)]">
-        <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-10 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#0866ff]">
-              {copy.eyebrow}
+      <AppleHero copy={copy} locale={locale} registerHref={registerHref} pricingHref={pricingHref} />
+      <BusinessInsights copy={copy} />
+      <NextStep copy={copy} planCopy={getBusinessPlanCopy(locale)} registerHref={registerHref} pricingHref={pricingHref} contactHref={contactHref} />
+      {pilotEnabled ? (
+        <BusinessPilotPromo
+          copy={pilotCopy}
+          applicationHref={`${pilotHref}#application`}
+          inventoryHref={inventoryImportHref}
+        />
+      ) : null}
+      <BusinessFaq copy={copy} locale={locale} planCopy={getBusinessPlanCopy(locale)} />
+      <PublicFooter locale={locale} />
+    </main>
+  )
+}
+
+function AppleHero({
+  copy,
+  locale,
+  registerHref,
+  pricingHref,
+}: {
+  copy: BusinessCopy
+  locale: PublicLocale
+  registerHref: string
+  pricingHref: string
+}) {
+  return (
+    <section className="overflow-hidden border-b border-[#e5e7eb] bg-white px-5 py-8 sm:px-8 lg:py-12">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <nav
+          aria-label={getBreadcrumbLabel(locale)}
+          className="mb-4 flex items-center gap-1.5 text-sm text-[#667085]"
+        >
+          <Link
+            href={localizePublicHref(locale, '/')}
+            className="transition-colors hover:text-[#0866ff]"
+          >
+            Autorell
+          </Link>
+          <ChevronRight aria-hidden="true" className="h-4 w-4 text-[#98a2b3]" strokeWidth={1.8} />
+          <span aria-current="page" className="font-medium text-[#344054]">Business</span>
+        </nav>
+        <div className="relative isolate grid min-h-[500px] w-full overflow-hidden rounded-[16px] border border-[#d8e5f6] bg-white lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="relative z-10 flex min-w-0 flex-col justify-center px-7 py-10 sm:px-10 lg:px-12">
+            <div className="inline-flex w-max flex-col items-end">
+              <BrandLogo underline={false} />
+              <p className="mt-0.5 w-full text-right text-[12px] font-semibold leading-none tracking-[-.01em] text-[#101828] sm:text-[14px]">Business</p>
+            </div>
+            <p className="mt-8 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
+              {copy.heroEyebrow}
             </p>
-            <h1 className="mt-5 max-w-4xl text-5xl font-black leading-[1] tracking-[-.055em] sm:text-7xl">
-              {copy.title}
+            <h1 className="mt-4 w-full max-w-[290px] text-[29px] font-semibold leading-[1.08] tracking-[-.018em] text-[#101828] sm:max-w-[540px] sm:text-[40px] lg:text-[44px]">
+              {copy.heroTitle}
             </h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#667085]">
-              {copy.intro}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={createAccountHref} className="inline-flex min-h-13 items-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-extrabold text-white transition hover:bg-[#075ce5]">
+            <p className="mt-5 w-full max-w-[360px] text-base leading-7 text-[#475467] sm:max-w-[500px]">{copy.heroIntro}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href={registerHref}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#075be5]"
+              >
                 {copy.primaryCta}
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href={createListingHref} className="inline-flex min-h-13 items-center rounded-[14px] border border-[#b8c5da] bg-white px-6 font-extrabold transition hover:border-[#0866ff] hover:text-[#0866ff]">
+              <Link
+                href={pricingHref}
+                className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#aebbd0] bg-white px-5 text-[15px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+              >
                 {copy.secondaryCta}
               </Link>
             </div>
           </div>
-          <div className="rounded-[22px] border border-[#dce6f4] bg-white p-6 shadow-[0_24px_70px_rgba(16,24,40,.10)]">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[#edf5ff] text-[#0866ff]">
-                <FilePlus2 className="h-5 w-5" />
-              </span>
-              <strong className="text-lg">{copy.primaryCta}</strong>
-            </div>
-            <ul className="mt-6 space-y-4">
-              {copy.proof.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm font-bold text-[#344054]">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <HeroImageSlot />
         </div>
-      </section>
+      </div>
+    </section>
+  )
+}
 
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8">
-        <h2 className="max-w-3xl text-3xl font-black tracking-[-.045em] sm:text-5xl">
-          {copy.featureTitle}
-        </h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {copy.features.map(({ icon: Icon, title, text }) => (
-            <article key={title} className="rounded-[20px] border border-[#e1e5ec] bg-white p-6 shadow-[0_14px_36px_rgba(16,24,40,.045)]">
-              <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[#eaf1ff] text-[#0866ff]">
-                <Icon className="h-5 w-5" />
+function HeroImageSlot() {
+  return (
+    <div className="relative min-h-[280px] min-w-0 overflow-hidden sm:min-h-[360px] lg:min-h-[520px]">
+      <Image
+        src="/business-hero-devices.webp"
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 1023px) 100vw, 58vw"
+        className="object-contain object-bottom px-2 py-3 sm:px-5 sm:py-4 lg:px-0 lg:py-3"
+      />
+    </div>
+  )
+}
+
+function getBreadcrumbLabel(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, string>> = {
+    sv: 'Brödsmulor',
+    de: 'Brotkrümelnavigation',
+    at: 'Brotkrümelnavigation',
+    fr: 'Fil d’Ariane',
+    es: 'Ruta de navegación',
+    it: 'Percorso di navigazione',
+    nl: 'Broodkruimelnavigatie',
+    be: 'Broodkruimelnavigatie',
+    pl: 'Nawigacja okruszkowa',
+    fi: 'Murupolku',
+    da: 'Brødkrummenavigation',
+  }
+
+  return labels[locale] || 'Breadcrumbs'
+}
+
+function BusinessInsights({ copy }: { copy: BusinessCopy }) {
+  const icons = [Store, Layers3, Users2, FileSpreadsheet, BarChart3, Globe2]
+
+  return (
+    <section className="bg-white px-5 py-14 sm:px-8 sm:py-20">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <div className="flex max-w-[330px] flex-col gap-3 sm:max-w-[660px]">
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#0866ff]">{copy.heroEyebrow}</p>
+          <h2 className="text-[34px] font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.discoverTitle}</h2>
+          <p className="max-w-[560px] text-base leading-7 text-[#667085]">{copy.discoverIntro}</p>
+        </div>
+
+        <div className="mt-10 grid grid-flow-col auto-cols-[275px] gap-4 overflow-x-auto pb-5 pr-5 [scrollbar-width:thin] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0 lg:pr-0">
+          {copy.cards.map(([title, text], index) => {
+            const Icon = icons[index] || Store
+            return (
+              <article
+                key={title}
+                className="group flex min-h-[260px] min-w-0 snap-start flex-col rounded-[10px] border border-[#e1e7f0] bg-white p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-white"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-[9px] bg-white text-[#0866ff] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
+                  <Icon className="h-6 w-6" strokeWidth={1.8} />
+                </div>
+                <h3 className="mt-7 text-[21px] font-semibold tracking-[-.018em] text-[#101828]">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#667085]">{text}</p>
+                <span className="mt-auto block h-1 w-10 rounded-full bg-[#0866ff]" aria-hidden="true" />
+              </article>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function NextStep({
+  copy,
+  planCopy,
+  registerHref,
+  pricingHref,
+  contactHref,
+}: {
+  copy: BusinessCopy
+  planCopy: BusinessPlanCopy
+  registerHref: string
+  pricingHref: string
+  contactHref: string
+}) {
+  const hrefByKind = { register: registerHref, pricing: pricingHref, contact: contactHref }
+
+  return (
+    <section className="overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-24">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <div className="flex flex-col gap-3 sm:max-w-[620px]">
+          <h2 className="text-4xl font-semibold leading-tight tracking-[-.018em] text-[#101828] sm:text-5xl">{copy.stepTitle}</h2>
+          <p className="max-w-[330px] text-base leading-7 text-[#667085] sm:max-w-[620px]">{planCopy.intro}</p>
+        </div>
+        <div className="mt-10 grid grid-flow-col auto-cols-[300px] gap-4 overflow-x-auto pb-5 pr-5 [scrollbar-width:thin] lg:grid-flow-row lg:grid-cols-2 lg:overflow-visible lg:pb-0 lg:pr-0 xl:grid-cols-4">
+          {planCopy.plans.map((plan) => (
+            <Link
+              key={plan.name}
+              href={hrefByKind[plan.hrefKind]}
+              className={`group flex min-h-[430px] min-w-0 snap-start flex-col rounded-[10px] border p-6 transition hover:-translate-y-1 hover:border-[#0866ff] hover:bg-[#f7fbff] ${
+                plan.recommended ? 'border-[#0866ff] bg-white' : 'border-[#e1e7f0] bg-white'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-white text-[#0866ff]">
+                  {plan.recommended ? <Layers3 className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+                </div>
+                {plan.recommended ? (
+                  <span className="rounded-full border border-[#0866ff] bg-white px-3 py-1 text-[11px] font-semibold text-[#0866ff]">{planCopy.recommended}</span>
+                ) : null}
+              </div>
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[.14em] text-[#667085]">{plan.audience}</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-[-.02em] text-[#101828]">{plan.name}</h3>
+              <div className="mt-5 flex items-end gap-1">
+                <span className="text-[34px] font-semibold leading-none tracking-[-.04em] text-[#101828]">{plan.price}</span>
+                <span className="pb-1 text-sm font-semibold text-[#667085]">{plan.period}</span>
+              </div>
+              <p className="mt-3 rounded-[10px] border border-[#d8e3f2] bg-white px-3 py-2 text-sm font-semibold text-[#344054]">{plan.limit}</p>
+              <p className="mt-4 max-w-full text-sm leading-6 text-[#667085]">{plan.text}</p>
+              <ul className="mt-5 space-y-2">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 text-sm text-[#344054]">
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-[#eaf2ff] text-[#0866ff]">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <span className="mt-auto inline-flex items-center gap-1 pt-6 text-sm font-semibold text-[#0866ff]">
+                {plan.cta}
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </span>
-              <h3 className="mt-6 text-xl font-black tracking-[-.035em]">{title}</h3>
-              <p className="mt-3 leading-7 text-[#667085]">{text}</p>
-            </article>
+            </Link>
           ))}
         </div>
-      </section>
-
-      <section className="border-y border-[#dce3ef] bg-white">
-        <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8">
-          <h2 className="text-3xl font-black tracking-[-.045em] sm:text-5xl">
-            {copy.stepsTitle}
-          </h2>
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {copy.steps.map((step, index) => (
-              <article key={step.title} className="rounded-[18px] border border-[#e1e7f0] bg-[#f8fbff] p-6">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-[#0866ff] text-sm font-black text-white">
-                  {index + 1}
-                </span>
-                <h3 className="mt-5 text-xl font-black tracking-[-.03em]">{step.title}</h3>
-                <p className="mt-3 leading-7 text-[#667085]">{step.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-16 sm:px-8">
-        <div className="rounded-[24px] bg-[#101828] p-7 text-white sm:p-10 lg:flex lg:items-center lg:justify-between lg:gap-10">
-          <div>
-            <h2 className="max-w-2xl text-3xl font-black tracking-[-.045em] sm:text-5xl">
-              {copy.ctaTitle}
-            </h2>
-            <p className="mt-4 max-w-2xl leading-7 text-[#cbd5e1]">{copy.ctaText}</p>
-          </div>
-          <Link href={createAccountHref} className="mt-7 inline-flex min-h-13 shrink-0 items-center gap-2 rounded-[14px] bg-white px-6 font-extrabold text-[#101828] transition hover:bg-[#edf5ff] lg:mt-0">
-            {copy.primaryCta}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-      <PublicFooter locale={locale} />
-    </main>
+      </div>
+    </section>
   )
+}
+
+function BusinessFaq({ copy, locale, planCopy }: { copy: BusinessCopy; locale: PublicLocale; planCopy: BusinessPlanCopy }) {
+  const extendedFaqs = [
+    ...copy.faqs,
+    ...planCopy.faqs,
+  ] as const
+
+  return (
+    <section className="w-screen max-w-full overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-[1120px]">
+        <BusinessFaqClient title={copy.faqTitle} items={extendedFaqs} labels={getBusinessFaqLabels(locale)} />
+      </div>
+    </section>
+  )
+}
+
+function getBusinessFaqLabels(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, { expandAll: string; collapseAll: string }>> = {
+    sv: { expandAll: 'Visa alla svar', collapseAll: 'Stäng alla svar' },
+    en: { expandAll: 'Show all answers', collapseAll: 'Close all answers' },
+    de: { expandAll: 'Alle Antworten anzeigen', collapseAll: 'Alle Antworten schließen' },
+    at: { expandAll: 'Alle Antworten anzeigen', collapseAll: 'Alle Antworten schließen' },
+    fr: { expandAll: 'Afficher toutes les réponses', collapseAll: 'Fermer toutes les réponses' },
+    es: { expandAll: 'Mostrar todas las respuestas', collapseAll: 'Cerrar todas las respuestas' },
+    it: { expandAll: 'Mostra tutte le risposte', collapseAll: 'Chiudi tutte le risposte' },
+    pl: { expandAll: 'Pokaż wszystkie odpowiedzi', collapseAll: 'Zamknij wszystkie odpowiedzi' },
+    nl: { expandAll: 'Toon alle antwoorden', collapseAll: 'Sluit alle antwoorden' },
+    be: { expandAll: 'Toon alle antwoorden', collapseAll: 'Sluit alle antwoorden' },
+    fi: { expandAll: 'Näytä kaikki vastaukset', collapseAll: 'Sulje kaikki vastaukset' },
+    da: { expandAll: 'Vis alle svar', collapseAll: 'Luk alle svar' },
+  }
+
+  return labels[locale] || labels.en!
 }
 
 function getBusinessCopy(locale: PublicLocale): BusinessCopy {
@@ -355,7 +653,13 @@ function getBusinessCopy(locale: PublicLocale): BusinessCopy {
     return businessPageCopy[locale]
   }
 
-  return translatePublicObject(locale, businessPageCopy.en)
+  const translationLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  if (translationLocale === 'de') return businessPageCopy.de
+
+  return {
+    ...translatePublicObject(locale, businessPageCopy.en),
+    ...businessCopyOverrides[translationLocale],
+  } as BusinessCopy
 }
 
 function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): PublicLocale {
@@ -364,5 +668,3 @@ function getRequestedLocale(headerStore: Awaited<ReturnType<typeof headers>>): P
     ? requested
     : 'sv'
 }
-
-

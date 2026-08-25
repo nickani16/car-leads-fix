@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
-  ArrowLeft,
   Bell,
   Database,
   Globe2,
@@ -14,7 +13,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { generateAccountMetadata } from '@/lib/account-seo'
-import { hasVerifiedEmailCode } from '@/lib/email-verification'
+import { hasVerifiedAccountEmail } from '@/lib/email-verification'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 
 export const generateMetadata = generateAccountMetadata('settings')
 
@@ -55,7 +55,7 @@ export default async function PrivateSettingsPage() {
     .maybeSingle<ProfileRow>()
 
   if (!profile) redirect(localizePublicHref(locale, '/register'))
-  const emailVerified = await hasVerifiedEmailCode(profile.email)
+  const emailVerified = await hasVerifiedAccountEmail(profile.email, user)
   if (profile.account_type === 'business') redirect(localizePublicHref(locale, '/account/company/settings'))
 
   const sections: SettingsSection[] = [
@@ -123,16 +123,10 @@ export default async function PrivateSettingsPage() {
   return (
     <main className="min-h-screen bg-[#f7f9fc] px-5 py-8 sm:px-8 lg:py-12">
       <div className="mx-auto max-w-[1180px]">
-        <Link
-          href={localizePublicHref(locale, '/account')}
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#475467] transition hover:text-[#0866ff]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {copy.back}
-        </Link>
+        <AccountBreadcrumbs locale={locale} items={[{ key: 'account', href: '/account' }, { key: 'settings' }]} />
 
         <section className="mt-6 rounded-[24px] border border-[#dfe7f2] bg-white p-6 shadow-[0_18px_50px_rgba(16,24,40,.05)] sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
             {copy.eyebrow}
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] text-[#101828]">
@@ -193,7 +187,7 @@ function SettingsCard({
       </div>
       <Link
         href={href}
-        className="mt-5 inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[#cbd7e8] px-4 text-sm font-bold text-[#0866ff] transition hover:bg-[#eef5ff]"
+        className="mt-5 inline-flex min-h-10 items-center justify-center rounded-[12px] border border-[#cbd7e8] px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#eef5ff]"
       >
         {action}
       </Link>

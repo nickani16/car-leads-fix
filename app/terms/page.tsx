@@ -2,6 +2,7 @@ import { createPublicMetadata } from '@/lib/public-seo'
 import { getRequestLocale } from '@/lib/request-locale'
 import { translatePublic } from '@/lib/public-i18n'
 import PublicLegalPage from '../components/PublicLegalPage'
+import SwedishTermsPage from '../villkor/page'
 
 export async function generateMetadata() {
   const locale = await getRequestLocale()
@@ -72,7 +73,13 @@ const sections = [
   },
 ]
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const locale = await getRequestLocale()
+
+  if (locale === 'sv') {
+    return <SwedishTermsPage />
+  }
+
   return (
     <PublicLegalPage
       eyebrow="Legal information"

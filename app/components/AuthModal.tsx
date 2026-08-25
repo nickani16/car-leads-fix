@@ -10,16 +10,60 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { isStrongPassword } from '@/lib/password-policy'
 import { getAuthSpamHintCopy, getLocalizedAuthModalCopy } from '@/lib/auth-copy'
+import { saveAccountIntent } from '@/lib/account-intent'
+import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
 
 const REMEMBERED_LOGIN_KEY = 'autorell.rememberedLogin'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'
+type SocialProvider = 'google' | 'azure' | 'facebook'
+
+const socialProviders: Array<{
+  provider: SocialProvider
+  labelKey: 'continueWithGoogle' | 'continueWithMicrosoft' | 'continueWithFacebook'
+}> = [
+  { provider: 'google', labelKey: 'continueWithGoogle' },
+  { provider: 'azure', labelKey: 'continueWithMicrosoft' },
+  { provider: 'facebook', labelKey: 'continueWithFacebook' },
+]
+
+function SocialProviderLogo({ provider }: { provider: SocialProvider }) {
+  if (provider === 'google') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+        <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.63-2.43l-3.24-2.54c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
+        <path fill="#FBBC05" d="M6.39 13.86A6.03 6.03 0 0 1 6.07 12c0-.65.11-1.28.32-1.86V7.52H3.04A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.48l3.35-2.62Z" />
+        <path fill="#EA4335" d="M12 6.01c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.52l3.35 2.62C7.18 7.77 9.39 6.01 12 6.01Z" />
+      </svg>
+    )
+  }
+
+  if (provider === 'azure') {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path fill="#F25022" d="M2 2h9.5v9.5H2z" />
+        <path fill="#7FBA00" d="M12.5 2H22v9.5h-9.5z" />
+        <path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
+        <path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <circle cx="12" cy="12" r="11" fill="#1877F2" />
+      <path fill="#fff" d="M15.8 12.7h-2.4V21h-3.5v-8.3H8.2V9.8h1.7V8c0-2.3 1.1-4.6 4.8-4.6 1.1 0 1.9.1 1.9.1l-.1 3h-1.8c-1.2 0-1.3.6-1.3 1.6v1.7h3.2l-.8 2.9Z" />
+    </svg>
+  )
+}
 
 type AuthModalProps = {
   isOpen: boolean
   initialMode?: AuthMode
   initialView?: AuthView
+  initialBusinessRegistration?: boolean
   postLoginDestination?: string
   locale: PublicLocale
   onClose: () => void
@@ -30,6 +74,7 @@ export default function AuthModal({
   isOpen,
   initialMode = 'login',
   initialView,
+  initialBusinessRegistration = false,
   postLoginDestination,
   locale,
   onClose,
@@ -48,15 +93,38 @@ export default function AuthModal({
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isBusinessRegistration, setIsBusinessRegistration] = useState(
+    initialMode === 'register' && initialBusinessRegistration,
+  )
+  const [companyName, setCompanyName] = useState('')
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [notice, setNotice] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null)
+  const [callbackStatus, setCallbackStatus] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('status'),
+  )
   const [retryAfter, setRetryAfter] = useState(0)
   const emailInputRef = useRef<HTMLInputElement | null>(null)
+  const onCloseRef = useRef(onClose)
   const inputs = useRef<Array<HTMLInputElement | null>>([])
   const copy = getAuthModalCopy(locale, mode, view)
+  const businessCopy = businessRegistrationCopy[locale] || businessRegistrationCopy.en
+  const businessIdentityCopy = getBusinessIdentityCopy(locale)
+  const callbackError =
+    !error && isOpen && callbackStatus === 'oauth-cancelled'
+      ? copy.oauthCancelled
+      : !error && isOpen && callbackStatus === 'oauth-error'
+        ? copy.oauthFailed
+        : ''
+  const displayedError = error || callbackError
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!isOpen) return
@@ -64,7 +132,7 @@ export default function AuthModal({
     document.body.style.overflow = 'hidden'
     const focusTimer = window.setTimeout(() => emailInputRef.current?.focus(), 80)
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', closeOnEscape)
     return () => {
@@ -72,7 +140,7 @@ export default function AuthModal({
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', closeOnEscape)
     }
-  }, [initialMode, isOpen, onClose])
+  }, [initialMode, isOpen])
 
   useEffect(() => {
     if (!retryAfter) return
@@ -84,6 +152,7 @@ export default function AuthModal({
   }, [retryAfter])
 
   function switchMode(nextMode: AuthMode) {
+    setCallbackStatus(null)
     setMode(nextMode)
     setView(nextMode)
     setStep('email')
@@ -97,6 +166,7 @@ export default function AuthModal({
   }
 
   function switchView(nextView: AuthView) {
+    setCallbackStatus(null)
     setView(nextView)
     if (nextView === 'login' || nextView === 'register') setMode(nextView)
     setStep('email')
@@ -113,13 +183,32 @@ export default function AuthModal({
     return localizePublicHref(locale, '/account')
   }
 
+  function oauthDestination() {
+    return mode === 'register'
+      ? registerDestination()
+      : postLoginDestination || accountDestination()
+  }
+
   function registerDestination() {
-    return localizePublicHref(
-      locale,
-      postLoginDestination?.includes('account=business')
-        ? '/register?onboarding=1&account=business'
-        : '/register?onboarding=1',
-    )
+    if (postLoginDestination?.includes('/company/team/accept')) {
+      return postLoginDestination
+    }
+    return postLoginDestination || accountDestination()
+  }
+
+  function rememberRegistrationIntent() {
+    if (mode !== 'register') return
+    saveAccountIntent(isBusinessRegistration ? 'business' : 'private', {
+      companyName,
+      registrationNumber,
+    })
+  }
+
+  function registrationDetailsAreValid() {
+    if (mode !== 'register' || !isBusinessRegistration) return true
+    if (companyName.trim() && registrationNumber.trim()) return true
+    setError(businessCopy.fieldsRequired)
+    return false
   }
 
   function completeAuth(destination: string) {
@@ -130,8 +219,46 @@ export default function AuthModal({
     router.refresh()
   }
 
+  async function startSocialLogin(provider: SocialProvider) {
+    setCallbackStatus(null)
+    setError('')
+    setNotice('')
+    if (!registrationDetailsAreValid()) return
+    rememberRegistrationIntent()
+    setSocialLoading(provider)
+    try {
+      const redirectTo = new URL('/auth/callback', window.location.origin)
+      redirectTo.searchParams.set('next', oauthDestination())
+      redirectTo.searchParams.set('mode', mode)
+      redirectTo.searchParams.set('flow', 'oauth')
+      const queryParams =
+        provider === 'google' || provider === 'azure'
+          ? { prompt: 'select_account' }
+          : undefined
+      const supabase = createClient()
+      const { data: oauthData, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectTo.toString(),
+          queryParams,
+          scopes: provider === 'azure' ? 'email' : undefined,
+        },
+      })
+      if (oauthError) {
+        setError(copy.socialError)
+        setSocialLoading(null)
+        return
+      }
+      if (oauthData.url) window.location.assign(oauthData.url)
+    } catch {
+      setError(copy.socialError)
+      setSocialLoading(null)
+    }
+  }
+
   async function submitPassword(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     const cleanEmail = email.trim()
@@ -140,6 +267,7 @@ export default function AuthModal({
       return
     }
     if (mode === 'register') {
+      if (!registrationDetailsAreValid()) return
       if (!isStrongPassword(password)) {
         setError(copy.passwordRequirement)
         return
@@ -148,6 +276,7 @@ export default function AuthModal({
         setError(copy.passwordMismatch)
         return
       }
+      rememberRegistrationIntent()
     }
     setLoading(true)
     try {
@@ -165,13 +294,27 @@ export default function AuthModal({
             confirmPassword,
             locale,
             next: destination,
+            accountType: isBusinessRegistration ? 'business' : 'private',
+            companyName: isBusinessRegistration ? companyName.trim() : '',
+            registrationNumber: isBusinessRegistration ? registrationNumber.trim() : '',
           }),
         })
         const result = (await response.json()) as {
           success?: boolean
           sessionReady?: boolean
           destination?: string
+          accountExists?: boolean
+          code?: string
           error?: string
+        }
+        if (result.accountExists || result.code === 'auth_account_exists') {
+          setMode('login')
+          setView('login')
+          setStep('email')
+          setAuthMethod('password')
+          setConfirmPassword('')
+          setNotice(result.error || copy.signupError)
+          return
         }
         if (!response.ok || !result.success) {
           setError(result.error || copy.signupError)
@@ -204,6 +347,7 @@ export default function AuthModal({
 
   async function requestPasswordReset(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     const cleanEmail = email.trim()
@@ -230,6 +374,7 @@ export default function AuthModal({
 
   async function updateRecoveredPassword(event: FormEvent) {
     event.preventDefault()
+    setCallbackStatus(null)
     setError('')
     setNotice('')
     if (!isStrongPassword(password)) {
@@ -267,7 +412,10 @@ export default function AuthModal({
 
   async function requestCode(event?: FormEvent) {
     event?.preventDefault()
+    setCallbackStatus(null)
     setError('')
+    if (!registrationDetailsAreValid()) return
+    rememberRegistrationIntent()
     setLoading(true)
     try {
       const response = await fetch('/api/auth/email-code/request', {
@@ -310,6 +458,7 @@ export default function AuthModal({
           email,
           code,
           locale,
+          registration: mode === 'register',
           next: mode === 'register' ? destinationForRegister : postLoginDestination || destinationForAccount,
         }),
       })
@@ -367,7 +516,7 @@ export default function AuthModal({
           if (event.target === event.currentTarget) onClose()
         }}
       >
-      <section className="relative w-full max-w-[390px] overflow-hidden rounded-[18px] border border-[#dce3ee] bg-white shadow-[0_30px_90px_rgba(16,24,40,.28)]">
+      <section className="relative w-full max-w-[390px] overflow-hidden rounded-[18px] border border-[#dce3ee] bg-white shadow-[0_30px_90px_rgba(16,24,40,.28)] sm:max-w-[640px] lg:max-w-[680px]">
         <button
           type="button"
           onClick={onClose}
@@ -377,7 +526,7 @@ export default function AuthModal({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="grid grid-cols-2 border-b border-[#e5eaf1] px-7 pt-5 text-sm font-[600]">
+        <div className="grid grid-cols-2 border-b border-[#e5eaf1] px-5 pt-5 text-[13px] font-[600] sm:px-7 sm:text-sm">
           {(['login', 'register'] as const).map((item) => (
             <button
               key={item}
@@ -435,11 +584,11 @@ export default function AuthModal({
                   )}
                 </div>
               </label>
-              {error ? <AuthError message={error} /> : null}
-              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
+              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? copy.sendingReset : copy.sendReset}
                 {!loading ? <ArrowRight className="h-4 w-4" /> : null}
@@ -485,18 +634,132 @@ export default function AuthModal({
                 </div>
               </label>
               <p className="mt-3 text-xs leading-5 text-[#667085]">{copy.passwordRequirement}</p>
-              {error ? <AuthError message={error} /> : null}
-              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
+              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
               <button
                 disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? copy.savingPassword : copy.savePassword}
                 {!loading ? <CheckCircle2 className="h-4 w-4" /> : null}
               </button>
             </form>
           ) : step === 'email' ? (
-            <form onSubmit={authMethod === 'password' ? submitPassword : requestCode} className="mt-6">
+            <>
+            {mode === 'register' ? (
+              <div className="mt-5 rounded-[13px] border border-[#dbe3ef] bg-[#f8faff] p-4">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isBusinessRegistration}
+                  onClick={() => {
+                    setIsBusinessRegistration((current) => {
+                      const next = !current
+                      saveAccountIntent(next ? 'business' : 'private')
+                      return next
+                    })
+                    setError('')
+                  }}
+                  className="flex min-h-11 w-full items-center justify-between gap-4 text-left outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/12"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-[600] text-[#101828]">{businessCopy.switchLabel}</span>
+                    <span className="mt-0.5 block text-xs font-[400] leading-5 text-[#667085]">{businessCopy.switchDescription}</span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                      isBusinessRegistration ? 'bg-[#0866ff]' : 'bg-[#c8d0dc]'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                        isBusinessRegistration ? 'translate-x-[22px]' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </span>
+                </button>
+                {isBusinessRegistration ? (
+                  <div className="mt-4 grid gap-4 border-t border-[#e1e7f0] pt-4 sm:grid-cols-2 sm:gap-5">
+                    <label className="min-w-0 text-xs font-[600] text-[#344054]">
+                      {businessIdentityCopy.companyName}
+                      <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                        <input
+                          value={companyName}
+                          onChange={(event) => {
+                            setCompanyName(event.target.value)
+                            setError('')
+                          }}
+                          required
+                          autoComplete="organization"
+                          placeholder=""
+                          aria-label={businessIdentityCopy.companyNamePlaceholder}
+                          className="autorell-account-input relative z-10 min-w-0 flex-1 bg-transparent text-sm font-[400] text-[#101828] outline-none"
+                        />
+                        {companyName ? null : (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-x-3 top-1/2 z-20 -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-[400] text-[#767676]"
+                          >
+                            {businessIdentityCopy.companyNamePlaceholder}
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                    <label className="min-w-0 text-xs font-[600] text-[#344054]">
+                      {businessIdentityCopy.registrationNumber}
+                      <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
+                        <input
+                          value={registrationNumber}
+                          onChange={(event) => {
+                            setRegistrationNumber(event.target.value)
+                            setError('')
+                          }}
+                          required
+                          autoComplete="off"
+                          placeholder=""
+                          aria-label={businessIdentityCopy.registrationNumberPlaceholder}
+                          className="autorell-account-input relative z-10 min-w-0 flex-1 bg-transparent text-sm font-[400] text-[#101828] outline-none"
+                        />
+                        {registrationNumber ? null : (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-x-3 top-1/2 z-20 -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-[400] text-[#767676]"
+                          >
+                            {businessIdentityCopy.registrationNumberPlaceholder}
+                          </span>
+                        )}
+                      </div>
+                      <span className="mt-1.5 block break-words text-[11px] font-[400] leading-4 text-[#667085]">
+                        {businessIdentityCopy.registrationNumberHelper}
+                      </span>
+                    </label>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            <div className="mt-6 grid gap-2.5">
+              {socialProviders.map(({ provider, labelKey }) => (
+                <button
+                  key={provider}
+                  type="button"
+                  disabled={loading || Boolean(socialLoading)}
+                  onClick={() => void startSocialLogin(provider)}
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-[11px] border border-[#d5dde8] bg-white px-4 text-sm font-[600] text-[#101828] transition hover:border-[#b8c6d8] hover:bg-[#f8fbff] disabled:opacity-60"
+                >
+                  <span className="grid h-6 w-6 place-items-center">
+                    <SocialProviderLogo provider={provider} />
+                  </span>
+                  {socialLoading === provider ? copy.socialLoading : copy[labelKey]}
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center gap-3 text-xs font-[600] text-[#98a2b3]">
+              <span className="h-px flex-1 bg-[#edf1f6]" />
+              <span>{copy.socialSeparator}</span>
+              <span className="h-px flex-1 bg-[#edf1f6]" />
+            </div>
+            <form onSubmit={authMethod === 'password' ? submitPassword : requestCode} className="mt-5">
               <label className="block text-xs font-[600] text-[#344054]">
                 {copy.email}
                 <div className="relative mt-2 flex h-12 items-center rounded-[11px] border border-[#ccd5e2] bg-white px-3 transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10">
@@ -597,12 +860,12 @@ export default function AuthModal({
                 </span>
               </button>
 
-              {error ? <AuthError message={error} /> : null}
-              {notice ? <p role="status" className="mt-4 rounded-[11px] border border-[#9fc5ff] bg-[#eef5ff] px-4 py-3 text-sm font-[500] leading-6 text-[#175cd3]">{notice}</p> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
+              {notice ? <p className="mt-4 rounded-[11px] border border-[#cfe3ff] bg-[#f5f9ff] px-3 py-2.5 text-sm text-[#175cd3]">{notice}</p> : null}
 
               <button
-                disabled={loading}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-60"
+                disabled={loading || Boolean(socialLoading)}
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-60"
               >
                 {loading ? (authMethod === 'password' ? copy.passwordLoading : copy.sending) : (authMethod === 'password' ? copy.passwordSubmit : copy.continue)}
                 {!loading ? <ArrowRight className="h-4 w-4" /> : null}
@@ -619,6 +882,7 @@ export default function AuthModal({
                 {authMethod === 'password' ? copy.useCodeInstead : copy.usePasswordInstead}
               </button>
             </form>
+            </>
           ) : (
             <div className="mt-6">
               <div
@@ -650,13 +914,13 @@ export default function AuthModal({
                 ))}
               </div>
 
-              {error ? <AuthError message={error} /> : null}
+              {displayedError ? <AuthError message={displayedError} /> : null}
 
               <button
                 type="button"
                 disabled={loading || digits.join('').length !== 6}
                 onClick={() => void verifyCode()}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white shadow-[0_10px_24px_rgba(8,102,255,.24)] transition hover:bg-[#075be4] disabled:opacity-45"
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[#0866ff] px-5 text-sm font-[600] text-white transition hover:bg-[#075be4] disabled:opacity-45"
               >
                 {loading ? copy.verifying : copy.submitCode}
                 {!loading ? <CheckCircle2 className="h-4 w-4" /> : null}
@@ -717,4 +981,25 @@ function getAuthModalCopy(locale: PublicLocale, mode: AuthMode, view: AuthView =
 
 function getAuthSpamHint(locale: PublicLocale) {
   return getAuthSpamHintCopy(locale)
+}
+
+type BusinessRegistrationCopy = {
+  switchLabel: string
+  switchDescription: string
+  fieldsRequired: string
+}
+
+const businessRegistrationCopy: Record<PublicLocale, BusinessRegistrationCopy> = {
+  sv: { switchLabel: 'Jag är företag', switchDescription: 'Skapa ett företagskonto med företagets registrerade uppgifter.', fieldsRequired: 'Fyll i företagsnamn och organisationsnummer.' },
+  en: { switchLabel: 'I represent a business', switchDescription: 'Create a business account using the company’s registered details.', fieldsRequired: 'Enter the company name and registration number.' },
+  de: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Erstellen Sie ein Unternehmenskonto mit den eingetragenen Firmendaten.', fieldsRequired: 'Geben Sie Firmenname und Registernummer ein.' },
+  at: { switchLabel: 'Ich vertrete ein Unternehmen', switchDescription: 'Erstellen Sie ein Unternehmenskonto mit den eingetragenen Firmendaten.', fieldsRequired: 'Geben Sie Firmenname und Firmenbuchnummer ein.' },
+  be: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Maak een bedrijfsaccount met de officiële bedrijfsgegevens.', fieldsRequired: 'Vul de bedrijfsnaam en het ondernemingsnummer in.' },
+  fr: { switchLabel: 'Je représente une entreprise', switchDescription: 'Créez un compte entreprise avec les informations officielles.', fieldsRequired: 'Saisissez la raison sociale et le numéro SIREN.' },
+  es: { switchLabel: 'Represento a una empresa', switchDescription: 'Crea una cuenta de empresa con los datos registrados.', fieldsRequired: 'Introduce la denominación social y el NIF de la empresa.' },
+  it: { switchLabel: 'Rappresento un’azienda', switchDescription: 'Crea un account aziendale con i dati registrati.', fieldsRequired: 'Inserisci la denominazione e il codice fiscale dell’impresa.' },
+  pl: { switchLabel: 'Reprezentuję firmę', switchDescription: 'Utwórz konto firmowe przy użyciu danych rejestrowych.', fieldsRequired: 'Wpisz nazwę firmy i jej oficjalny identyfikator.' },
+  nl: { switchLabel: 'Ik vertegenwoordig een bedrijf', switchDescription: 'Maak een bedrijfsaccount met de officiële bedrijfsgegevens.', fieldsRequired: 'Vul de bedrijfsnaam en het KVK-nummer in.' },
+  fi: { switchLabel: 'Edustan yritystä', switchDescription: 'Luo yritystili yrityksen rekisteröidyillä tiedoilla.', fieldsRequired: 'Anna yrityksen nimi ja Y-tunnus.' },
+  da: { switchLabel: 'Jeg repræsenterer en virksomhed', switchDescription: 'Opret en virksomhedskonto med de registrerede oplysninger.', fieldsRequired: 'Indtast virksomhedsnavn og CVR-nummer.' },
 }

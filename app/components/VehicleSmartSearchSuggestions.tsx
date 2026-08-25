@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import type { PublicLocale } from '@/lib/public-i18n'
 
 export type VehicleSmartSearchSuggestion = {
@@ -39,12 +40,14 @@ export function useVehicleSmartSearchSuggestions({
   query,
   locale,
   marketCode,
+  category,
   active = true,
   limit = 10,
 }: {
   query: string
   locale: PublicLocale
   marketCode?: string | null
+  category?: MarketplaceCategorySlug | null
   active?: boolean
   limit?: number
 }) {
@@ -66,6 +69,7 @@ export function useVehicleSmartSearchSuggestions({
         limit: String(limit),
       })
       if (marketCode) params.set('market', marketCode)
+      if (category) params.set('category', category)
       const cacheKey = params.toString()
       const cached = smartSearchCache.get(cacheKey)
       if (cached && cached.expiresAt > Date.now()) {
@@ -108,7 +112,7 @@ export function useVehicleSmartSearchSuggestions({
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [active, limit, locale, marketCode, query])
+  }, [active, category, limit, locale, marketCode, query])
 
   const canSearch = active && normalizeSuggestionQuery(query).length >= SMART_SEARCH_MIN_QUERY_LENGTH
   return {

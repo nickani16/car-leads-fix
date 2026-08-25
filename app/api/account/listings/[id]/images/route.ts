@@ -94,6 +94,98 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 }
 
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
+
+  const { id } = await context.params
+  const admin = createAdminClient()
+  const { data: listing } = await admin
+    .from('marketplace_listings')
+    .select('id,seller_user_id,seller_type,images,status,review_status')
+    .eq('id', id)
+    .maybeSingle()
+  const scope = listing?.seller_type === 'business'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const canManageListing = Boolean(
+    listing && (listing.seller_user_id === user.id || scope?.listingOwnerUserIds.includes(String(listing.seller_user_id))),
+  )
+  if (!canManageListing || !listing) {
+    return NextResponse.json({ error: 'Listing not found.' }, { status: 404 })
+  }
+
+  const body = (await request.json().catch(() => ({}))) as { images?: unknown }
+  const existingImages = Array.isArray(listing.images) ? listing.images.filter((value): value is string => typeof value === 'string') : []
+  const nextImages = Array.isArray(body.images) ? body.images.filter((value): value is string => typeof value === 'string') : []
+  if (!nextImages.length || nextImages.length !== existingImages.length) {
+    return NextResponse.json({ error: 'Bildordningen kunde inte sparas.' }, { status: 400 })
+  }
+  const existingSet = new Set(existingImages)
+  const nextSet = new Set(nextImages)
+  if (
+    existingSet.size !== existingImages.length ||
+    nextSet.size !== nextImages.length ||
+    nextImages.some((image) => !existingSet.has(image))
+  ) {
+    return NextResponse.json({ error: 'Bildordningen innehåller ogiltiga bilder.' }, { status: 400 })
+  }
+
+  const now = new Date().toISOString()
+  const { error: updateError } = await admin
+    .from('marketplace_listings')
+    .update({ images: nextImages, updated_at: now })
+    .eq('id', listing.id)
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 })
+
+  const { data: imageRows, error: imageRowsError } = await admin
+    .from('marketplace_listing_images')
+    .select('id,position,webp_url,avif_url,storage_webp_path,storage_avif_path')
+    .eq('listing_id', listing.id)
+    .is('deleted_at', null)
+    .order('position', { ascending: true })
+  if (!imageRowsError && imageRows?.length === existingImages.length) {
+    const rowsByImageKey = new Map(
+      imageRows.flatMap((row) => {
+        const keys = [
+          imageOrderKey(row.webp_url),
+          imageOrderKey(row.avif_url),
+          imageOrderKey(row.storage_webp_path),
+          imageOrderKey(row.storage_avif_path),
+        ].filter(Boolean)
+        return keys.map((key) => [key, row] as const)
+      }),
+    )
+    await Promise.all(
+      nextImages.map((image, nextPosition) => {
+        const row = rowsByImageKey.get(imageOrderKey(image))
+        if (!row) return Promise.resolve()
+        return admin
+          .from('marketplace_listing_images')
+          .update({ position: nextPosition })
+          .eq('id', row.id)
+      }),
+    )
+  } else if (imageRowsError) {
+    console.warn('[listing-images] Metadata reorder failed', { listingId: listing.id, error: imageRowsError.message })
+  }
+
+  await admin.from('marketplace_listing_events').insert({
+    listing_id: listing.id,
+    actor_user_id: user.id,
+    actor_role: 'seller',
+    event_type: 'listing_images_reordered',
+    from_status: listing.status,
+    to_status: listing.status,
+    from_review_status: listing.review_status,
+    to_review_status: listing.review_status,
+    metadata: { image_count: nextImages.length },
+  })
+  revalidateTag('marketplace-listings', 'max')
+  return NextResponse.json({ success: true, images: nextImages })
+}
+
 async function uploadImage(supabase: SupabaseClient, file: File, userId: string, index: number): Promise<UploadedImage> {
   const processed = await processMarketplaceImage(file)
   const stem = `${userId}/${crypto.randomUUID()}-${index}-${processed.baseName}`
@@ -127,4 +219,12 @@ function imageError(error: unknown) {
   if (code === 'IMAGE_SIZE_INVALID') return 'En bild är tom eller större än 25 MB.'
   if (code === 'UNSUPPORTED_IMAGE_TYPE' || code === 'IMAGE_SIGNATURE_MISMATCH') return 'En fil har ett format eller innehåll som inte stöds.'
   return 'Bilderna kunde inte behandlas. Försök igen.'
+}
+
+function imageOrderKey(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/[?#].*$/, '')
+    .replace(/\/(?:card|listing)\.webp$/i, '')
+    .replace(/\/fullscreen\.avif$/i, '')
 }

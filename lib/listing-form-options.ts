@@ -186,7 +186,7 @@ export const categoryTechnicalFields: Record<
     chips('damageStatus', 'Skador/fel', damageStatusOptions),
   ],
   trucks: [
-    chips('bodyType', 'Påbyggnad', ['Dragbil', 'Skåp', 'Flak', 'Tipp', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil', 'Lastväxlare', 'Betongbil'], true),
+    chips('bodyType', 'Påbyggnad', ['Dragbil', 'Skåp', 'Flak', 'Tipp', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil', 'Lastväxlare', 'Betongbil', 'Buss'], true),
     numberField('payloadKg', 'Lastvikt', 1, 60000, 'kg', true),
     numberField('grossCombinationWeightKg', 'Tågvikt', 1, 100000, 'kg'),
     chips('axleCount', 'Antal axlar', axleCountOptions, true),
@@ -296,7 +296,7 @@ function subcategoryKey(value: unknown) {
   if (
     text.includes('excav') ||
     text.includes('grävmaskin') ||
-    text.includes('grÃ¤vmaskin') ||
+    text.includes('grävmaskin') ||
     text.includes('bagger') ||
     text.includes('pelle')
   ) return 'excavator'

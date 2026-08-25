@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
-export default function BillingPortalButton({ label }: { label: string }) {
+export default function BillingPortalButton({ label, locale }: { label: string; locale: PublicLocale }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -15,7 +17,7 @@ export default function BillingPortalButton({ label }: { label: string }) {
       window.location.assign(result.url)
       return
     }
-    setError(result.error || 'Kunde inte öppna betalningsportalen.')
+    setError(localizedAccountError(locale, result, locale === 'sv' ? 'Kunde inte öppna betalningsportalen.' : 'Could not open the billing portal.'))
     setLoading(false)
   }
 

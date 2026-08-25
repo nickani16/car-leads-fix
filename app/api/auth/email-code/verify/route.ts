@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { accountIntentFromRequest, ensureMarketplaceProfile } from '@/lib/account-profile-bootstrap'
 import {
   emailHash,
   isValidEmail,
@@ -11,6 +12,12 @@ import {
 import { getAuthApiCopy } from '@/lib/auth-copy'
 import { localeFromRequest } from '@/lib/auth-locale'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import {
+  acceptCompanyTeamInvitationForUser,
+  acceptLatestCompanyTeamInvitationForUser,
+  CompanyTeamInvitationError,
+  tokenFromCompanyTeamAcceptPath,
+} from '@/lib/company-team-acceptance'
 
 const marketPathPrefixes = new Set([
   'se',
@@ -36,12 +43,12 @@ const marketPathPrefixes = new Set([
   'lt',
 ])
 
-function onboardingDestination(requested: string) {
-  const firstSegment = requested.split('?')[0]?.split('/').filter(Boolean)[0]
-  const accountType = requested.includes('account=business') ? '&account=business' : ''
-  return firstSegment && marketPathPrefixes.has(firstSegment)
-    ? `/${firstSegment}/register?onboarding=1${accountType}`
-    : `/register?onboarding=1${accountType}`
+type EmailCodeChallenge = {
+  id: string
+  code_hash: string
+  attempts: number
+  expires_at: string
+  redirect_path: string | null
 }
 
 function accountDestination(requested: string, accountType?: string | null) {
@@ -60,6 +67,8 @@ export async function POST(request: Request) {
       code?: string
       locale?: string
       next?: string
+      purpose?: string
+      registration?: boolean
     }
     const locale = localeFromRequest(request, body.locale)
     const copy = getAuthApiCopy(locale)
@@ -85,42 +94,118 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient()
-    const { data: challenge } = await admin
+    const hashedEmail = emailHash(email)
+    let { data: challenges, error: challengeError } = await admin
       .from('auth_email_codes')
-      .select('id,code_hash,attempts,expires_at')
-      .eq('email_hash', emailHash(email))
+      .select('id,code_hash,attempts,expires_at,redirect_path')
+      .eq('email_hash', hashedEmail)
       .is('consumed_at', null)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(5)
+    if (challengeError?.code === 'PGRST204' || challengeError?.code === '42703') {
+      const fallback = await admin
+        .from('auth_email_codes')
+        .select('id,code_hash,attempts,expires_at')
+        .eq('email_hash', hashedEmail)
+        .is('consumed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(5)
+      challenges = (fallback.data || []).map((item) => ({ ...item, redirect_path: null }))
+      challengeError = fallback.error
+    }
+    if (challengeError) throw challengeError
 
-    if (
-      !challenge ||
-      challenge.attempts >= 6 ||
-      new Date(challenge.expires_at).getTime() < Date.now() ||
-      !matchesCode(challenge.code_hash, email, code)
-    ) {
-      if (challenge) {
+    const availableChallenges = ((challenges || []) as EmailCodeChallenge[]).filter((item) => {
+      return item.attempts < 6 && new Date(item.expires_at).getTime() >= Date.now()
+    })
+    const challenge = availableChallenges.find((item) => matchesCode(item.code_hash, email, code)) || null
+    const latestChallenge = ((challenges || []) as EmailCodeChallenge[])[0] || null
+
+    if (!challenge) {
+      if (latestChallenge) {
         await admin
           .from('auth_email_codes')
-          .update({ attempts: Math.min(challenge.attempts + 1, 10) })
-          .eq('id', challenge.id)
+          .update({ attempts: Math.min(latestChallenge.attempts + 1, 10) })
+          .eq('id', latestChallenge.id)
       }
       return NextResponse.json({ error: copy.codeError }, { status: 401 })
     }
+    const challengeId = challenge.id
 
-    const consumedAt = new Date().toISOString()
-    const { data: consumedChallenge, error: consumeError } = await admin
-      .from('auth_email_codes')
-      .update({ consumed_at: consumedAt })
-      .eq('id', challenge.id)
-      .is('consumed_at', null)
-      .select('id')
-      .maybeSingle()
-    if (consumeError) throw consumeError
-    if (!consumedChallenge) {
+    async function consumeChallenge() {
+      const consumedAt = new Date().toISOString()
+      const { data: consumedChallenge, error: consumeError } = await admin
+        .from('auth_email_codes')
+        .update({ consumed_at: consumedAt })
+        .eq('id', challengeId)
+        .is('consumed_at', null)
+        .select('id')
+        .maybeSingle()
+      if (consumeError) throw consumeError
+      return Boolean(consumedChallenge)
+    }
+
+    async function consumeOtherChallenges() {
+      const { error: consumeError } = await admin
+        .from('auth_email_codes')
+        .update({ consumed_at: new Date().toISOString() })
+        .eq('email_hash', hashedEmail)
+        .is('consumed_at', null)
+        .neq('id', challengeId)
+      if (consumeError) throw consumeError
+    }
+
+    const isEmailVerification = body.purpose === 'email_verification' || challenge.redirect_path === 'email_verification'
+    if (isEmailVerification) {
+      const supabase = await createClient()
+      const { data: sessionUser, error: userError } = await supabase.auth.getUser()
+      if (userError || !sessionUser.user) {
+        return NextResponse.json({ error: copy.codeError }, { status: 401 })
+      }
+      if (normalizeEmail(sessionUser.user.email) !== email) {
+        return NextResponse.json({ error: copy.codeError }, { status: 403 })
+      }
+
+      if (!(await consumeChallenge())) {
+        return NextResponse.json({ error: copy.usedCode }, { status: 401 })
+      }
+      await consumeOtherChallenges()
+
+      const now = new Date().toISOString()
+      const [{ data: profile }, authUpdate] = await Promise.all([
+        admin
+          .from('marketplace_profiles')
+          .select('account_type,identity_status')
+          .eq('user_id', sessionUser.user.id)
+          .maybeSingle(),
+        admin.auth.admin.updateUserById(sessionUser.user.id, {
+          email_confirm: true,
+        }),
+      ])
+      if (authUpdate.error) throw authUpdate.error
+
+      if (
+        profile?.account_type === 'private' &&
+        !['verified', 'format_validated'].includes(String(profile.identity_status || ''))
+      ) {
+        const { error: profileError } = await admin
+          .from('marketplace_profiles')
+          .update({
+            identity_status: 'format_validated',
+            verified_at: now,
+            verification_updated_at: now,
+          })
+          .eq('user_id', sessionUser.user.id)
+        if (profileError) throw profileError
+      }
+
+      return NextResponse.json({ success: true, emailVerified: true })
+    }
+
+    if (!(await consumeChallenge())) {
       return NextResponse.json({ error: copy.usedCode }, { status: 401 })
     }
+    await consumeOtherChallenges()
 
     let link = await admin.auth.admin.generateLink({
       type: 'magiclink',
@@ -199,13 +284,13 @@ export async function POST(request: Request) {
 
     if (
       profile?.account_type === 'private' &&
-      !['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+      !['verified', 'format_validated'].includes(String(profile.identity_status || ''))
     ) {
       const now = new Date().toISOString()
       await admin
         .from('marketplace_profiles')
         .update({
-          identity_status: 'basic_checked',
+          identity_status: 'format_validated',
           verified_at: now,
           verification_updated_at: now,
         })
@@ -213,6 +298,36 @@ export async function POST(request: Request) {
     }
 
     const requested = safeAuthDestination(body.next)
+    const invitationToken = tokenFromCompanyTeamAcceptPath(requested)
+    if (invitationToken) {
+      const accepted = await acceptCompanyTeamInvitationForUser(admin, {
+        token: invitationToken,
+        userId: data.user.id,
+        userEmail: data.user.email,
+        destinationHint: requested,
+      })
+      return NextResponse.json({
+        success: true,
+        destination: accepted.destination,
+        newAccount: false,
+      })
+    }
+
+    if (!profile) {
+      const acceptedLatestInvitation = await acceptLatestCompanyTeamInvitationForUser(admin, {
+        userId: data.user.id,
+        userEmail: data.user.email,
+        destinationHint: requested,
+      })
+      if (acceptedLatestInvitation) {
+        return NextResponse.json({
+          success: true,
+          destination: acceptedLatestInvitation.destination,
+          newAccount: true,
+        })
+      }
+    }
+
     const { data: companyInvitation } = !profile
       ? await admin
           .from('marketplace_company_invitations')
@@ -224,6 +339,22 @@ export async function POST(request: Request) {
           .limit(1)
           .maybeSingle()
       : { data: null }
+    let readyProfile = profile
+    if (!readyProfile && !invitation && !adminUser && !companyInvitation) {
+      const bootstrapped = await ensureMarketplaceProfile({
+        user: data.user,
+        locale,
+        intent: body.registration
+          ? accountIntentFromRequest(request, data.user)
+          : { accountType: 'private', companyName: '', registrationNumber: '' },
+      })
+      readyProfile = {
+        user_id: data.user.id,
+        account_type: bootstrapped.accountType,
+        identity_status: 'pending',
+      }
+    }
+
     const adminRole = invitation?.role_key
     const destination = adminRole === 'support_admin'
       ? '/admin/support'
@@ -231,15 +362,20 @@ export async function POST(request: Request) {
         ? '/admin'
         : companyInvitation && requested.includes('/company/team/accept')
           ? requested
-        : profile
-          ? accountDestination(requested, profile.account_type)
-          : onboardingDestination(requested)
+        : readyProfile
+          ? accountDestination(requested, readyProfile.account_type)
+          : accountDestination(requested)
 
     return NextResponse.json({ success: true, destination, newAccount: !profile && !adminUser })
   } catch (error) {
+    if (error instanceof CompanyTeamInvitationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('Email code verification failed', error)
+    const locale = localeFromRequest(request)
+    const copy = getAuthApiCopy(locale)
     return NextResponse.json(
-      { error: 'The sign-in could not be completed. Request a new code.' },
+      { error: copy.codeError },
       { status: 500 },
     )
   }

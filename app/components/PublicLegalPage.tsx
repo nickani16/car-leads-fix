@@ -17,6 +17,21 @@ type LegalSection = {
   items?: string[]
 }
 
+const freeListingTermByLocale: Record<PublicLocale, string> = {
+  sv: 'Grundpubliceringen är gratis i fem dagar. Priser för 15 dagar och Premium 30 dagar visas före betalning.',
+  en: 'The current free listing period is five days. Paid 15-day and Premium 30-day package prices are shown before payment.',
+  de: 'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+  at: 'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+  be: 'De huidige gratis advertentieperiode bedraagt vijf dagen. De prijzen voor betaalde pakketten van 15 dagen en Premium 30 dagen worden vóór betaling getoond.',
+  fr: 'La période de publication gratuite est actuellement de cinq jours. Les prix des forfaits payants de 15 jours et Premium de 30 jours sont affichés avant le paiement.',
+  es: 'El periodo gratuito de publicación es actualmente de cinco días. Los precios de los paquetes de pago de 15 días y Premium de 30 días se muestran antes del pago.',
+  it: 'Il periodo di pubblicazione gratuito è attualmente di cinque giorni. I prezzi dei pacchetti a pagamento da 15 giorni e Premium da 30 giorni vengono mostrati prima del pagamento.',
+  pl: 'Bezpłatny okres publikacji wynosi obecnie pięć dni. Ceny płatnych pakietów 15-dniowych i Premium 30-dniowych są wyświetlane przed płatnością.',
+  nl: 'De huidige gratis advertentieperiode bedraagt vijf dagen. De prijzen voor betaalde pakketten van 15 dagen en Premium 30 dagen worden vóór betaling getoond.',
+  fi: 'Ilmainen ilmoitusaika on tällä hetkellä viisi päivää. Maksullisten 15 päivän ja Premium 30 päivän pakettien hinnat näytetään ennen maksua.',
+  da: 'Den gratis annonceperiode er i øjeblikket fem dage. Priserne for de betalte 15-dages- og Premium 30-dagespakker vises før betaling.',
+}
+
 export default async function PublicLegalPage({
   eyebrow,
   title,
@@ -36,13 +51,13 @@ export default async function PublicLegalPage({
   const fallback = activeLocale === 'de' || activeLocale === 'at'
     ? legalFallbackCopyDe(title)
     : legalFallbackCopy(title)
-  const localized =
+  const localizedBase =
     activeLocale === 'sv'
       ? {
           eyebrow,
           title,
           intro,
-          updated: 'Senast uppdaterad: 25 juni 2026',
+          updated: 'Senast uppdaterad: 6 augusti 2026',
           questionTitle: 'Frågor om dina uppgifter?',
           questionText:
             'Kontakta oss om du vill förstå hur ett ärende hanteras eller använda dina dataskyddsrättigheter.',
@@ -53,13 +68,24 @@ export default async function PublicLegalPage({
           eyebrow: 'Legal information',
           title: fallback.title,
           intro: fallback.intro,
-          updated: 'Last updated: 25 June 2026',
+          updated: 'Last updated: 6 August 2026',
           questionTitle: 'Questions about your data?',
           questionText:
             'Contact us if you want to understand how a case is handled or use your data protection rights.',
           contact: 'Contact Autorell',
           sections: fallback.sections,
         })
+  const localized = {
+    ...localizedBase,
+    sections: localizedBase.sections.map((section) =>
+      ['purchase-terms', 'listing-services'].includes(section.id) && section.items?.length
+        ? {
+            ...section,
+            items: [freeListingTermByLocale[activeLocale], ...section.items.slice(1)],
+          }
+        : section,
+    ),
+  }
 
   return (
     <main className="bg-[#f7f8fb] text-[#101828]">
@@ -206,7 +232,7 @@ function legalFallbackCopyDe(title: string): {
     return {
       title: 'Cookie-Richtlinie',
       intro:
-        'Wir verwenden so wenige Cookies wie möglich und aktivieren nicht notwendiges Tracking nur mit der gesetzlich erforderlichen Zustimmung.',
+        'Notwendige Technologien halten Autorell sicher und funktionsfähig. Statistik, Leistungsmessung und Werbung werden nur nach Ihren getrennten aktiven Entscheidungen aktiviert.',
       sections: [
         {
           id: 'cookies',
@@ -220,7 +246,7 @@ function legalFallbackCopyDe(title: string): {
           title: 'Was wir derzeit verwenden',
           paragraphs: [
             'Autorell verwendet notwendige Technologien für sichere Anmeldung, Sitzungen, Missbrauchsschutz und vom Nutzer angeforderte Funktionen.',
-            'Marketing-Cookies oder eigenständige Analysewerkzeuge werden auf der öffentlichen Website nicht ohne erforderliche Zustimmung aktiviert.',
+            'Vercel Analytics und Vercel Speed Insights werden erst geladen, nachdem Sie Statistik und Leistungsmessung aktiv akzeptiert haben. Google AdSense wird erst geladen, nachdem Sie Werbung separat akzeptiert haben.',
           ],
         },
         {
@@ -233,10 +259,46 @@ function legalFallbackCopyDe(title: string): {
           ],
         },
         {
+          id: 'analytics',
+          title: 'Statistik und Leistung',
+          paragraphs: [
+            'Mit Ihrer separaten Einwilligung verwenden wir Vercel Analytics für aggregierte Nutzungsstatistiken und Vercel Speed Insights für Leistungsmessungen. Vercel kann technische Daten wie IP-Adresse, Geräte- und Browserinformationen sowie besuchte Seiten gemäß seinen Bedingungen verarbeiten.',
+            'Die Einwilligung ist freiwillig und beeinflusst den Zugang zu den Grundfunktionen von Autorell nicht.',
+          ],
+        },
+        {
+          id: 'advertising',
+          title: 'Werbung',
+          paragraphs: [
+            'Mit einer separaten Einwilligung verwenden wir Google AdSense, um Werbung anzuzeigen und zu messen. Google kann technische Daten, Anzeigeninteraktionen und Kennungen gemäß seinen Datenschutzhinweisen und Ihren Entscheidungen verarbeiten.',
+            'Sie können Werbung unabhängig von Statistik und Leistungsmessung auswählen. Die Einwilligung ist freiwillig.',
+          ],
+        },
+        {
           id: 'manage',
           title: 'Cookies verwalten',
           paragraphs: [
-            'Sie können Cookies in Ihrem Browser löschen oder blockieren. Wenn notwendige Authentifizierungscookies blockiert werden, funktionieren Konto-, Anzeigen- und Nachrichtenfunktionen möglicherweise nicht.',
+            'Sie können jede Auswahl jederzeit separat über die Cookie-Einstellungen in der Fußzeile ändern oder widerrufen. Beim Widerruf wird die Seite ohne das nicht mehr genehmigte Werkzeug neu geladen.',
+            'Sie können Cookies außerdem im Browser löschen oder blockieren. Wenn notwendige Authentifizierungscookies blockiert werden, funktionieren Konto-, Anzeigen- und Nachrichtenfunktionen möglicherweise nicht.',
+          ],
+        },
+        {
+          id: 'inventory',
+          title: 'Cookie-Inventar',
+          items: [
+            'autorell_cookie_consent · Autorell · speichert, ob Sie notwendige, Statistik-/Leistungs-, Werbe- oder alle Technologien ausgewählt haben · 180 Tage · notwendig, um Ihre Auswahl zu beachten.',
+            'autorell-market und autorell-language · Autorell · speichern Markt und Sprache · höchstens 1 Jahr · notwendig.',
+            'Authentifizierungs- und Sitzungsdaten · Autorell/Supabase · sichere Anmeldung · bis zur Abmeldung oder zum Ablauf der Sitzung · notwendig.',
+            'Vercel Analytics und Speed Insights · Vercel · Nutzungs- und Leistungsmessung · nur mit separater Einwilligung zu Statistik und Leistung.',
+            'Google AdSense · Google · Anzeigen, Messung und Betrugsschutz · nur mit separater Einwilligung zu Werbung; Kennungen können unterschiedliche Laufzeiten haben.',
+          ],
+        },
+        {
+          id: 'providers-transfers',
+          title: 'Anbieter und internationale Übermittlungen',
+          paragraphs: [
+            'Vercel und Google sind externe Anbieter und können Daten außerhalb der EU/des EWR verarbeiten. In diesem Fall müssen der Anbieter und Autorell einen rechtmäßigen Übermittlungsmechanismus und geeignete Schutzmaßnahmen verwenden.',
+            'Namen und Laufzeiten einzelner Drittanbieter-Cookies können sich ändern. Wir prüfen das Inventar und aktualisieren diese Richtlinie bei wesentlichen Änderungen von Technologie oder Zwecken.',
           ],
         },
       ],
@@ -262,6 +324,8 @@ function legalFallbackCopyDe(title: string): {
           items: [
             'Kontotyp, Name, E-Mail, Telefon, Land, Adresse, Login- und Sicherheitsinformationen.',
             'Anzeigendaten, Bilder, Fahrzeugidentität, Preis, Standort, Zustand, Historie und bekannte Mängel.',
+            'Bei Händleranfragen verarbeiten wir Fahrzeug-, Zustands- und Kontaktdaten sowie Fotos und den bevorzugten Kontaktweg des Verkäufers.',
+            'Wenn ein Unternehmensmitglied einen Verkäufer als kontaktiert markiert, verarbeiten wir Unternehmen, Nutzer, Name, E-Mail, Kontaktweg und Zeitstempel zur gemeinsamen Nachverfolgung.',
             'Nachrichten, Meldungen, Supportfälle, Moderationsentscheidungen und Nachweise bei vermutetem Missbrauch.',
             'Zahlungsreferenzen, Pakete, Beträge, Belege und Erstattungsstatus. Vollständige Kartendaten werden nicht von Autorell gespeichert.',
           ],
@@ -273,7 +337,17 @@ function legalFallbackCopyDe(title: string): {
             'Vertrag und Nutzeranfrage: Kontoerstellung, Anzeigen, Anzeigenpakete, Nachrichten und Support.',
             'Rechtliche Pflicht: Buchhaltung, Steuern, Behördenanfragen und digitale Plattformpflichten.',
             'Berechtigtes Interesse: sicherer Betrieb, Betrugsprävention, Moderation, Streitnachweise und Weiterentwicklung des Dienstes.',
+            'Nutzeranfrage und berechtigtes Interesse: Händleranfragen nach Länderauswahl zuordnen, Unternehmen benachrichtigen und unnötige Mehrfachkontakte innerhalb desselben Unternehmens vermeiden.',
             'Einwilligung wird verwendet, wenn dies gesetzlich erforderlich ist, zum Beispiel für nicht notwendige Cookies oder separates Marketing.',
+          ],
+        },
+        {
+          id: 'recipients-retention',
+          title: 'Empfänger und Speicherdauer',
+          items: [
+            'Händleranfragen sind nur für berechtigte Geschäftskonten mit passender Länderauswahl sichtbar. Teammitglieder desselben Unternehmens sehen, wer den Verkäufer wann kontaktiert hat.',
+            'Eine als kontaktiert markierte Anfrage bleibt 24 Stunden im Feed dieses Unternehmens und wird danach ausgeblendet. Das Kontaktprotokoll kann für Koordination, Sicherheit und Rechtsansprüche länger zugriffsbeschränkt gespeichert werden.',
+            'Auftragsverarbeiter für Hosting, Datenbank, Authentifizierung, Speicherung, E-Mail und Zahlung erhalten nur die für ihre Leistung erforderlichen Daten. Einwilligungsbasierte Analyse und Werbung werden in der Cookie-Richtlinie beschrieben.',
           ],
         },
         {
@@ -322,11 +396,45 @@ function legalFallbackCopyDe(title: string): {
         ],
       },
       {
+        id: 'vehicle-purchases',
+        title: 'Fahrzeugkauf und Verkäuferrolle',
+        paragraphs: [
+          'Kauft ein Verbraucher ein Fahrzeug von einem Unternehmen, gelten zwingende Verbraucherschutzregeln. Bei einem Kauf zwischen Privatpersonen gelten grundsätzlich das vereinbarte Recht und das schwedische Kaufrecht; ein allgemeines gesetzliches Widerrufsrecht besteht dafür nicht.',
+          'Autorell ist Marktplatz und nicht automatisch Fahrzeugverkäufer, Käufer, Kreditgeber, Vermittler oder Garant. Die Anzeige zeigt den Kontotyp des Verkäufers.',
+        ],
+      },
+      {
+        id: 'listing-services',
+        title: 'Anzeigenpakete und Widerrufsrecht',
+        items: [
+          'Die kostenlose Anzeigenlaufzeit beträgt derzeit fünf Tage. Preise für 15 Tage und Premium 30 Tage werden vor der Zahlung angezeigt.',
+          'Verbraucher haben bei einem online gekauften Anzeigendienst grundsätzlich ein 14-tägiges Widerrufsrecht. Vor sofortiger Veröffentlichung müssen sie den Beginn während der Widerrufsfrist ausdrücklich verlangen und die gesetzlichen Folgen bestätigen.',
+          'Seit dem 19. Juni 2026 stellt die Website für erfasste Verträge eine leicht zugängliche Widerrufsfunktion und eine unverzügliche Eingangsbestätigung bereit.',
+        ],
+      },
+      {
+        id: 'invoice-credit',
+        title: 'Rechnung, Kredit und Zahlungsverzug',
+        paragraphs: [
+          'Geschäftsrechnung wird nur berechtigten Geschäftskonten angeboten. Das aktuelle Zahlungsziel beträgt 14 Tage ab Rechnungsdatum.',
+          'Bei verspäteter Zahlung kann Autorell gesetzliche Verzugszinsen und vereinbarte, rechtlich zulässige Mahn- und Inkassokosten berechnen.',
+          'Autorell vergibt selbst keine Fahrzeugkredite oder Verbraucherdarlehen, sofern ein separates Angebot dies nicht ausdrücklich vorsieht. Der benannte Kreditgeber ist für Kreditprüfung, Vorabinformationen und Vertragsbedingungen verantwortlich.',
+        ],
+      },
+      {
         id: 'messages',
         title: 'Nachrichten und verbotenes Verhalten',
         items: [
           'Zum Kontakt mit einem Verkäufer ist eine Anmeldung erforderlich. Nachrichten dürfen nur für legitime Kommunikation zur Anzeige genutzt werden.',
           'Betrug, Belästigung, Spam, schädliche Links, Identitätsmissbrauch und Versuche, Passwörter, Kartendaten oder unzulässige Zahlungen anzufordern, sind verboten.',
+        ],
+      },
+      {
+        id: 'complaints',
+        title: 'Beschwerden, Streit und anwendbares Recht',
+        paragraphs: [
+          'Beschwerden können über das Hilfezentrum oder an info@autorell.com gesendet werden. Verbraucher können die Widerrufsfunktion der Website nutzen, wenn ein gesetzliches Widerrufsrecht gilt.',
+          'Schwedisches Recht gilt, soweit zwingende Schutzvorschriften im Land des Verbrauchers nicht vorgehen. Verbraucher behalten den Zugang zu zuständigen Gerichten und anwendbarer alternativer Streitbeilegung.',
         ],
       },
     ],
@@ -405,7 +513,7 @@ function legalFallbackCopy(title: string): {
     return {
       title: 'Cookie Policy',
       intro:
-        'We use as few cookies as possible and do not activate non-essential tracking without the consent required by law.',
+        'Necessary technologies keep Autorell secure and working. Analytics, performance measurement and advertising are activated only after your separate active choices.',
       sections: [
         {
           id: 'cookies',
@@ -419,7 +527,7 @@ function legalFallbackCopy(title: string): {
           title: 'What we use today',
           paragraphs: [
             'Autorell uses necessary technologies for secure login, session handling, abuse prevention and features requested by the user.',
-            'We do not currently activate marketing cookies or standalone analytics tools on the public website.',
+            'Vercel Analytics and Vercel Speed Insights load only after you actively accept analytics and performance measurement. Google AdSense loads only after you separately accept advertising.',
           ],
         },
         {
@@ -432,10 +540,46 @@ function legalFallbackCopy(title: string): {
           ],
         },
         {
+          id: 'analytics',
+          title: 'Analytics and performance',
+          paragraphs: [
+            'With your separate consent, we use Vercel Analytics for aggregated usage statistics and Vercel Speed Insights for performance measurement. Vercel may process technical information such as IP address, device and browser information and visited pages under its terms.',
+            'Consent is voluntary and does not affect access to Autorell core functionality.',
+          ],
+        },
+        {
+          id: 'advertising',
+          title: 'Advertising',
+          paragraphs: [
+            'With a separate consent, we use Google AdSense to display and measure ads. Google may process technical information, advertising interactions and identifiers under its privacy terms and your choices.',
+            'You can choose advertising independently from analytics and performance measurement. Consent is voluntary.',
+          ],
+        },
+        {
           id: 'manage',
           title: 'Manage cookies',
           paragraphs: [
-            'You can delete or block cookies in your browser. If necessary authentication cookies are blocked, account, listing and messaging features may stop working.',
+            'You can change or withdraw each choice separately at any time through Cookie settings in the footer. When a previous consent is withdrawn, the page reloads without the tool that is no longer approved.',
+            'You can also delete or block cookies in your browser. If necessary authentication cookies are blocked, account, listing and messaging features may stop working.',
+          ],
+        },
+        {
+          id: 'inventory',
+          title: 'Cookie inventory',
+          items: [
+            'autorell_cookie_consent · Autorell · stores whether you selected necessary, analytics/performance, advertising or all technologies · 180 days · necessary to respect your choice.',
+            'autorell-market and autorell-language · Autorell · store market and language · up to 1 year · necessary.',
+            'Authentication and session data · Autorell/Supabase · secure sign-in · until logout or session expiry · necessary.',
+            'Vercel Analytics and Speed Insights · Vercel · usage and performance measurement · separate analytics/performance consent only.',
+            'Google AdSense · Google · advertising, measurement and fraud prevention · separate advertising consent only; identifiers may have different lifetimes.',
+          ],
+        },
+        {
+          id: 'providers-transfers',
+          title: 'Providers and international transfers',
+          paragraphs: [
+            'Vercel and Google are external providers and may process data outside the EU/EEA. Where that occurs, the provider and Autorell must use a lawful transfer mechanism and applicable safeguards.',
+            'Third-party cookie names and lifetimes may change. We review the inventory and update this policy when technology or purposes change materially.',
           ],
         },
       ],
@@ -462,6 +606,8 @@ function legalFallbackCopy(title: string): {
             'Account type, name, email, phone, country, address, login and security information.',
             'For private sellers, full names are kept for account, verification, safety and legal purposes. Public marketplace views normally show only the seller first name and account type.',
             'Listing data, images, vehicle identity, price, location, condition, history and known faults.',
+            'Dealer-offer requests include vehicle, condition and contact details, photos and the seller’s preferred contact method.',
+            'When a company member marks a seller as contacted, we process the company, user, name, email, contact method and timestamps for shared follow-up.',
             'Messages, reports, support cases, moderation decisions and evidence of suspected misuse.',
             'Payment references, packages, amounts, receipt and refund status. Full card details are not stored by Autorell.',
           ],
@@ -473,7 +619,17 @@ function legalFallbackCopy(title: string): {
             'Contract and user request: account creation, listings, listing packages, messages and support.',
             'Legal obligation: bookkeeping, tax, authority requests and digital platform obligations.',
             'Legitimate interest: secure operation, fraud prevention, moderation, dispute evidence and service development.',
+            'User request and legitimate interest: match dealer requests by country, notify eligible companies and prevent unnecessary duplicate contact within the same company.',
             'Consent is used where required by law, for example for non-essential cookies or separate marketing.',
+          ],
+        },
+        {
+          id: 'recipients-retention',
+          title: 'Recipients and retention',
+          items: [
+            'Dealer requests are visible only to eligible business accounts with matching country access. Members of the same company can see who contacted the seller and when.',
+            'A request marked as contacted remains in that company’s feed for 24 hours and is then hidden. The contact audit may be retained with restricted access for coordination, security and legal claims.',
+            'Processors for hosting, database, authentication, storage, email and payment receive only the data needed for their service. Consent-based analytics and advertising are described in the Cookie Policy.',
           ],
         },
         {
@@ -505,12 +661,12 @@ function legalFallbackCopy(title: string): {
       {
         id: 'accounts',
         title: 'Private and business accounts',
-          items: [
-            'The account holder must be at least 18 years old and provide correct and current contact and identity information.',
-            'Private accounts are used for personal, non-professional trading. Business sellers must use a business account.',
-            'Private sellers normally show only first name publicly. Business accounts show the registered company name.',
-            'The account is personal. Passwords and access must not be shared.',
-          ],
+        items: [
+          'The account holder must be at least 18 years old and provide correct and current contact and identity information.',
+          'Private accounts are used for personal, non-professional trading. Business sellers must use a business account.',
+          'Private sellers normally show only their first name publicly. Business accounts show the registered company name.',
+          'The account is personal. Passwords and access must not be shared.',
+        ],
       },
       {
         id: 'listings',
@@ -522,11 +678,48 @@ function legalFallbackCopy(title: string): {
         ],
       },
       {
+        id: 'vehicle-purchases',
+        title: 'Vehicle purchases and the identity of the seller',
+        paragraphs: [
+          'When a consumer buys a vehicle from a business, mandatory consumer sales rules apply. The business seller is responsible for required identity, total price, fees, delivery, complaint rights and any distance-selling withdrawal rights.',
+          'A purchase between private individuals is normally governed by the Swedish Sale of Goods Act and the parties’ agreement. There is no general statutory withdrawal right for a private-to-private vehicle purchase.',
+          'Autorell is a marketplace and is not automatically the vehicle seller, buyer, lender, agent or guarantor. The listing shows the seller account type so users can identify their counterparty.',
+        ],
+      },
+      {
+        id: 'listing-services',
+        title: 'Listing packages and consumer withdrawal rights',
+        items: [
+          'The current free listing period is five days. Paid 15-day and Premium 30-day package prices are shown before payment.',
+          'A consumer who buys a listing service at a distance normally has a 14-day withdrawal right. Before immediate publication, the consumer must expressly request performance during that period and acknowledge the legal effect when the service has been fully performed.',
+          'If the consumer withdraws before the service is fully performed, Autorell may charge a proportionate amount for the part performed after the consumer’s express request where permitted by law.',
+          'From 19 June 2026, the website provides an accessible withdrawal function for agreements covered by a statutory withdrawal right and confirms receipt without undue delay.',
+        ],
+      },
+      {
+        id: 'invoice-credit',
+        title: 'Invoices, credit and late payment',
+        paragraphs: [
+          'Business invoicing is available only when shown to an eligible business account. The current payment term is 14 days from the invoice date.',
+          'For late payment, Autorell may charge default interest under the Swedish Interest Act and agreed reminder or collection fees permitted by law. New listing publication may be restricted while an undisputed invoice remains overdue.',
+          'Autorell does not itself provide vehicle loans or consumer credit unless a separate offer expressly says so. Financing displayed in a listing comes from the business seller or named lender, which is responsible for pre-contract information, credit assessment, agreement terms and applicable consumer-credit rules.',
+          'If a payment option constitutes consumer credit, including an invoice issued through a financing provider, mandatory consumer-credit protections and the named creditor’s terms apply. Business-to-business credit is not governed by consumer credit legislation.',
+        ],
+      },
+      {
         id: 'messages',
         title: 'Messages and prohibited behaviour',
         items: [
           'Login is required to contact a seller. Messages may only be used for legitimate communication about the listing.',
           'Fraud, harassment, spam, harmful links, identity misuse and attempts to request passwords, card details or improper payments are prohibited.',
+        ],
+      },
+      {
+        id: 'complaints',
+        title: 'Complaints, disputes and governing law',
+        paragraphs: [
+          'Complaints can be submitted through the help centre or to info@autorell.com. Consumers may use the website withdrawal function where a statutory withdrawal right applies.',
+          'Swedish law applies to the extent it is not displaced by mandatory protection in the consumer’s country. Consumers retain access to competent courts and applicable alternative dispute resolution, including the Swedish National Board for Consumer Disputes when its requirements are met.',
         ],
       },
     ],

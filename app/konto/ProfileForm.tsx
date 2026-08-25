@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle2, Clock3, ShieldAlert } from 'lucide-react'
 import { euCountries, getEuCountryName } from '@/lib/eu-countries'
 import {
-  localizePublicHref,
   translatePublicObject,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { getNationalIdProfileCopy } from '@/lib/national-id-profile-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import { getBusinessIdentityCopy } from '@/lib/business-identity-i18n'
 import { normalizePlaceName } from '@/lib/place-name'
 
 type Profile = {
@@ -52,14 +52,13 @@ export default function ProfileForm({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const copy = getProfileCopy(locale)
+  const copy = { ...getProfileCopy(locale), ...getBusinessIdentityCopy(locale) }
   const [message, setMessage] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [countryCode, setCountryCode] = useState(profile.country_code)
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
   const [logoUploading, setLogoUploading] = useState(false)
   const [emailCodeSent, setEmailCodeSent] = useState(false)
   const [emailCode, setEmailCode] = useState('')
+  const [emailVerified, setEmailVerified] = useState(emailConfirmed)
   const [emailVerificationMessage, setEmailVerificationMessage] = useState('')
   const [emailVerificationLoading, setEmailVerificationLoading] = useState(false)
   const countries = useMemo(
@@ -72,42 +71,27 @@ export default function ProfileForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (saving) return
-    setSaving(true)
-    setMessage('')
     const form = new FormData(event.currentTarget)
     form.set('city', normalizePlaceName(form.get('city')))
     form.set('region', normalizePlaceName(form.get('region')))
-
-    try {
-      const response = await fetch('/api/account/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(form)),
-      })
-      const result = (await response.json().catch(() => ({}))) as { error?: string; code?: string }
-      if (!response.ok) {
-        const identityCopy = getNationalIdProfileCopy(locale, countryCode)
-        setMessage(
-          result.code === 'profile_invalid_national_id'
-            ? identityCopy.invalid
-            : result.code === 'profile_national_id_in_use'
-              ? identityCopy.inUse
-              : result.error || copy.saveError,
-        )
-        return
-      }
-
-      const next = searchParams.get('next')
-      const destination = next?.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
-        ? next
-        : localizePublicHref(locale, '/account')
-      window.location.assign(destination)
-    } catch {
-      setMessage(copy.saveError)
-    } finally {
-      setSaving(false)
+    const response = await fetch('/api/account/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(form)),
+    })
+    const result = (await response.json()) as { error?: string }
+    if (!response.ok) {
+      setMessage(localizedAccountError(locale, result, copy.saveError))
+      return
     }
+
+    setMessage(copy.saved)
+    const next = searchParams.get('next')
+    if (next?.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')) {
+      router.replace(next)
+      return
+    }
+    router.refresh()
   }
 
   async function uploadLogo(file?: File) {
@@ -123,7 +107,7 @@ export default function ProfileForm({
     const result = (await response.json()) as { error?: string; logoUrl?: string }
     setLogoUploading(false)
     if (!response.ok || !result.logoUrl) {
-      setMessage(result.error || copy.logoUploadError)
+      setMessage(localizedAccountError(locale, result, copy.logoUploadError))
       return
     }
     setLogoUrl(result.logoUrl)
@@ -141,7 +125,7 @@ export default function ProfileForm({
     const result = (await response.json().catch(() => null)) as { error?: string } | null
     setEmailVerificationLoading(false)
     if (!response.ok) {
-      setEmailVerificationMessage(result?.error || copy.emailCodeSendError)
+      setEmailVerificationMessage(localizedAccountError(locale, result, copy.emailCodeSendError))
       return
     }
     setEmailCodeSent(true)
@@ -159,15 +143,19 @@ export default function ProfileForm({
         email: profile.email,
         code: emailCode,
         locale,
+        purpose: 'email_verification',
         next: window.location.pathname,
       }),
     })
     const result = (await response.json().catch(() => null)) as { error?: string } | null
     setEmailVerificationLoading(false)
     if (!response.ok) {
-      setEmailVerificationMessage(result?.error || copy.emailCodeVerifyError)
+      setEmailVerificationMessage(localizedAccountError(locale, result, copy.emailCodeVerifyError))
       return
     }
+    setEmailVerified(true)
+    setEmailCode('')
+    setEmailCodeSent(false)
     setEmailVerificationMessage(copy.emailVerifiedNow)
     router.refresh()
   }
@@ -185,7 +173,7 @@ export default function ProfileForm({
         riskStatus={profile.risk_status}
         phoneStatus={profile.phone_verification_status || 'unverified'}
         email={profile.email}
-        emailConfirmed={emailConfirmed}
+        emailConfirmed={emailVerified}
         emailCode={emailCode}
         emailCodeSent={emailCodeSent}
         emailVerificationLoading={emailVerificationLoading}
@@ -196,7 +184,7 @@ export default function ProfileForm({
       />
       <form
         onSubmit={submit}
-        className="grid gap-4 rounded-[22px] border border-[#e1e5ec] bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-8"
+        className="grid min-w-0 gap-4 overflow-hidden rounded-[22px] border border-[#e1e5ec] bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-8"
       >
         <Field name="firstName" label={copy.firstName} defaultValue={profile.first_name || ''} required />
         <Field name="lastName" label={copy.lastName} defaultValue={profile.last_name || ''} required />
@@ -204,34 +192,19 @@ export default function ProfileForm({
         <Field name="phone" label={copy.phone} defaultValue={profile.phone} required />
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">{copy.country}</span>
-          <select
-            name="countryCode"
-            value={countryCode}
-            onChange={(event) => setCountryCode(event.target.value)}
-            className={controlClass}
-            required
-          >
+          <select name="countryCode" defaultValue={profile.country_code} className={controlClass} required>
             {countries.map(({ code, name }) => <option key={code} value={code}>{name}</option>)}
           </select>
         </label>
         {profile.account_type === 'private' && (
-          profile.national_id_last4 ? (
-            <Field
-              label={getNationalIdProfileCopy(locale, countryCode).label}
-              value={`••••••${profile.national_id_last4}`}
-              helper={getNationalIdProfileCopy(locale, countryCode).saved}
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold">{copy.identityNumber}</span>
+            <input
+              value={profile.national_id_last4 ? `......${profile.national_id_last4}` : copy.notRegistered}
               disabled
+              className={`${controlClass} bg-[#f5f6f8]`}
             />
-          ) : (
-            <Field
-              name="nationalId"
-              label={getNationalIdProfileCopy(locale, countryCode).label}
-              placeholder={getNationalIdProfileCopy(locale, countryCode).placeholder}
-              helper={getNationalIdProfileCopy(locale, countryCode).helper}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          )
+          </label>
         )}
         {profile.account_type === 'business' && (
           <>
@@ -258,8 +231,8 @@ export default function ProfileForm({
                 <span className="text-xs leading-5 text-[#667085]">{copy.logoHelp}</span>
               </div>
             </div>
-            <Field name="companyName" label={copy.companyName} defaultValue={profile.company_name || ''} required />
-            <Field name="registrationNumber" label={copy.registrationNumber} defaultValue={profile.registration_number || ''} required />
+            <Field name="companyName" label={copy.companyName} placeholder={copy.companyNamePlaceholder} defaultValue={profile.company_name || ''} required />
+            <Field name="registrationNumber" label={copy.registrationNumber} placeholder={copy.registrationNumberPlaceholder} helper={copy.registrationNumberHelper} defaultValue={profile.registration_number || ''} required />
             <Field name="vatNumber" label={copy.vatNumber} defaultValue={profile.vat_number || ''} />
             <Field name="websiteUrl" label={copy.websiteUrl} defaultValue={profile.website_url || ''} />
             <div className="sm:col-span-2 rounded-[16px] border border-[#d8e3f7] bg-white p-4">
@@ -275,20 +248,16 @@ export default function ProfileForm({
         <Field name="addressLine1" label={copy.addressLine1} defaultValue={profile.address_line_1 || ''} required />
         <Field name="addressLine2" label={copy.addressLine2} defaultValue={profile.address_line_2 || ''} />
         <Field name="postalCode" label={copy.postalCode} defaultValue={profile.postal_code || ''} required />
-        <Field name="city" label={copy.city} defaultValue={profile.city || ''} required />
-        <Field name="region" label={copy.region} defaultValue={profile.region || ''} />
+        <Field name="city" label={copy.city} defaultValue={normalizePlaceName(profile.city)} normalizePlace required />
+        <Field name="region" label={copy.region} defaultValue={normalizePlaceName(profile.region)} normalizePlace />
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">{copy.email}</span>
           <input value={profile.email} disabled className={`${controlClass} bg-[#f5f6f8]`} />
         </label>
         <div className="sm:col-span-2">
           {message && <p className="mb-4 text-sm text-[#475467]">{message}</p>}
-          <button
-            type="submit"
-            disabled={saving}
-            className="min-h-12 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:cursor-wait disabled:opacity-60"
-          >
-            {saving ? copy.savingProfile : copy.saveProfile}
+          <button className="min-h-12 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white">
+            {copy.saveProfile}
           </button>
         </div>
       </form>
@@ -346,7 +315,7 @@ function VerificationCard({
         </p>
         <div className="mt-4 grid gap-2 text-sm md:grid-cols-2">
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
-            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">{copy.emailVerification}</span>
             <strong className={`mt-1 flex items-center gap-1.5 ${emailConfirmed ? 'text-[#027a48]' : 'text-[#b42318]'}`}>
               {emailConfirmed ? <CheckCircle2 className="h-4 w-4" /> : null}
               {emailConfirmed ? copy.verified : copy.notVerified}
@@ -354,7 +323,7 @@ function VerificationCard({
             <span className="mt-1 block truncate text-xs font-medium text-[#667085]">{email}</span>
           </div>
           <div className="min-w-0 rounded-[14px] border border-[#dfe7f2] bg-white px-4 py-3">
-            <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">{copy.phoneCheck}</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#667085]">{copy.phoneCheck}</span>
             <strong className="mt-1 block text-[#101828]">
               {phoneStatusLabel(phoneStatus, copy)}
             </strong>
@@ -409,15 +378,22 @@ function phoneStatusLabel(status: string, copy: ReturnType<typeof getProfileCopy
 }
 
 const controlClass =
-  'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm font-[400] text-[#101828] outline-none placeholder:font-[400] placeholder:text-[#8b95a7] focus:border-[#0866ff] disabled:bg-[#f5f6f8] disabled:text-[#667085]'
+  'h-12 w-full min-w-0 max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 text-sm outline-none focus:border-[#0866ff]'
 
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; helper?: string }) {
-  const { label, helper, ...rest } = props
+function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string; helper?: string; normalizePlace?: boolean }) {
+  const { label, helper, normalizePlace, onBlur, ...rest } = props
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-sm font-semibold">{label}</span>
-      <input {...rest} className={controlClass} />
-      {helper ? <span className="mt-1.5 block text-xs font-[400] leading-5 text-[#667085]">{helper}</span> : null}
+      <input
+        {...rest}
+        onBlur={(event) => {
+          if (normalizePlace) event.currentTarget.value = normalizePlaceName(event.currentTarget.value)
+          onBlur?.(event)
+        }}
+        className={`${controlClass} autorell-account-input font-[400] ${rest.type === 'date' ? 'appearance-none' : ''}`}
+      />
+      {helper ? <span className="mt-1.5 block text-xs font-[400] leading-5 text-[#7b8494]">{helper}</span> : null}
     </label>
   )
 }
@@ -454,7 +430,6 @@ function getProfileCopy(locale: PublicLocale) {
     region: 'Region or state',
     email: 'Email',
     saveProfile: 'Save profile',
-    savingProfile: 'Saving...',
     needsReview: 'The account needs review',
     basicCheckDone: 'Basic check is complete',
     verificationPending: 'Verification in progress',
@@ -532,7 +507,6 @@ function getProfileCopy(locale: PublicLocale) {
       emailCodeSendError: 'Koden kunde inte skickas.',
       emailCodeVerifyError: 'Koden kunde inte verifieras.',
       saveProfile: 'Spara profil',
-      savingProfile: 'Sparar...',
       needsReview: 'Kontot behöver granskas',
       basicCheckDone: 'Grundkontrollen är genomförd',
       verificationPending: 'Verifiering pågår',

@@ -1,4 +1,6 @@
+import { revalidateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   COMPANY_IMPORT_MAX_FILE_SIZE,
   parseCompanyListingImportCsv,
@@ -10,13 +12,36 @@ import {
   reserveBusinessListingQuota,
 } from '@/lib/billing/business-limits'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
-import { planAllows } from '@/lib/company-portal'
+import { processMarketplaceImage, type ProcessedMarketplaceImage } from '@/lib/marketplace/image-processing'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { companyImportLimitsForPlan } from '@/lib/company-import-limits'
+
+export const runtime = 'nodejs'
+export const maxDuration = 300
+
+type UploadedImportImage = {
+  cardUrl: string
+  listingUrl: string
+  fullscreenUrl: string
+  cardPath: string
+  listingPath: string
+  fullscreenPath: string
+  width: number
+  height: number
+  listingBytes: number
+  fullscreenBytes: number
+  filename: string
+  sourceUrl: string
+}
 
 export async function POST(request: Request) {
   const createdListingIds: string[] = []
   let openReservationKey: string | null = null
+  const uploadedForOpenListing: UploadedImportImage[] = []
+  let jobId: string | null = null
+  let imageImportedCount = 0
+  let imageSkippedCount = 0
 
   try {
     const supabase = await createClient()
@@ -31,11 +56,38 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) return NextResponse.json({ error: 'CSV file is required.' }, { status: 400 })
     if (file.size > COMPANY_IMPORT_MAX_FILE_SIZE) return NextResponse.json({ error: 'CSV file is too large.' }, { status: 413 })
 
-    const preview = parseCompanyListingImportCsv(await file.text())
+    const branches = await loadCompanyBranches(access.profile.company_id)
+    const preview = parseCompanyListingImportCsv(await file.text(), { branches, maxRows: access.importLimits.maxRows })
+    const admin = createAdminClient()
+    jobId = await createImportJob(admin, {
+      userId: user.id,
+      companyId: access.profile.company_id,
+      fileName: file.name,
+      planKey: access.quota.planKey,
+      limits: access.importLimits,
+      preview,
+      quota: access.quota,
+    })
     if (preview.errors.length || preview.invalidRows || !preview.validRows) {
+      await finishImportJob(admin, jobId, {
+        status: 'failed',
+        createdCount: 0,
+        imageImportedCount,
+        imageSkippedCount,
+        errors: preview.errors,
+        rowSummaries: preview.rows,
+      })
       return NextResponse.json({ error: 'Fix validation errors before importing.', ...preview }, { status: 422 })
     }
     if (preview.validRows > access.quota.remaining) {
+      await finishImportJob(admin, jobId, {
+        status: 'failed',
+        createdCount: 0,
+        imageImportedCount,
+        imageSkippedCount,
+        errors: [{ field: 'quota', message: 'Not enough listing quota for this import period.' }],
+        rowSummaries: preview.rows,
+      })
       return NextResponse.json({
         error: 'Not enough listing quota for this import period.',
         quota: access.quota,
@@ -43,7 +95,6 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    const admin = createAdminClient()
     for (const row of preview.rows) {
       const reservation = await reserveBusinessListingQuota(user.id)
       if (!reservation.allowed) {
@@ -54,19 +105,45 @@ export async function POST(request: Request) {
         }, { status: 403 })
       }
       openReservationKey = reservation.reservationKey
+      uploadedForOpenListing.length = 0
+      const importedImages = await importRemoteImages(admin, row, user.id, access.importLimits.maxImagesPerListing)
+      uploadedForOpenListing.push(...importedImages)
+      imageImportedCount += importedImages.length
+      imageSkippedCount += Math.max(0, row.data.imageUrls.length - importedImages.length)
 
       const { data: listing, error } = await admin
         .from('marketplace_listings')
-        .insert(toListingInsert(row, user.id, access.profile.company_name || 'Autorell'))
+        .insert(toListingInsert(row, user.id, access.profile.company_name || 'Autorell', branches, uploadedForOpenListing))
         .select('id,status,review_status,reference_number,listing_number')
         .single()
 
-      if (error || !listing) throw error || new Error('Listing insert failed')
+      if (error || !listing) {
+        await cleanupImportedImages(admin, uploadedForOpenListing)
+        throw error || new Error('Listing insert failed')
+      }
       await attachBusinessListingQuotaReservation(openReservationKey, listing.id)
       openReservationKey = null
       createdListingIds.push(listing.id)
 
       await Promise.all([
+        uploadedForOpenListing.length
+          ? admin.from('marketplace_listing_images').insert(uploadedForOpenListing.map((image, index) => ({
+              listing_id: listing.id,
+              seller_user_id: user.id,
+              position: index,
+              avif_url: image.fullscreenUrl,
+              webp_url: image.listingUrl,
+              storage_avif_path: image.fullscreenPath,
+              storage_webp_path: image.listingPath,
+              width: image.width,
+              height: image.height,
+              avif_size_bytes: image.fullscreenBytes,
+              webp_size_bytes: image.listingBytes,
+              original_filename: image.filename,
+              expires_at: null,
+              purge_after: null,
+            })))
+          : Promise.resolve({ error: null }),
         admin.from('marketplace_listing_identifiers').insert({
           listing_id: listing.id,
           seller_user_id: user.id,
@@ -77,6 +154,10 @@ export async function POST(request: Request) {
             import_row_number: row.rowNumber,
             reference_number: row.data.referenceNumber,
             image_urls: row.data.imageUrls,
+            imported_images: uploadedForOpenListing.map((image) => ({
+              source_url: image.sourceUrl,
+              card_url: image.cardUrl,
+            })),
           },
         }),
         admin.from('marketplace_listing_events').insert({
@@ -94,8 +175,18 @@ export async function POST(request: Request) {
           },
         }),
       ])
+      uploadedForOpenListing.length = 0
     }
 
+    revalidateTag('marketplace-listings', 'max')
+    await finishImportJob(admin, jobId, {
+      status: imageSkippedCount ? 'completed_with_warnings' : 'completed',
+      createdCount: createdListingIds.length,
+      imageImportedCount,
+      imageSkippedCount,
+      errors: [],
+      rowSummaries: preview.rows,
+    })
     return NextResponse.json({
       success: true,
       created: createdListingIds.length,
@@ -105,6 +196,15 @@ export async function POST(request: Request) {
     if (openReservationKey) {
       await releaseBusinessListingQuotaReservation(openReservationKey).catch(() => undefined)
     }
+    await cleanupImportedImages(createAdminClient(), uploadedForOpenListing).catch(() => undefined)
+    await finishImportJob(createAdminClient(), jobId, {
+      status: 'failed',
+      createdCount: createdListingIds.length,
+      imageImportedCount,
+      imageSkippedCount,
+      errors: [{ field: 'import', message: error instanceof Error ? error.message : 'Could not import listings.' }],
+      rowSummaries: [],
+    }).catch(() => undefined)
     console.error('Company import failed', error)
     return NextResponse.json({
       error: 'Could not import listings.',
@@ -113,7 +213,10 @@ export async function POST(request: Request) {
   }
 }
 
-function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerName: string) {
+function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerName: string, branches: Awaited<ReturnType<typeof loadCompanyBranches>>, images: UploadedImportImage[]) {
+  const branch = row.data.branchName
+    ? branches.find((item) => normalizeBranchKey(item.name) === normalizeBranchKey(row.data.branchName))
+    : null
   return {
     seller_user_id: userId,
     category: row.data.category,
@@ -126,13 +229,13 @@ function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerNam
     mileage_km: row.data.mileageKm,
     body_type: row.data.category,
     condition: 'used',
-    country_code: row.data.countryCode,
-    country: row.data.countryCode,
-    city: row.data.city,
-    municipality: row.data.municipality,
+    country_code: branch?.country_code || row.data.countryCode,
+    country: branch?.country_code || row.data.countryCode,
+    city: branch?.city || row.data.city,
+    municipality: branch?.municipality || row.data.municipality,
     price: row.data.price,
     currency: row.data.currency,
-    images: [],
+    images: images.map((image) => image.cardUrl),
     seller_name: sellerName,
     seller_type: 'business',
     phone_visibility: 'public',
@@ -142,7 +245,182 @@ function toListingInsert(row: CompanyImportPreviewRow, userId: string, sellerNam
     risk_flags: [],
     package_id: 'free_7d',
     priority: 0,
+    address: branch?.address_line_1 || null,
+    postal_code: branch?.postal_code || null,
+    structured_data: {
+      import_source: 'company_csv',
+      branch_name: branch?.name || row.data.branchName || null,
+      branch_id: branch?.id || null,
+      image_import_count: images.length,
+    },
   }
+}
+
+async function importRemoteImages(admin: SupabaseClient, row: CompanyImportPreviewRow, userId: string, maxImages: number) {
+  const uploaded: UploadedImportImage[] = []
+  for (const [index, url] of row.data.imageUrls.slice(0, Math.max(0, maxImages)).entries()) {
+    try {
+      const file = await fetchRemoteImageFile(url, row, index)
+      uploaded.push(await uploadImportedImage(admin, file, userId, row.rowNumber, index, url))
+    } catch (error) {
+      console.warn('[company-import] Remote image skipped', {
+        rowNumber: row.rowNumber,
+        url,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+  return uploaded
+}
+
+async function createImportJob(
+  admin: SupabaseClient,
+  input: {
+    userId: string
+    companyId: string | null | undefined
+    fileName: string
+    planKey: string
+    limits: { maxRows: number; maxImagesPerListing: number }
+    preview: ReturnType<typeof parseCompanyListingImportCsv>
+    quota: { limit: number; used: number; remaining: number; planKey: string }
+  },
+) {
+  if (!input.companyId) return null
+  try {
+    const { data, error } = await admin
+      .from('marketplace_company_import_jobs')
+      .insert({
+        company_id: input.companyId,
+        user_id: input.userId,
+        source: 'csv',
+        status: 'running',
+        file_name: input.fileName,
+        plan_key: input.planKey,
+        max_rows: input.limits.maxRows,
+        max_images_per_row: input.limits.maxImagesPerListing,
+        requested_rows: input.preview.rows.length,
+        valid_rows: input.preview.validRows,
+        invalid_rows: input.preview.invalidRows,
+        quota_snapshot: input.quota,
+        errors: input.preview.errors,
+      })
+      .select('id')
+      .single()
+    if (error || !data) return null
+    return String(data.id)
+  } catch {
+    return null
+  }
+}
+
+async function finishImportJob(
+  admin: SupabaseClient,
+  jobId: string | null,
+  input: {
+    status: 'completed' | 'completed_with_warnings' | 'failed'
+    createdCount: number
+    imageImportedCount: number
+    imageSkippedCount: number
+    errors: unknown[]
+    rowSummaries: CompanyImportPreviewRow[]
+  },
+) {
+  if (!jobId) return
+  await admin
+    .from('marketplace_company_import_jobs')
+    .update({
+      status: input.status,
+      created_count: input.createdCount,
+      image_imported_count: input.imageImportedCount,
+      image_skipped_count: input.imageSkippedCount,
+      errors: input.errors,
+      row_summaries: input.rowSummaries.map((row) => ({
+        row_number: row.rowNumber,
+        valid: row.valid,
+        reference_number: row.data.referenceNumber,
+        title: row.data.title,
+        errors: row.errors,
+      })),
+      finished_at: new Date().toISOString(),
+    })
+    .eq('id', jobId)
+}
+
+async function fetchRemoteImageFile(url: string, row: CompanyImportPreviewRow, index: number) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 12_000)
+  try {
+    const response = await fetch(url, { signal: controller.signal, redirect: 'follow' })
+    if (!response.ok) throw new Error(`IMAGE_FETCH_${response.status}`)
+    const contentType = (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase()
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(contentType)) {
+      throw new Error('UNSUPPORTED_REMOTE_IMAGE_TYPE')
+    }
+    const blob = await response.blob()
+    if (!blob.size || blob.size > 25 * 1024 * 1024) throw new Error('REMOTE_IMAGE_SIZE_INVALID')
+    const extension = contentType === 'image/jpeg'
+      ? 'jpg'
+      : contentType === 'image/png'
+        ? 'png'
+        : contentType === 'image/avif'
+          ? 'avif'
+          : 'webp'
+    const name = `${row.data.referenceNumber || `row-${row.rowNumber}`}-image-${index + 1}.${extension}`
+    return new File([blob], name, { type: contentType })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function uploadImportedImage(
+  supabase: SupabaseClient,
+  file: File,
+  userId: string,
+  rowNumber: number,
+  index: number,
+  sourceUrl: string,
+): Promise<UploadedImportImage> {
+  const processed = await processMarketplaceImage(file)
+  const stem = `${userId}/company-import-${crypto.randomUUID()}-${rowNumber}-${index}-${processed.baseName}`
+  const cardPath = `${stem}/card.webp`
+  const listingPath = `${stem}/listing.webp`
+  const fullscreenPath = `${stem}/fullscreen.avif`
+  const variants = [[cardPath, processed.card], [listingPath, processed.listing], [fullscreenPath, processed.fullscreen]] as const
+  const results = await Promise.allSettled(variants.map(([path, variant]) => uploadImportVariant(supabase, path, variant)))
+  const failed = results.find((result) => result.status === 'rejected')
+  if (failed?.status === 'rejected') {
+    await supabase.storage.from('marketplace-listings').remove(variants.flatMap(([path], i) => results[i]?.status === 'fulfilled' ? [path] : []))
+    throw failed.reason
+  }
+  const publicUrl = (path: string) => supabase.storage.from('marketplace-listings').getPublicUrl(path).data.publicUrl
+  return {
+    cardUrl: publicUrl(cardPath),
+    listingUrl: publicUrl(listingPath),
+    fullscreenUrl: publicUrl(fullscreenPath),
+    cardPath,
+    listingPath,
+    fullscreenPath,
+    width: processed.listing.width,
+    height: processed.listing.height,
+    listingBytes: processed.listing.sizeBytes,
+    fullscreenBytes: processed.fullscreen.sizeBytes,
+    filename: processed.originalFilename,
+    sourceUrl,
+  }
+}
+
+async function uploadImportVariant(supabase: SupabaseClient, path: string, variant: ProcessedMarketplaceImage['card']) {
+  const { error } = await supabase.storage.from('marketplace-listings').upload(path, variant.body, {
+    cacheControl: '31536000',
+    contentType: variant.contentType,
+    upsert: false,
+  })
+  if (error) throw error
+}
+
+async function cleanupImportedImages(supabase: SupabaseClient, images: UploadedImportImage[]) {
+  const paths = images.flatMap((image) => [image.cardPath, image.listingPath, image.fullscreenPath])
+  if (paths.length) await supabase.storage.from('marketplace-listings').remove(paths)
 }
 
 async function getImportAccess(userId: string) {
@@ -162,14 +440,12 @@ async function getImportAccess(userId: string) {
   if (!entitlement.allowed) {
     return { allowed: false as const, status: 403, error: entitlement.code, code: entitlement.code }
   }
-  if (!planAllows(entitlement.planKey, 'growth')) {
-    return { allowed: false as const, status: 403, error: 'Bulk import requires Growth, Professional or Enterprise.' }
-  }
-
+  const importLimits = companyImportLimitsForPlan(entitlement.planKey)
   return {
     allowed: true as const,
     profile,
     entitlement,
+    importLimits,
     quota: {
       planKey: entitlement.planKey,
       limit: entitlement.activeListingLimit,
@@ -177,4 +453,25 @@ async function getImportAccess(userId: string) {
       remaining: Math.max(0, entitlement.activeListingLimit - entitlement.activeListingCount),
     },
   }
+}
+
+async function loadCompanyBranches(companyId: string | null | undefined) {
+  if (!companyId) return []
+  try {
+    const admin = createAdminClient()
+    const { data, error } = await admin
+      .from('marketplace_company_locations')
+      .select('id,name,country_code,region,municipality,city,postal_code,address_line_1,contact_email,contact_phone,is_active')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .limit(250)
+    if (error || !data) return []
+    return data
+  } catch {
+    return []
+  }
+}
+
+function normalizeBranchKey(value: string | null | undefined) {
+  return String(value || '').trim().toLowerCase()
 }

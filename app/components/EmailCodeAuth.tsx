@@ -33,7 +33,8 @@ export default function EmailCodeAuth({
   mode?: 'login' | 'register'
 }) {
   const router = useRouter()
-  const copy = getCopy(locale, mode)
+  const [flowMode, setFlowMode] = useState(mode)
+  const copy = getCopy(locale, flowMode)
   const [authMethod, setAuthMethod] = useState<'password' | 'code'>('password')
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
@@ -48,6 +49,14 @@ export default function EmailCodeAuth({
   const [retryAfter, setRetryAfter] = useState(0)
   const [registerAccountType, setRegisterAccountType] = useState<'private' | 'business'>('private')
   const inputs = useRef<Array<HTMLInputElement | null>>([])
+
+  function registerDestination(requestedNext?: string | null) {
+    if (requestedNext?.includes('/company/team/accept')) return requestedNext
+    return localizePublicHref(
+      locale,
+      registerAccountType === 'business' ? '/account/company' : '/account',
+    )
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -106,12 +115,7 @@ export default function EmailCodeAuth({
     try {
       const params = new URLSearchParams(window.location.search)
       const requestedNext = params.get('next')
-      const registerDestination = localizePublicHref(
-        locale,
-        registerAccountType === 'business'
-          ? '/register?onboarding=1&account=business'
-          : '/register?onboarding=1',
-      )
+      const destinationForRegister = registerDestination(requestedNext)
       const response = await fetch('/api/auth/email-code/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,9 +123,10 @@ export default function EmailCodeAuth({
           email,
           code,
           next:
-            mode === 'register'
-              ? registerDestination
+            flowMode === 'register'
+              ? destinationForRegister
               : requestedNext || localizePublicHref(locale, '/account'),
+          registration: flowMode === 'register',
         }),
       })
       const result = (await response.json()) as {
@@ -135,8 +140,8 @@ export default function EmailCodeAuth({
       }
       router.replace(
         result.destination ||
-          (mode === 'register'
-            ? registerDestination
+          (flowMode === 'register'
+            ? destinationForRegister
             : localizePublicHref(locale, '/account')),
       )
       router.refresh()
@@ -155,13 +160,8 @@ export default function EmailCodeAuth({
     try {
       const params = new URLSearchParams(window.location.search)
       const requestedNext = params.get('next')
-      const registerDestination = localizePublicHref(
-        locale,
-        registerAccountType === 'business'
-          ? '/register?onboarding=1&account=business'
-          : '/register?onboarding=1',
-      )
-      if (mode === 'register') {
+      const registerDestinationForSubmit = registerDestination(requestedNext)
+      if (flowMode === 'register') {
         if (!isStrongPassword(password)) {
           setError(PASSWORD_REQUIREMENTS)
           return
@@ -178,14 +178,25 @@ export default function EmailCodeAuth({
             password,
             confirmPassword,
             locale,
-            next: registerDestination,
+            next: registerDestinationForSubmit,
+            accountType: registerAccountType,
           }),
         })
         const result = (await response.json()) as {
           success?: boolean
           sessionReady?: boolean
           destination?: string
+          accountExists?: boolean
+          code?: string
           error?: string
+        }
+        if (result.accountExists || result.code === 'auth_account_exists') {
+          setFlowMode('login')
+          setAuthMethod('password')
+          setStep('email')
+          setConfirmPassword('')
+          setNotice(result.error || copy.passwordSignupError)
+          return
         }
         if (!response.ok || !result.success) {
           setError(result.error || copy.passwordSignupError)
@@ -193,7 +204,7 @@ export default function EmailCodeAuth({
         }
         if (remember) window.localStorage.setItem(REMEMBERED_LOGIN_KEY, email.trim())
         if (result.sessionReady) {
-          router.replace(result.destination || registerDestination)
+          router.replace(result.destination || registerDestinationForSubmit)
           router.refresh()
           return
         }
@@ -324,7 +335,7 @@ export default function EmailCodeAuth({
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                        autoComplete={flowMode === 'register' ? 'new-password' : 'current-password'}
                         required
                         className="h-full min-w-0 flex-1 bg-transparent text-base outline-none"
                       />
@@ -338,7 +349,7 @@ export default function EmailCodeAuth({
                       </button>
                     </span>
                   </label>
-                  {mode === 'register' ? (
+                  {flowMode === 'register' ? (
                     <label className="mt-5 block text-sm font-semibold">
                       {copy.confirmPassword}
                       <input
@@ -360,7 +371,7 @@ export default function EmailCodeAuth({
                       className="h-5 w-5 accent-[#0866ff]"
                     />
                   </label>
-                  {mode === 'login' ? (
+                  {flowMode === 'login' ? (
                     <Link href={localizePublicHref(locale, '/forgot-password')} className="mt-4 inline-block text-sm font-bold text-[#0866ff]">
                       {copy.forgotPassword}
                     </Link>
@@ -498,12 +509,12 @@ export default function EmailCodeAuth({
               )}
 
               <p className="mt-8 border-t border-[#eaecf0] pt-6 text-center text-sm text-[#667085]">
-                {mode === 'login' ? copy.newHere : copy.haveAccount}{' '}
+                {flowMode === 'login' ? copy.newHere : copy.haveAccount}{' '}
                 <Link
-                  href={mode === 'login' ? localizePublicHref(locale, '/register') : localizePublicHref(locale, '/')}
+                  href={flowMode === 'login' ? localizePublicHref(locale, '/register') : localizePublicHref(locale, '/')}
                   className="font-bold text-[#0866ff]"
                 >
-                  {mode === 'login' ? copy.createAccount : copy.signIn}
+                  {flowMode === 'login' ? copy.createAccount : copy.signIn}
                 </Link>
               </p>
             </div>
@@ -562,7 +573,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
     invalidPassword: 'The email or password is incorrect.',
     passwordMismatch: 'The passwords do not match.',
     passwordSignupError: 'The account could not be created. Try password reset or one-time code.',
-    confirmEmailSent: 'We sent you a confirmation email. Open it now and click the confirmation link. Your account is ready after your email address is confirmed.',
+    confirmEmailSent: 'If email confirmation is required, open the email we sent and then continue creating your profile.',
     sendError: 'The code could not be sent.',
     codeError: 'The code is incorrect or has expired.',
     connectionError: 'The connection was interrupted. Try again.',
@@ -608,7 +619,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       invalidPassword: 'Mejladressen eller lösenordet är fel.',
       passwordMismatch: 'Lösenorden matchar inte.',
       passwordSignupError: 'Kontot kunde inte skapas. Prova lösenordsåterställning eller engångskod.',
-      confirmEmailSent: 'Vi har skickat ett bekräftelsemejl. Öppna mejlet nu och klicka på bekräftelselänken. Kontot blir klart när mejladressen är bekräftad.',
+      confirmEmailSent: 'Om mejlbekräftelse krävs, öppna mejlet vi skickade och fortsätt sedan skapa din profil.',
       sendError: 'Koden kunde inte skickas.',
       codeError: 'Koden är felaktig eller har gått ut.',
       connectionError: 'Anslutningen avbröts. Försök igen.',
@@ -655,7 +666,7 @@ function getCopy(locale: PublicLocale, mode: 'login' | 'register') {
       invalidPassword: 'E-Mail-Adresse oder Passwort ist falsch.',
       passwordMismatch: 'Die Passwörter stimmen nicht überein.',
       passwordSignupError: 'Das Konto konnte nicht erstellt werden. Versuchen Sie Passwort zurücksetzen oder Einmalcode.',
-      confirmEmailSent: 'Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Öffnen Sie sie jetzt und klicken Sie auf den Bestätigungslink. Danach ist Ihr Konto bereit.',
+      confirmEmailSent: 'Falls eine E-Mail-Bestätigung erforderlich ist, öffnen Sie die E-Mail und erstellen Sie danach Ihr Profil weiter.',
       sendError: 'Der Code konnte nicht gesendet werden.',
       codeError: 'Der Code ist falsch oder abgelaufen.',
       connectionError: 'Die Verbindung wurde unterbrochen. Erneut versuchen.',

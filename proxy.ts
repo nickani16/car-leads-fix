@@ -9,38 +9,52 @@ import { isSeoVehiclePath } from '@/lib/seo-routes'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
-  'autorell.de': 'www.autorell.com',
-  'www.autorell.de': 'www.autorell.com',
+  'autorell.de': 'www.autorell.de',
   'autorell.eu': 'www.autorell.com',
   'www.autorell.eu': 'www.autorell.com',
-  'autorell.se': 'www.autorell.com',
-  'www.autorell.se': 'www.autorell.com',
-}
-
-const CANONICAL_MARKET_PATHS: Record<string, string> = {
-  'autorell.de': '/de',
-  'www.autorell.de': '/de',
-  'autorell.se': '/se',
-  'www.autorell.se': '/se',
+  'autorell.se': 'www.autorell.se',
 }
 
 const MARKET_HOSTS = {
-  sv: 'www.autorell.com',
-  de: 'www.autorell.com',
+  sv: 'www.autorell.se',
+  de: 'www.autorell.de',
   en: 'www.autorell.com',
 } as const
 
 type Market = keyof typeof MARKET_HOSTS
 
 const MARKET_BY_HOST: Record<string, Market> = {
+  'www.autorell.se': 'sv',
+  'www.autorell.de': 'de',
   'www.autorell.com': 'en',
 }
 
 const SEARCH_CRAWLER_PATTERN =
   /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|applebot/i
+const SUSPICIOUS_BOT_PATTERN =
+  /ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|claudebot|gptbot|ccbot|perplexitybot|amazonbot|python-requests|scrapy|curl|wget|go-http-client|headlesschrome/i
+const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
+const MARKET_SELECTION_PARAM = 'market'
+type RateBucket = {
+  count: number
+  resetAt: number
+}
+
+declare global {
+  var __autorellProxyRateBuckets: Map<string, RateBucket> | undefined
+}
+
+const proxyRateBuckets =
+  globalThis.__autorellProxyRateBuckets ||
+  (globalThis.__autorellProxyRateBuckets = new Map<string, RateBucket>())
+const proxyRateWindowMs = 60_000
+const proxyVisitorRateLimit = 180
+const proxyBotRateLimit = 60
+const proxySitemapRateLimit = 90
+const proxyMaxRateBuckets = 10_000
 const LOCALIZED_PUBLIC_ALIASES = new Map([
   ['cookie-policy', 'cookies'],
   ['privacy', 'privacy'],
@@ -53,6 +67,9 @@ const LOCALIZED_PUBLIC_ALIASES = new Map([
   ['villkor', 'terms'],
   ['refund-policy', 'refund-policy'],
   ['aterbetalningspolicy', 'refund-policy'],
+  ['withdrawal', 'withdrawal'],
+  ['angra-kop', 'withdrawal'],
+  ['widerruf', 'withdrawal'],
   ['report', 'report'],
   ['rapportera', 'report'],
   ['contact', 'contact'],
@@ -111,6 +128,7 @@ const CANONICAL_LOCALIZED_SLUGS = new Map([
   ['integritet', 'privacy'],
   ['villkor', 'terms'],
   ['aterbetalningspolicy', 'refund-policy'],
+  ['angra-kop', 'withdrawal'],
   ['rapportera', 'report'],
   ['salj-fordon', 'sell-vehicle'],
   ['foretag', 'business'],
@@ -130,6 +148,7 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
   ['cookies', '/cookies'],
   ['terms', '/terms'],
   ['refund-policy', '/refund-policy'],
+  ['withdrawal', '/withdrawal'],
   ['help-center', '/help-center'],
   ['report', '/report'],
   ['sell-vehicle', '/sell-vehicle'],
@@ -187,6 +206,216 @@ const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {
   BE: 'be',
 }
 
+const MARKET_CATEGORY_SEGMENTS: Record<string, Record<string, string>> = {
+  en: {
+    cars: 'cars',
+    vans: 'vans',
+    motorcycles: 'motorcycles',
+    motorhomes: 'motorhomes',
+    caravans: 'caravans',
+    trucks: 'trucks',
+    agriculture: 'agriculture',
+    construction: 'construction',
+    'electric-bikes': 'electric-bikes',
+    'leasing-cars': 'cars',
+    'leasing-vans': 'vans',
+    'leasing-trucks': 'trucks',
+    'leasing-agriculture': 'agriculture',
+    'leasing-construction': 'construction',
+  },
+  se: {
+    bilar: 'cars',
+    transportbilar: 'vans',
+    motorcyklar: 'motorcycles',
+    husbilar: 'motorhomes',
+    husvagnar: 'caravans',
+    lastbilar: 'trucks',
+    lantbruksmaskiner: 'agriculture',
+    entreprenadmaskiner: 'construction',
+    cyklar: 'electric-bikes',
+    leasingbilar: 'cars',
+    leasingtransportbilar: 'vans',
+    leasinglastbilar: 'trucks',
+    leasinglantbruksmaskiner: 'agriculture',
+    leasingentreprenadmaskiner: 'construction',
+  },
+  de: {
+    autos: 'cars',
+    transporter: 'vans',
+    motorraeder: 'motorcycles',
+    wohnmobile: 'motorhomes',
+    wohnwagen: 'caravans',
+    lkw: 'trucks',
+    landmaschinen: 'agriculture',
+    baumaschinen: 'construction',
+    fahrraeder: 'electric-bikes',
+    leasingautos: 'cars',
+    leasingtransporter: 'vans',
+    leasinglkw: 'trucks',
+    leasinglandmaschinen: 'agriculture',
+    leasingbaumaschinen: 'construction',
+  },
+  at: {
+    autos: 'cars',
+    transporter: 'vans',
+    motorraeder: 'motorcycles',
+    wohnmobile: 'motorhomes',
+    wohnwagen: 'caravans',
+    lkw: 'trucks',
+    landmaschinen: 'agriculture',
+    baumaschinen: 'construction',
+    fahrraeder: 'electric-bikes',
+    leasingautos: 'cars',
+    leasingtransporter: 'vans',
+    leasinglkw: 'trucks',
+    leasinglandmaschinen: 'agriculture',
+    leasingbaumaschinen: 'construction',
+  },
+  fr: {
+    voitures: 'cars',
+    utilitaires: 'vans',
+    motos: 'motorcycles',
+    'camping-cars': 'motorhomes',
+    caravanes: 'caravans',
+    camions: 'trucks',
+    'machines-agricoles': 'agriculture',
+    'engins-chantier': 'construction',
+    'velos-electriques': 'electric-bikes',
+    'leasing-voitures': 'cars',
+    'leasing-utilitaires': 'vans',
+    'leasing-camions': 'trucks',
+    'leasing-machines-agricoles': 'agriculture',
+    'leasing-engins-chantier': 'construction',
+  },
+  it: {
+    auto: 'cars',
+    furgoni: 'vans',
+    moto: 'motorcycles',
+    camper: 'motorhomes',
+    caravan: 'caravans',
+    autocarri: 'trucks',
+    'macchine-agricole': 'agriculture',
+    'macchine-edili': 'construction',
+    'bici-elettriche': 'electric-bikes',
+    'leasing-auto': 'cars',
+    'leasing-furgoni': 'vans',
+    'leasing-autocarri': 'trucks',
+    'leasing-macchine-agricole': 'agriculture',
+    'leasing-macchine-edili': 'construction',
+  },
+  es: {
+    coches: 'cars',
+    furgonetas: 'vans',
+    motos: 'motorcycles',
+    autocaravanas: 'motorhomes',
+    caravanas: 'caravans',
+    camiones: 'trucks',
+    'maquinaria-agricola': 'agriculture',
+    'maquinaria-construccion': 'construction',
+    'bicicletas-electricas': 'electric-bikes',
+    'leasing-coches': 'cars',
+    'leasing-furgonetas': 'vans',
+    'leasing-camiones': 'trucks',
+    'leasing-maquinaria-agricola': 'agriculture',
+    'leasing-maquinaria-construccion': 'construction',
+  },
+  nl: {
+    autos: 'cars',
+    bestelwagens: 'vans',
+    motoren: 'motorcycles',
+    campers: 'motorhomes',
+    caravans: 'caravans',
+    vrachtwagens: 'trucks',
+    landbouwmachines: 'agriculture',
+    bouwmachines: 'construction',
+    'elektrische-fietsen': 'electric-bikes',
+    leaseautos: 'cars',
+    leasebestelwagens: 'vans',
+    leasevrachtwagens: 'trucks',
+    leaselandbouwmachines: 'agriculture',
+    leasebouwmachines: 'construction',
+  },
+  be: {
+    autos: 'cars',
+    bestelwagens: 'vans',
+    motoren: 'motorcycles',
+    campers: 'motorhomes',
+    caravans: 'caravans',
+    vrachtwagens: 'trucks',
+    landbouwmachines: 'agriculture',
+    bouwmachines: 'construction',
+    'elektrische-fietsen': 'electric-bikes',
+    leaseautos: 'cars',
+    leasebestelwagens: 'vans',
+    leasevrachtwagens: 'trucks',
+    leaselandbouwmachines: 'agriculture',
+    leasebouwmachines: 'construction',
+  },
+  pl: {
+    samochody: 'cars',
+    dostawcze: 'vans',
+    motocykle: 'motorcycles',
+    kampery: 'motorhomes',
+    przyczepy: 'caravans',
+    ciezarowki: 'trucks',
+    'maszyny-rolnicze': 'agriculture',
+    'maszyny-budowlane': 'construction',
+    'rowery-elektryczne': 'electric-bikes',
+    'leasing-samochody': 'cars',
+    'leasing-dostawcze': 'vans',
+    'leasing-ciezarowki': 'trucks',
+    'leasing-maszyny-rolnicze': 'agriculture',
+    'leasing-maszyny-budowlane': 'construction',
+  },
+  dk: {
+    biler: 'cars',
+    varevogne: 'vans',
+    motorcykler: 'motorcycles',
+    autocampere: 'motorhomes',
+    campingvogne: 'caravans',
+    lastbiler: 'trucks',
+    landbrugsmaskiner: 'agriculture',
+    entreprenormaskiner: 'construction',
+    elcykler: 'electric-bikes',
+    leasingbiler: 'cars',
+    leasingvarevogne: 'vans',
+    leasinglastbiler: 'trucks',
+    leasinglandbrugsmaskiner: 'agriculture',
+    leasingentreprenormaskiner: 'construction',
+  },
+  fi: {
+    autot: 'cars',
+    pakettiautot: 'vans',
+    moottoripyorat: 'motorcycles',
+    matkailuautot: 'motorhomes',
+    asuntovaunut: 'caravans',
+    'kuorma-autot': 'trucks',
+    maatalouskoneet: 'agriculture',
+    maanrakennuskoneet: 'construction',
+    sahkopyorat: 'electric-bikes',
+    leasingautot: 'cars',
+    leasingpakettiautot: 'vans',
+    'leasing-kuorma-autot': 'trucks',
+    leasingmaatalouskoneet: 'agriculture',
+    leasingmaanrakennuskoneet: 'construction',
+  },
+}
+
+const MARKET_COUNTRY_CODES: Record<string, string> = {
+  sv: 'SE',
+  se: 'SE',
+  de: 'DE',
+  at: 'AT',
+  fr: 'FR',
+  es: 'ES',
+  it: 'IT',
+  pl: 'PL',
+  nl: 'NL',
+  fi: 'FI',
+  dk: 'DK',
+  be: 'BE',
+}
+
 const LOCALIZED_CORE_ROUTES = {
   sv: new Map([
     ['/hitta-bilar', '/find-cars'],
@@ -216,6 +445,7 @@ const RETIRED_BUSINESS_MODEL_ROUTES = new Map([
   ['/villkor', '/terms'],
   ['/integritet', '/privacy'],
   ['/aterbetalningspolicy', '/refund-policy'],
+  ['/angra-kop', '/withdrawal'],
   ['/dealer-apply', '/register'],
   ['/bli-bilhandlare', '/register'],
   ['/haendlerzugang', '/register'],
@@ -324,6 +554,20 @@ function redirectToHost(
   return NextResponse.redirect(url, status)
 }
 
+function countryDomainMarketPrefix(hostname: string) {
+  if (hostname === MARKET_HOSTS.sv) return 'se'
+  if (hostname === MARKET_HOSTS.de) return 'de'
+  return null
+}
+
+function stripCountryDomainMarketPrefix(pathname: string, marketPrefix: string) {
+  if (pathname === `/${marketPrefix}`) return '/'
+  if (pathname.startsWith(`/${marketPrefix}/`)) {
+    return pathname.slice(marketPrefix.length + 1) || '/'
+  }
+  return pathname
+}
+
 function isMarketSelection(value: string | null): value is string {
   return Boolean(
     value &&
@@ -338,12 +582,22 @@ function redirectToMarket(request: NextRequest, market: string) {
   const hostname = getHostname(request)
   const isLocalizedMarket =
     market === 'sv' || market === 'de' || EU_BUYER_MARKET_CODES.has(market)
-  const targetHostname = MARKET_HOSTS.en
+  const targetHostname =
+    market === 'sv'
+      ? MARKET_HOSTS.sv
+      : market === 'de'
+        ? MARKET_HOSTS.de
+        : MARKET_HOSTS.en
   const url = request.nextUrl.clone()
   url.protocol = 'https:'
   url.hostname = targetHostname
   url.port = ''
-  url.pathname = isLocalizedMarket ? `/${market === 'sv' ? 'se' : market}` : '/'
+  url.pathname =
+    market === 'sv' || market === 'de'
+      ? '/'
+      : isLocalizedMarket
+        ? `/${market}`
+        : '/'
 
   if (hostname !== targetHostname) {
     url.searchParams.set('market', market)
@@ -443,12 +697,158 @@ function withMarketCookie(response: NextResponse, market: string) {
   return response
 }
 
+function pathPrefixForMarket(market: string) {
+  if (market === 'sv') return 'se'
+  if (market === 'en') return ''
+  return market
+}
+
+function categoryFromMarketSegment(pathMarket: string, segment: string | undefined) {
+  if (!segment) return null
+  return MARKET_CATEGORY_SEGMENTS[pathMarket]?.[segment] || null
+}
+
+function isLeasingMarketSegment(segment: string | undefined) {
+  if (!segment) return false
+  return segment.includes('leasing') || segment.startsWith('lease')
+}
+
+function isSearchEngineReferral(request: NextRequest) {
+  const referrer = request.headers.get('referer') || request.headers.get('referrer')
+  if (!referrer) return false
+
+  try {
+    const hostname = new URL(referrer).hostname.toLowerCase()
+    return (
+      /(^|\.)google\./.test(hostname) ||
+      hostname === 'bing.com' ||
+      hostname.endsWith('.bing.com') ||
+      hostname === 'duckduckgo.com' ||
+      hostname.endsWith('.duckduckgo.com') ||
+      hostname === 'search.yahoo.com' ||
+      hostname.endsWith('.search.yahoo.com') ||
+      hostname === 'ecosia.org' ||
+      hostname.endsWith('.ecosia.org')
+    )
+  } catch {
+    return false
+  }
+}
+
+function marketSegmentForCategory(
+  targetPathMarket: string,
+  category: string,
+  leasing: boolean,
+) {
+  const entries = Object.entries(MARKET_CATEGORY_SEGMENTS[targetPathMarket] || {})
+  const preferred = entries.find(([segment, value]) => {
+    if (value !== category) return false
+    return leasing
+      ? isLeasingMarketSegment(segment)
+      : !isLeasingMarketSegment(segment)
+  })
+  return preferred?.[0] || null
+}
+
+// Kept for marketplace SEO fallback routing; explicit locale paths must not call it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function shouldGeoRedirectLocalizedPath(
+  request: NextRequest,
+  currentMarket: string,
+  selectedMarket: string | null,
+) {
+  if (selectedMarket) return null
+  if (getPreferredMarket(request) && !isSearchEngineReferral(request)) {
+    return null
+  }
+
+  const userAgent = request.headers.get('user-agent') || ''
+  if (SEARCH_CRAWLER_PATTERN.test(userAgent)) return null
+
+  const countryMarket = getCountryMarket(request)
+  if (!countryMarket || countryMarket === currentMarket) return null
+
+  return countryMarket
+}
+
+// Kept for marketplace SEO fallback routing; explicit locale paths must not call it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function buildGeoMarketRedirect(
+  request: NextRequest,
+  pathMarket: string,
+  targetMarket: string,
+  segments: string[],
+) {
+  const url = request.nextUrl.clone()
+  const targetPrefix = pathPrefixForMarket(targetMarket)
+  const targetBase = targetPrefix ? `/${targetPrefix}` : ''
+  const section = segments[1]
+
+  url.searchParams.delete(MARKET_SELECTION_PARAM)
+
+  if (!section) {
+    url.pathname = targetBase || '/'
+    return NextResponse.redirect(url, 307)
+  }
+
+  if (section === 'marketplace') {
+    url.pathname = `${targetBase}/${segments.slice(1).join('/')}` || '/'
+    const countryCode = MARKET_COUNTRY_CODES[targetMarket]
+    if (countryCode && !url.searchParams.has('markets')) {
+      url.searchParams.set('markets', countryCode)
+    }
+    return NextResponse.redirect(url, 307)
+  }
+
+  const seoCategory = categoryFromMarketSegment(pathMarket, section)
+  if (seoCategory) {
+    const leasing = isLeasingMarketSegment(section)
+    const targetSegment = targetPrefix
+      ? marketSegmentForCategory(targetPrefix, seoCategory, leasing)
+      : null
+    if (targetSegment) {
+      url.pathname = `${targetBase}/${targetSegment}`
+      url.search = ''
+      return NextResponse.redirect(url, 307)
+    }
+
+    url.pathname = `${targetBase}/marketplace/${seoCategory}`
+    url.search = ''
+    const countryCode = MARKET_COUNTRY_CODES[targetMarket]
+    if (countryCode) url.searchParams.set('markets', countryCode)
+    if (leasing) {
+      url.searchParams.set('mode', 'leasing')
+      url.searchParams.set('leasingPossible', 'true')
+    }
+    return NextResponse.redirect(url, 307)
+  }
+
+  const localizedInternalPath = internalPathFromLocalizedSegments(segments.slice(1))
+  if (localizedInternalPath && localizedInternalPath !== '/') {
+    url.pathname = `${targetBase}${localizedInternalPath}`
+    return NextResponse.redirect(url, 307)
+  }
+
+  url.pathname = targetBase || '/'
+  return NextResponse.redirect(url, 307)
+}
+
 export async function proxy(request: NextRequest) {
   const hostname = getHostname(request)
   const methodCanRedirect = request.method === 'GET' || request.method === 'HEAD'
-  const selectedMarket = request.nextUrl.searchParams.get('market')
+  const selectedMarket = request.nextUrl.searchParams.get(MARKET_SELECTION_PARAM)
   const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
+  const botProtectionResponse = protectExpensiveCrawlSurfaces(request, pathname)
+  if (botProtectionResponse) return botProtectionResponse
+
+  if (methodCanRedirect && pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    url.searchParams.set('flow', 'oauth')
+    if (!url.searchParams.has('next')) url.searchParams.set('next', '/account')
+    return NextResponse.redirect(url, 307)
+  }
 
   if (methodCanRedirect) {
     const goneListingResponse = await responseForPermanentlyRemovedListing(request)
@@ -521,14 +921,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (methodCanRedirect && CANONICAL_HOSTS[hostname]) {
-    const marketPath = CANONICAL_MARKET_PATHS[hostname]
-    const shouldUseMarketPath = marketPath && (pathname === '/' || pathname === '')
-    return redirectToHost(
-      request,
-      CANONICAL_HOSTS[hostname],
-      308,
-      shouldUseMarketPath ? marketPath : undefined,
-    )
+    return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
   if (
@@ -554,12 +947,70 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // A market selection is an explicit user action and must win over the
+  // current host, path, geolocation, and previously stored preferences.
+  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
+    return redirectToMarket(request, selectedMarket)
+  }
+
+  const countryDomainPrefix = countryDomainMarketPrefix(hostname)
+  if (methodCanRedirect && countryDomainPrefix) {
+    const requestedPrefix = pathname.split('/').filter(Boolean)[0]
+    if (
+      requestedPrefix === 'se' ||
+      requestedPrefix === 'de' ||
+      EU_BUYER_MARKET_CODES.has(requestedPrefix)
+    ) {
+      const targetHost =
+        requestedPrefix === 'se'
+          ? MARKET_HOSTS.sv
+          : requestedPrefix === 'de'
+            ? MARKET_HOSTS.de
+            : MARKET_HOSTS.en
+      const cleanPathname =
+        requestedPrefix === 'se' || requestedPrefix === 'de'
+          ? stripCountryDomainMarketPrefix(pathname, requestedPrefix)
+          : pathname
+      return redirectToHost(request, targetHost, 308, cleanPathname)
+    }
+  }
+
+  const routingPathname = countryDomainPrefix
+    ? `/${countryDomainPrefix}${pathname === '/' ? '' : pathname}`
+    : pathname
+  const publicPathSegments = routingPathname.split('/').filter(Boolean)
+  const publicPathMarket = publicPathSegments[0]
+  const publicLocaleContext = publicPathMarket
+    ? getLocaleFromPathMarket(publicPathMarket)
+    : null
+  const expectedPublicHost =
+    publicPathMarket === 'se'
+      ? MARKET_HOSTS.sv
+      : publicPathMarket === 'de'
+        ? MARKET_HOSTS.de
+        : publicLocaleContext
+          ? MARKET_HOSTS.en
+          : null
+
   if (
-    hostname === MARKET_HOSTS.en ||
+    methodCanRedirect &&
+    expectedPublicHost &&
+    hostname !== expectedPublicHost &&
+    Object.prototype.hasOwnProperty.call(MARKET_BY_HOST, hostname)
+  ) {
+    const targetPathname =
+      publicPathMarket === 'se' || publicPathMarket === 'de'
+        ? stripCountryDomainMarketPrefix(pathname, publicPathMarket)
+        : pathname
+    return redirectToHost(request, expectedPublicHost, 308, targetPathname)
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(MARKET_BY_HOST, hostname) ||
     hostname === 'localhost' ||
     hostname === '127.0.0.1'
   ) {
-    const segments = pathname.split('/').filter(Boolean)
+    const segments = routingPathname.split('/').filter(Boolean)
     const pathMarket = segments[0]
     const localeContext = pathMarket
       ? getLocaleFromPathMarket(pathMarket)
@@ -571,7 +1022,9 @@ export async function proxy(request: NextRequest) {
         : null
       if (methodCanRedirect && retiredLocalizedCategoryTarget) {
         const url = request.nextUrl.clone()
-        url.pathname = `/${pathMarket}${retiredLocalizedCategoryTarget}`
+        url.pathname = countryDomainPrefix
+          ? retiredLocalizedCategoryTarget
+          : `/${pathMarket}${retiredLocalizedCategoryTarget}`
         url.search = ''
         return NextResponse.redirect(url, 308)
       }
@@ -581,10 +1034,13 @@ export async function proxy(request: NextRequest) {
         : null
       if (methodCanRedirect && canonicalSlug) {
         const url = request.nextUrl.clone()
-        url.pathname = `/${pathMarket}/${[
+        const localizedPathname = `/${pathMarket}/${[
           canonicalSlug,
           ...segments.slice(2),
         ].join('/')}`
+        url.pathname = countryDomainPrefix
+          ? stripCountryDomainMarketPrefix(localizedPathname, pathMarket)
+          : localizedPathname
         return NextResponse.redirect(url, 308)
       }
 
@@ -596,10 +1052,14 @@ export async function proxy(request: NextRequest) {
       // These pages own market-prefixed App Router routes because their
       // metadata, content, and canonical URLs are market-specific. Do not strip
       // the market segment through the legacy localized-page rewrite below.
-      if (segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car') {
+      if (segments[1] === 'app' || segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car' || LOCALIZED_AD_SEGMENTS.has(segments[1] || '')) {
+        const localizedUrl = request.nextUrl.clone()
+        localizedUrl.pathname = routingPathname
         return withMarketCookie(
           withLanguageCookie(
-            NextResponse.next({ request: { headers: requestHeaders } }),
+            countryDomainPrefix
+              ? NextResponse.rewrite(localizedUrl, { request: { headers: requestHeaders } })
+              : NextResponse.next({ request: { headers: requestHeaders } }),
             localeContext.language,
           ),
           localeContext.market,
@@ -622,9 +1082,13 @@ export async function proxy(request: NextRequest) {
       }
 
       if (segments.length === 1) {
+        const localizedUrl = request.nextUrl.clone()
+        localizedUrl.pathname = routingPathname
         return withMarketCookie(
           withLanguageCookie(
-            NextResponse.next({ request: { headers: requestHeaders } }),
+            countryDomainPrefix
+              ? NextResponse.rewrite(localizedUrl, { request: { headers: requestHeaders } })
+              : NextResponse.next({ request: { headers: requestHeaders } }),
             localeContext.language,
           ),
           localeContext.market,
@@ -633,9 +1097,15 @@ export async function proxy(request: NextRequest) {
 
       if (methodCanRedirect && ['login', 'forgot-password', 'reset-password'].includes(segments[1] || '')) {
         const url = request.nextUrl.clone()
+        const rawNext = url.searchParams.get('next')
+        const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/api/')
+          ? rawNext
+          : ''
         url.pathname = `/${pathMarket}`
+        if (countryDomainPrefix) url.pathname = '/'
         url.search = ''
         url.searchParams.set('auth', segments[1] === 'login' ? 'login' : segments[1])
+        if (next) url.searchParams.set('next', next)
         return withMarketCookie(
           withLanguageCookie(
             NextResponse.redirect(url, 307),
@@ -683,13 +1153,12 @@ export async function proxy(request: NextRequest) {
     return withLanguageCookie(NextResponse.redirect(url, 307), language)
   }
 
-  if (methodCanRedirect && isMarketSelection(selectedMarket)) {
-    return redirectToMarket(request, selectedMarket)
-  }
-
   const currentMarket = MARKET_BY_HOST[hostname]
-  const preferredLanguage = request.cookies.get('autorell-language')?.value
-  const preferredMarket = getPreferredMarket(request)
+  const searchEngineReferral = isSearchEngineReferral(request)
+  const preferredLanguage = searchEngineReferral
+    ? null
+    : request.cookies.get('autorell-language')?.value
+  const preferredMarket = searchEngineReferral ? null : getPreferredMarket(request)
   const isSearchCrawler = SEARCH_CRAWLER_PATTERN.test(
     request.headers.get('user-agent') || '',
   )
@@ -740,9 +1209,9 @@ export async function proxy(request: NextRequest) {
       if (targetMarket === 'sv') {
         const url = request.nextUrl.clone()
         url.protocol = 'https:'
-        url.hostname = MARKET_HOSTS.en
+        url.hostname = MARKET_HOSTS.sv
         url.port = ''
-        url.pathname = '/se'
+        url.pathname = '/'
         return withMarketCookie(
           withLanguageCookie(NextResponse.redirect(url, 307), 'sv'),
           'sv',
@@ -751,9 +1220,9 @@ export async function proxy(request: NextRequest) {
       if (targetMarket === 'de') {
         const url = request.nextUrl.clone()
         url.protocol = 'https:'
-        url.hostname = MARKET_HOSTS.en
+        url.hostname = MARKET_HOSTS.de
         url.port = ''
-        url.pathname = '/de'
+        url.pathname = '/'
         return withMarketCookie(
           withLanguageCookie(NextResponse.redirect(url, 307), 'de'),
           'de',
@@ -1083,8 +1552,108 @@ function goneListingHtml() {
   ].join('')
 }
 
+function protectExpensiveCrawlSurfaces(request: NextRequest, pathname: string) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null
+  if (!isBotProtectedPath(pathname)) return null
+
+  const userAgent = request.headers.get('user-agent') || ''
+  if (SEARCH_CRAWLER_PATTERN.test(userAgent)) return null
+
+  const suspiciousBot = SUSPICIOUS_BOT_PATTERN.test(userAgent)
+  const genericBot = GENERIC_BOT_PATTERN.test(userAgent)
+  if (!userAgent || suspiciousBot) return botBlockedResponse()
+
+  const limit = pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')
+    ? proxySitemapRateLimit
+    : genericBot
+      ? proxyBotRateLimit
+      : proxyVisitorRateLimit
+  const result = proxyRateLimit(
+    `${clientIp(request)}:${botProtectedBucketKey(pathname)}:${genericBot ? 'bot' : 'visitor'}`,
+    limit,
+  )
+
+  return result.allowed ? null : botRateLimitedResponse(result.retryAfter)
+}
+
+function isBotProtectedPath(pathname: string) {
+  if (pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')) return true
+  if (pathname === '/api/marketplace/search-v2') return true
+
+  const segments = pathname.split('/').filter(Boolean)
+  if (!segments[0]) return false
+  if (segments[1] === 'marketplace') return true
+  return segments.length >= 3 && isSeoVehiclePath(segments[0], segments.slice(1))
+}
+
+function botProtectedBucketKey(pathname: string) {
+  if (pathname === '/api/marketplace/search-v2') return 'api-marketplace-search'
+  if (pathname === '/sitemap.xml' || pathname.startsWith('/sitemaps/')) return 'sitemaps'
+  const segments = pathname.split('/').filter(Boolean)
+  return `${segments[0] || 'root'}:${segments[1] || 'home'}`
+}
+
+function clientIp(request: NextRequest) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  )
+}
+
+function proxyRateLimit(key: string, limit: number) {
+  const now = Date.now()
+  const current = proxyRateBuckets.get(key)
+  if (!current || current.resetAt <= now) {
+    pruneProxyRateBuckets(now)
+    proxyRateBuckets.set(key, { count: 1, resetAt: now + proxyRateWindowMs })
+    return { allowed: true, retryAfter: 0 }
+  }
+
+  current.count += 1
+  if (current.count <= limit) return { allowed: true, retryAfter: 0 }
+  return {
+    allowed: false,
+    retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
+  }
+}
+
+function pruneProxyRateBuckets(now: number) {
+  if (proxyRateBuckets.size < proxyMaxRateBuckets) return
+  for (const [key, bucket] of proxyRateBuckets) {
+    if (bucket.resetAt <= now || proxyRateBuckets.size >= proxyMaxRateBuckets) {
+      proxyRateBuckets.delete(key)
+    }
+    if (proxyRateBuckets.size < proxyMaxRateBuckets) return
+  }
+}
+
+function botBlockedResponse() {
+  return new Response('Forbidden', {
+    status: 403,
+    headers: {
+      'Cache-Control': 'no-store',
+      'X-Autorell-Bot-Protection': 'blocked',
+    },
+  })
+}
+
+function botRateLimitedResponse(retryAfter: number) {
+  return new Response('Too Many Requests', {
+    status: 429,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Retry-After': String(retryAfter),
+      'X-Autorell-Bot-Protection': 'rate-limited',
+    },
+  })
+}
+
 export const config = {
   matcher: [
+    '/api/marketplace/search-v2',
+    '/sitemap.xml',
+    '/sitemaps/:path*',
     '/((?!api|_next/static|_next/image|favicon.ico|favicon-.*\\.png|icon.*\\.png|apple-icon.png|manifest.webmanifest|.*\\..*).*)',
   ],
 }

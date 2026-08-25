@@ -2,18 +2,23 @@
 
 import { FormEvent, useState } from 'react'
 import { Send } from 'lucide-react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 type TeamInviteFormProps = {
   copy: {
     emailPlaceholder: string
     role: string
+    roleLabels: Record<string, string>
     sendInvite: string
     sending: string
     sent: string
+    invitationError?: string
   }
+  locale: PublicLocale
 }
 
-export default function TeamInviteForm({ copy }: TeamInviteFormProps) {
+export default function TeamInviteForm({ copy, locale }: TeamInviteFormProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('sales')
   const [loading, setLoading] = useState(false)
@@ -33,14 +38,14 @@ export default function TeamInviteForm({ copy }: TeamInviteFormProps) {
       })
       const result = (await response.json()) as { error?: string }
       if (!response.ok) {
-        setError(result.error || 'Invitation could not be sent.')
+        setError(localizedAccountError(locale, result, copy.invitationError || 'Invitation could not be sent.'))
         return
       }
       setEmail('')
       setRole('sales')
       setMessage(copy.sent)
     } catch {
-      setError('Invitation could not be sent.')
+      setError(copy.invitationError || 'Invitation could not be sent.')
     } finally {
       setLoading(false)
     }
@@ -62,11 +67,12 @@ export default function TeamInviteForm({ copy }: TeamInviteFormProps) {
         aria-label={copy.role}
         className="min-h-11 rounded-[10px] border border-[#d7e1ee] bg-white px-3 text-sm font-semibold text-[#344054] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       >
-        <option value="admin">Admin</option>
-        <option value="manager">Manager</option>
-        <option value="sales">Sales</option>
-        <option value="staff">Staff</option>
-        <option value="viewer">Viewer</option>
+        <option value="admin">{copy.roleLabels.admin}</option>
+        <option value="manager">{copy.roleLabels.manager}</option>
+        <option value="finance">{copy.roleLabels.finance}</option>
+        <option value="sales">{copy.roleLabels.sales}</option>
+        <option value="staff">{copy.roleLabels.staff}</option>
+        <option value="viewer">{copy.roleLabels.viewer}</option>
       </select>
       <button
         disabled={loading}

@@ -1,4 +1,5 @@
 import { translationLocale, type PublicLocale } from './public-i18n'
+import { getBusinessIdentityCopy } from './business-identity-i18n'
 
 export type AccountCopy = {
   account: string
@@ -83,5 +84,11 @@ const translations: Record<string, Partial<AccountCopy>> = {
 }
 
 export function getAccountCopy(locale: PublicLocale): AccountCopy {
-  return { ...en, ...(translations[translationLocale(locale)] || {}) }
+  const businessIdentity = getBusinessIdentityCopy(locale)
+  return {
+    ...en,
+    ...(translations[translationLocale(locale)] || {}),
+    company: businessIdentity.companyName,
+    registrationNumber: businessIdentity.registrationNumber,
+  }
 }

@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { isAllowedAdminEmail } from '@/lib/admin-allowlist'
@@ -31,7 +30,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,status,seller_user_id,seller_type,phone_visibility,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history,images')
+    .select('id,title,category,price,currency,city,country_code,country,address,latitude,longitude,description,equipment,structured_data,status,seller_user_id,seller_type,phone_visibility,make,model,variant,model_year,mileage_km,operating_hours,body_type,fuel_type,gearbox,condition,known_faults,service_history,images')
     .eq('id', id)
     .maybeSingle()
 
@@ -52,7 +51,9 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   const category = normalizeMarketplaceCategory(listing.category)
   const metadata = isRecord(identifiers?.metadata) ? identifiers.metadata : {}
   const technicalMetadata = isRecord(metadata.technical_data) ? metadata.technical_data : {}
+  const listingStructuredData = isRecord(listing.structured_data) ? listing.structured_data : {}
   const technicalData = {
+    ...listingStructuredData,
     ...technicalMetadata,
     bodyType: listing.body_type || technicalMetadata.bodyType,
     fuelType: listing.fuel_type || technicalMetadata.fuelType,
@@ -76,13 +77,14 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   return (
     <main className="mx-auto max-w-[980px] px-5 py-8 sm:px-8 lg:py-12">
-      <Link
-        href={localizePublicHref(locale, '/account/listings')}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {copy.back}
-      </Link>
+      <AccountBreadcrumbs
+        locale={locale}
+        items={[
+          { key: 'account', href: '/account' },
+          { key: 'listings', href: '/account/listings' },
+          { key: 'editListing' },
+        ]}
+      />
       <section className="mt-6 overflow-hidden rounded-[26px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="border-b border-[#edf1f6] bg-[#f7faff] p-6 sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#0866ff]">
@@ -96,10 +98,15 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           </p>
         </div>
         <EditListingForm
+          locale={locale}
           listing={{
             id: listing.id,
             category,
             title: listing.title,
+            make: listing.make || '',
+            model: listing.model || '',
+            variant: listing.variant || '',
+            modelYear: listing.model_year ? Number(listing.model_year) : null,
             price: Number(listing.price),
             currency: listing.currency,
             city: listing.city,
@@ -107,8 +114,8 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             address: listing.address || '',
             latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
             longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
-            description: listing.description || '',
-            equipmentKeys: parseEquipmentText(listing.equipment),
+            description: editableDescription(listing.description),
+            equipmentKeys: extractEquipmentKeys(listingStructuredData, technicalMetadata, listing.equipment),
             sellerType: listing.seller_type,
             phoneVisibility: listing.phone_visibility || 'public',
             mileage: listing.mileage_km ? Number(listing.mileage_km) : null,
@@ -124,9 +131,43 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   )
 }
 
-function parseEquipmentText(value: string | null) {
-  if (!value) return []
+function extractEquipmentKeys(
+  structuredData: Record<string, unknown>,
+  technicalMetadata: Record<string, unknown>,
+  equipmentText: string | null,
+) {
+  const values = [
+    structuredData.equipment_keys,
+    technicalMetadata.equipment_keys,
+  ]
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      return value.map(String).filter(Boolean)
+    }
+  }
+  if (!equipmentText) return []
   return []
+}
+
+const savedPlaceholderPatterns = [
+  /^Strukturerad Autorell-annons:/i,
+  /^Skriv bara egen fritext/i,
+  /^Write only your own free text/i,
+  /^Schreiben Sie hier nur Ihren eigenen Freitext/i,
+  /^Rédigez uniquement votre texte libre/i,
+  /^Escribe aquí solo tu texto libre/i,
+  /^Scrivi qui solo il tuo testo libero/i,
+  /^Schrijf hier alleen uw eigen vrije tekst/i,
+  /^Wpisz tutaj tylko własny tekst/i,
+  /^Kirjoita tähän vain oma vapaatekstisi/i,
+  /^Skriv kun din egen fritekst/i,
+]
+
+function editableDescription(value: string | null) {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  if (savedPlaceholderPatterns.some((pattern) => pattern.test(text))) return ''
+  return value || ''
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { FilePlus2, ShieldCheck } from 'lucide-react'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestLocale } from '@/lib/request-locale'
@@ -8,9 +9,15 @@ import { euCountryCodes } from '@/lib/eu-countries'
 import { countryForLocale, currencyForLocale } from '@/lib/market-locale'
 import { currencyForCountry } from '@/lib/marketplace'
 import NewListingForm from './NewListingForm'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { generateAccountMetadata } from '@/lib/account-seo'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
+import { ACCOUNT_INTENT_COOKIE } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+  isMarketplaceProfileComplete,
+} from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('new-listing')
 
@@ -38,19 +45,44 @@ export async function renderNewListingPage({
   } = await supabase.auth.getUser()
   if (!user) redirect(localizePublicHref(locale, '/'))
 
+  const { category = 'cars' } = await searchParams
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('marketplace_profiles')
-    .select('account_type,country_code')
+    .select('account_type,country_code,company_id,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number')
     .eq('user_id', user.id)
     .single()
-  if (!profile) redirect(localizePublicHref(locale, '/register'))
+  if (!profile) {
+    const cookieStore = await cookies()
+    const accountIntent = accountIntentFromCookieAndUser(
+      cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+      user,
+    )
+    const listingParams = new URLSearchParams({ category })
+    const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
+    if (accountIntent.accountType === 'business') {
+      const registrationParams = new URLSearchParams({ account: 'business', next })
+      redirect(localizePublicHref(locale, `/register?${registrationParams.toString()}`))
+    }
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    const profileParams = new URLSearchParams({ reason: 'listing', next })
+    redirect(localizePublicHref(locale, `/account/profile?${profileParams.toString()}`))
+  }
+  if (!isMarketplaceProfileComplete(profile)) {
+    const listingParams = new URLSearchParams({ category })
+    const next = localizePublicHref(locale, `/account/listings/new?${listingParams.toString()}`)
+    const profilePath = profile.account_type === 'business'
+      ? '/account/company/profile'
+      : '/account/profile'
+    const profileParams = new URLSearchParams({ reason: 'listing', next })
+    redirect(localizePublicHref(locale, `${profilePath}?${profileParams.toString()}`))
+  }
   if (profile.account_type === 'business') {
     const entitlement = await requireBusinessListingEntitlement(user.id)
     if (!entitlement.allowed) redirect('/account/business/subscription')
   }
 
-  const { category = 'cars' } = await searchParams
   const requestHeaders = await headers()
   const marketCode = (marketCodeOverride || requestHeaders.get('x-autorell-market') || '').toUpperCase()
   const localeCountry = countryForLocale(locale)
@@ -73,11 +105,19 @@ export async function renderNewListingPage({
       ? currencyForCountry(listingCountryCode)
       : currencyForLocale(locale)
   const copy = getNewListingPageCopy(locale)
+  const companyLocations = profile.account_type === 'business'
+    ? await loadCompanyLocations(admin, profile.company_id)
+    : []
 
   return (
     <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
       <div className="mx-auto max-w-[1360px]">
-      <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
+        <AccountBreadcrumbs
+          locale={locale}
+          items={[{ key: 'account', href: '/account' }, { key: 'createListing' }]}
+          className="mb-5"
+        />
+        <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="grid gap-0 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="border-b border-[#dfe6f1] bg-[#f4f8ff] p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-white text-[#0866ff] shadow-sm">
@@ -105,13 +145,45 @@ export async function renderNewListingPage({
               defaultCurrency={listingCurrency}
               defaultCategory={category}
               locale={locale}
+              companyLocations={companyLocations}
             />
           </div>
         </div>
-      </section>
+        </section>
       </div>
     </main>
   )
+}
+
+async function loadCompanyLocations(admin: ReturnType<typeof createAdminClient>, companyId: string | null) {
+  if (!companyId) return []
+  try {
+    const { data, error } = await admin
+      .from('marketplace_company_locations')
+      .select('id,name,location_type,country_code,region,municipality,city,postal_code,address_line_1,contact_email,contact_phone,is_primary')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .order('is_primary', { ascending: false })
+      .order('name', { ascending: true })
+      .limit(250)
+    if (error || !data) return []
+    return data.map((item) => ({
+      id: String(item.id),
+      name: String(item.name || ''),
+      locationType: String(item.location_type || 'branch'),
+      countryCode: String(item.country_code || ''),
+      region: String(item.region || ''),
+      municipality: String(item.municipality || ''),
+      city: String(item.city || ''),
+      postalCode: String(item.postal_code || ''),
+      addressLine1: String(item.address_line_1 || ''),
+      contactEmail: String(item.contact_email || ''),
+      contactPhone: String(item.contact_phone || ''),
+      isPrimary: Boolean(item.is_primary),
+    }))
+  } catch {
+    return []
+  }
 }
 
 function getNewListingPageCopy(locale: PublicLocale) {

@@ -60,6 +60,8 @@ export default function CategoryHeroSearch({
     if (make.trim()) params.set('make', make.trim())
     if (model.trim()) params.set('model', model.trim())
     if (country) params.set('country', country)
+    params.set('mode', 'sale')
+    params.set('offerType', 'sale')
     router.push(localizePublicHref(locale, `/marketplace/${slug}${params.size ? `?${params}` : ''}`))
   }
 

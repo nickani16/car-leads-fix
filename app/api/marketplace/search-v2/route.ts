@@ -23,7 +23,7 @@ const marketplaceSearchCache =
   globalThis.__autorellMarketplaceSearchCache ||
   (globalThis.__autorellMarketplaceSearchCache = new Map<string, SearchCacheEntry>())
 
-const SEARCH_CACHE_TTL_MS = 60_000
+const SEARCH_CACHE_TTL_MS = 5_000
 const SEARCH_CACHE_MAX_ENTRIES = 1_000
 
 export async function GET(request: NextRequest) {
@@ -43,6 +43,10 @@ export async function GET(request: NextRequest) {
   if (countries.length > 1) input.countries = countries
   if (categories.length > 1) input.categories = categories
   input.limit = String(Math.min(Math.max(Number(input.limit || 48), 1), 48))
+  if (input.minPrice || input.maxPrice) {
+    input.minPrice = ''
+    input.maxPrice = ''
+  }
 
   try {
     const cacheKey = marketplaceSearchCacheKey(request)
@@ -51,7 +55,7 @@ export async function GET(request: NextRequest) {
       return new Response(cached.body, {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+          'Cache-Control': 'no-store',
           'X-Autorell-Search-Cache': 'hit',
         },
       })
@@ -67,10 +71,14 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get('displayMarket'),
     )
     const items = await Promise.all(
-      result.items.map(async (item) => ({
-        ...item,
-        price_label: await formatSearchResultPriceLabel(item, locale, displayCurrency),
-      })),
+      result.items.map(async (item) => {
+        const price = await formatSearchResultPrice(item, locale, displayCurrency)
+        return {
+          ...item,
+          price_label: price?.label || null,
+          display_price_value: price?.displayAmount ?? null,
+        }
+      }),
     )
     const body = JSON.stringify({
       ...result,
@@ -91,11 +99,21 @@ export async function GET(request: NextRequest) {
     return new Response(body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900',
+        'Cache-Control': 'no-store',
         'X-Autorell-Search-Cache': 'miss',
       },
     })
   } catch (error) {
+    if (input.geoFilterMode === 'strict' && input.geoAreaId) {
+      const body = JSON.stringify(emptyStrictGeoSearchResult(Number(input.limit) || 48))
+      return new Response(body, {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'X-Autorell-Search-Cache': 'geo-empty-fallback',
+        },
+      })
+    }
     console.error(JSON.stringify({
       level: 'error',
       route: '/api/marketplace/search-v2',
@@ -138,21 +156,19 @@ function normalizeLocale(value: string | null): PublicLocale {
   return 'en'
 }
 
-async function formatSearchResultPriceLabel(
+async function formatSearchResultPrice(
   item: Record<string, unknown>,
   locale: PublicLocale,
   displayCurrency: string,
 ) {
   const amount = Number(item.price)
   if (!Number.isFinite(amount) || amount <= 0) return null
-  return (
-    await formatMarketplacePriceDisplay({
-      amount,
-      currency: String(item.currency || 'EUR'),
-      locale,
-      targetCurrency: displayCurrency,
-    })
-  ).label
+  return formatMarketplacePriceDisplay({
+    amount,
+    currency: String(item.currency || 'EUR'),
+    locale,
+    targetCurrency: displayCurrency,
+  })
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
@@ -162,4 +178,28 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
       setTimeout(() => reject(new Error(message)), timeoutMs)
     }),
   ])
+}
+
+function emptyStrictGeoSearchResult(limit: number) {
+  return {
+    items: [],
+    facets: {
+      makes: [],
+      models: [],
+      regions: [],
+      municipalities: [],
+      fuels: [],
+      gearboxes: [],
+      bodyTypes: [],
+      technical: {},
+    },
+    nextCursor: null,
+    totalEstimate: 0,
+    totalCount: 0,
+    page: 1,
+    pageSize: limit,
+    totalPages: 1,
+    limit,
+    hasNext: false,
+  }
 }

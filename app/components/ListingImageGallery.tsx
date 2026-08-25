@@ -48,8 +48,11 @@ export default function ListingImageGallery({
   const suppressNextClick = useRef(false)
   const activeImage = safeImages[active]
   const imageCount = safeImages.length
+  const displayImageCount = Math.max(
+    imageCount,
+    fullscreenImages?.filter(Boolean).length || 0,
+  )
   const fullscreenCopy = galleryCopy(locale)
-  const imageCountText = imageCountLabel(locale, imageCount)
 
   const showPrevious = useCallback(() => {
     if (!imageCount) return
@@ -137,7 +140,7 @@ export default function ListingImageGallery({
 
   return (
     <section className="-mx-4 block min-[430px]:-mx-5 sm:mx-0">
-      <div className="group relative aspect-[16/9] overflow-hidden shadow-sm sm:rounded-[12px]">
+      <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] sm:rounded-[12px]">
         {activeImage ? (
           <button
             type="button"
@@ -180,7 +183,7 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={openFullscreen}
-            className="autorell-listing-gallery-control absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
+            className="autorell-listing-gallery-control absolute right-3 top-3 z-10 hidden h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-[#101828]/50 sm:right-4 sm:top-4 sm:grid sm:h-9 sm:w-9 sm:rounded-full sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)] sm:hover:bg-white/94"
             aria-label="Open fullscreen gallery"
           >
             <Maximize2 className="h-[14px] w-[14px] sm:h-4 sm:w-4" strokeWidth={1.8} />
@@ -191,14 +194,39 @@ export default function ListingImageGallery({
           <button
             type="button"
             onClick={goBack}
-            className="absolute left-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] bg-[#101828]/42 text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
+            className="absolute left-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/92 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition active:scale-[.98] sm:hidden"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-[17px] w-[17px]" strokeWidth={2.05} />
+            <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={1.9} />
           </button>
         ) : null}
 
-        {safeImages.length > 1 ? (
+        {activeImage ? (
+          <div className="absolute right-4 top-4 z-10 flex items-center gap-2 sm:hidden">
+            {shareUrl ? (
+              <ShareListingButton
+                title={title}
+                url={shareUrl}
+                label={shareLabel}
+                copiedLabel={shareCopiedLabel}
+                variant="button"
+                className="!h-10 !min-h-10 !w-10 !rounded-full !border-0 !bg-white/92 !px-0 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white"
+                labelClassName="sr-only"
+                iconClassName="h-[18px] w-[18px]"
+              />
+            ) : null}
+            <SavedListingButton
+              listingId={listingId}
+              label={fullscreenCopy.save}
+              savedLabel={fullscreenCopy.saved}
+              variant="icon"
+              className="!h-10 !w-10 !rounded-full !bg-white/92 !text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur hover:!bg-white hover:!text-[#0866ff]"
+              iconClassName="h-[18px] w-[18px]"
+            />
+          </div>
+        ) : null}
+
+        {displayImageCount > 1 ? (
           <>
             <button
               type="button"
@@ -220,47 +248,34 @@ export default function ListingImageGallery({
               type="button"
               onClick={openFullscreen}
               style={{ fontWeight: 400 }}
-              className="absolute bottom-3 right-3 inline-flex min-h-7 items-center rounded-[8px] bg-[#101828]/42 px-2.5 text-[13px] font-normal text-white shadow-[0_2px_10px_rgba(16,24,40,.16)] backdrop-blur sm:bg-white/82 sm:text-[#101828] sm:shadow-[0_2px_10px_rgba(16,24,40,.13)]"
+              className="absolute bottom-3 right-3 z-10 inline-flex min-h-9 items-center rounded-[10px] bg-white/94 px-3 text-[14px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:hidden"
               aria-label="Open photos"
             >
-              {active + 1}/{safeImages.length}
+              {active + 1}/{displayImageCount}
+            </button>
+            <button
+              type="button"
+              onClick={openFullscreen}
+              style={{ fontWeight: 400 }}
+              className="absolute bottom-3 right-3 z-10 hidden min-h-10 items-center rounded-[10px] bg-white/92 px-3.5 text-[15px] font-normal text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:inline-flex"
+              aria-label="Open photos"
+            >
+              {active + 1}/{displayImageCount}
             </button>
           </>
         ) : null}
-      </div>
-      {safeImages.length > 1 ? (
-        <div className="mt-3 flex items-center justify-between gap-3 px-4 min-[430px]:px-5 sm:hidden">
-          <SavedListingButton
-            listingId={listingId}
-            label={fullscreenCopy.save}
-            savedLabel={fullscreenCopy.saved}
-            variant="icon"
-            className="h-[42px] w-[42px] rounded-[10px] border border-[#d0d5dd] shadow-sm text-[#101828] hover:text-[#0866ff]"
-            iconClassName="h-5 w-5"
-          />
-          {shareUrl ? (
-            <ShareListingButton
-              title={title}
-              url={shareUrl}
-              label={shareLabel}
-              copiedLabel={shareCopiedLabel}
-              variant="button"
-              className="!h-[42px] !min-h-[42px] !w-[42px] rounded-[10px] !px-0 shadow-sm"
-              labelClassName="sr-only"
-              iconClassName="h-5 w-5 text-[#101828]"
-            />
-          ) : null}
+
+        {activeImage ? (
           <button
             type="button"
             onClick={openFullscreen}
-            className="autorell-listing-gallery-control ml-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#d0d5dd] bg-white px-3.5 text-[13px] font-semibold text-[#101828] shadow-sm transition hover:border-[#0866ff] hover:text-[#0866ff]"
-            aria-label={imageCountText}
+            className="absolute bottom-3 left-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/94 text-[#101828] shadow-[0_6px_18px_rgba(16,24,40,.16)] backdrop-blur transition hover:bg-white sm:hidden"
+            aria-label="Open fullscreen gallery"
           >
-            {imageCountText}
-            <Maximize2 className="h-[15px] w-[15px]" />
+            <Maximize2 className="h-[17px] w-[17px]" strokeWidth={1.9} />
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       {safeImages.length > 1 ? (
         <div className="mt-2 hidden gap-3 overflow-x-auto pb-1 sm:flex lg:hidden">
@@ -296,7 +311,7 @@ export default function ListingImageGallery({
           <div className="pointer-events-none fixed inset-x-0 top-0 z-[190] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
             <div className="mx-auto flex max-w-[1120px] items-start justify-between gap-3">
               <div
-                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-[9px] bg-white/96 px-4 text-[16px] font-[500] text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur"
+                className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-white/96 px-4 text-[16px] font-[500] text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur"
                 style={{ fontWeight: 500 }}
               >
                 <ImageIcon className="h-[19px] w-[19px]" strokeWidth={2.1} />
@@ -308,13 +323,13 @@ export default function ListingImageGallery({
                   label={fullscreenCopy.save}
                   savedLabel={fullscreenCopy.saved}
                   variant="icon"
-                  className="h-11 w-11 rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] hover:text-[#101828]"
+                  className="h-11 w-11 rounded-full bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] hover:text-[#101828]"
                   iconClassName="h-[23px] w-[23px]"
                 />
                 <button
                   type="button"
                   onClick={() => setFullscreen(false)}
-                  className="grid h-11 w-11 place-items-center rounded-[9px] bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white"
+                  className="grid h-11 w-11 place-items-center rounded-full bg-white/96 text-[#101828] shadow-[0_6px_18px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white"
                   aria-label={fullscreenCopy.close}
                 >
                   <X className="h-6 w-6" strokeWidth={2.2} />

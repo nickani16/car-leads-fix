@@ -2,53 +2,29 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { Check, Info, X } from 'lucide-react'
+import { Check, Info, ShieldCheck, X } from 'lucide-react'
 import {
   currencyForMarket,
   formatMoneyMinor,
   type BillingMarket,
 } from '@/lib/billing/product-catalog'
 import {
-  businessSubscriptionCopy,
-  businessSubscriptionPlans,
+  getBusinessSubscriptionCopy,
+  getBusinessSubscriptionPlans,
   getBusinessPlanProduct,
   localeToIntl,
   type BillingPeriod,
+  type BusinessSubscriptionCopy,
   type BusinessSubscriptionPlan,
 } from '@/lib/business-subscription-plans'
 import {
   localizePublicHref,
-  translatePublicObject,
+  translationLocale,
   type PublicLocale,
 } from '@/lib/public-i18n'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 type BillingMethod = 'card' | 'invoice'
-
-const baseCopy = {
-  eyebrow: 'Business subscription',
-  title: 'Choose a plan for the company',
-  intro:
-    'The current plan is marked with a blue border. Choose monthly or annual billing, and use 30-day invoice when the customer should be invoiced via Stripe.',
-  currentPlan: 'Current plan',
-  noActivePlan: 'No active plan',
-  activeListings: 'active listings',
-  nextBilling: 'Next billing',
-  cancellationScheduled: 'Cancellation scheduled',
-  ...businessSubscriptionCopy,
-  openInvoice: 'Open invoice',
-  activateFree: 'Activate Free',
-  activating: 'Activating...',
-  payCard: 'Pay by card',
-  openingStripe: 'Opening Stripe...',
-  invoice30: 'Invoice 30 days',
-  sendingInvoice: 'Sending invoice...',
-  cancelPlan: 'Cancel plan',
-  freeActivated: 'Free is activated. You can now use your 5 listing slots.',
-  invoiceCreated: 'The invoice has been created and sent to',
-  companyEmail: 'the company email address',
-  paymentTerms: 'Payment terms: 30 days.',
-  paymentError: 'Could not start the payment.',
-}
 
 export default function BusinessPlanChooser({
   locale,
@@ -77,8 +53,9 @@ export default function BusinessPlanChooser({
   cancellationRequestedAt?: string | null
   cancellationEffectiveAt?: string | null
 }) {
-  const copy = useMemo(() => translatePublicObject(locale, baseCopy), [locale])
-  const plans = useMemo(() => translatePublicObject(locale, businessSubscriptionPlans), [locale])
+  const copy = useMemo(() => getBusinessSubscriptionCopy(locale), [locale])
+  const plans = useMemo(() => getBusinessSubscriptionPlans(locale), [locale])
+  const paymentTrust = useMemo(() => businessPaymentTrustCopy(locale), [locale])
   const currentPeriod = currentProductKey?.endsWith('.annual') ? 'annual' : 'monthly'
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>(currentPeriod)
   const [error, setError] = useState('')
@@ -94,36 +71,48 @@ export default function BusinessPlanChooser({
     setError('')
     setSuccess(null)
     const productPeriod = key === 'free' ? 'monthly' : billingPeriod
-    const response = await fetch('/api/account/listing-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        productKey: `subscription.business.${key}.${productPeriod}`,
-        market,
-        locale,
-        billingMethod,
-      }),
-    })
-    const result = await response.json().catch(() => ({}))
-    if (result.activated) {
-      setSuccess({ message: copy.freeActivated })
-      setLoading('')
-      return
-    }
-    if (result.invoice) {
-      setSuccess({
-        message: `${copy.invoiceCreated} ${result.invoiceEmail || copy.companyEmail}. ${copy.paymentTerms}`,
-        invoiceUrl: result.invoiceUrl || null,
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 20_000)
+
+    try {
+      const response = await fetch('/api/account/listing-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productKey: `subscription.business.${key}.${productPeriod}`,
+          market,
+          locale,
+          billingMethod,
+        }),
+        signal: controller.signal,
       })
+      const result = await response.json().catch(() => ({}))
+      if (result.activated) {
+        setSuccess({ message: copy.freeActivated })
+        window.location.assign(localizePublicHref(locale, '/account/company/listings/create'))
+        return
+      }
+      if (result.invoice) {
+        setSuccess({
+          message: `${copy.invoiceCreated} ${result.invoiceEmail || copy.companyEmail}. ${copy.paymentTerms}`,
+          invoiceUrl: result.invoiceUrl || null,
+        })
+        return
+      }
+      if (result.url) {
+        window.location.assign(result.url)
+        return
+      }
+      setError(localizedAccountError(locale, result, copy.paymentError))
+    } catch (requestError) {
+      const fallback = requestError instanceof DOMException && requestError.name === 'AbortError'
+        ? 'The request took too long. Please try again.'
+        : copy.paymentError
+      setError(localizedAccountError(locale, null, fallback))
+    } finally {
+      window.clearTimeout(timeout)
       setLoading('')
-      return
     }
-    if (result.url) {
-      window.location.assign(result.url)
-      return
-    }
-    setError(result.error || copy.paymentError)
-    setLoading('')
   }
 
   return (
@@ -187,7 +176,17 @@ export default function BusinessPlanChooser({
           </div>
         ) : null}
 
-        {error ? <p className="mt-5 rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+        {error ? <p role="alert" className="mt-5 rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+
+        <div className="mt-5 grid gap-3 rounded-[14px] border border-[#cfe0ff] bg-white p-4 text-sm text-[#475467] shadow-[0_18px_46px_rgba(16,24,40,.045)] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <strong className="block text-[#101828]">{paymentTrust.title}</strong>
+            <span className="mt-1 block leading-6">{paymentTrust.text}</span>
+          </div>
+        </div>
 
         <div className="mt-8 grid gap-4 xl:grid-cols-5">
           {plans.map((plan) => (
@@ -237,7 +236,7 @@ function PlanCard({
   onChoose: (key: BusinessSubscriptionPlan['key'], billingMethod?: BillingMethod) => void
   market: BillingMarket
   localeTag: string
-  copy: typeof baseCopy
+  copy: BusinessSubscriptionCopy
 }) {
   const product = getBusinessPlanProduct(plan.key, billingPeriod)
   const price = product?.amountMinor[currencyForMarket(market)] ?? null
@@ -256,8 +255,13 @@ function PlanCard({
             : 'border-[#d9e2ef]'
       }`}
     >
+      {current ? (
+        <div className="absolute left-4 right-4 top-4 z-10 rounded-[10px] border border-[#b8d2ff] bg-[#eef5ff] px-3 py-2 text-center text-[11px] font-black uppercase tracking-[.12em] text-[#0866ff]">
+          {copy.currentPlanBadge}
+        </div>
+      ) : null}
       <div className="flex min-h-[258px] flex-col border-b border-[#edf1f7] p-5">
-        <div className="flex min-h-12 flex-col items-start gap-2">
+        <div className={`flex min-h-12 flex-col items-start gap-2 ${current ? 'pt-12' : ''}`}>
           <p className="min-w-0 text-[11px] font-bold uppercase leading-4 tracking-[.14em] text-[#667085]">{plan.audience}</p>
           {current ? (
             <span className="shrink-0 whitespace-nowrap rounded-full bg-[#0866ff] px-3 py-1 text-[10px] font-black uppercase tracking-[.06em] text-white">
@@ -306,23 +310,23 @@ function PlanCard({
         <p className="text-xs font-black uppercase tracking-[.14em] text-[#101828]">{copy.included}</p>
         <ul className="mt-4 space-y-3">
           {plan.features.map((feature) => (
-            <li key={feature.label} className="flex items-start gap-2 text-sm">
+            <li key={feature.label} className="group flex items-start gap-2 text-sm">
               <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${feature.included ? 'bg-[#eef5ff] text-[#0866ff]' : 'bg-[#f2f4f7] text-[#98a2b3]'}`}>
                 {feature.included ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
               </span>
-              <span className={feature.included ? 'text-[#344054]' : 'text-[#98a2b3]'}>
-                {feature.label}
-                <span className="group relative ml-1 inline-flex align-middle">
+              <span className={`min-w-0 flex-1 ${feature.included ? 'text-[#344054]' : 'text-[#98a2b3]'}`}>
+                <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+                  <span className="min-w-0">{feature.label}</span>
                   <button
                     type="button"
                     aria-label={feature.description}
-                    className="inline-grid h-4 w-4 place-items-center rounded-full text-[#98a2b3] outline-none transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus:bg-[#eef5ff] focus:text-[#0866ff]"
+                    className="inline-grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#98a2b3] outline-none transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus:bg-[#eef5ff] focus:text-[#0866ff]"
                   >
                     <Info className="h-3.5 w-3.5" />
                   </button>
-                  <span className="pointer-events-none fixed bottom-6 left-4 right-4 z-50 hidden rounded-[8px] border border-[#dbe4f0] bg-white p-3 text-left text-xs leading-5 text-[#475467] shadow-[0_18px_44px_rgba(16,24,40,.16)] group-focus-within:block group-hover:block sm:absolute sm:bottom-full sm:left-auto sm:right-0 sm:mb-2 sm:w-64 sm:translate-x-0">
-                    {feature.description}
-                  </span>
+                </span>
+                <span className="pointer-events-none mt-2 hidden w-full rounded-[8px] border border-[#dbe4f0] bg-white p-3 text-left text-xs leading-5 text-[#475467] shadow-[0_14px_30px_rgba(16,24,40,.12)] group-focus-within:block group-hover:block">
+                  {feature.description}
                 </span>
               </span>
             </li>
@@ -359,7 +363,109 @@ function PlanCard({
 }
 
 function planStatusText(status: string | null | undefined, paymentStatus: string | null | undefined, locale: PublicLocale) {
-  const copy = translatePublicObject(locale, {
+  const normalized = translationLocale(locale)
+  const copyByLocale: Partial<Record<PublicLocale, {
+    pending: string
+    failed: string
+    paid: string
+    notRequired: string
+    active: string
+    pastDue: string
+    trialing: string
+    waiting: string
+  }>> = {
+    sv: {
+      pending: 'Faktura skickad, väntar på betalning',
+      failed: 'Betalning misslyckades',
+      paid: 'Betald och aktiv',
+      notRequired: 'Ingen betalning krävs',
+      active: 'Aktiv',
+      pastDue: 'Förfallen betalning',
+      trialing: 'Testperiod',
+      waiting: 'Väntar på aktivering',
+    },
+    de: {
+      pending: 'Rechnung gesendet, wartet auf Zahlung',
+      failed: 'Zahlung fehlgeschlagen',
+      paid: 'Bezahlt und aktiv',
+      notRequired: 'Keine Zahlung erforderlich',
+      active: 'Aktiv',
+      pastDue: 'Zahlung überfällig',
+      trialing: 'Testzeitraum',
+      waiting: 'Wartet auf Aktivierung',
+    },
+    fr: {
+      pending: 'Facture envoyée, en attente de paiement',
+      failed: 'Paiement échoué',
+      paid: 'Payé et actif',
+      notRequired: 'Aucun paiement requis',
+      active: 'Actif',
+      pastDue: 'Paiement en retard',
+      trialing: 'Période d’essai',
+      waiting: 'En attente d’activation',
+    },
+    es: {
+      pending: 'Factura enviada, pendiente de pago',
+      failed: 'Pago fallido',
+      paid: 'Pagado y activo',
+      notRequired: 'No requiere pago',
+      active: 'Activo',
+      pastDue: 'Pago vencido',
+      trialing: 'Periodo de prueba',
+      waiting: 'Pendiente de activación',
+    },
+    it: {
+      pending: 'Fattura inviata, in attesa di pagamento',
+      failed: 'Pagamento non riuscito',
+      paid: 'Pagato e attivo',
+      notRequired: 'Nessun pagamento richiesto',
+      active: 'Attivo',
+      pastDue: 'Pagamento scaduto',
+      trialing: 'Periodo di prova',
+      waiting: 'In attesa di attivazione',
+    },
+    nl: {
+      pending: 'Factuur verzonden, wacht op betaling',
+      failed: 'Betaling mislukt',
+      paid: 'Betaald en actief',
+      notRequired: 'Geen betaling vereist',
+      active: 'Actief',
+      pastDue: 'Betaling achterstallig',
+      trialing: 'Proefperiode',
+      waiting: 'Wacht op activering',
+    },
+    fi: {
+      pending: 'Lasku lähetetty, odottaa maksua',
+      failed: 'Maksu epäonnistui',
+      paid: 'Maksettu ja aktiivinen',
+      notRequired: 'Maksua ei tarvita',
+      active: 'Aktiivinen',
+      pastDue: 'Maksu myöhässä',
+      trialing: 'Kokeilujakso',
+      waiting: 'Odottaa aktivointia',
+    },
+    da: {
+      pending: 'Faktura sendt, afventer betaling',
+      failed: 'Betaling mislykkedes',
+      paid: 'Betalt og aktiv',
+      notRequired: 'Ingen betaling kræves',
+      active: 'Aktiv',
+      pastDue: 'Betaling forfalden',
+      trialing: 'Prøveperiode',
+      waiting: 'Afventer aktivering',
+    },
+    pl: {
+      pending: 'Faktura wysłana, oczekuje na płatność',
+      failed: 'Płatność nieudana',
+      paid: 'Opłacony i aktywny',
+      notRequired: 'Płatność nie jest wymagana',
+      active: 'Aktywny',
+      pastDue: 'Płatność zaległa',
+      trialing: 'Okres próbny',
+      waiting: 'Oczekuje na aktywację',
+    },
+  }
+  const copy = copyByLocale[normalized] || {
     pending: 'Invoice sent, awaiting payment',
     failed: 'Payment failed',
     paid: 'Paid and active',
@@ -368,7 +474,7 @@ function planStatusText(status: string | null | undefined, paymentStatus: string
     pastDue: 'Payment overdue',
     trialing: 'Trial period',
     waiting: 'Awaiting activation',
-  })
+  }
   if (paymentStatus === 'pending') return copy.pending
   if (paymentStatus === 'failed') return copy.failed
   if (paymentStatus === 'paid') return copy.paid
@@ -377,6 +483,53 @@ function planStatusText(status: string | null | undefined, paymentStatus: string
   if (status === 'past_due') return copy.pastDue
   if (status === 'trialing') return copy.trialing
   return copy.waiting
+}
+
+function businessPaymentTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg kortbetalning med Stripe',
+      text: 'Kortbetalningar öppnas i TLS/SSL-krypterad Stripe Checkout. Stripe hanterar kortuppgifterna och Autorell ser eller lagrar aldrig ditt kortnummer.',
+    },
+    en: {
+      title: 'Secure card payment with Stripe',
+      text: 'Card payments open in TLS/SSL-encrypted Stripe Checkout. Stripe handles card details and Autorell never sees or stores your card number.',
+    },
+    de: {
+      title: 'Sichere Kartenzahlung mit Stripe',
+      text: 'Kartenzahlungen öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Stripe verarbeitet die Kartendaten und Autorell sieht oder speichert Ihre Kartennummer nie.',
+    },
+    fr: {
+      title: 'Paiement par carte sécurisé avec Stripe',
+      text: 'Les paiements par carte s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Stripe traite les données de carte et Autorell ne voit ni ne stocke jamais votre numéro de carte.',
+    },
+    es: {
+      title: 'Pago seguro con tarjeta mediante Stripe',
+      text: 'Los pagos con tarjeta se abren en Stripe Checkout cifrado con TLS/SSL. Stripe gestiona los datos de la tarjeta y Autorell nunca ve ni almacena tu número de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con carta tramite Stripe',
+      text: 'I pagamenti con carta si aprono in Stripe Checkout crittografato TLS/SSL. Stripe gestisce i dati della carta e Autorell non vede né conserva mai il numero della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met kaart via Stripe',
+      text: 'Kaartbetalingen openen in TLS/SSL-versleutelde Stripe Checkout. Stripe verwerkt kaartgegevens en Autorell ziet of bewaart je kaartnummer nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność kartą przez Stripe',
+      text: 'Płatności kartą otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Stripe obsługuje dane karty, a Autorell nigdy nie widzi ani nie przechowuje numeru karty.',
+    },
+    fi: {
+      title: 'Turvallinen korttimaksu Stripen kautta',
+      text: 'Korttimaksut avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Stripe käsittelee korttitiedot, eikä Autorell koskaan näe tai tallenna korttinumeroasi.',
+    },
+    da: {
+      title: 'Sikker kortbetaling med Stripe',
+      text: 'Kortbetalinger åbnes i TLS/SSL-krypteret Stripe Checkout. Stripe håndterer kortoplysningerne, og Autorell ser eller gemmer aldrig dit kortnummer.',
+    },
+  }
+  return copy[normalized] || copy.en
 }
 
 function formatPrice(amountMinor: number, currency: string, localeTag: string) {

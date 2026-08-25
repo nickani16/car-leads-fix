@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
   }
   const limit = Math.min(Math.max(Number(request.nextUrl.searchParams.get('limit') || 8), 1), 8)
   const market = request.nextUrl.searchParams.get('market') || ''
-  const results = await searchPublicEntries({ locale, query, limit, market })
+  const category = request.nextUrl.searchParams.get('category') || ''
+  const results = await searchPublicEntries({ locale, query, limit, market, category })
   const body = JSON.stringify(results)
 
   return new Response(body, {

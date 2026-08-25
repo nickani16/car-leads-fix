@@ -35,11 +35,19 @@ export const marketplaceCategories: MarketplaceCategory[] = [
   { slug: 'motorcycles', icon: Bike, labels: { sv: 'Motorcyklar', en: 'Motorcycles', de: 'Motorräder' }, singular: { sv: 'motorcykel', en: 'motorcycle', de: 'Motorrad' }, keywords: ['motorcycle', 'motorbike', 'motorcykel', 'mc', 'motorrad'] },
   { slug: 'motorhomes', icon: BusFront, labels: { sv: 'Husbilar', en: 'Motorhomes', de: 'Wohnmobile' }, singular: { sv: 'husbil', en: 'motorhome', de: 'Wohnmobil' }, keywords: ['motorhome', 'camper', 'husbil', 'wohnmobil'] },
   { slug: 'caravans', icon: Warehouse, labels: { sv: 'Husvagnar', en: 'Caravans', de: 'Wohnwagen' }, singular: { sv: 'husvagn', en: 'caravan', de: 'Wohnwagen' }, keywords: ['caravan', 'husvagn', 'wohnwagen'] },
-  { slug: 'trucks', icon: Truck, labels: { sv: 'Lastbilar', en: 'Trucks', de: 'Lkw' }, singular: { sv: 'lastbil', en: 'truck', de: 'Lkw' }, keywords: ['truck', 'lastbil', 'lorry', 'lkw'] },
+  { slug: 'trucks', icon: Truck, labels: { sv: 'Lastbilar', en: 'Trucks', de: 'Lkw' }, singular: { sv: 'lastbil', en: 'truck', de: 'Lkw' }, keywords: ['truck', 'lastbil', 'lastbilar', 'lorry', 'lkw', 'bus', 'buss', 'bussar', 'coach'] },
   { slug: 'agriculture', icon: Tractor, labels: { sv: 'Lantbruksmaskiner', en: 'Agricultural machinery', de: 'Landmaschinen' }, singular: { sv: 'lantbruksmaskin', en: 'agricultural machine', de: 'Landmaschine' }, keywords: ['tractor', 'traktor', 'agriculture', 'farm', 'lantbruk', 'landmaschine'] },
   { slug: 'construction', icon: Construction, labels: { sv: 'Entreprenadmaskiner', en: 'Construction machinery', de: 'Baumaschinen' }, singular: { sv: 'entreprenadmaskin', en: 'construction machine', de: 'Baumaschine' }, keywords: ['construction', 'entreprenad', 'excavator', 'grävmaskin', 'loader', 'baumaschine'] },
   { slug: 'electric-bikes', icon: Bike, labels: { sv: 'Cyklar', en: 'Bikes', de: 'Fahrräder' }, singular: { sv: 'cykel', en: 'bike', de: 'Fahrrad' }, keywords: ['bike', 'bicycle', 'cykel', 'e-bike', 'elcykel'] },
 ]
+
+export const leasingMarketplaceCategorySlugs = [
+  'cars',
+  'vans',
+  'trucks',
+  'agriculture',
+  'construction',
+] as const satisfies MarketplaceCategorySlug[]
 
 export const marketplaceCategoryAliases: Record<string, MarketplaceCategorySlug> = {
   bikes: 'motorcycles',
@@ -56,6 +64,12 @@ export function normalizeMarketplaceCategory(value: string): MarketplaceCategory
   return marketplaceCategories.some((category) => category.slug === normalized)
     ? (normalized as MarketplaceCategorySlug)
     : 'cars'
+}
+
+export function isLeasingMarketplaceCategory(value: string) {
+  return leasingMarketplaceCategorySlugs.includes(
+    normalizeMarketplaceCategory(value) as (typeof leasingMarketplaceCategorySlugs)[number],
+  )
 }
 
 export function getMarketplaceCategory(value: string) {
@@ -144,4 +158,4 @@ function priceNumberLocale(locale: PublicLocale) {
 }
 
 export const marketplacePublicSelect =
-  'id,seller_user_id,listing_number,reference_number,status,review_status,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,structured_data,search_document,offer_type,lease_data,country_code,country,city,municipality,address,postal_code,latitude,longitude,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,boost_started_at,boost_expires_at,boost_status,featured_started_at,featured_expires_at,featured_status,premium_badge_expires_at,sort_refreshed_at,created_at,published_at,expires_at,sold_at'
+  'id,seller_user_id,listing_number,reference_number,status,review_status,category,title,description,make,model,variant,model_year,mileage_km,operating_hours,fuel_type,gearbox,body_type,color,condition,known_faults,service_history,equipment,structured_data,search_document,offer_type,lease_data,insurance_offers,country_code,country,city,municipality,address,postal_code,latitude,longitude,price,currency,images,seller_name,seller_type,phone_visibility,package_id,priority,boost_started_at,boost_expires_at,boost_status,featured_started_at,featured_expires_at,featured_status,premium_badge_expires_at,sort_refreshed_at,created_at,published_at,expires_at,sold_at'

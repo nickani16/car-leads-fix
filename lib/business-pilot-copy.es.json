@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Programa piloto de Autorell",
+    "title": "Conviértete en uno de los primeros concesionarios asociados de Autorell",
+    "body": [
+      "Seleccionamos un número limitado de concesionarios que podrán conectar gratuitamente su inventario actual de vehículos a Autorell durante el periodo piloto.",
+      "Autorell importa el inventario, mantiene actualizados automáticamente los precios y la disponibilidad, y ofrece estadísticas de exposición, clics y consultas de clientes.",
+      "Cuando la colaboración empiece a generar un valor comercial documentado, prepararemos juntos un acuerdo independiente para continuar."
+    ],
+    "benefits": [
+      "Conexión gratuita del inventario",
+      "Sin tarifa de integración",
+      "Actualización automática del inventario",
+      "Sin permanencia durante el periodo piloto",
+      "Estadísticas de tráfico y leads",
+      "Incorporación personalizada",
+      "Se pueden conectar varias ubicaciones",
+      "Acuerdo comercial independiente solo cuando se haya creado valor"
+    ],
+    "primaryCta": "Solicitar el programa piloto",
+    "secondaryCta": "Conocer la conexión de inventario",
+    "availabilityNote": "Se admitirá un número limitado de empresas en la primera ronda piloto."
+  },
+  "pilotPage": {
+    "metaTitle": "Piloto gratuito de inventario para concesionarios | Autorell",
+    "metaDescription": "Solicita conectar tu inventario de vehículos a Autorell con incorporación gratuita, sincronización automática y sin suscripción de pago automática.",
+    "heroEyebrow": "Programa piloto para concesionarios",
+    "heroTitle": "Conecta tu inventario de vehículos sin coste",
+    "heroIntro": "Autorell busca concesionarios seleccionados para un programa piloto gratuito. Conectamos tu inventario actual, mantenemos los anuncios actualizados automáticamente y medimos los resultados contigo.",
+    "primaryCta": "Solicitar el programa piloto",
+    "secondaryCta": "Cómo funciona la importación de inventario",
+    "includedTitle": "Qué incluye",
+    "includedIntro": "La primera conexión está diseñada para ser práctica, medible y sin compromisos comerciales automáticos.",
+    "included": [
+      "Incorporación gratuita",
+      "Conexión técnica gratuita",
+      "Importación del inventario de vehículos existente",
+      "Sincronización automática de vehículos nuevos, modificados y retirados",
+      "Perfil de empresa en Autorell",
+      "Estadísticas de visualizaciones de anuncios",
+      "Estadísticas de clics y leads",
+      "Soporte durante el periodo piloto",
+      "Sin permanencia durante el periodo piloto"
+    ],
+    "stepsTitle": "Cómo funciona",
+    "steps": [
+      {
+        "title": "Envía la solicitud",
+        "text": "La empresa envía una breve solicitud con información sobre el inventario y el método de conexión preferido."
+      },
+      {
+        "title": "Autorell revisa la empresa",
+        "text": "Revisamos la empresa, su inventario y la fuente técnica antes de conectar nada."
+      },
+      {
+        "title": "Acepta las condiciones del piloto",
+        "text": "La empresa acepta las condiciones del piloto y confirma sus derechos sobre los datos y las imágenes de los vehículos."
+      },
+      {
+        "title": "Conectamos la fuente",
+        "text": "Autorell conecta el sitio web verificado y prepara una vista previa de la importación. Las solicitudes de XML, CSV, API y DMS pasan por una incorporación técnica independiente."
+      },
+      {
+        "title": "El inventario se publica y mantiene actualizado",
+        "text": "Los anuncios aprobados se publican y los vehículos nuevos, modificados o vendidos se sincronizan de forma segura."
+      }
+    ],
+    "afterTitle": "Después del periodo piloto",
+    "afterLead": "El programa piloto no se convierte automáticamente en una suscripción de pago.",
+    "afterBody": "Si Autorell puede demostrar tráfico relevante, leads u otro valor comercial, las partes podrán hablar de un acuerdo comercial independiente.",
+    "afterNote": "Ningún pago, factura o suscripción puede comenzar sin una nueva aprobación expresa de la empresa.",
+    "faqTitle": "Preguntas sobre el programa piloto",
+    "faqs": [
+      {
+        "question": "¿Cuesta algo el programa piloto?",
+        "answer": "No. La conexión técnica, la incorporación, la importación del inventario y la sincronización automática son gratuitas durante el periodo piloto acordado."
+      },
+      {
+        "question": "¿Tenemos que publicar los anuncios manualmente?",
+        "answer": "No. Una vez aprobadas la fuente y la vista previa, Autorell puede crear y actualizar los anuncios desde el inventario conectado."
+      },
+      {
+        "question": "¿Qué tipos de inventario pueden conectarse?",
+        "answer": "Se pueden evaluar turismos, furgonetas y otras categorías de vehículos compatibles. El alcance exacto se confirma durante la revisión técnica."
+      },
+      {
+        "question": "¿Con qué frecuencia se actualiza el inventario?",
+        "answer": "La frecuencia depende de la fuente y de la configuración del piloto. Una sincronización diaria es el punto de partida habitual, con mayor frecuencia cuando se acuerde y sea técnicamente posible."
+      },
+      {
+        "question": "¿Qué ocurre cuando se vende un vehículo?",
+        "answer": "Un vehículo vendido o retirado se confirma primero mediante una sincronización correcta y después se pausa o marca como vendido. Un fallo temporal de la fuente nunca retira todo el inventario."
+      },
+      {
+        "question": "¿Se pueden conectar varias ubicaciones?",
+        "answer": "Sí. Se pueden conectar varias ubicaciones cuando se identifican en los datos de origen o se asignan durante la incorporación."
+      },
+      {
+        "question": "¿Qué ocurre después del periodo piloto?",
+        "answer": "Revisamos juntos los resultados documentados. Continuar la colaboración requiere un acuerdo independiente aceptado por ambas partes."
+      },
+      {
+        "question": "¿Nos convertimos automáticamente en clientes de pago?",
+        "answer": "No. No hay conversión, pago ni suscripción automática después del piloto."
+      },
+      {
+        "question": "¿Quién es propietario de los anuncios, imágenes y datos de los vehículos?",
+        "answer": "La empresa conserva sus derechos sobre el material y confirma que puede facilitarlo para su publicación. Autorell solo recibe los derechos necesarios para importarlo, almacenarlo, mostrarlo y sincronizarlo conforme a las condiciones del piloto."
+      },
+      {
+        "question": "¿Podemos finalizar el proyecto piloto?",
+        "answer": "Sí. El piloto puede finalizar sin compromiso de suscripción. La retirada práctica del material importado se gestiona de forma controlada con la empresa."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Solicitud del piloto",
+    "title": "Cuéntanos sobre tu inventario",
+    "intro": "La solicitud no inicia una integración ni crea una suscripción de pago. Autorell la revisa y contacta primero con la persona indicada.",
+    "companySection": "Empresa",
+    "contactSection": "Persona de contacto",
+    "inventorySection": "Inventario y conexión",
+    "consentSection": "Consentimientos",
+    "companyName": "Nombre de la empresa",
+    "registrationNumber": "Número de registro de la empresa",
+    "country": "País",
+    "website": "Sitio web",
+    "contactName": "Persona de contacto",
+    "contactRole": "Cargo",
+    "email": "Correo electrónico",
+    "phone": "Número de teléfono",
+    "inventorySize": "Número aproximado de vehículos activos",
+    "locationCount": "Número de ubicaciones",
+    "currentSystem": "Sistema de inventario actual",
+    "integrationMethod": "Método de integración preferido",
+    "message": "Información adicional",
+    "selectOption": "Selecciona una opción",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2.000" },
+      { "value": "2000_plus", "label": "Más de 2.000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Importación desde sitio web (disponible en piloto)" },
+      { "value": "xml", "label": "Feed XML (incorporación técnica)" },
+      { "value": "csv", "label": "Archivo CSV (incorporación técnica)" },
+      { "value": "api", "label": "API (incorporación técnica)" },
+      { "value": "dms", "label": "Sistema DMS (incorporación administrativa)" },
+      { "value": "unknown", "label": "Aún no lo sabemos" }
+    ],
+    "privacyConsent": "He leído y acepto la política de privacidad de Autorell.",
+    "contactConsent": "Acepto que Autorell contacte con la empresa sobre el programa piloto.",
+    "privacyLink": "Leer la política de privacidad",
+    "submit": "Enviar solicitud",
+    "submitting": "Enviando solicitud",
+    "requiredNote": "Los campos marcados con * son obligatorios.",
+    "successTitle": "Gracias por tu solicitud",
+    "successBody": "Autorell revisará la empresa y contactará con la persona indicada. Ninguna integración o publicación comienza antes de que la empresa haya sido aprobada y haya aceptado las condiciones del piloto.",
+    "successReference": "Referencia de la solicitud",
+    "sendAnother": "Enviar otra solicitud",
+    "genericError": "No se ha podido enviar la solicitud. Revisa los campos e inténtalo de nuevo.",
+    "rateLimitError": "Se han enviado demasiadas solicitudes desde esta conexión. Inténtalo de nuevo más tarde.",
+    "duplicateError": "Se ha enviado recientemente una solicitud para este correo electrónico. Autorell contactará después de revisarla."
+  }
+}

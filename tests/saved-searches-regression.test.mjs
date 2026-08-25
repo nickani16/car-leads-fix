@@ -21,7 +21,8 @@ test('saved searches expose owned notification preferences', () => {
   assert.match(client, /<option value="off">/)
   assert.match(client, /<option value="daily">/)
   assert.match(client, /<option value="instant">/)
-  assert.match(client, /translatePublicObject\(locale, en\)/)
+  assert.match(client, /const copy: Record<PublicLocale, typeof en>/)
+  assert.match(client, /return copy\[locale\]/)
 })
 
 test('public header deduplicates saved search count requests', () => {

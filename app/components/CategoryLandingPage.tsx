@@ -103,7 +103,6 @@ export default async function CategoryLandingPage({
   const displayCurrency = displayCurrencyForMarket(
     marketCode || defaultSearchCountryForLocale(locale),
   )
-  const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
   const requestedMarketCode = (marketCode || '').toUpperCase()
   const localCountryCode = activeMarketCountryCodes.has(requestedMarketCode)
     ? requestedMarketCode
@@ -113,7 +112,7 @@ export default async function CategoryLandingPage({
   const copy = categoryLandingCopy(locale)
   const page = pageCopy(locale, slug, localized.label, localized.singular)
   const typeCards = getTypeCards(slug)
-  const { topListings, typeCounts, totalListings } = await getLandingListings(
+  const { topListings, totalListings } = await getLandingListings(
     slug,
     locale,
     typeCards,
@@ -208,37 +207,6 @@ export default async function CategoryLandingPage({
         </div>
       </section>
 
-      <section id="browse-by-type" className="bg-white py-8 sm:py-10">
-        <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-          <SectionHeader title={page.browseByType} cta={page.moreTypes} href={localizePublicHref(locale, `/marketplace/${slug}`)} />
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-            {typeCards.map((type) => (
-              <Link
-                key={type.query}
-                href={localizePublicHref(locale, `/marketplace/${slug}?filter=${encodeURIComponent(type.query)}`)}
-                className="group relative min-h-[128px] overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-white p-4 shadow-sm transition-colors hover:border-[#344054]"
-              >
-                <strong className="relative z-10 block text-sm font-bold text-[#101828]">
-                  {locale === 'sv' || locale === 'de' || locale === 'en'
-                    ? type.label[language]
-                    : translatePublic(locale, type.label.en)}
-                </strong>
-                <span className="relative z-10 mt-1 block text-xs font-semibold text-[#667085]">
-                  {typeCounts[type.query] || 0} {page.listings}
-                </span>
-                <Image
-                  src={type.image}
-                  alt=""
-                  width={180}
-                  height={120}
-                  className="absolute bottom-0 right-0 h-[94px] w-[134px] object-contain"
-                />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="bg-white py-8">
         <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
           <div className="relative overflow-hidden rounded-[18px] bg-[#061b42] text-white">
@@ -257,7 +225,7 @@ export default async function CategoryLandingPage({
               </h2>
               <p className="mt-3 text-sm text-white/82">{page.sellText}</p>
               <Link
-                href={localizePublicHref(locale, `/sell-vehicle?category=${slug}`)}
+                href={localizePublicHref(locale, `/account/listings/new?category=${slug}`)}
                 className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[10px] bg-white px-5 text-sm font-bold text-[#0866ff]"
               >
                 {page.sellCta}
@@ -553,7 +521,7 @@ function EmptyListings({
       <h3 className="mt-4 text-2xl tracking-[-0.04em]">{copy.noListingsTitle}</h3>
       <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#667085]">{copy.noListingsText}</p>
       <Link
-        href={localizePublicHref(locale, `/sell-vehicle?category=${slug}`)}
+        href={localizePublicHref(locale, `/account/listings/new?category=${slug}`)}
         className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[#0866ff] px-6 text-sm font-bold text-white"
       >
         {copy.sellCta}
@@ -976,55 +944,143 @@ function getCategorySeoContent(
   slug: MarketplaceCategorySlug,
   locale: PublicLocale,
 ) {
-  const language = locale === 'de' ? 'de' : locale === 'sv' ? 'sv' : 'en'
-  const seo: Record<MarketplaceCategorySlug, Record<'sv' | 'en' | 'de', { title: string; description: string }>> = {
+  type CategorySeoLocale = 'sv' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'nl' | 'pl' | 'da' | 'fi' | 'at' | 'be'
+  const seoLocale: CategorySeoLocale =
+    locale === 'at' ? 'at' :
+    locale === 'be' ? 'be' :
+    locale === 'sv' || locale === 'de' || locale === 'fr' || locale === 'es' ||
+    locale === 'it' || locale === 'nl' || locale === 'pl' || locale === 'da' || locale === 'fi'
+      ? locale
+      : 'en'
+  const seo: Record<MarketplaceCategorySlug, Record<CategorySeoLocale, { title: string; description: string }>> = {
     cars: {
       sv: { title: 'Bilar till salu | Köp en begagnad eller ny bil | Autorell', description: 'Hitta bilar till salu, begagnade bilar och nya bilar från privatpersoner och företag i Europa.' },
       en: { title: 'Cars for sale | Buy a used or new car | Autorell', description: 'Find cars for sale, used cars and new cars from private and business sellers across Europe.' },
       de: { title: 'Autos kaufen | Gebrauchte und neue Autos | Autorell', description: 'Finden Sie Autos, Gebrauchtwagen und Neuwagen von privaten und gewerblichen Verkäufern in Europa.' },
+      at: { title: 'Autos in Österreich kaufen | Gebraucht und neu | Autorell', description: 'Finden Sie Autos, Gebrauchtwagen und Neuwagen in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Voitures à vendre | Occasion et neuf | Autorell', description: 'Trouvez des voitures à vendre, neuves et d’occasion, auprès de particuliers et professionnels en Europe.' },
+      be: { title: 'Voitures à vendre en Belgique | Autorell', description: 'Trouvez des voitures neuves et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Coches en venta | Usados y nuevos | Autorell', description: 'Encuentra coches en venta, usados y nuevos, de particulares y empresas en Europa.' },
+      it: { title: 'Auto in vendita | Usate e nuove | Autorell', description: 'Trova auto in vendita, usate e nuove, da privati e aziende in Europa.' },
+      nl: { title: 'Auto’s te koop | Nieuw en gebruikt | Autorell', description: 'Vind nieuwe en gebruikte auto’s van particuliere en zakelijke verkopers in Europa.' },
+      pl: { title: 'Samochody na sprzedaż | Nowe i używane | Autorell', description: 'Znajdź nowe i używane samochody od sprzedawców prywatnych i firmowych w Europie.' },
+      da: { title: 'Biler til salg | Nye og brugte | Autorell', description: 'Find nye og brugte biler fra private og virksomheder i Europa på Autorell.' },
+      fi: { title: 'Autot myynnissä | Uudet ja käytetyt | Autorell', description: 'Löydä uusia ja käytettyjä autoja yksityisiltä ja yritysmyyjiltä Euroopassa.' },
     },
     vans: {
       sv: { title: 'Transportbilar till salu | Begagnade och nya transportbilar | Autorell', description: 'Sök transportbilar till salu från privatpersoner och företag. Jämför nya och begagnade transportbilar.' },
       en: { title: 'Vans for sale | Used and new vans | Autorell', description: 'Search vans for sale from private and business sellers. Compare used and new vans across Europe.' },
       de: { title: 'Transporter kaufen | Gebrauchte und neue Transporter | Autorell', description: 'Suchen Sie Transporter von privaten und gewerblichen Verkäufern. Vergleichen Sie neue und gebrauchte Transporter.' },
+      at: { title: 'Transporter in Österreich kaufen | Autorell', description: 'Suchen Sie neue und gebrauchte Transporter in Österreich und vergleichen Sie Angebote auf Autorell.' },
+      fr: { title: 'Utilitaires à vendre | Neuf et occasion | Autorell', description: 'Recherchez des utilitaires à vendre et comparez annonces neuves et d’occasion en Europe.' },
+      be: { title: 'Utilitaires à vendre en Belgique | Autorell', description: 'Trouvez des utilitaires neufs et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Furgonetas en venta | Nuevas y usadas | Autorell', description: 'Busca furgonetas en venta y compara anuncios nuevos y usados de particulares y empresas.' },
+      it: { title: 'Furgoni in vendita | Nuovi e usati | Autorell', description: 'Cerca furgoni in vendita e confronta annunci nuovi e usati di privati e aziende.' },
+      nl: { title: 'Bestelwagens te koop | Nieuw en gebruikt | Autorell', description: 'Zoek nieuwe en gebruikte bestelwagens van particuliere en zakelijke verkopers.' },
+      pl: { title: 'Vany na sprzedaż | Nowe i używane | Autorell', description: 'Szukaj nowych i używanych vanów oraz porównuj ogłoszenia prywatne i firmowe.' },
+      da: { title: 'Varebiler til salg | Nye og brugte | Autorell', description: 'Søg varebiler til salg og sammenlign nye og brugte annoncer i Europa.' },
+      fi: { title: 'Pakettiautot myynnissä | Uudet ja käytetyt | Autorell', description: 'Etsi pakettiautoja myynnissä ja vertaile uusia ja käytettyjä ilmoituksia Euroopassa.' },
     },
     motorcycles: {
       sv: { title: 'Motorcyklar till salu | Köp begagnad eller ny MC | Autorell', description: 'Hitta motorcyklar till salu i Europa. Jämför begagnade och nya motorcyklar från privata och företag.' },
       en: { title: 'Motorcycles for sale | Used and new bikes | Autorell', description: 'Find motorcycles for sale in Europe. Compare used and new bikes from private and business sellers.' },
       de: { title: 'Motorräder kaufen | Gebrauchte und neue Motorräder | Autorell', description: 'Finden Sie Motorräder in Europa. Vergleichen Sie gebrauchte und neue Motorräder von privaten und Händlern.' },
+      at: { title: 'Motorräder in Österreich kaufen | Autorell', description: 'Finden Sie neue und gebrauchte Motorräder in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Motos à vendre | Occasion et neuf | Autorell', description: 'Trouvez des motos à vendre en Europe et comparez annonces neuves et d’occasion.' },
+      be: { title: 'Motos à vendre en Belgique | Autorell', description: 'Comparez motos neuves et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Motos en venta | Nuevas y usadas | Autorell', description: 'Encuentra motos en venta en Europa y compara anuncios nuevos y usados.' },
+      it: { title: 'Moto in vendita | Nuove e usate | Autorell', description: 'Trova moto in vendita in Europa e confronta annunci nuovi e usati.' },
+      nl: { title: 'Motoren te koop | Nieuw en gebruikt | Autorell', description: 'Vind nieuwe en gebruikte motoren van particuliere en zakelijke verkopers in Europa.' },
+      pl: { title: 'Motocykle na sprzedaż | Nowe i używane | Autorell', description: 'Znajdź motocykle na sprzedaż w Europie i porównuj nowe oraz używane ogłoszenia.' },
+      da: { title: 'Motorcykler til salg | Nye og brugte | Autorell', description: 'Find motorcykler til salg i Europa og sammenlign nye og brugte annoncer.' },
+      fi: { title: 'Moottoripyörät myynnissä | Uudet ja käytetyt | Autorell', description: 'Löydä moottoripyöriä myynnissä Euroopassa ja vertaile uusia sekä käytettyjä ilmoituksia.' },
     },
     motorhomes: {
       sv: { title: 'Husbilar till salu | Köp begagnad eller ny husbil | Autorell', description: 'Sök husbilar till salu i Europa. Jämför begagnade och nya husbilar från privatpersoner och företag.' },
       en: { title: 'Motorhomes for sale | Used and new motorhomes | Autorell', description: 'Search motorhomes for sale in Europe. Compare used and new motorhomes from private and business sellers.' },
       de: { title: 'Wohnmobile kaufen | Gebrauchte und neue Wohnmobile | Autorell', description: 'Suchen Sie Wohnmobile in Europa. Vergleichen Sie gebrauchte und neue Wohnmobile von privaten und Händlern.' },
+      at: { title: 'Wohnmobile in Österreich kaufen | Autorell', description: 'Suchen Sie neue und gebrauchte Wohnmobile in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Camping-cars à vendre | Occasion et neuf | Autorell', description: 'Recherchez des camping-cars à vendre en Europe et comparez annonces neuves et d’occasion.' },
+      be: { title: 'Camping-cars à vendre en Belgique | Autorell', description: 'Trouvez des camping-cars neufs et d’occasion en Belgique et en Europe.' },
+      es: { title: 'Autocaravanas en venta | Nuevas y usadas | Autorell', description: 'Busca autocaravanas en venta en Europa y compara anuncios nuevos y usados.' },
+      it: { title: 'Camper in vendita | Nuovi e usati | Autorell', description: 'Cerca camper in vendita in Europa e confronta annunci nuovi e usati.' },
+      nl: { title: 'Campers te koop | Nieuw en gebruikt | Autorell', description: 'Zoek nieuwe en gebruikte campers van particuliere en zakelijke verkopers in Europa.' },
+      pl: { title: 'Kampery na sprzedaż | Nowe i używane | Autorell', description: 'Szukaj kamperów na sprzedaż w Europie i porównuj nowe oraz używane ogłoszenia.' },
+      da: { title: 'Autocampere til salg | Nye og brugte | Autorell', description: 'Søg autocampere til salg i Europa og sammenlign nye og brugte annoncer.' },
+      fi: { title: 'Matkailuautot myynnissä | Uudet ja käytetyt | Autorell', description: 'Etsi matkailuautoja myynnissä Euroopassa ja vertaile uusia sekä käytettyjä ilmoituksia.' },
     },
     caravans: {
       sv: { title: 'Husvagnar till salu | Köp begagnad eller ny husvagn | Autorell', description: 'Hitta husvagnar till salu i Europa. Jämför begagnade och nya husvagnar från privatpersoner och företag.' },
       en: { title: 'Caravans for sale | Used and new caravans | Autorell', description: 'Find caravans for sale in Europe. Compare used and new caravans from private and business sellers.' },
       de: { title: 'Wohnwagen kaufen | Gebrauchte und neue Wohnwagen | Autorell', description: 'Finden Sie Wohnwagen in Europa. Vergleichen Sie gebrauchte und neue Wohnwagen von privaten und Händlern.' },
+      at: { title: 'Wohnwagen in Österreich kaufen | Autorell', description: 'Finden Sie neue und gebrauchte Wohnwagen in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Caravanes à vendre | Occasion et neuf | Autorell', description: 'Trouvez des caravanes à vendre en Europe et comparez annonces neuves et d’occasion.' },
+      be: { title: 'Caravanes à vendre en Belgique | Autorell', description: 'Comparez caravanes neuves et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Caravanas en venta | Nuevas y usadas | Autorell', description: 'Encuentra caravanas en venta en Europa y compara anuncios nuevos y usados.' },
+      it: { title: 'Roulotte in vendita | Nuove e usate | Autorell', description: 'Trova roulotte in vendita in Europa e confronta annunci nuovi e usati.' },
+      nl: { title: 'Caravans te koop | Nieuw en gebruikt | Autorell', description: 'Vind nieuwe en gebruikte caravans van particuliere en zakelijke verkopers in Europa.' },
+      pl: { title: 'Przyczepy kempingowe na sprzedaż | Autorell', description: 'Znajdź przyczepy kempingowe w Europie i porównuj nowe oraz używane ogłoszenia.' },
+      da: { title: 'Campingvogne til salg | Nye og brugte | Autorell', description: 'Find campingvogne til salg i Europa og sammenlign nye og brugte annoncer.' },
+      fi: { title: 'Asuntovaunut myynnissä | Uudet ja käytetyt | Autorell', description: 'Löydä asuntovaunuja myynnissä Euroopassa ja vertaile uusia sekä käytettyjä ilmoituksia.' },
     },
     trucks: {
       sv: { title: 'Lastbilar till salu | Köp begagnad eller ny lastbil | Autorell', description: 'Sök lastbilar till salu i Europa. Jämför begagnade och nya lastbilar för transport och logistik.' },
       en: { title: 'Trucks for sale | Used and new trucks | Autorell', description: 'Search trucks for sale in Europe. Compare used and new trucks for transport and logistics.' },
       de: { title: 'Lkw kaufen | Gebrauchte und neue Lkw | Autorell', description: 'Suchen Sie Lkw in Europa. Vergleichen Sie gebrauchte und neue Lkw für Transport und Logistik.' },
+      at: { title: 'Lkw in Österreich kaufen | Gebraucht und neu | Autorell', description: 'Suchen Sie neue und gebrauchte Lkw in Österreich und Europa für Transport und Logistik.' },
+      fr: { title: 'Camions à vendre | Occasion et neuf | Autorell', description: 'Recherchez des camions à vendre en Europe pour transport, distribution et logistique.' },
+      be: { title: 'Camions à vendre en Belgique | Autorell', description: 'Comparez camions neufs et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Camiones en venta | Nuevos y usados | Autorell', description: 'Busca camiones en venta en Europa para transporte, distribución y logística.' },
+      it: { title: 'Camion in vendita | Nuovi e usati | Autorell', description: 'Cerca camion in vendita in Europa per trasporti, distribuzione e logistica.' },
+      nl: { title: 'Vrachtwagens te koop | Nieuw en gebruikt | Autorell', description: 'Zoek nieuwe en gebruikte vrachtwagens in Europa voor transport en logistiek.' },
+      pl: { title: 'Ciężarówki na sprzedaż | Nowe i używane | Autorell', description: 'Szukaj ciężarówek na sprzedaż w Europie dla transportu i logistyki.' },
+      da: { title: 'Lastbiler til salg | Nye og brugte | Autorell', description: 'Søg lastbiler til salg i Europa til transport, distribution og logistik.' },
+      fi: { title: 'Kuorma-autot myynnissä | Uudet ja käytetyt | Autorell', description: 'Etsi kuorma-autoja myynnissä Euroopassa kuljetuksiin ja logistiikkaan.' },
     },
     agriculture: {
       sv: { title: 'Lantbruksmaskiner till salu | Begagnat och nytt | Autorell', description: 'Hitta lantbruksmaskiner till salu i Europa. Jämför traktorer, redskap och maskiner från företag och privata.' },
       en: { title: 'Farm machinery for sale | Used and new machines | Autorell', description: 'Find farm machinery for sale in Europe. Compare tractors, implements and machines from trusted sellers.' },
       de: { title: 'Landmaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Finden Sie Landmaschinen in Europa. Vergleichen Sie Traktoren, Geräte und Maschinen von Verkäufern.' },
+      at: { title: 'Landmaschinen in Österreich kaufen | Autorell', description: 'Finden Sie Traktoren, Geräte und Landmaschinen in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Machines agricoles à vendre | Autorell', description: 'Trouvez tracteurs, outils et machines agricoles à vendre en Europe sur Autorell.' },
+      be: { title: 'Machines agricoles à vendre en Belgique | Autorell', description: 'Comparez tracteurs, outils et machines agricoles en Belgique et en Europe.' },
+      es: { title: 'Maquinaria agrícola en venta | Autorell', description: 'Encuentra tractores, aperos y maquinaria agrícola en venta en Europa.' },
+      it: { title: 'Macchine agricole in vendita | Autorell', description: 'Trova trattori, attrezzi e macchine agricole in vendita in Europa.' },
+      nl: { title: 'Landbouwmachines te koop | Autorell', description: 'Vind tractoren, werktuigen en landbouwmachines te koop in Europa.' },
+      pl: { title: 'Maszyny rolnicze na sprzedaż | Autorell', description: 'Znajdź traktory, osprzęt i maszyny rolnicze na sprzedaż w Europie.' },
+      da: { title: 'Landbrugsmaskiner til salg | Autorell', description: 'Find traktorer, redskaber og landbrugsmaskiner til salg i Europa.' },
+      fi: { title: 'Maatalouskoneet myynnissä | Autorell', description: 'Löydä traktoreita, työvälineitä ja maatalouskoneita myynnissä Euroopassa.' },
     },
     construction: {
       sv: { title: 'Entreprenadmaskiner till salu | Begagnat och nytt | Autorell', description: 'Sök entreprenadmaskiner till salu i Europa. Jämför grävmaskiner, lastare och maskiner för bygg.' },
       en: { title: 'Construction machinery for sale | Used and new | Autorell', description: 'Search construction machinery for sale in Europe. Compare excavators, loaders and machines for building.' },
       de: { title: 'Baumaschinen kaufen | Gebrauchte und neue Maschinen | Autorell', description: 'Suchen Sie Baumaschinen in Europa. Vergleichen Sie Bagger, Lader und Maschinen für Bau und Infrastruktur.' },
+      at: { title: 'Baumaschinen in Österreich kaufen | Autorell', description: 'Suchen Sie Bagger, Lader und Baumaschinen in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Engins de chantier à vendre | Autorell', description: 'Recherchez pelles, chargeuses et machines de chantier à vendre en Europe.' },
+      be: { title: 'Engins de chantier à vendre en Belgique | Autorell', description: 'Comparez pelles, chargeuses et machines de chantier en Belgique et en Europe.' },
+      es: { title: 'Maquinaria de obra en venta | Autorell', description: 'Busca excavadoras, cargadoras y maquinaria de obra en venta en Europa.' },
+      it: { title: 'Macchine edili in vendita | Autorell', description: 'Cerca escavatori, pale e macchine edili in vendita in Europa.' },
+      nl: { title: 'Bouwmachines te koop | Autorell', description: 'Zoek graafmachines, laders en bouwmachines te koop in Europa.' },
+      pl: { title: 'Maszyny budowlane na sprzedaż | Autorell', description: 'Szukaj koparek, ładowarek i maszyn budowlanych na sprzedaż w Europie.' },
+      da: { title: 'Entreprenørmaskiner til salg | Autorell', description: 'Søg gravemaskiner, læssemaskiner og entreprenørmaskiner til salg i Europa.' },
+      fi: { title: 'Rakennuskoneet myynnissä | Autorell', description: 'Etsi kaivinkoneita, kuormaajia ja rakennuskoneita myynnissä Euroopassa.' },
     },
     'electric-bikes': {
       sv: { title: 'Cyklar till salu | Köp begagnad eller ny cykel | Autorell', description: 'Hitta cyklar till salu i Europa. Jämför begagnade och nya cyklar för stad, pendling och vardag.' },
       en: { title: 'Bikes for sale | Used and new bikes | Autorell', description: 'Find bikes for sale in Europe. Compare used and new bikes for city, commuting and everyday travel.' },
       de: { title: 'Fahrräder kaufen | Gebrauchte und neue Fahrräder | Autorell', description: 'Finden Sie Fahrräder in Europa. Vergleichen Sie gebrauchte und neue Fahrräder für Stadt und Alltag.' },
+      at: { title: 'Fahrräder in Österreich kaufen | Autorell', description: 'Finden Sie neue und gebrauchte Fahrräder in Österreich und Europa auf Autorell.' },
+      fr: { title: 'Vélos à vendre | Occasion et neuf | Autorell', description: 'Trouvez des vélos à vendre en Europe pour ville, trajet quotidien et loisirs.' },
+      be: { title: 'Vélos à vendre en Belgique | Autorell', description: 'Comparez vélos neufs et d’occasion en Belgique et en Europe sur Autorell.' },
+      es: { title: 'Bicicletas en venta | Nuevas y usadas | Autorell', description: 'Encuentra bicicletas en venta en Europa para ciudad, desplazamientos y uso diario.' },
+      it: { title: 'Biciclette in vendita | Nuove e usate | Autorell', description: 'Trova biciclette in vendita in Europa per città, tragitti quotidiani e tempo libero.' },
+      nl: { title: 'Fietsen te koop | Nieuw en gebruikt | Autorell', description: 'Vind nieuwe en gebruikte fietsen voor stad, woon-werkverkeer en dagelijks gebruik.' },
+      pl: { title: 'Rowery na sprzedaż | Nowe i używane | Autorell', description: 'Znajdź rowery na sprzedaż w Europie do miasta, dojazdów i codziennego użytku.' },
+      da: { title: 'Cykler til salg | Nye og brugte | Autorell', description: 'Find cykler til salg i Europa til by, pendling og hverdagsbrug.' },
+      fi: { title: 'Pyörät myynnissä | Uudet ja käytetyt | Autorell', description: 'Löydä pyöriä myynnissä Euroopassa kaupunkiin, työmatkoihin ja arkeen.' },
     },
   }
 
-  return seo[slug][language]
+  return seo[slug][seoLocale]
 }
 

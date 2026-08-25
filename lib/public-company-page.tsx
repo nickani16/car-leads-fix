@@ -23,6 +23,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { getMarketplaceCategory, marketplaceLanguage, type MarketplaceCategorySlug } from '@/lib/marketplace'
 import { localizePublicHref, translatePublic, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { publicUrlForPath } from '@/lib/public-seo'
 import { getRequestLocale } from '@/lib/request-locale'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -157,7 +158,7 @@ export async function generateCompanyMetadata({
     `${data.listings.length} ${translatePublic(locale, baseCopy.activeListings).toLowerCase()}`,
   ].filter(Boolean).join(' | ')
   const canonicalPath = localizePublicHref(locale, `/company/${data.profile.user_id}`)
-  const canonical = `https://www.autorell.com${canonicalPath}`
+  const canonical = publicUrlForPath(canonicalPath)
   const image = data.profile.logo_url || data.listings[0]?.images?.[0] || undefined
 
   return {

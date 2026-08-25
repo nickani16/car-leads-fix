@@ -24,6 +24,7 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { cleanSeoText } from '@/lib/market-seo'
+import { publicUrlForPath } from '@/lib/public-seo'
 
 type SellingCopy = {
   metaTitle: string
@@ -489,7 +490,7 @@ export async function generateSellVehicleMetadata(localeOverride?: PublicLocale)
   const locale = localeOverride || getRequestedLocale(headerStore)
   const copy = getSellVehicleCopy(locale)
   const canonicalPath = headerStore.get('x-autorell-pathname') || localizePublicHref(locale, '/sell-vehicle')
-  const canonical = `https://www.autorell.com${canonicalPath}`
+  const canonical = publicUrlForPath(canonicalPath)
   const title = cleanSeoText(copy.metaTitle, 65)
   const description = cleanSeoText(copy.metaDescription, 155)
 

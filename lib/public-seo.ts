@@ -2,7 +2,40 @@ import type { Metadata } from 'next'
 import { cleanSeoText } from './market-seo'
 import { localePathPrefix, type PublicLocale } from './public-i18n'
 
-const siteHost = 'https://www.autorell.com'
+const defaultSiteHost = 'https://www.autorell.com'
+
+export function publicHostForLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'https://www.autorell.se'
+  if (locale === 'de') return 'https://www.autorell.de'
+  return defaultSiteHost
+}
+
+export function publicUrlForLocale(locale: PublicLocale, path = '/') {
+  const normalizedPath = path === '/' ? '' : path
+  const countryPrefix = locale === 'sv' ? '/se' : locale === 'de' ? '/de' : ''
+  const publicPath =
+    countryPrefix && (normalizedPath === countryPrefix || normalizedPath.startsWith(`${countryPrefix}/`))
+      ? normalizedPath.slice(countryPrefix.length)
+      : normalizedPath
+  const prefix = locale === 'sv' || locale === 'de' ? '' : localePathPrefix(locale)
+  return `${publicHostForLocale(locale)}${prefix}${publicPath}`
+}
+
+export function publicUrlForPath(path: string) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const market = normalizedPath.split('/').filter(Boolean)[0]
+  const host =
+    market === 'se'
+      ? 'https://www.autorell.se'
+      : market === 'de'
+        ? 'https://www.autorell.de'
+        : defaultSiteHost
+  const publicPath =
+    market === 'se' || market === 'de'
+      ? normalizedPath.slice(market.length + 1) || '/'
+      : normalizedPath
+  return `${host}${publicPath === '/' ? '' : publicPath}`
+}
 
 const hreflangByLocale: Record<PublicLocale, string> = {
   sv: 'sv-SE',
@@ -17,6 +50,22 @@ const hreflangByLocale: Record<PublicLocale, string> = {
   nl: 'nl-NL',
   fi: 'fi-FI',
   da: 'da-DK',
+}
+
+export function getPublicLanguageAlternates(path: string, languagePaths?: Partial<Record<PublicLocale, string>>) {
+  const normalizedPath = path === '/' ? '' : path
+  const localizedHref = (targetLocale: PublicLocale) => {
+    const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
+    const pathPart = targetPath === '/' ? '' : targetPath
+    return publicUrlForLocale(targetLocale, pathPart)
+  }
+  const alternates = Object.fromEntries(
+    (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
+      hreflangByLocale[targetLocale],
+      localizedHref(targetLocale),
+    ]),
+  )
+  return { ...alternates, 'x-default': localizedHref('en') }
 }
 
 export function createPublicMetadata({
@@ -35,20 +84,10 @@ export function createPublicMetadata({
   languagePaths?: Partial<Record<PublicLocale, string>>
 }): Metadata {
   const normalizedPath = path === '/' ? '' : path
-  const canonical = `${siteHost}${localePathPrefix(locale)}${normalizedPath}`
+  const canonical = publicUrlForLocale(locale, normalizedPath)
   const seoTitle = cleanSeoText(title, 65)
   const seoDescription = cleanSeoText(description, 150)
-  const localizedHref = (targetLocale: PublicLocale) => {
-    const targetPath = languagePaths?.[targetLocale] ?? normalizedPath
-    const pathPart = targetPath === '/' ? '' : targetPath
-    return `${siteHost}${localePathPrefix(targetLocale)}${pathPart}`
-  }
-  const alternates = Object.fromEntries(
-    (Object.keys(hreflangByLocale) as PublicLocale[]).map((targetLocale) => [
-      hreflangByLocale[targetLocale],
-      localizedHref(targetLocale),
-    ]),
-  )
+  const alternates = getPublicLanguageAlternates(normalizedPath, languagePaths)
 
   return {
     title: { absolute: seoTitle },
@@ -56,10 +95,7 @@ export function createPublicMetadata({
     keywords,
     alternates: {
       canonical,
-      languages: {
-        ...alternates,
-        'x-default': localizedHref('en'),
-      },
+      languages: alternates,
     },
     openGraph: {
       title: seoTitle,

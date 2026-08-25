@@ -1,14 +1,26 @@
 import type { NextConfig } from "next";
 
+const sharpRuntimeFiles = [
+  'node_modules/sharp/**/*',
+  'node_modules/@img/sharp-linux-x64/**/*',
+  'node_modules/@img/sharp-libvips-linux-x64/**/*',
+]
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    viewTransition: true,
+  },
   serverExternalPackages: ['sharp'],
+  turbopack: {
+    root: process.cwd(),
+  },
   outputFileTracingIncludes: {
-    '/api/account/listings': [
-      'node_modules/sharp/**/*',
-      'node_modules/@img/sharp-linux-x64/**/*',
-      'node_modules/@img/sharp-libvips-linux-x64/**/*',
-    ],
+    '/api/account/listings': sharpRuntimeFiles,
+    '/api/account/company/inventory-sources/*': sharpRuntimeFiles,
+    '/api/admin/inventory-imports/*': sharpRuntimeFiles,
+    '/api/cron/dealer-inventory-import': sharpRuntimeFiles,
+    '/api/dealer-offer-requests': sharpRuntimeFiles,
   },
   images: {
     formats: ['image/avif', 'image/webp'],

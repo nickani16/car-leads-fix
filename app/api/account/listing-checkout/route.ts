@@ -5,8 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { sendBusinessBillingEmail } from '@/lib/email/business-billing'
-import { localizePublicHref, translatePublic, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { BUSINESS_INVOICE_DAYS_UNTIL_DUE } from '@/lib/billing/business-invoice-terms'
 import {
+  currencyForMarket,
   getBillingProduct,
   legacyListingPackageToProductKey,
   normalizeBillingMarket,
@@ -14,6 +16,7 @@ import {
   productToLegacyListingPackage,
 } from '@/lib/billing/product-catalog'
 import { resolveBillingPrice } from '@/lib/billing/price-lookup'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -89,32 +92,86 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Företagskonton använder abonnemang och kan inte köpa privata annonspaket.' }, { status: 403 })
   }
 
+  const businessScope = profile.account_type === 'business' && product.kind === 'subscription'
+    ? await resolveBusinessAccountScope(user.id, admin)
+    : null
+  const subscriptionUserId = businessScope?.subscriptionUserId || user.id
+  const subscriptionBusinessId = businessScope?.companyId || body.businessId || null
+
   if (product.kind === 'subscription' && product.businessPlan === 'free') {
-    if (profile.account_type !== 'business' || profile.business_verification_status !== 'verified' || !['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
-      return NextResponse.json({ error: 'Företaget måste vara godkänt innan Free kan aktiveras.' }, { status: 403 })
+    if (profile.account_type !== 'business') {
+      return NextResponse.json({
+        code: 'business_account_required',
+        error: 'Create a business account to activate a plan.',
+      }, { status: 403 })
     }
-    const { data: existingSubscription } = await admin
+    if (profile.business_verification_status !== 'verified') {
+      return NextResponse.json({
+        code: 'company_not_verified',
+        error: 'The company must be reviewed by Autorell before a plan can be activated.',
+      }, { status: 403 })
+    }
+    if (!['approved', 'subscription_pending', 'active'].includes(String(profile.business_onboarding_status || ''))) {
+      return NextResponse.json({
+        code: 'business_onboarding_incomplete',
+        error: 'Complete the company onboarding before activating a plan.',
+      }, { status: 403 })
+    }
+    const { data: existingSubscriptions, error: existingSubscriptionError } = await admin
       .from('business_subscriptions')
-      .select('id,stripe_subscription_id,status')
-      .eq('user_id', user.id)
+      .select('id,plan_key,stripe_subscription_id,status')
+      .eq('user_id', subscriptionUserId)
       .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    if (existingSubscription?.stripe_subscription_id && ['active', 'trialing', 'past_due'].includes(String(existingSubscription.status || ''))) {
-      return NextResponse.json({ error: 'Avsluta eller ändra det betalda abonnemanget innan Free kan väljas.' }, { status: 409 })
+    if (existingSubscriptionError) {
+      return NextResponse.json({ error: 'Could not load the company subscription.' }, { status: 500 })
     }
+    const subscriptions = existingSubscriptions || []
+    const existingSubscription = subscriptions[0] || null
+    const stripeSubscriptionIds = Array.from(new Set(
+      subscriptions
+        .map((subscription) => subscription.stripe_subscription_id)
+        .filter((subscriptionId): subscriptionId is string => Boolean(subscriptionId)),
+    ))
+    for (const stripeSubscriptionId of stripeSubscriptionIds) {
+      try {
+        await getStripe().subscriptions.cancel(stripeSubscriptionId)
+      } catch (error) {
+        if (!isMissingStripeResource(error)) {
+          console.error('[listing-checkout] Could not cancel paid subscription before Free activation', {
+            subscriptionId: stripeSubscriptionId,
+            userId: subscriptionUserId,
+            error: error instanceof Error ? error.message : String(error),
+          })
+          return NextResponse.json({ error: 'The paid subscription could not be closed before Free was activated.' }, { status: 502 })
+        }
+      }
+    }
+    const now = new Date().toISOString()
     const freePayload = {
-      user_id: user.id,
-      business_id: body.businessId || null,
+      user_id: subscriptionUserId,
+      business_id: subscriptionBusinessId,
       product_key: product.productKey,
       market,
-      currency: 'sek',
+      currency: currencyForMarket(market),
       plan_key: 'free',
-      active_listing_limit: 5,
+      active_listing_limit: 10,
       status: 'active',
       payment_status: 'not_required',
       manually_activated: false,
-      updated_at: new Date().toISOString(),
+      stripe_subscription_id: null,
+      current_period_start: null,
+      current_period_end: null,
+      next_billing_at: null,
+      cancel_at_period_end: false,
+      payment_warning_at: null,
+      grace_period_ends_at: null,
+      free_period_ends_at: null,
+      cancellation_requested_at: null,
+      cancellation_effective_at: null,
+      cancellation_reason: null,
+      cancelled_at: null,
+      dealer_lead_access_starts_at: null,
+      updated_at: now,
     }
     const { data: subscription, error: subscriptionError } = existingSubscription?.id
       ? await admin.from('business_subscriptions').update(freePayload).eq('id', existingSubscription.id).select('id,plan_key,status,active_listing_limit').single()
@@ -122,15 +179,58 @@ export async function POST(request: Request) {
     if (subscriptionError || !subscription) {
       return NextResponse.json({ error: subscriptionError?.message || 'Could not activate Free plan.' }, { status: 400 })
     }
-    await admin.from('marketplace_profiles').update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: new Date().toISOString() }).eq('user_id', user.id)
-    await admin.from('business_subscription_events').insert({ subscription_id: subscription.id, user_id: user.id, event_type: 'activated', to_plan: 'free' })
+    const obsoleteSubscriptionIds = subscriptions
+      .slice(1)
+      .map((candidate) => candidate.id)
+      .filter(Boolean)
+    if (obsoleteSubscriptionIds.length > 0) {
+      const { error: obsoleteSubscriptionError } = await admin
+        .from('business_subscriptions')
+        .update({
+          status: 'canceled',
+          payment_status: 'not_required',
+          stripe_subscription_id: null,
+          cancel_at_period_end: false,
+          payment_warning_at: null,
+          grace_period_ends_at: null,
+          cancellation_effective_at: now,
+          cancelled_at: now,
+          updated_at: now,
+        })
+        .in('id', obsoleteSubscriptionIds)
+      if (obsoleteSubscriptionError) {
+        console.error('[listing-checkout] Free activated but obsolete subscriptions could not be retired', {
+          subscriptionIds: obsoleteSubscriptionIds,
+          userId: subscriptionUserId,
+          error: obsoleteSubscriptionError.message,
+        })
+        return NextResponse.json({ error: 'Free was activated, but older company subscriptions could not be closed.' }, { status: 500 })
+      }
+    }
+    const profileActivation = admin
+      .from('marketplace_profiles')
+      .update({ business_onboarding_status: 'active', business_verification_status: 'verified', verification_updated_at: now })
+    const { error: profileActivationError } = subscriptionBusinessId
+      ? await profileActivation.eq('company_id', subscriptionBusinessId)
+      : await profileActivation.eq('user_id', subscriptionUserId)
+    if (profileActivationError) {
+      return NextResponse.json({ error: 'Free was activated, but the company profile could not be updated.' }, { status: 500 })
+    }
+    await admin.from('business_subscription_events').insert({
+      subscription_id: subscription.id,
+      user_id: subscriptionUserId,
+      event_type: existingSubscription?.plan_key && existingSubscription.plan_key !== 'free' ? 'downgraded_to_free' : 'activated',
+      from_plan: existingSubscription?.plan_key || null,
+      to_plan: 'free',
+      metadata: { activated_by: user.id },
+    })
     await sendBusinessBillingEmail(admin, {
       deliveryKey: `business-welcome-${subscription.id}`,
       kind: 'welcome',
-      userId: user.id,
+      userId: subscriptionUserId,
       subscriptionId: subscription.id,
       planKey: 'free',
-      activeListingLimit: 5,
+      activeListingLimit: 10,
       market,
     })
     return NextResponse.json({ activated: true, subscription })
@@ -183,7 +283,7 @@ export async function POST(request: Request) {
           priority: 0,
           published_at: approved ? now.toISOString() : null,
           expires_at: approved
-            ? new Date(now.getTime() + (product.durationDays || 7) * 86_400_000).toISOString()
+            ? new Date(now.getTime() + (product.durationDays || 5) * 86_400_000).toISOString()
             : null,
           updated_at: now.toISOString(),
         })
@@ -211,7 +311,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Business subscription requires a business account.' }, { status: 403 })
   }
   if (billingMethod === 'invoice' && product.kind !== 'subscription') {
-    return NextResponse.json({ error: 'Faktura kan bara anvÃ¤ndas fÃ¶r fÃ¶retagsabonnemang.' }, { status: 400 })
+    return NextResponse.json({ error: 'Faktura kan bara användas för företagsabonnemang.' }, { status: 400 })
   }
 
   const price = await resolveBillingPrice(product, market)
@@ -249,8 +349,8 @@ export async function POST(request: Request) {
   const { data: order, error: orderError } = await admin
     .from('payment_orders')
     .insert({
-      user_id: user.id,
-      business_id: body.businessId || null,
+      user_id: product.kind === 'subscription' ? subscriptionUserId : user.id,
+      business_id: product.kind === 'subscription' ? subscriptionBusinessId : body.businessId || null,
       listing_id: listing?.id || null,
       product_key: product.productKey,
       market,
@@ -273,8 +373,8 @@ export async function POST(request: Request) {
   const checkoutLocale = requestedLocale
   const checkoutProduct = createCheckoutProductCopy(product.productKey, listing?.title, checkoutLocale)
   const metadata = {
-    user_id: user.id,
-    business_id: body.businessId || '',
+    user_id: product.kind === 'subscription' ? subscriptionUserId : user.id,
+    business_id: product.kind === 'subscription' ? subscriptionBusinessId || '' : body.businessId || '',
     listing_id: listing?.id || '',
     product_key: product.productKey,
     market,
@@ -303,51 +403,58 @@ export async function POST(request: Request) {
       const { data: existingSubscription } = await admin
         .from('business_subscriptions')
         .select('stripe_customer_id')
-        .eq('user_id', user.id)
+        .eq('user_id', subscriptionUserId)
         .not('stripe_customer_id', 'is', null)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
+      const invoiceLocale = stripeLocaleForCheckout(checkoutLocale, market)
       const customerId = existingSubscription?.stripe_customer_id || (await stripe.customers.create({
         email: profile.email || user.email || undefined,
         name: profile.company_name || profile.email || user.email || undefined,
-        preferred_locales: [stripeLocaleForCheckout(checkoutLocale, market)],
+        preferred_locales: [invoiceLocale],
         metadata: {
-          user_id: user.id,
-          business_id: body.businessId || '',
+          user_id: subscriptionUserId,
+          business_id: subscriptionBusinessId || '',
         },
       })).id
+      if (existingSubscription?.stripe_customer_id) {
+        await stripe.customers.update(customerId, {
+          email: profile.email || user.email || undefined,
+          name: profile.company_name || profile.email || user.email || undefined,
+          preferred_locales: [invoiceLocale],
+          metadata: {
+            user_id: subscriptionUserId,
+            business_id: subscriptionBusinessId || '',
+          },
+        })
+      }
 
-      const stripeProduct = price.stripePriceId
-        ? null
-        : await stripe.products.create({
-            name: checkoutProduct.name,
-            description: checkoutProduct.description,
-            metadata: {
-              product_key: product.productKey,
-              source: price.source,
-              required_env: price.requiredEnv || '',
-            },
-          })
-      const subscriptionItem: Stripe.SubscriptionCreateParams.Item =
-        price.stripePriceId
-          ? { price: price.stripePriceId, quantity: 1 }
-          : {
-              price_data: {
-                currency: price.currency,
-                unit_amount: price.amountMinor,
-                recurring: { interval: product.billingInterval || 'month' },
-                product: stripeProduct!.id,
-              },
-              quantity: 1,
-            }
+      const stripeProduct = await stripe.products.create({
+        name: checkoutProduct.name,
+        description: checkoutProduct.description,
+        metadata: {
+          product_key: product.productKey,
+          source: price.source,
+          required_env: price.requiredEnv || '',
+        },
+      })
+      const subscriptionItem: Stripe.SubscriptionCreateParams.Item = {
+        price_data: {
+          currency: price.currency,
+          unit_amount: price.amountMinor,
+          recurring: { interval: product.billingInterval || 'month' },
+          product: stripeProduct.id,
+        },
+        quantity: 1,
+      }
       const bankTransferSettings = createInvoiceBankTransferSettings(price.currency)
 
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         collection_method: 'send_invoice',
-        days_until_due: 30,
+        days_until_due: BUSINESS_INVOICE_DAYS_UNTIL_DUE,
         items: [subscriptionItem],
         ...(bankTransferSettings ? { payment_settings: bankTransferSettings } : {}),
         metadata,
@@ -368,8 +475,8 @@ export async function POST(request: Request) {
         current_period_end?: number | null
       }
       const subscriptionPayload = {
-        user_id: user.id,
-        business_id: body.businessId || null,
+        user_id: subscriptionUserId,
+        business_id: subscriptionBusinessId,
         product_key: product.productKey,
         market,
         currency: price.currency,
@@ -395,7 +502,7 @@ export async function POST(request: Request) {
       }
 
       if (latestInvoice) {
-        await upsertBusinessInvoice(admin, latestInvoice, businessSubscription.id, user.id)
+        await upsertBusinessInvoice(admin, latestInvoice, businessSubscription.id, subscriptionUserId)
       }
       await admin
         .from('payment_orders')
@@ -416,10 +523,10 @@ export async function POST(request: Request) {
           business_onboarding_status: 'active',
           verification_updated_at: new Date().toISOString(),
         })
-        .eq('user_id', user.id)
+        .eq(subscriptionBusinessId ? 'company_id' : 'user_id', subscriptionBusinessId || subscriptionUserId)
       await admin.from('business_subscription_events').insert({
         subscription_id: businessSubscription.id,
-        user_id: user.id,
+        user_id: subscriptionUserId,
         event_type: 'invoice_subscription_created',
         to_plan: product.businessPlan,
         metadata: {
@@ -427,14 +534,15 @@ export async function POST(request: Request) {
           stripe_subscription_id: subscription.id,
           stripe_invoice_id: latestInvoice?.id || null,
           invoice_email_sent: true,
-          days_until_due: 30,
+          days_until_due: BUSINESS_INVOICE_DAYS_UNTIL_DUE,
           bank_transfer_enabled: Boolean(bankTransferSettings),
+          activated_by: user.id,
         },
       })
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-welcome-${businessSubscription.id}`,
         kind: 'welcome',
-        userId: user.id,
+        userId: subscriptionUserId,
         subscriptionId: businessSubscription.id,
         planKey: product.businessPlan,
         activeListingLimit: product.activeListingLimit || null,
@@ -444,7 +552,7 @@ export async function POST(request: Request) {
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-invoice-ready-${latestInvoice.id}`,
         kind: 'invoice_ready',
-        userId: user.id,
+        userId: subscriptionUserId,
         subscriptionId: businessSubscription.id,
         invoiceId: latestInvoice.id,
         planKey: product.businessPlan,
@@ -491,6 +599,8 @@ export async function POST(request: Request) {
       branding_settings: checkoutBranding,
       locale: stripeLocaleForCheckout(checkoutLocale, market),
       submit_type: product.billingType === 'payment' ? 'pay' : undefined,
+      billing_address_collection: 'auto',
+      customer_creation: product.billingType === 'payment' ? 'if_required' : undefined,
       customer_email: profile.email,
       client_reference_id: order.id,
       line_items: [
@@ -607,6 +717,10 @@ function createCheckoutBranding() {
     button_color: '#0866ff',
     border_style: 'rounded' as const,
     font_family: 'inter' as const,
+    icon: {
+      type: 'url' as const,
+      url: 'https://www.autorell.com/favicon-96.png',
+    },
     logo: {
       type: 'url' as const,
       url: 'https://www.autorell.com/autorell-logo-primary.png',
@@ -615,90 +729,463 @@ function createCheckoutBranding() {
 }
 
 function createCheckoutProductCopy(productKey: string, listingTitle: string | null | undefined, locale: PublicLocale) {
-  const t = (value: string) => translatePublic(locale, value)
+  const copy = checkoutProductCopy(locale)
+  const security = checkoutSecurityCopy(locale)
   const listingContext = listingTitle ? `${listingTitle} - ` : ''
-  const afterSubmitText = t('Secure payment via Stripe. You will be sent back to Autorell after the purchase is complete.')
+  const afterSubmitText = security.afterSubmit
 
   if (productKey.startsWith('listing.')) {
     const [, category, packageName] = productKey.split('.')
-    const categoryLabel = t(checkoutCategoryLabel(category))
-    const packageLabel = packageName === 'premium' ? t('Premium listing') : t('Standard listing')
-    const duration = packageName === 'premium' ? t('30 days') : t('15 days')
+    const categoryLabel = copy.categories[category] || checkoutCategoryFallback(category)
+    const packageLabel = packageName === 'premium' ? copy.premiumListing : copy.standardListing
+    const duration = packageName === 'premium' ? copy.days30 : copy.days15
     return {
       name: `${packageLabel} - ${categoryLabel}`,
       description:
         packageName === 'premium'
-          ? `${listingContext}${duration} ${t('publication with extra visibility and included top placement.')}`
-          : `${listingContext}${duration} ${t('publication on Autorells European vehicle marketplace.')}`,
+          ? `${listingContext}${duration} ${copy.premiumDescription}`
+          : `${listingContext}${duration} ${copy.standardDescription}`,
       submitText:
         packageName === 'premium'
-          ? t('The listing gets higher visibility automatically when the payment has been confirmed.')
-          : t('The listing is published automatically when the payment has been confirmed.'),
+          ? `${copy.premiumSubmit} ${security.cardDetails}`
+          : `${copy.standardSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.top_placement')) {
-    const days = productKey.includes('14') ? t('14 days') : productKey.includes('7') ? t('7 days') : t('3 days')
+    const days = productKey.includes('14') ? copy.days14 : productKey.includes('7') ? copy.days7 : copy.days3
     return {
-      name: `${t('Top placement')} - ${days}`,
-      description: `${listingContext}${t('Move the listing higher in the results for')} ${days}.`,
-      submitText: t('The top placement is activated automatically when the payment has been confirmed.'),
+      name: `${copy.topPlacement} - ${days}`,
+      description: `${listingContext}${copy.topPlacementDescription(days)}`,
+      submitText: `${copy.topPlacementSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.featured')) {
-    const days = productKey.includes('30') ? t('30 days') : t('7 days')
+    const days = productKey.includes('30') ? copy.days30 : copy.days7
     return {
-      name: `${t('Featured listing')} - ${days}`,
-      description: `${listingContext}${t('Show the listing as featured on Autorell for')} ${days}.`,
-      submitText: t('Featured visibility is activated automatically when the payment has been confirmed.'),
+      name: `${copy.featuredListing} - ${days}`,
+      description: `${listingContext}${copy.featuredDescription(days)}`,
+      submitText: `${copy.featuredSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('addon.refresh')) {
     return {
-      name: t('Listing refresh'),
-      description: `${listingContext}${t('Refresh the listing sorting date and get new visibility.')}`,
-      submitText: t('The refresh is activated automatically when the payment has been confirmed.'),
+      name: copy.listingRefresh,
+      description: `${listingContext}${copy.refreshDescription}`,
+      submitText: `${copy.refreshSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   if (productKey.startsWith('subscription.business.')) {
     const plan = productKey.split('.')[2] || 'business'
-    const period = productKey.endsWith('.annual') ? t('Annual subscription') : t('Monthly subscription')
+    const period = productKey.endsWith('.annual') ? copy.annualSubscription : copy.monthlySubscription
     return {
-      name: `${t('Business')} - ${capitalize(plan)}`,
-      description: `${period} ${t('for companies selling vehicles on Autorell.')}`,
-      submitText: t('The business subscription is activated automatically when the payment has been confirmed.'),
+      name: `${copy.business} - ${capitalize(plan)}`,
+      description: `${period} ${copy.businessDescription}`,
+      submitText: `${copy.businessSubmit} ${security.cardDetails}`,
       afterSubmitText,
     }
   }
 
   return {
     name: 'Autorell',
-    description: t('Autorell payment'),
-    submitText: t('The payment is handled securely via Stripe.'),
+    description: copy.autorellPayment,
+    submitText: `${copy.paymentSubmit} ${security.cardDetails}`,
     afterSubmitText,
   }
 }
 
-function checkoutCategoryLabel(category: string) {
-  const labels: Record<string, string> = {
-    cars: 'Car',
-    vans: 'Van',
-    motorcycles: 'Motorcycle',
-    motorhomes: 'Motorhome',
-    caravans: 'Caravan',
-    trucks: 'Truck',
-    agriculture: 'Agricultural machine',
-      construction: 'Construction machine',
-      'electric-bikes': 'Electric bike',
+function checkoutProductCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, {
+    standardListing: string
+    premiumListing: string
+    topPlacement: string
+    featuredListing: string
+    listingRefresh: string
+    business: string
+    autorellPayment: string
+    days3: string
+    days7: string
+    days14: string
+    days15: string
+    days30: string
+    monthlySubscription: string
+    annualSubscription: string
+    standardDescription: string
+    premiumDescription: string
+    standardSubmit: string
+    premiumSubmit: string
+    topPlacementDescription: (days: string) => string
+    topPlacementSubmit: string
+    featuredDescription: (days: string) => string
+    featuredSubmit: string
+    refreshDescription: string
+    refreshSubmit: string
+    businessDescription: string
+    businessSubmit: string
+    paymentSubmit: string
+    categories: Record<string, string>
+  }> = {
+    sv: {
+      standardListing: 'Standardannons',
+      premiumListing: 'Premiumannons',
+      topPlacement: 'Toppplacering',
+      featuredListing: 'Utvald annons',
+      listingRefresh: 'Lyft annons',
+      business: 'Företag',
+      autorellPayment: 'Autorell-betalning',
+      days3: '3 dagar',
+      days7: '7 dagar',
+      days14: '14 dagar',
+      days15: '15 dagar',
+      days30: '30 dagar',
+      monthlySubscription: 'Månadsabonnemang',
+      annualSubscription: 'Årsabonnemang',
+      standardDescription: 'publicering på Autorells europeiska fordonsmarknad.',
+      premiumDescription: 'publicering med extra synlighet och inkluderad toppplacering.',
+      standardSubmit: 'Annonsen publiceras automatiskt när betalningen har bekräftats.',
+      premiumSubmit: 'Annonsen får högre synlighet automatiskt när betalningen har bekräftats.',
+      topPlacementDescription: (days) => `Flytta annonsen högre i resultaten i ${days}.`,
+      topPlacementSubmit: 'Toppplaceringen aktiveras automatiskt när betalningen har bekräftats.',
+      featuredDescription: (days) => `Visa annonsen som utvald på Autorell i ${days}.`,
+      featuredSubmit: 'Utvald synlighet aktiveras automatiskt när betalningen har bekräftats.',
+      refreshDescription: 'Förnya annonsens sorteringsdatum och få ny synlighet.',
+      refreshSubmit: 'Lyftet aktiveras automatiskt när betalningen har bekräftats.',
+      businessDescription: 'för företag som säljer fordon på Autorell.',
+      businessSubmit: 'Företagsabonnemanget aktiveras automatiskt när betalningen har bekräftats.',
+      paymentSubmit: 'Betalningen hanteras säkert via Stripe.',
+      categories: { cars: 'Bil', vans: 'Transportbil', motorcycles: 'Motorcykel', motorhomes: 'Husbil', caravans: 'Husvagn', trucks: 'Lastbil', agriculture: 'Lantbruksmaskin', construction: 'Entreprenadmaskin', 'electric-bikes': 'Elcykel' },
+    },
+    en: {
+      standardListing: 'Standard listing',
+      premiumListing: 'Premium listing',
+      topPlacement: 'Top placement',
+      featuredListing: 'Featured listing',
+      listingRefresh: 'Listing refresh',
+      business: 'Business',
+      autorellPayment: 'Autorell payment',
+      days3: '3 days',
+      days7: '7 days',
+      days14: '14 days',
+      days15: '15 days',
+      days30: '30 days',
+      monthlySubscription: 'Monthly subscription',
+      annualSubscription: 'Annual subscription',
+      standardDescription: 'publication on Autorells European vehicle marketplace.',
+      premiumDescription: 'publication with extra visibility and included top placement.',
+      standardSubmit: 'The listing is published automatically when the payment has been confirmed.',
+      premiumSubmit: 'The listing gets higher visibility automatically when the payment has been confirmed.',
+      topPlacementDescription: (days) => `Move the listing higher in the results for ${days}.`,
+      topPlacementSubmit: 'The top placement is activated automatically when the payment has been confirmed.',
+      featuredDescription: (days) => `Show the listing as featured on Autorell for ${days}.`,
+      featuredSubmit: 'Featured visibility is activated automatically when the payment has been confirmed.',
+      refreshDescription: 'Refresh the listing sorting date and get new visibility.',
+      refreshSubmit: 'The refresh is activated automatically when the payment has been confirmed.',
+      businessDescription: 'for companies selling vehicles on Autorell.',
+      businessSubmit: 'The business subscription is activated automatically when the payment has been confirmed.',
+      paymentSubmit: 'The payment is handled securely via Stripe.',
+      categories: { cars: 'Car', vans: 'Van', motorcycles: 'Motorcycle', motorhomes: 'Motorhome', caravans: 'Caravan', trucks: 'Truck', agriculture: 'Agricultural machine', construction: 'Construction machine', 'electric-bikes': 'Electric bike' },
+    },
+    de: {
+      standardListing: 'Standardanzeige',
+      premiumListing: 'Premiumanzeige',
+      topPlacement: 'Top-Platzierung',
+      featuredListing: 'Hervorgehobene Anzeige',
+      listingRefresh: 'Anzeige aktualisieren',
+      business: 'Unternehmen',
+      autorellPayment: 'Autorell-Zahlung',
+      days3: '3 Tage',
+      days7: '7 Tage',
+      days14: '14 Tage',
+      days15: '15 Tage',
+      days30: '30 Tage',
+      monthlySubscription: 'Monatsabonnement',
+      annualSubscription: 'Jahresabonnement',
+      standardDescription: 'Veröffentlichung auf Autorells europäischem Fahrzeugmarktplatz.',
+      premiumDescription: 'Veröffentlichung mit zusätzlicher Sichtbarkeit und enthaltener Top-Platzierung.',
+      standardSubmit: 'Die Anzeige wird automatisch veröffentlicht, sobald die Zahlung bestätigt wurde.',
+      premiumSubmit: 'Die Anzeige erhält automatisch mehr Sichtbarkeit, sobald die Zahlung bestätigt wurde.',
+      topPlacementDescription: (days) => `Anzeige für ${days} weiter oben in den Ergebnissen platzieren.`,
+      topPlacementSubmit: 'Die Top-Platzierung wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      featuredDescription: (days) => `Anzeige für ${days} als hervorgehoben auf Autorell anzeigen.`,
+      featuredSubmit: 'Die hervorgehobene Sichtbarkeit wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      refreshDescription: 'Sortierdatum der Anzeige erneuern und neue Sichtbarkeit erhalten.',
+      refreshSubmit: 'Die Aktualisierung wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      businessDescription: 'für Unternehmen, die Fahrzeuge auf Autorell verkaufen.',
+      businessSubmit: 'Das Unternehmensabonnement wird automatisch aktiviert, sobald die Zahlung bestätigt wurde.',
+      paymentSubmit: 'Die Zahlung wird sicher über Stripe abgewickelt.',
+      categories: { cars: 'Auto', vans: 'Transporter', motorcycles: 'Motorrad', motorhomes: 'Wohnmobil', caravans: 'Wohnwagen', trucks: 'Lkw', agriculture: 'Landmaschine', construction: 'Baumaschine', 'electric-bikes': 'E-Bike' },
+    },
+    fr: {
+      standardListing: 'Annonce standard',
+      premiumListing: 'Annonce premium',
+      topPlacement: 'Placement en tête',
+      featuredListing: 'Annonce mise en avant',
+      listingRefresh: 'Remonter l’annonce',
+      business: 'Entreprise',
+      autorellPayment: 'Paiement Autorell',
+      days3: '3 jours',
+      days7: '7 jours',
+      days14: '14 jours',
+      days15: '15 jours',
+      days30: '30 jours',
+      monthlySubscription: 'Abonnement mensuel',
+      annualSubscription: 'Abonnement annuel',
+      standardDescription: 'de publication sur la place de marché européenne de véhicules Autorell.',
+      premiumDescription: 'de publication avec visibilité renforcée et placement en tête inclus.',
+      standardSubmit: 'L’annonce est publiée automatiquement lorsque le paiement est confirmé.',
+      premiumSubmit: 'L’annonce obtient automatiquement plus de visibilité lorsque le paiement est confirmé.',
+      topPlacementDescription: (days) => `Placez l’annonce plus haut dans les résultats pendant ${days}.`,
+      topPlacementSubmit: 'Le placement en tête est activé automatiquement lorsque le paiement est confirmé.',
+      featuredDescription: (days) => `Affichez l’annonce comme mise en avant sur Autorell pendant ${days}.`,
+      featuredSubmit: 'La visibilité mise en avant est activée automatiquement lorsque le paiement est confirmé.',
+      refreshDescription: 'Actualisez la date de tri de l’annonce et obtenez une nouvelle visibilité.',
+      refreshSubmit: 'La remontée est activée automatiquement lorsque le paiement est confirmé.',
+      businessDescription: 'pour les entreprises qui vendent des véhicules sur Autorell.',
+      businessSubmit: 'L’abonnement entreprise est activé automatiquement lorsque le paiement est confirmé.',
+      paymentSubmit: 'Le paiement est traité de manière sécurisée via Stripe.',
+      categories: { cars: 'Voiture', vans: 'Utilitaire', motorcycles: 'Moto', motorhomes: 'Camping-car', caravans: 'Caravane', trucks: 'Camion', agriculture: 'Machine agricole', construction: 'Engin de chantier', 'electric-bikes': 'Vélo électrique' },
+    },
+    es: {
+      standardListing: 'Anuncio estándar',
+      premiumListing: 'Anuncio premium',
+      topPlacement: 'Posición destacada',
+      featuredListing: 'Anuncio destacado',
+      listingRefresh: 'Impulsar anuncio',
+      business: 'Empresa',
+      autorellPayment: 'Pago de Autorell',
+      days3: '3 días',
+      days7: '7 días',
+      days14: '14 días',
+      days15: '15 días',
+      days30: '30 días',
+      monthlySubscription: 'Suscripción mensual',
+      annualSubscription: 'Suscripción anual',
+      standardDescription: 'de publicación en el marketplace europeo de vehículos de Autorell.',
+      premiumDescription: 'de publicación con visibilidad adicional y posición destacada incluida.',
+      standardSubmit: 'El anuncio se publica automáticamente cuando se confirma el pago.',
+      premiumSubmit: 'El anuncio obtiene automáticamente mayor visibilidad cuando se confirma el pago.',
+      topPlacementDescription: (days) => `Mueve el anuncio más arriba en los resultados durante ${days}.`,
+      topPlacementSubmit: 'La posición destacada se activa automáticamente cuando se confirma el pago.',
+      featuredDescription: (days) => `Muestra el anuncio como destacado en Autorell durante ${days}.`,
+      featuredSubmit: 'La visibilidad destacada se activa automáticamente cuando se confirma el pago.',
+      refreshDescription: 'Actualiza la fecha de ordenación del anuncio y gana nueva visibilidad.',
+      refreshSubmit: 'El impulso se activa automáticamente cuando se confirma el pago.',
+      businessDescription: 'para empresas que venden vehículos en Autorell.',
+      businessSubmit: 'La suscripción de empresa se activa automáticamente cuando se confirma el pago.',
+      paymentSubmit: 'El pago se procesa de forma segura mediante Stripe.',
+      categories: { cars: 'Coche', vans: 'Furgoneta', motorcycles: 'Moto', motorhomes: 'Autocaravana', caravans: 'Caravana', trucks: 'Camión', agriculture: 'Maquinaria agrícola', construction: 'Maquinaria de construcción', 'electric-bikes': 'Bicicleta eléctrica' },
+    },
+    it: {
+      standardListing: 'Annuncio standard',
+      premiumListing: 'Annuncio premium',
+      topPlacement: 'Posizionamento in alto',
+      featuredListing: 'Annuncio in evidenza',
+      listingRefresh: 'Rilancia annuncio',
+      business: 'Azienda',
+      autorellPayment: 'Pagamento Autorell',
+      days3: '3 giorni',
+      days7: '7 giorni',
+      days14: '14 giorni',
+      days15: '15 giorni',
+      days30: '30 giorni',
+      monthlySubscription: 'Abbonamento mensile',
+      annualSubscription: 'Abbonamento annuale',
+      standardDescription: 'di pubblicazione sul marketplace europeo di veicoli Autorell.',
+      premiumDescription: 'di pubblicazione con visibilità extra e posizionamento in alto incluso.',
+      standardSubmit: 'L’annuncio viene pubblicato automaticamente quando il pagamento è confermato.',
+      premiumSubmit: 'L’annuncio ottiene automaticamente maggiore visibilità quando il pagamento è confermato.',
+      topPlacementDescription: (days) => `Sposta l’annuncio più in alto nei risultati per ${days}.`,
+      topPlacementSubmit: 'Il posizionamento in alto viene attivato automaticamente quando il pagamento è confermato.',
+      featuredDescription: (days) => `Mostra l’annuncio in evidenza su Autorell per ${days}.`,
+      featuredSubmit: 'La visibilità in evidenza viene attivata automaticamente quando il pagamento è confermato.',
+      refreshDescription: 'Aggiorna la data di ordinamento dell’annuncio e ottieni nuova visibilità.',
+      refreshSubmit: 'Il rilancio viene attivato automaticamente quando il pagamento è confermato.',
+      businessDescription: 'per aziende che vendono veicoli su Autorell.',
+      businessSubmit: 'L’abbonamento aziendale viene attivato automaticamente quando il pagamento è confermato.',
+      paymentSubmit: 'Il pagamento viene gestito in modo sicuro tramite Stripe.',
+      categories: { cars: 'Auto', vans: 'Furgone', motorcycles: 'Moto', motorhomes: 'Camper', caravans: 'Roulotte', trucks: 'Camion', agriculture: 'Macchina agricola', construction: 'Macchina da cantiere', 'electric-bikes': 'Bici elettrica' },
+    },
+    nl: {
+      standardListing: 'Standaardadvertentie',
+      premiumListing: 'Premiumadvertentie',
+      topPlacement: 'Topplaatsing',
+      featuredListing: 'Uitgelichte advertentie',
+      listingRefresh: 'Advertentie omhoog plaatsen',
+      business: 'Zakelijk',
+      autorellPayment: 'Autorell-betaling',
+      days3: '3 dagen',
+      days7: '7 dagen',
+      days14: '14 dagen',
+      days15: '15 dagen',
+      days30: '30 dagen',
+      monthlySubscription: 'Maandabonnement',
+      annualSubscription: 'Jaarabonnement',
+      standardDescription: 'publicatie op Autorells Europese voertuigmarktplaats.',
+      premiumDescription: 'publicatie met extra zichtbaarheid en inbegrepen topplaatsing.',
+      standardSubmit: 'De advertentie wordt automatisch gepubliceerd zodra de betaling is bevestigd.',
+      premiumSubmit: 'De advertentie krijgt automatisch meer zichtbaarheid zodra de betaling is bevestigd.',
+      topPlacementDescription: (days) => `Plaats de advertentie ${days} hoger in de resultaten.`,
+      topPlacementSubmit: 'De topplaatsing wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      featuredDescription: (days) => `Toon de advertentie ${days} als uitgelicht op Autorell.`,
+      featuredSubmit: 'Uitgelichte zichtbaarheid wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      refreshDescription: 'Vernieuw de sorteerdatum van de advertentie en krijg nieuwe zichtbaarheid.',
+      refreshSubmit: 'De boost wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      businessDescription: 'voor bedrijven die voertuigen verkopen op Autorell.',
+      businessSubmit: 'Het zakelijke abonnement wordt automatisch geactiveerd zodra de betaling is bevestigd.',
+      paymentSubmit: 'De betaling wordt veilig verwerkt via Stripe.',
+      categories: { cars: 'Auto', vans: 'Bestelwagen', motorcycles: 'Motor', motorhomes: 'Camper', caravans: 'Caravan', trucks: 'Vrachtwagen', agriculture: 'Landbouwmachine', construction: 'Bouwmachine', 'electric-bikes': 'Elektrische fiets' },
+    },
+    pl: {
+      standardListing: 'Ogłoszenie standardowe',
+      premiumListing: 'Ogłoszenie premium',
+      topPlacement: 'Wyróżnienie na górze',
+      featuredListing: 'Ogłoszenie wyróżnione',
+      listingRefresh: 'Odśwież ogłoszenie',
+      business: 'Firma',
+      autorellPayment: 'Płatność Autorell',
+      days3: '3 dni',
+      days7: '7 dni',
+      days14: '14 dni',
+      days15: '15 dni',
+      days30: '30 dni',
+      monthlySubscription: 'Subskrypcja miesięczna',
+      annualSubscription: 'Subskrypcja roczna',
+      standardDescription: 'publikacji na europejskim marketplace pojazdów Autorell.',
+      premiumDescription: 'publikacji z dodatkową widocznością i wyróżnieniem na górze.',
+      standardSubmit: 'Ogłoszenie zostanie opublikowane automatycznie po potwierdzeniu płatności.',
+      premiumSubmit: 'Ogłoszenie automatycznie otrzyma większą widoczność po potwierdzeniu płatności.',
+      topPlacementDescription: (days) => `Przenieś ogłoszenie wyżej w wynikach na ${days}.`,
+      topPlacementSubmit: 'Wyróżnienie na górze zostanie aktywowane automatycznie po potwierdzeniu płatności.',
+      featuredDescription: (days) => `Pokaż ogłoszenie jako wyróżnione na Autorell przez ${days}.`,
+      featuredSubmit: 'Wyróżniona widoczność zostanie aktywowana automatycznie po potwierdzeniu płatności.',
+      refreshDescription: 'Odśwież datę sortowania ogłoszenia i uzyskaj nową widoczność.',
+      refreshSubmit: 'Odświeżenie zostanie aktywowane automatycznie po potwierdzeniu płatności.',
+      businessDescription: 'dla firm sprzedających pojazdy na Autorell.',
+      businessSubmit: 'Subskrypcja firmowa zostanie aktywowana automatycznie po potwierdzeniu płatności.',
+      paymentSubmit: 'Płatność jest bezpiecznie obsługiwana przez Stripe.',
+      categories: { cars: 'Samochód', vans: 'Van', motorcycles: 'Motocykl', motorhomes: 'Kamper', caravans: 'Przyczepa kempingowa', trucks: 'Ciężarówka', agriculture: 'Maszyna rolnicza', construction: 'Maszyna budowlana', 'electric-bikes': 'Rower elektryczny' },
+    },
+    fi: {
+      standardListing: 'Standardi-ilmoitus',
+      premiumListing: 'Premium-ilmoitus',
+      topPlacement: 'Kärkisijoitus',
+      featuredListing: 'Nostettu ilmoitus',
+      listingRefresh: 'Nosta ilmoitus',
+      business: 'Yritys',
+      autorellPayment: 'Autorell-maksu',
+      days3: '3 päivää',
+      days7: '7 päivää',
+      days14: '14 päivää',
+      days15: '15 päivää',
+      days30: '30 päivää',
+      monthlySubscription: 'Kuukausitilaus',
+      annualSubscription: 'Vuositilaus',
+      standardDescription: 'julkaisua Autorellin eurooppalaisella ajoneuvomarkkinapaikalla.',
+      premiumDescription: 'julkaisua lisänäkyvyydellä ja mukana olevalla kärkisijoituksella.',
+      standardSubmit: 'Ilmoitus julkaistaan automaattisesti, kun maksu on vahvistettu.',
+      premiumSubmit: 'Ilmoitus saa automaattisesti enemmän näkyvyyttä, kun maksu on vahvistettu.',
+      topPlacementDescription: (days) => `Siirrä ilmoitus ylemmäs tuloksissa ajaksi ${days}.`,
+      topPlacementSubmit: 'Kärkisijoitus aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      featuredDescription: (days) => `Näytä ilmoitus nostettuna Autorellissa ajan ${days}.`,
+      featuredSubmit: 'Nostettu näkyvyys aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      refreshDescription: 'Päivitä ilmoituksen lajittelupäivä ja saa uutta näkyvyyttä.',
+      refreshSubmit: 'Nosto aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      businessDescription: 'yrityksille, jotka myyvät ajoneuvoja Autorellissa.',
+      businessSubmit: 'Yritystilaus aktivoidaan automaattisesti, kun maksu on vahvistettu.',
+      paymentSubmit: 'Maksu käsitellään turvallisesti Stripen kautta.',
+      categories: { cars: 'Auto', vans: 'Pakettiauto', motorcycles: 'Moottoripyörä', motorhomes: 'Matkailuauto', caravans: 'Asuntovaunu', trucks: 'Kuorma-auto', agriculture: 'Maatalouskone', construction: 'Maarakennuskone', 'electric-bikes': 'Sähköpyörä' },
+    },
+    da: {
+      standardListing: 'Standardannonce',
+      premiumListing: 'Premiumannonce',
+      topPlacement: 'Topplacering',
+      featuredListing: 'Fremhævet annonce',
+      listingRefresh: 'Løft annonce',
+      business: 'Virksomhed',
+      autorellPayment: 'Autorell-betaling',
+      days3: '3 dage',
+      days7: '7 dage',
+      days14: '14 dage',
+      days15: '15 dage',
+      days30: '30 dage',
+      monthlySubscription: 'Månedsabonnement',
+      annualSubscription: 'Årsabonnement',
+      standardDescription: 'publicering på Autorells europæiske køretøjsmarkedsplads.',
+      premiumDescription: 'publicering med ekstra synlighed og inkluderet topplacering.',
+      standardSubmit: 'Annoncen offentliggøres automatisk, når betalingen er bekræftet.',
+      premiumSubmit: 'Annoncen får automatisk mere synlighed, når betalingen er bekræftet.',
+      topPlacementDescription: (days) => `Flyt annoncen højere op i resultaterne i ${days}.`,
+      topPlacementSubmit: 'Topplaceringen aktiveres automatisk, når betalingen er bekræftet.',
+      featuredDescription: (days) => `Vis annoncen som fremhævet på Autorell i ${days}.`,
+      featuredSubmit: 'Fremhævet synlighed aktiveres automatisk, når betalingen er bekræftet.',
+      refreshDescription: 'Forny annoncens sorteringsdato og få ny synlighed.',
+      refreshSubmit: 'Løftet aktiveres automatisk, når betalingen er bekræftet.',
+      businessDescription: 'for virksomheder, der sælger køretøjer på Autorell.',
+      businessSubmit: 'Virksomhedsabonnementet aktiveres automatisk, når betalingen er bekræftet.',
+      paymentSubmit: 'Betalingen håndteres sikkert via Stripe.',
+      categories: { cars: 'Bil', vans: 'Varebil', motorcycles: 'Motorcykel', motorhomes: 'Autocamper', caravans: 'Campingvogn', trucks: 'Lastbil', agriculture: 'Landbrugsmaskine', construction: 'Entreprenørmaskine', 'electric-bikes': 'Elcykel' },
+    },
   }
-  return labels[category] || capitalize(category.replace(/-/g, ' '))
+  return copy[normalized] || copy.en
+}
+
+function checkoutSecurityCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { cardDetails: string; afterSubmit: string }> = {
+    sv: {
+      cardDetails: 'Betalningen är TLS/SSL-krypterad. Stripe hanterar kortuppgifterna och Autorell ser eller lagrar aldrig ditt kortnummer.',
+      afterSubmit: 'När Stripe har bekräftat betalningen skickas du tillbaka till Autorell och tjänsten aktiveras automatiskt.',
+    },
+    en: {
+      cardDetails: 'Payment is TLS/SSL encrypted. Stripe handles card details and Autorell never sees or stores your card number.',
+      afterSubmit: 'After Stripe confirms the payment, you are sent back to Autorell and the service is activated automatically.',
+    },
+    de: {
+      cardDetails: 'Die Zahlung ist TLS/SSL-verschlüsselt. Stripe verarbeitet die Kartendaten; Autorell sieht oder speichert Ihre Kartennummer nie.',
+      afterSubmit: 'Nachdem Stripe die Zahlung bestätigt hat, werden Sie zu Autorell zurückgeleitet und der Dienst wird automatisch aktiviert.',
+    },
+    fr: {
+      cardDetails: 'Le paiement est chiffré TLS/SSL. Stripe traite les données de carte et Autorell ne voit ni ne stocke jamais votre numéro de carte.',
+      afterSubmit: 'Après confirmation du paiement par Stripe, vous revenez sur Autorell et le service est activé automatiquement.',
+    },
+    es: {
+      cardDetails: 'El pago está cifrado con TLS/SSL. Stripe gestiona los datos de la tarjeta y Autorell nunca ve ni almacena tu número de tarjeta.',
+      afterSubmit: 'Cuando Stripe confirme el pago, volverás a Autorell y el servicio se activará automáticamente.',
+    },
+    it: {
+      cardDetails: 'Il pagamento è crittografato TLS/SSL. Stripe gestisce i dati della carta e Autorell non vede né conserva mai il numero della carta.',
+      afterSubmit: 'Dopo la conferma del pagamento da parte di Stripe, torni su Autorell e il servizio viene attivato automaticamente.',
+    },
+    nl: {
+      cardDetails: 'De betaling is TLS/SSL-versleuteld. Stripe verwerkt kaartgegevens en Autorell ziet of bewaart je kaartnummer nooit.',
+      afterSubmit: 'Nadat Stripe de betaling heeft bevestigd, keer je terug naar Autorell en wordt de dienst automatisch geactiveerd.',
+    },
+    pl: {
+      cardDetails: 'Płatność jest szyfrowana TLS/SSL. Stripe obsługuje dane karty, a Autorell nigdy nie widzi ani nie przechowuje numeru karty.',
+      afterSubmit: 'Po potwierdzeniu płatności przez Stripe wrócisz do Autorell, a usługa zostanie aktywowana automatycznie.',
+    },
+    fi: {
+      cardDetails: 'Maksu on TLS/SSL-salattu. Stripe käsittelee korttitiedot, eikä Autorell koskaan näe tai tallenna korttinumeroasi.',
+      afterSubmit: 'Kun Stripe on vahvistanut maksun, palaat Autorelliin ja palvelu aktivoidaan automaattisesti.',
+    },
+    da: {
+      cardDetails: 'Betalingen er TLS/SSL-krypteret. Stripe håndterer kortoplysninger, og Autorell ser eller gemmer aldrig dit kortnummer.',
+      afterSubmit: 'Når Stripe har bekræftet betalingen, sendes du tilbage til Autorell, og tjenesten aktiveres automatisk.',
+    },
+  }
+  return copy[normalized] || copy.en
+}
+
+function checkoutCategoryFallback(category: string) {
+  return capitalize(category.replace(/-/g, ' '))
 }
 
 function publicLocaleForMarket(market: string): PublicLocale {
@@ -774,6 +1261,12 @@ function capitalize(value: string) {
 
 function stripeTimestampToIso(value?: number | null) {
   return typeof value === 'number' ? new Date(value * 1000).toISOString() : null
+}
+
+function isMissingStripeResource(error: unknown) {
+  if (!error || typeof error !== 'object') return false
+  const stripeError = error as { code?: string; raw?: { code?: string } }
+  return stripeError.code === 'resource_missing' || stripeError.raw?.code === 'resource_missing'
 }
 
 function toStripeInvoice(invoice: Stripe.Subscription['latest_invoice']) {

@@ -17,7 +17,10 @@ type ListingCardImageCarouselProps = {
   placeholder?: ReactNode
   onNavigate?: () => void
   showControlsOnDesktop?: boolean
+  showControlsOnMobile?: boolean
   showDotsOnDesktop?: boolean
+  showDotsOnMobile?: boolean
+  enableTouchSwipe?: boolean
 }
 
 export default function ListingCardImageCarousel({
@@ -32,7 +35,10 @@ export default function ListingCardImageCarousel({
   placeholder,
   onNavigate,
   showControlsOnDesktop = false,
+  showControlsOnMobile = false,
   showDotsOnDesktop = false,
+  showDotsOnMobile = true,
+  enableTouchSwipe = true,
 }: ListingCardImageCarouselProps) {
   const [imageIndex, setImageIndex] = useState(0)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -82,12 +88,14 @@ export default function ListingCardImageCarousel({
   return (
     <div
       className={`group pointer-events-auto relative h-full w-full overflow-hidden ${className}`}
+      data-autorell-media-surface="true"
       onTouchStart={(event) => {
-        if (visibleImages.length < 2) return
+        if (!enableTouchSwipe || visibleImages.length < 2) return
         const touch = event.touches[0]
         touchStartRef.current = { x: touch.clientX, y: touch.clientY }
       }}
       onTouchEnd={(event) => {
+        if (!enableTouchSwipe) return
         const start = touchStartRef.current
         if (!start || visibleImages.length < 2) return
         touchStartRef.current = null
@@ -132,9 +140,11 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showPrevious()
             }}
-            className={`absolute left-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white transition md:grid ${showControlsOnDesktop ? 'md:opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
+            className={`absolute left-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white active:bg-transparent active:text-white focus-visible:bg-transparent focus-visible:text-white md:left-0 md:h-10 md:w-8 ${
+              showControlsOnMobile ? 'grid' : 'hidden'
+            } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
-            <ChevronLeft className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
+            <ChevronLeft className="h-5 w-5 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)] md:h-7 md:w-7" strokeWidth={2.5} />
           </button>
           <button
             type="button"
@@ -144,20 +154,24 @@ export default function ListingCardImageCarousel({
               event.stopPropagation()
               showNext()
             }}
-            className={`absolute right-0 top-1/2 z-20 hidden h-10 w-8 -translate-y-1/2 place-items-center text-white transition md:grid ${showControlsOnDesktop ? 'md:opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
+            className={`absolute right-2 top-1/2 z-20 h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white active:bg-transparent active:text-white focus-visible:bg-transparent focus-visible:text-white md:right-0 md:h-10 md:w-8 ${
+              showControlsOnMobile ? 'grid' : 'hidden'
+            } ${showControlsOnDesktop ? 'md:grid md:opacity-100' : 'md:grid md:opacity-0 md:group-hover:opacity-100'}`}
           >
-            <ChevronRight className="h-7 w-7 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)]" strokeWidth={2.5} />
+            <ChevronRight className="h-5 w-5 drop-shadow-[0_1px_3px_rgba(16,24,40,.55)] md:h-7 md:w-7" strokeWidth={2.5} />
           </button>
         </>
       ) : null}
 
       {dotCount > 1 ? (
-        <div className={`absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-t-[4px] bg-[#101828]/54 px-2 py-1 shadow-[0_-1px_10px_rgba(16,24,40,.14)] backdrop-blur-[2px] ${showDotsOnDesktop ? '' : 'md:hidden'}`}>
+        <div className={`absolute bottom-2 left-1/2 z-20 -translate-x-1/2 items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-black/5 ${
+          showDotsOnMobile ? 'flex' : 'hidden'
+        } ${showDotsOnDesktop ? 'md:flex' : 'md:hidden'}`}>
           {Array.from({ length: dotCount }).map((_, dotIndex) => (
             <span
               key={`${title}-image-dot-${dotIndex}`}
               className={`h-1.5 rounded-full transition ${
-                dotIndex === activeDot ? 'w-2.5 bg-white' : 'w-1.5 bg-white/55'
+                dotIndex === activeDot ? 'w-2.5 bg-[#0866ff]' : 'w-1.5 bg-[#0866ff]/35'
               }`}
             />
           ))}

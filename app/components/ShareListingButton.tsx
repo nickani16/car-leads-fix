@@ -24,20 +24,49 @@ export default function ShareListingButton({
 }) {
   const [copied, setCopied] = useState(false)
 
-  async function share() {
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url })
-      } else {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
-        window.setTimeout(() => setCopied(false), 1800)
-      }
-    } catch {
-      // User cancelled native share sheet.
-    }
+  function markCopied() {
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1800)
   }
 
+  async function copyFallback(shareUrl: string) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl)
+      markCopied()
+      return
+    }
+
+    const textArea = document.createElement('textarea')
+    textArea.value = shareUrl
+    textArea.setAttribute('readonly', '')
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-9999px'
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    markCopied()
+  }
+
+  async function share() {
+    const shareUrl = url || window.location.href
+    const shareData: ShareData = { title, url: shareUrl }
+    let attemptedNativeShare = false
+
+    try {
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        attemptedNativeShare = true
+        await navigator.share(shareData)
+        return
+      }
+
+      await copyFallback(shareUrl)
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : ''
+      if (name === 'AbortError' || !attemptedNativeShare) return
+      await copyFallback(shareUrl)
+    }
+  }
   const buttonClassName =
     variant === 'plain'
       ? 'inline-flex cursor-pointer items-center justify-center gap-2 text-[14px] font-[500] text-[#101828] transition hover:text-[#0866ff]'
@@ -55,3 +84,5 @@ export default function ShareListingButton({
     </button>
   )
 }
+
+

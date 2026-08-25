@@ -22,16 +22,6 @@ export type ListingMapLocation = {
 export async function resolveListingMapLocation(
   input: ListingMapLocationInput,
 ): Promise<ListingMapLocation | null> {
-  const listingCoordinates = parseListingCoordinates(input.latitude, input.longitude)
-  if (listingCoordinates && !isKnownGenericFallbackCoordinate(listingCoordinates, input)) {
-    return {
-      ...listingCoordinates,
-      approximate: false,
-      source: 'listing_coordinates',
-      query: null,
-    }
-  }
-
   const fullAddressQuery = buildLocationQuery([
     input.address,
     input.postalCode,
@@ -47,6 +37,16 @@ export async function resolveListingMapLocation(
         source: 'geocoded_full_address',
         query: fullAddressQuery,
       }
+    }
+  }
+
+  const listingCoordinates = parseListingCoordinates(input.latitude, input.longitude)
+  if (listingCoordinates && !isKnownGenericFallbackCoordinate(listingCoordinates, input)) {
+    return {
+      ...listingCoordinates,
+      approximate: false,
+      source: 'listing_coordinates',
+      query: null,
     }
   }
 

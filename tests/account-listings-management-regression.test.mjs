@@ -12,6 +12,7 @@ const listingAction = readFileSync(new URL('../app/api/account/listings/[id]/rou
 const listingStatusActions = readFileSync(new URL('../app/konto/annonser/ListingStatusActions.tsx', import.meta.url), 'utf8')
 const listingRefresh = readFileSync(new URL('../app/api/account/listings/[id]/refresh/route.ts', import.meta.url), 'utf8')
 const editListingPage = readFileSync(new URL('../app/account/listings/[id]/edit/page.tsx', import.meta.url), 'utf8')
+const editListingForm = readFileSync(new URL('../app/account/listings/[id]/edit/EditListingForm.tsx', import.meta.url), 'utf8')
 const fulfillment = readFileSync(new URL('../lib/billing/fulfillment.ts', import.meta.url), 'utf8')
 const accountListingManagement = readFileSync(new URL('../lib/account-listings-management.ts', import.meta.url), 'utf8')
 const migration = readFileSync(new URL('../supabase/migrations/20260713194500_account_listing_management.sql', import.meta.url), 'utf8')
@@ -92,6 +93,21 @@ test('company team members can manage listings inside their company scope', () =
   assert.match(listingRefresh, /resolveBusinessAccountScope\(user\.id, admin\)/)
   assert.match(listingRefresh, /scope\?\.listingOwnerUserIds\.includes\(String\(listing\.seller_user_id\)\)/)
   assert.match(listingRefresh, /p_owner_id: listing\.seller_user_id/)
+})
+
+test('listing edit flow can update vehicle identity fields', () => {
+  assert.match(editListingPage, /make,model,variant,model_year/)
+  assert.match(editListingForm, /const \[make, setMake\]/)
+  assert.match(editListingForm, /const \[model, setModel\]/)
+  assert.match(editListingForm, /const \[variant, setVariant\]/)
+  assert.match(editListingForm, /const \[modelYear, setModelYear\]/)
+  assert.match(editListingForm, /make,\s*model,\s*variant,\s*modelYear,/)
+  assert.match(listingAction, /make\?: string/)
+  assert.match(listingAction, /modelYear\?: number \| string/)
+  assert.match(listingAction, /const nextTitle = \[make, model, variant\]\.filter\(Boolean\)\.join\(' '\)/)
+  assert.match(listingAction, /title: nextTitle/)
+  assert.match(listingAction, /model_year: modelYear/)
+  assert.match(listingAction, /make,\s*model,\s*variant,\s*offerType: normalizeOfferType/)
 })
 
 test('private sold action requires confirmation and server-side lifecycle checks', () => {

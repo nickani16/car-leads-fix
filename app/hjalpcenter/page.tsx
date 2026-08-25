@@ -1,1 +1,1 @@
-export { metadata, default } from '../vanliga-fragor/page'
+export { generateMetadata, default } from '../vanliga-fragor/page'

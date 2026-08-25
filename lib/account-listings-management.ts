@@ -76,6 +76,7 @@ export type AccountListingSummary = {
   missingImages: number
   firstMissingImageId: string | null
   flagged: number
+  firstFlaggedListingId?: string | null
   expiringSoon: number
   failedPayments: number
   categories: string[]
@@ -237,6 +238,7 @@ async function getAccountListingSummaryForOwners(
     missingImages: listings.filter((listing) => !Array.isArray(listing.images) || listing.images.length === 0).length,
     firstMissingImageId: String(listings.find((listing) => !Array.isArray(listing.images) || listing.images.length === 0)?.id || '') || null,
     flagged: listings.filter((listing) => ['flagged', 'rejected'].includes(String(listing.review_status || '')) || listing.status === 'rejected').length,
+    firstFlaggedListingId: String(listings.find((listing) => ['flagged', 'rejected'].includes(String(listing.review_status || '')) || listing.status === 'rejected')?.id || '') || null,
     expiringSoon: listings.filter((listing) => {
       const expiresAt = listing.expires_at ? new Date(String(listing.expires_at)).getTime() : 0
       return listing.status === 'published' && expiresAt > now && expiresAt <= threeDays

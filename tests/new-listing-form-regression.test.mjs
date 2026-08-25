@@ -8,6 +8,7 @@ const newListingPage = readFileSync(new URL('../app/konto/annonser/ny/page.tsx',
 const createListingRoute = readFileSync(new URL('../app/api/account/listings/route.ts', import.meta.url), 'utf8')
 const options = readFileSync(new URL('../lib/listing-form-options.ts', import.meta.url), 'utf8')
 const accountSeo = readFileSync(new URL('../lib/account-seo.ts', import.meta.url), 'utf8')
+const geoHelper = readFileSync(new URL('../lib/marketplace-geo.ts', import.meta.url), 'utf8')
 
 test('new listing model year is constrained to dropdown values from 2027 to 1950+', () => {
   assert.match(form, /const maxModelYear = 2027/)
@@ -47,6 +48,11 @@ test('preview does not show package before package step', () => {
 
 test('publishing never leaves the form in an endless spinner and bulk UI is hidden', () => {
   assert.match(form, /const listingRequestTimeoutMs = 60_000/)
+  assert.match(form, /const \[publishProgress, setPublishProgress\] = useState\(0\)/)
+  assert.match(form, /<PublishingOverlay copy=\{copy\} progress=\{publishProgress\} \/>/)
+  assert.match(form, /role="status"/)
+  assert.match(form, /publishWaitingPercentLabel/)
+  assert.match(form, /Loader2 className="h-4 w-4 animate-spin"/)
   assert.match(form, /\[autorell:create-listing\] submit started/)
   assert.match(form, /\[autorell:create-listing\] submit failed before response/)
   assert.match(form, /values\.listingTerms === 'on'[\s\S]*form\.set\('listingTerms', 'on'\)/)
@@ -55,11 +61,28 @@ test('publishing never leaves the form in an endless spinner and bulk UI is hidd
   assert.match(form, /market: billingMarketCode \|\| listingCountryCode/)
   assert.match(form, /locale,/)
   assert.match(form, /window\.location\.assign\(checkout\.url\)/)
-  assert.match(form, /localizePublicHref\(locale, `\/account\/listings\?published=1&listing=/)
+  assert.match(form, /createdListingHref\(locale, result\.listingId\)/)
+  assert.match(form, /createdListingHref\(locale,\s*result\.listingId,\s*'checkout_failed'\)/)
+  assert.match(form, /createdListingHref\([\s\S]*'checkout_timeout'/)
   assert.match(form, /Publiceringen tog f/)
+  assert.match(form, /Vänta, vi publicerar din annons/)
+  assert.match(form, /Bitte warten, wir veröffentlichen Ihre Anzeige/)
+  for (const locale of ['fi', 'da', 'be', 'fr', 'es', 'it', 'nl', 'pl']) {
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*publishWaitingTitle:`))
+  }
   assert.doesNotMatch(form, /router\.push\(`\/account\/listings\?choosePackage=1&listing=/)
   assert.doesNotMatch(form, /copy\.volumeOffers\.map/)
   assert.doesNotMatch(form, /onAddToBatch/)
+})
+
+test('stale or invalid package drafts fall back to the free listing package', () => {
+  assert.match(form, /const listingPackageIds = new Set\(\['free_7d', 'standard_15d', 'premium_30d'\]\)/)
+  assert.match(form, /packageId: normalizeListingPackageId\(draft\.values\?\.packageId\)/)
+  assert.match(form, /const selectedPackageId = normalizeListingPackageId\(values\.packageId\)/)
+  assert.match(form, /if \(key === 'packageId'\) return/)
+  assert.match(createListingRoute, /function normalizeListingPackageId\(packageId: string\)/)
+  assert.match(createListingRoute, /return packageId in listingPackageDetails \? packageId : 'free_7d'/)
+  assert.doesNotMatch(createListingRoute, /Välj ett giltigt annonspaket\./)
 })
 
 test('listing insert falls back when production schema lacks geo columns', () => {
@@ -69,19 +92,46 @@ test('listing insert falls back when production schema lacks geo columns', () =>
   assert.match(createListingRoute, /delete \(listingInsert as Record<string, unknown>\)\.geo_place_code/)
 })
 
+test('created listings still return success if optional metadata side effects fail', () => {
+  assert.match(createListingRoute, /const optionalSideEffects = await Promise\.allSettled/)
+  assert.match(createListingRoute, /logOptionalListingSideEffect/)
+  assert.match(createListingRoute, /return NextResponse\.json\(\{\s*success: true,[\s\S]*listingId: listing\.id/)
+  assert.doesNotMatch(createListingRoute, /await Promise\.all\(\[\s*admin\.from\('marketplace_listing_identifiers'\)/)
+})
+
+test('empty seller notes still satisfy the required listing description column', () => {
+  assert.match(createListingRoute, /function buildDefaultListingDescription/)
+  assert.match(createListingRoute, /const description = sellerNote \|\| buildDefaultListingDescription\(\{ title, city, offerType \}\)/)
+  assert.match(createListingRoute, /Strukturerad Autorell-annons:/)
+  assert.doesNotMatch(createListingRoute, /const description = sellerNote \|\| null/)
+})
+
+test('new listing location accepts verified picks and manual missing-place fallback', () => {
+  assert.match(form, /city: current\.city \|\| place\.city \|\| place\.name/)
+  assert.match(form, /city: current\.city \|\| value/)
+  assert.match(form, /manualLabel=\{localizeFormText\(locale, 'Min ort saknas'/)
+  assert.match(form, /allowManual/)
+  assert.match(form, /onManual=\{changeManualMunicipality\}/)
+  assert.doesNotMatch(form, /locationSource !== 'verified'/)
+  assert.match(form, /values\.municipality \|\| values\.city[\s\S]*\? 'manual'/)
+  assert.match(geoHelper, /locationSource: 'manual' as const/)
+  assert.match(geoHelper, /valid: Boolean\(manualName\)/)
+  assert.doesNotMatch(geoHelper, /verifiedMunicipalityCountries/)
+})
+
 test('create listing package copy and metadata are manually localized', () => {
   assert.match(form, /title: 'Inicio'/)
   assert.match(form, /title: 'Estándar'/)
-  assert.match(form, /days: '7 días'/)
+  assert.match(form, /days: '5 días'/)
   assert.match(form, /days: '15 días'/)
   assert.match(form, /days: '30 días'/)
   assert.match(form, /periodo de anuncio/)
   assert.doesNotMatch(form, /período de cotización/)
 
   assert.match(accountSeo, /Crear anuncio \| Autorell/)
-  assert.match(accountSeo, /Crea un anuncio de vehículo/)
+  assert.match(accountSeo, /Crea un anuncio de vehiculo/)
   assert.match(accountSeo, /Luo ilmoitus \| Autorell/)
-  assert.match(accountSeo, /Utwórz ogłoszenie \| Autorell/)
+  assert.match(accountSeo, /Utworz ogloszenie \| Autorell/)
 })
 
 test('technical max trailer weight remains optional and is placed last for common road vehicles', () => {
@@ -92,13 +142,30 @@ test('technical max trailer weight remains optional and is placed last for commo
   assert.match(options, /motorhomes: \[[\s\S]*chips\('damageStatus'[\s\S]*numberField\('maxTrailerWeightKg', 'Max trailervikt', 1, 12000, 'kg'\)/)
 })
 
-test('create listing customer-entered values use medium font weight', () => {
+test('create listing customer-entered values use the intended weights and placeholder style', () => {
   assert.match(form, /function Field[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function PriceField[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function GeoPlaceCombobox[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /function SelectNative[\s\S]*className="h-12 w-full[\s\S]*font-medium/)
   assert.match(form, /<strong className="mt-1 block[\s\S]*text-sm font-medium/)
-  assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*font-medium/)
+  assert.match(form, /<textarea[\s\S]*className="min-h-28[\s\S]*text-sm font-normal[\s\S]*text-\[#101828\]/)
+  assert.match(form, /values\.sellerNote \? null : \(/)
+  assert.match(form, /pointer-events-none absolute left-4 right-4 top-4 text-sm font-normal leading-6 text-\[#7b8494\]/)
+  assert.doesNotMatch(form, /placeholder=\{copy\.sellerNotePlaceholder\}/)
+})
+
+test('listing equipment and preview seller notes are easier to understand across locales', () => {
+  assert.match(form, /equipmentAssistTitle/)
+  assert.match(form, /equipmentAssistText/)
+  assert.match(form, /selectedEquipmentCount\.replace\('\{count\}'/)
+  assert.match(form, /sellerNoteIntro/)
+  assert.match(form, /Beskriv extra information om objektet/)
+  assert.match(form, /Hitta utrustning snabbare/)
+  assert.match(form, /Use the fixed choices for specifications/)
+  assert.match(form, /Använd de fasta valen för specifikationer/)
+  for (const locale of ['fi', 'da', 'be', 'fr', 'es', 'it', 'nl', 'pl']) {
+    assert.match(form, new RegExp(`${locale}: \\{[\\s\\S]*selectedEquipmentCount:[\\s\\S]*equipmentAssistTitle:[\\s\\S]*equipmentAssistText:[\\s\\S]*sellerNoteLabel:[\\s\\S]*sellerNoteIntro:[\\s\\S]*sellerNotePlaceholder:`))
+  }
 })
 
 test('create listing first step does not render a disabled back button', () => {

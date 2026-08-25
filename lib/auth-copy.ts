@@ -52,6 +52,15 @@ export type AuthModalCopy = {
   codeError: string
   connectionError: string
   chooseMarket: string
+  continueWithGoogle: string
+  continueWithMicrosoft: string
+  continueWithFacebook: string
+  socialSeparator: string
+  socialLoading: string
+  socialError: string
+  providerUnavailable: string
+  oauthCancelled: string
+  oauthFailed: string
 }
 
 export type AuthApiCopy = Pick<
@@ -67,6 +76,7 @@ export type AuthApiCopy = Pick<
   rateLimited: string
   waitBeforeNewCode: string
   emailUnavailable: string
+  accountAlreadyExists: string
   tooManyAttempts: string
   usedCode: string
   recoveryUnavailable: string
@@ -133,7 +143,7 @@ const modalBase = {
     invalidPassword: 'The email or password is incorrect. If you registered with a one-time code, use one-time code or reset your password first.',
     passwordMismatch: 'The passwords do not match.',
     signupError: 'The account could not be created. If the email already uses one-time code, reset the password or continue with one-time code.',
-    confirmEmailSent: 'We sent you a confirmation email. Open it now and click the confirmation link. Your account is ready after your email address is confirmed.',
+    confirmEmailSent: 'If email confirmation is required, open the email we sent and then continue creating your profile.',
     emailRequired: 'Enter your email address.',
     sendReset: 'Send reset link',
     sendingReset: 'Sending reset link...',
@@ -196,7 +206,7 @@ const modalBase = {
     invalidPassword: 'Mejladressen eller lösenordet är fel. Om kontot skapades med engångskod, använd engångskod eller återställ lösenordet först.',
     passwordMismatch: 'Lösenorden matchar inte.',
     signupError: 'Kontot kunde inte skapas. Om mejlen redan används med engångskod, återställ lösenordet eller fortsätt med engångskod.',
-    confirmEmailSent: 'Vi har skickat ett bekräftelsemejl. Öppna mejlet nu och klicka på bekräftelselänken. Kontot blir klart när mejladressen är bekräftad.',
+    confirmEmailSent: 'Om mejlbekräftelse krävs, öppna mejlet vi skickade och fortsätt sedan skapa din profil.',
     emailRequired: 'Ange din mejladress.',
     sendReset: 'Skicka återställningslänk',
     sendingReset: 'Skickar återställningslänk...',
@@ -259,7 +269,7 @@ const modalBase = {
     invalidPassword: 'E-Mail oder Passwort ist falsch. Wenn Sie sich mit Einmalcode registriert haben, nutzen Sie den Einmalcode oder setzen Sie zuerst das Passwort zurück.',
     passwordMismatch: 'Die Passwörter stimmen nicht überein.',
     signupError: 'Das Konto konnte nicht erstellt werden. Wenn die E-Mail bereits mit Einmalcode genutzt wird, setzen Sie das Passwort zurück oder fahren Sie mit Einmalcode fort.',
-    confirmEmailSent: 'Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Öffnen Sie sie jetzt und klicken Sie auf den Bestätigungslink. Danach ist Ihr Konto bereit.',
+    confirmEmailSent: 'Falls eine E-Mail-Bestätigung erforderlich ist, öffnen Sie die E-Mail und erstellen Sie danach Ihr Profil weiter.',
     emailRequired: 'Geben Sie Ihre E-Mail-Adresse ein.',
     sendReset: 'Link senden',
     sendingReset: 'Link wird gesendet...',
@@ -322,7 +332,7 @@ const modalBase = {
     invalidPassword: 'L’e-mail ou le mot de passe est incorrect. Si le compte a été créé avec un code, utilisez le code ou réinitialisez le mot de passe.',
     passwordMismatch: 'Les mots de passe ne correspondent pas.',
     signupError: 'Le compte n’a pas pu être créé. Si l’e-mail utilise déjà un code, réinitialisez le mot de passe ou continuez avec un code.',
-    confirmEmailSent: 'Nous vous avons envoyé un e-mail de confirmation. Ouvrez-le maintenant et cliquez sur le lien de confirmation. Votre compte sera ensuite prêt.',
+    confirmEmailSent: 'Si une confirmation e-mail est requise, ouvrez l’e-mail envoyé puis continuez la création du profil.',
     emailRequired: 'Saisissez votre adresse e-mail.',
     sendReset: 'Envoyer le lien',
     sendingReset: 'Envoi du lien...',
@@ -385,7 +395,7 @@ const modalBase = {
     invalidPassword: 'El correo o la contraseña son incorrectos. Si te registraste con un código, usa el código o restablece la contraseña primero.',
     passwordMismatch: 'Las contraseñas no coinciden.',
     signupError: 'No se pudo crear la cuenta. Si el correo ya usa código, restablece la contraseña o continúa con código.',
-    confirmEmailSent: 'Te hemos enviado un correo de confirmación. Ábrelo ahora y pulsa el enlace de confirmación. Después, tu cuenta estará lista.',
+    confirmEmailSent: 'Si se requiere confirmación por correo, abre el correo enviado y continúa creando tu perfil.',
     emailRequired: 'Introduce tu correo electrónico.',
     sendReset: 'Enviar enlace',
     sendingReset: 'Enviando enlace...',
@@ -443,7 +453,7 @@ const modalBase = {
     invalidPassword: 'Email o password non corretti. Se ti sei registrato con un codice, usa il codice o reimposta prima la password.',
     passwordMismatch: 'Le password non corrispondono.',
     signupError: 'Non è stato possibile creare l’account. Se l’email usa già il codice, reimposta la password o continua con codice.',
-    confirmEmailSent: 'Ti abbiamo inviato un’e-mail di conferma. Aprila ora e fai clic sul link di conferma. Dopo, il tuo account sarà pronto.',
+    confirmEmailSent: 'Se serve conferma email, apri l’email inviata e poi continua a creare il profilo.',
     emailRequired: 'Inserisci la tua email.',
     sendReset: 'Invia link',
     sendingReset: 'Invio link...',
@@ -501,7 +511,7 @@ const modalBase = {
     invalidPassword: 'E-mail lub hasło jest nieprawidłowe. Jeśli konto utworzono kodem, użyj kodu albo najpierw zresetuj hasło.',
     passwordMismatch: 'Hasła nie są zgodne.',
     signupError: 'Nie można utworzyć konta. Jeśli e-mail używa już kodu, zresetuj hasło albo kontynuuj kodem.',
-    confirmEmailSent: 'Wysłaliśmy wiadomość z potwierdzeniem. Otwórz ją teraz i kliknij link potwierdzający. Po potwierdzeniu adresu e-mail konto będzie gotowe.',
+    confirmEmailSent: 'Jeśli wymagana jest weryfikacja e-mail, otwórz wiadomość i kontynuuj tworzenie profilu.',
     emailRequired: 'Wpisz adres e-mail.',
     sendReset: 'Wyślij link',
     sendingReset: 'Wysyłanie linku...',
@@ -559,7 +569,7 @@ const modalBase = {
     invalidPassword: 'E-mail of wachtwoord is onjuist. Als je met een code bent geregistreerd, gebruik de code of reset eerst je wachtwoord.',
     passwordMismatch: 'De wachtwoorden komen niet overeen.',
     signupError: 'Het account kon niet worden gemaakt. Als de e-mail al code gebruikt, reset het wachtwoord of ga verder met code.',
-    confirmEmailSent: 'We hebben een bevestigingsmail gestuurd. Open deze nu en klik op de bevestigingslink. Daarna is je account klaar.',
+    confirmEmailSent: 'Als e-mailbevestiging nodig is, open dan de e-mail en ga daarna verder met je profiel.',
     emailRequired: 'Vul je e-mailadres in.',
     sendReset: 'Resetlink verzenden',
     sendingReset: 'Resetlink verzenden...',
@@ -617,7 +627,7 @@ const modalBase = {
     invalidPassword: 'Sähköposti tai salasana on väärä. Jos rekisteröidyit koodilla, käytä koodia tai palauta salasana ensin.',
     passwordMismatch: 'Salasanat eivät täsmää.',
     signupError: 'Tiliä ei voitu luoda. Jos sähköposti käyttää jo koodia, palauta salasana tai jatka koodilla.',
-    confirmEmailSent: 'Lähetimme vahvistusviestin sähköpostiisi. Avaa viesti nyt ja napsauta vahvistuslinkkiä. Sen jälkeen tilisi on valmis.',
+    confirmEmailSent: 'Jos sähköpostivahvistus vaaditaan, avaa lähettämämme viesti ja jatka profiilin luontia.',
     emailRequired: 'Anna sähköpostiosoitteesi.',
     sendReset: 'Lähetä linkki',
     sendingReset: 'Lähetetään linkkiä...',
@@ -675,7 +685,7 @@ const modalBase = {
     invalidPassword: 'E-mail eller adgangskode er forkert. Hvis du oprettede konto med kode, brug koden eller nulstil adgangskoden først.',
     passwordMismatch: 'Adgangskoderne matcher ikke.',
     signupError: 'Kontoen kunne ikke oprettes. Hvis e-mailen allerede bruger kode, nulstil adgangskoden eller fortsæt med kode.',
-    confirmEmailSent: 'Vi har sendt en bekræftelsesmail. Åbn den nu, og klik på bekræftelseslinket. Derefter er din konto klar.',
+    confirmEmailSent: 'Hvis e-mailbekræftelse kræves, åbn mailen og fortsæt derefter med profilen.',
     emailRequired: 'Indtast din e-mailadresse.',
     sendReset: 'Send link',
     sendingReset: 'Sender link...',
@@ -693,6 +703,133 @@ const modalBase = {
   },
 } as const
 
+const socialCopy: Record<
+  string,
+  Pick<
+    AuthModalCopy,
+    | 'continueWithGoogle'
+    | 'continueWithMicrosoft'
+    | 'continueWithFacebook'
+    | 'socialSeparator'
+    | 'socialLoading'
+    | 'socialError'
+    | 'providerUnavailable'
+    | 'oauthCancelled'
+    | 'oauthFailed'
+  >
+> = {
+  en: {
+    continueWithGoogle: 'Continue with Google',
+    continueWithMicrosoft: 'Continue with Microsoft',
+    continueWithFacebook: 'Continue with Facebook',
+    socialSeparator: 'or',
+    socialLoading: 'Opening secure login...',
+    socialError: 'The social login could not be started. Try again or use email instead.',
+    providerUnavailable: 'This login option is temporarily unavailable. Choose another option or use email.',
+    oauthCancelled: 'Login was cancelled. Choose a provider or use email instead.',
+    oauthFailed: 'The social login failed. Try again or use email instead.',
+  },
+  sv: {
+    continueWithGoogle: 'Fortsätt med Google',
+    continueWithMicrosoft: 'Fortsätt med Microsoft',
+    continueWithFacebook: 'Fortsätt med Facebook',
+    socialSeparator: 'eller',
+    socialLoading: 'Öppnar säker inloggning...',
+    socialError: 'Det gick inte att starta social inloggning. Försök igen eller använd e-post.',
+    providerUnavailable: 'Det här inloggningsalternativet är tillfälligt otillgängligt. Välj ett annat eller använd e-post.',
+    oauthCancelled: 'Inloggningen avbröts. Välj en leverantör eller använd e-post.',
+    oauthFailed: 'Social inloggning misslyckades. Försök igen eller använd e-post.',
+  },
+  de: {
+    continueWithGoogle: 'Weiter mit Google',
+    continueWithMicrosoft: 'Weiter mit Microsoft',
+    continueWithFacebook: 'Weiter mit Facebook',
+    socialSeparator: 'oder',
+    socialLoading: 'Sichere Anmeldung wird geöffnet...',
+    socialError: 'Die soziale Anmeldung konnte nicht gestartet werden. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
+    providerUnavailable: 'Diese Anmeldeoption ist vorübergehend nicht verfügbar. Wählen Sie eine andere Option oder E-Mail.',
+    oauthCancelled: 'Die Anmeldung wurde abgebrochen. Wählen Sie einen Anbieter oder nutzen Sie E-Mail.',
+    oauthFailed: 'Die soziale Anmeldung ist fehlgeschlagen. Versuchen Sie es erneut oder nutzen Sie E-Mail.',
+  },
+  fr: {
+    continueWithGoogle: 'Continuer avec Google',
+    continueWithMicrosoft: 'Continuer avec Microsoft',
+    continueWithFacebook: 'Continuer avec Facebook',
+    socialSeparator: 'ou',
+    socialLoading: 'Ouverture de la connexion sécurisée...',
+    socialError: 'La connexion sociale n’a pas pu démarrer. Réessayez ou utilisez l’e-mail.',
+    providerUnavailable: 'Cette option de connexion est temporairement indisponible. Choisissez-en une autre ou utilisez l’e-mail.',
+    oauthCancelled: 'La connexion a été annulée. Choisissez un fournisseur ou utilisez l’e-mail.',
+    oauthFailed: 'La connexion sociale a échoué. Réessayez ou utilisez l’e-mail.',
+  },
+  es: {
+    continueWithGoogle: 'Continuar con Google',
+    continueWithMicrosoft: 'Continuar con Microsoft',
+    continueWithFacebook: 'Continuar con Facebook',
+    socialSeparator: 'o',
+    socialLoading: 'Abriendo inicio de sesión seguro...',
+    socialError: 'No se pudo iniciar el acceso social. Inténtalo de nuevo o usa el correo.',
+    providerUnavailable: 'Esta opción de acceso no está disponible temporalmente. Elige otra opción o usa el correo.',
+    oauthCancelled: 'El inicio de sesión se canceló. Elige un proveedor o usa el correo.',
+    oauthFailed: 'El acceso social falló. Inténtalo de nuevo o usa el correo.',
+  },
+  it: {
+    continueWithGoogle: 'Continua con Google',
+    continueWithMicrosoft: 'Continua con Microsoft',
+    continueWithFacebook: 'Continua con Facebook',
+    socialSeparator: 'oppure',
+    socialLoading: 'Apertura accesso sicuro...',
+    socialError: 'Impossibile avviare l’accesso social. Riprova o usa l’e-mail.',
+    providerUnavailable: 'Questa opzione di accesso non è temporaneamente disponibile. Scegline un’altra o usa l’e-mail.',
+    oauthCancelled: 'Accesso annullato. Scegli un provider o usa l’e-mail.',
+    oauthFailed: 'Accesso social non riuscito. Riprova o usa l’e-mail.',
+  },
+  pl: {
+    continueWithGoogle: 'Kontynuuj z Google',
+    continueWithMicrosoft: 'Kontynuuj z Microsoft',
+    continueWithFacebook: 'Kontynuuj z Facebook',
+    socialSeparator: 'lub',
+    socialLoading: 'Otwieranie bezpiecznego logowania...',
+    socialError: 'Nie udało się uruchomić logowania społecznościowego. Spróbuj ponownie albo użyj e-maila.',
+    providerUnavailable: 'Ta opcja logowania jest tymczasowo niedostępna. Wybierz inną albo użyj e-maila.',
+    oauthCancelled: 'Logowanie zostało anulowane. Wybierz dostawcę albo użyj e-maila.',
+    oauthFailed: 'Logowanie społecznościowe nie powiodło się. Spróbuj ponownie albo użyj e-maila.',
+  },
+  nl: {
+    continueWithGoogle: 'Doorgaan met Google',
+    continueWithMicrosoft: 'Doorgaan met Microsoft',
+    continueWithFacebook: 'Doorgaan met Facebook',
+    socialSeparator: 'of',
+    socialLoading: 'Veilige login openen...',
+    socialError: 'Sociaal inloggen kon niet worden gestart. Probeer opnieuw of gebruik e-mail.',
+    providerUnavailable: 'Deze inlogoptie is tijdelijk niet beschikbaar. Kies een andere optie of gebruik e-mail.',
+    oauthCancelled: 'Inloggen is geannuleerd. Kies een provider of gebruik e-mail.',
+    oauthFailed: 'Sociaal inloggen is mislukt. Probeer opnieuw of gebruik e-mail.',
+  },
+  fi: {
+    continueWithGoogle: 'Jatka Googlella',
+    continueWithMicrosoft: 'Jatka Microsoftilla',
+    continueWithFacebook: 'Jatka Facebookilla',
+    socialSeparator: 'tai',
+    socialLoading: 'Avataan turvallinen kirjautuminen...',
+    socialError: 'Sosiaalista kirjautumista ei voitu käynnistää. Yritä uudelleen tai käytä sähköpostia.',
+    providerUnavailable: 'Tämä kirjautumistapa ei ole tilapäisesti käytettävissä. Valitse toinen tapa tai käytä sähköpostia.',
+    oauthCancelled: 'Kirjautuminen peruttiin. Valitse palvelu tai käytä sähköpostia.',
+    oauthFailed: 'Sosiaalinen kirjautuminen epäonnistui. Yritä uudelleen tai käytä sähköpostia.',
+  },
+  da: {
+    continueWithGoogle: 'Fortsæt med Google',
+    continueWithMicrosoft: 'Fortsæt med Microsoft',
+    continueWithFacebook: 'Fortsæt med Facebook',
+    socialSeparator: 'eller',
+    socialLoading: 'Åbner sikker login...',
+    socialError: 'Social login kunne ikke startes. Prøv igen eller brug e-mail.',
+    providerUnavailable: 'Denne loginmulighed er midlertidigt utilgængelig. Vælg en anden mulighed eller brug e-mail.',
+    oauthCancelled: 'Login blev annulleret. Vælg en udbyder eller brug e-mail.',
+    oauthFailed: 'Social login mislykkedes. Prøv igen eller brug e-mail.',
+  },
+}
+
 type ModalBaseKey = keyof typeof modalBase
 
 function copyKey(locale: PublicLocale): ModalBaseKey {
@@ -701,7 +838,9 @@ function copyKey(locale: PublicLocale): ModalBaseKey {
 }
 
 export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, view: AuthView = mode): AuthModalCopy {
-  const source = modalBase[copyKey(locale)]
+  const key = copyKey(locale)
+  const source = modalBase[key]
+  const social = socialCopy[key] || socialCopy.en
   return {
     loginTab: source.loginTab,
     registerTab: source.registerTab,
@@ -751,11 +890,69 @@ export function getLocalizedAuthModalCopy(locale: PublicLocale, mode: AuthMode, 
     codeError: source.codeError,
     connectionError: source.connectionError,
     chooseMarket: source.chooseMarket,
+    continueWithGoogle: social.continueWithGoogle,
+    continueWithMicrosoft: social.continueWithMicrosoft,
+    continueWithFacebook: social.continueWithFacebook,
+    socialSeparator: social.socialSeparator,
+    socialLoading: social.socialLoading,
+    socialError: social.socialError,
+    providerUnavailable: social.providerUnavailable,
+    oauthCancelled: social.oauthCancelled,
+    oauthFailed: social.oauthFailed,
   }
 }
 
 export function getAuthSpamHintCopy(locale: PublicLocale) {
   return modalBase[copyKey(locale)].spamHint
+}
+
+type AuthSeoMode = 'login' | 'register'
+
+const authSeoCopy: Record<ModalBaseKey, Record<AuthSeoMode, { title: string; description: string }>> = {
+  en: {
+    login: { title: 'Log in to Autorell', description: 'Log in to manage your vehicles, saved listings, searches, messages and Autorell account.' },
+    register: { title: 'Create an Autorell account', description: 'Create your Autorell account to advertise vehicles, save listings and contact sellers across Europe.' },
+  },
+  sv: {
+    login: { title: 'Logga in på Autorell', description: 'Logga in för att hantera fordon, sparade annonser, sökningar, meddelanden och ditt Autorell-konto.' },
+    register: { title: 'Skapa konto på Autorell', description: 'Skapa ett Autorell-konto för att annonsera fordon, spara annonser och kontakta säljare i Europa.' },
+  },
+  de: {
+    login: { title: 'Bei Autorell anmelden', description: 'Melden Sie sich an, um Fahrzeuge, gespeicherte Anzeigen, Suchen, Nachrichten und Ihr Autorell-Konto zu verwalten.' },
+    register: { title: 'Autorell-Konto erstellen', description: 'Erstellen Sie ein Autorell-Konto, um Fahrzeuge anzubieten, Anzeigen zu speichern und Verkäufer in Europa zu kontaktieren.' },
+  },
+  fr: {
+    login: { title: 'Se connecter à Autorell', description: 'Connectez-vous pour gérer vos véhicules, annonces enregistrées, recherches, messages et votre compte Autorell.' },
+    register: { title: 'Créer un compte Autorell', description: 'Créez un compte Autorell pour publier des véhicules, enregistrer des annonces et contacter des vendeurs en Europe.' },
+  },
+  es: {
+    login: { title: 'Iniciar sesión en Autorell', description: 'Inicia sesión para gestionar vehículos, anuncios guardados, búsquedas, mensajes y tu cuenta de Autorell.' },
+    register: { title: 'Crear una cuenta de Autorell', description: 'Crea una cuenta de Autorell para anunciar vehículos, guardar anuncios y contactar con vendedores de Europa.' },
+  },
+  it: {
+    login: { title: 'Accedi ad Autorell', description: 'Accedi per gestire veicoli, annunci salvati, ricerche, messaggi e il tuo account Autorell.' },
+    register: { title: 'Crea un account Autorell', description: 'Crea un account Autorell per pubblicare veicoli, salvare annunci e contattare venditori in Europa.' },
+  },
+  pl: {
+    login: { title: 'Zaloguj się do Autorell', description: 'Zaloguj się, aby zarządzać pojazdami, zapisanymi ogłoszeniami, wyszukiwaniami, wiadomościami i kontem Autorell.' },
+    register: { title: 'Utwórz konto Autorell', description: 'Utwórz konto Autorell, aby ogłaszać pojazdy, zapisywać oferty i kontaktować się ze sprzedawcami w Europie.' },
+  },
+  nl: {
+    login: { title: 'Inloggen bij Autorell', description: 'Log in om voertuigen, opgeslagen advertenties, zoekopdrachten, berichten en je Autorell-account te beheren.' },
+    register: { title: 'Maak een Autorell-account', description: 'Maak een Autorell-account om voertuigen te adverteren, advertenties op te slaan en verkopers in Europa te benaderen.' },
+  },
+  fi: {
+    login: { title: 'Kirjaudu Autorelliin', description: 'Kirjaudu hallitaksesi ajoneuvoja, tallennettuja ilmoituksia, hakuja, viestejä ja Autorell-tiliäsi.' },
+    register: { title: 'Luo Autorell-tili', description: 'Luo Autorell-tili, jotta voit ilmoittaa ajoneuvoja, tallentaa ilmoituksia ja ottaa yhteyttä myyjiin Euroopassa.' },
+  },
+  da: {
+    login: { title: 'Log ind på Autorell', description: 'Log ind for at administrere køretøjer, gemte annoncer, søgninger, beskeder og din Autorell-konto.' },
+    register: { title: 'Opret en Autorell-konto', description: 'Opret en Autorell-konto for at annoncere køretøjer, gemme annoncer og kontakte sælgere i Europa.' },
+  },
+}
+
+export function getAuthSeoCopy(locale: PublicLocale, mode: AuthSeoMode) {
+  return authSeoCopy[copyKey(locale)][mode]
 }
 
 export function getAuthApiCopy(locale: PublicLocale): AuthApiCopy {
@@ -803,6 +1000,18 @@ export function getAuthApiCopy(locale: PublicLocale): AuthApiCopy {
       nl: 'Inloggen via e-mail is tijdelijk niet beschikbaar.',
       fi: 'Sähköpostikirjautuminen ei ole tilapäisesti käytettävissä.',
       da: 'Login via e-mail er midlertidigt utilgængeligt.',
+    }[copyKey(locale)],
+    accountAlreadyExists: {
+      en: 'This email already has an account. Log in with password or use a one-time code.',
+      sv: 'Mejladressen har redan ett konto. Logga in med lösenord eller använd engångskod.',
+      de: 'Für diese E-Mail besteht bereits ein Konto. Melden Sie sich mit Passwort an oder nutzen Sie einen Einmalcode.',
+      fr: 'Un compte existe déjà pour cet e-mail. Connectez-vous avec un mot de passe ou utilisez un code unique.',
+      es: 'Ya existe una cuenta con este correo. Inicia sesión con contraseña o usa un código de un solo uso.',
+      it: 'Esiste già un account con questa email. Accedi con password o usa un codice monouso.',
+      pl: 'Dla tego adresu e-mail istnieje już konto. Zaloguj się hasłem albo użyj kodu jednorazowego.',
+      nl: 'Er bestaat al een account voor dit e-mailadres. Log in met wachtwoord of gebruik een eenmalige code.',
+      fi: 'Tällä sähköpostiosoitteella on jo tili. Kirjaudu salasanalla tai käytä kertakäyttökoodia.',
+      da: 'Der findes allerede en konto til denne e-mail. Log ind med adgangskode eller brug en engangskode.',
     }[copyKey(locale)],
     tooManyAttempts: {
       en: 'Too many attempts. Wait a while and try again.',

@@ -29,38 +29,45 @@ function normalizeListingId(value: unknown) {
 }
 
 export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const requestedIds = parseIds(searchParams.get('ids'))
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (!user && !requestedIds.length) {
     return jsonResponse({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const searchParams = request.nextUrl.searchParams
   const admin = createAdminClient()
-  const savedRows = await admin
-    .from('marketplace_saved_listings')
-    .select('listing_id')
-    .eq('user_id', user.id)
-    .order('saved_at', { ascending: false })
-    .limit(MAX_SAVED_LISTINGS)
+  let accountIds: string[] = []
 
-  if (savedRows.error) {
-    return jsonResponse({ error: 'Could not load saved listings' }, { status: 500 })
+  if (user) {
+    const savedRows = await admin
+      .from('marketplace_saved_listings')
+      .select('listing_id')
+      .eq('user_id', user.id)
+      .order('saved_at', { ascending: false })
+      .limit(MAX_SAVED_LISTINGS)
+
+    if (savedRows.error) {
+      return jsonResponse({ error: 'Could not load saved listings' }, { status: 500 })
+    }
+
+    accountIds = (savedRows.data || [])
+      .map((row) => row.listing_id)
+      .filter((id): id is string => typeof id === 'string')
   }
 
-  const accountIds = (savedRows.data || [])
-    .map((row) => row.listing_id)
-    .filter((id): id is string => typeof id === 'string')
-  const requestedIds = parseIds(searchParams.get('ids'))
-  const ids = requestedIds.length
+  const ids = user && requestedIds.length
     ? requestedIds.filter((id) => accountIds.includes(id))
-    : accountIds
+    : user
+      ? accountIds
+      : requestedIds
 
   if (!ids.length) {
-    return jsonResponse({ listingIds: [], listings: [] })
+    return jsonResponse({ authenticated: Boolean(user), listingIds: [], listings: [] })
   }
 
   const locale = (searchParams.get('locale') || 'sv') as PublicLocale
@@ -81,8 +88,10 @@ export async function GET(request: NextRequest) {
 
   const activeIds = new Set((data || []).map((listing) => listing.id))
   const filteredIds = ids.filter((id) => activeIds.has(id))
-  const staleAccountIds = accountIds.filter((id) => ids.includes(id) && !activeIds.has(id))
-  if (staleAccountIds.length) {
+  const staleAccountIds = user
+    ? accountIds.filter((id) => ids.includes(id) && !activeIds.has(id))
+    : []
+  if (user && staleAccountIds.length) {
     await admin
       .from('marketplace_saved_listings')
       .delete()
@@ -137,6 +146,7 @@ export async function GET(request: NextRequest) {
   )
 
   return jsonResponse({
+    authenticated: Boolean(user),
     listingIds: filteredIds,
     listings: filteredIds.map((id) => listingById.get(id)).filter(Boolean),
   })

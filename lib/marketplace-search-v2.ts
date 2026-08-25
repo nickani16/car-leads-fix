@@ -8,6 +8,13 @@ import {
   marketplaceRegionMunicipalitySearchTerms,
   marketplaceSearchLocationTermsForQuery,
 } from './marketplace-locations'
+import {
+  marketplaceGeoAreaOrFilters,
+  normalizeSearchBounds,
+  parseMarketplaceSearchState,
+  resolveMarketplaceGeoArea,
+} from './marketplace-search-state'
+import { resolveStaticMarketplaceGeoArea } from './marketplace-geo'
 import { createAdminClient } from './supabase/admin'
 import { fieldsForCategory } from './listing-schema'
 
@@ -25,6 +32,7 @@ export type MarketplaceSearchInput = {
   countryCode?: string | null
   countries?: string | string[] | null
   markets?: string | string[] | null
+  displayMarket?: string | null
   q?: string | null
   make?: string | null
   model?: string | null
@@ -33,6 +41,13 @@ export type MarketplaceSearchInput = {
   postalCode?: string | null
   county?: string | null
   region?: string | null
+  geoAreaId?: string | null
+  geoPlaceCode?: string | null
+  geoFilterMode?: 'legacy' | 'strict' | null
+  north?: string | number | null
+  east?: string | number | null
+  south?: string | number | null
+  west?: string | number | null
   minPrice?: string | number | null
   maxPrice?: string | number | null
   minYear?: string | number | null
@@ -64,6 +79,8 @@ export type MarketplaceSearchResult = {
   facets: {
     makes: MarketplaceFacetOption[]
     models: MarketplaceFacetOption[]
+    regions: MarketplaceFacetOption[]
+    municipalities: MarketplaceFacetOption[]
     fuels: MarketplaceFacetOption[]
     gearboxes: MarketplaceFacetOption[]
     bodyTypes: MarketplaceFacetOption[]
@@ -114,6 +131,12 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   const admin = createAdminClient()
   const filters = normalizeMarketplaceSearchInput(input)
 
+  if (filters.preferredMarket && !filters.cursor) {
+    return filters.sort === 'published'
+      ? searchPublishedWithPreferredMarket(admin, filters)
+      : searchSortedWithPreferredMarket(admin, filters)
+  }
+
   if (filters.sort === 'published' && !filters.cursor) {
     return searchPublishedWithSponsoredBlock(admin, filters)
   }
@@ -153,6 +176,168 @@ export async function searchMarketplaceListings(input: MarketplaceSearchInput): 
   const hasNext = filters.page < totalPages
   const lastItem = items[items.length - 1] || null
 
+  return {
+    items,
+    facets,
+    nextCursor: hasNext && lastItem ? encodeCursor(cursorFromRow(lastItem, filters.sort)) : null,
+    totalEstimate: totalCount,
+    totalCount,
+    page: filters.page,
+    pageSize: filters.limit,
+    totalPages,
+    limit: filters.limit,
+    hasNext,
+  }
+}
+
+async function searchSortedWithPreferredMarket(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+): Promise<MarketplaceSearchResult> {
+  const verifiedSellerIds = filters.verifiedOnly ? await getVerifiedMarketplaceSellerIds() : null
+  if (verifiedSellerIds && !verifiedSellerIds.length) return emptyMarketplaceSearchResult(filters)
+
+  const countGroup = async (local: boolean) => {
+    let query = admin.from('marketplace_listings').select('id', { count: 'exact', head: true })
+    query = applyMarketplaceListingFilters(query, filters)
+    query = local
+      ? query.eq('country_code', filters.preferredMarket)
+      : query.neq('country_code', filters.preferredMarket)
+    if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+    const { count, error } = await query
+    if (error) throw new Error(error.message)
+    return count || 0
+  }
+
+  const [localCount, otherCount] = await Promise.all([countGroup(true), countGroup(false)])
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
+  const groups = [
+    { local: true, count: localCount },
+    { local: false, count: otherCount },
+  ]
+  let groupStart = 0
+  const rowPromises: Array<Promise<MarketplaceSearchRow[]>> = []
+
+  for (const group of groups) {
+    const slice = pageSliceForGroup(from, to, groupStart, group.count)
+    groupStart += group.count
+    if (!slice) continue
+    rowPromises.push((async () => {
+      let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+      query = applyMarketplaceListingFilters(query, filters)
+      query = group.local
+        ? query.eq('country_code', filters.preferredMarket)
+        : query.neq('country_code', filters.preferredMarket)
+      if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+      if (filters.sort === 'price-asc' || filters.sort === 'price-desc') query = query.not('price', 'is', null)
+      if (filters.sort === 'year-desc') query = query.not('model_year', 'is', null)
+      if (filters.sort === 'mileage-asc') query = query.not('mileage_km', 'is', null)
+      const { data, error } = await applySort(query, filters.sort).range(slice.from, slice.to)
+      if (error) throw new Error(error.message)
+      return (data || []) as MarketplaceSearchRow[]
+    })())
+  }
+
+  const rows = (await Promise.all(rowPromises)).flat()
+  return buildMarketplaceSearchResult(rows, localCount + otherCount, filters, await getDynamicMarketplaceFacets(admin, filters))
+}
+
+async function searchPublishedWithPreferredMarket(
+  admin: ReturnType<typeof createAdminClient>,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+): Promise<MarketplaceSearchResult> {
+  const now = new Date().toISOString()
+  const verifiedSellerIds = filters.verifiedOnly ? await getVerifiedMarketplaceSellerIds() : null
+  if (verifiedSellerIds && !verifiedSellerIds.length) return emptyMarketplaceSearchResult(filters)
+  const groups = [
+    { local: true, sponsored: true },
+    { local: true, sponsored: false },
+    { local: false, sponsored: true },
+    { local: false, sponsored: false },
+  ]
+
+  const counts = await Promise.all(groups.map(async (group) => {
+    let query = admin.from('marketplace_listings').select('id', { count: 'exact', head: true })
+    query = applyMarketplaceListingFilters(query, filters)
+    query = group.local
+      ? query.eq('country_code', filters.preferredMarket)
+      : query.neq('country_code', filters.preferredMarket)
+    query = group.sponsored
+      ? applyActiveTopPlacementFilter(query, now)
+      : applyNotActiveTopPlacementFilter(query, now)
+    if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+    const { count, error } = await query
+    if (error) throw new Error(error.message)
+    return count || 0
+  }))
+
+  const from = (filters.page - 1) * filters.limit
+  const to = from + filters.limit - 1
+  let groupStart = 0
+  const rowPromises: Array<Promise<MarketplaceSearchRow[]>> = []
+  groups.forEach((group, index) => {
+    const slice = pageSliceForGroup(from, to, groupStart, counts[index])
+    groupStart += counts[index]
+    if (!slice) return
+    rowPromises.push((async () => {
+      let query = admin.from('marketplace_listings').select(marketplacePublicSelect)
+      query = applyMarketplaceListingFilters(query, filters)
+      query = group.local
+        ? query.eq('country_code', filters.preferredMarket)
+        : query.neq('country_code', filters.preferredMarket)
+      query = group.sponsored
+        ? applyActiveTopPlacementFilter(query, now)
+        : applyNotActiveTopPlacementFilter(query, now)
+      if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
+      const ordered = group.sponsored
+        ? query
+            .order('boost_started_at', { ascending: true, nullsFirst: false })
+            .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+            .order('published_at', { ascending: false })
+            .order('id', { ascending: false })
+        : query
+            .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
+            .order('published_at', { ascending: false })
+            .order('id', { ascending: false })
+      const { data, error } = await ordered.range(slice.from, slice.to)
+      if (error) throw new Error(error.message)
+      return (data || []) as MarketplaceSearchRow[]
+    })())
+  })
+
+  const rows = (await Promise.all(rowPromises)).flat()
+  const items = rows.map((row) => ({
+    ...sanitizePublicListingSellerName(row),
+    is_top_placement:
+      row.boost_status === 'active' &&
+      Boolean(row.boost_expires_at) &&
+      new Date(String(row.boost_expires_at)).getTime() > Date.now(),
+  }))
+  return buildMarketplaceSearchResult(items, counts.reduce((sum, count) => sum + count, 0), filters, await getDynamicMarketplaceFacets(admin, filters))
+}
+
+function pageSliceForGroup(pageFrom: number, pageTo: number, groupStart: number, groupCount: number) {
+  const groupEnd = groupStart + groupCount - 1
+  const intersectionFrom = Math.max(pageFrom, groupStart)
+  const intersectionTo = Math.min(pageTo, groupEnd)
+  if (intersectionFrom > intersectionTo) return null
+  return {
+    from: intersectionFrom - groupStart,
+    to: intersectionTo - groupStart,
+  }
+}
+
+function buildMarketplaceSearchResult(
+  rows: Array<Record<string, unknown>>,
+  totalCount: number,
+  filters: ReturnType<typeof normalizeMarketplaceSearchInput>,
+  facets: MarketplaceSearchResult['facets'],
+): MarketplaceSearchResult {
+  const items = rows.map(sanitizePublicListingSellerName)
+  const totalPages = Math.max(1, Math.ceil(totalCount / filters.limit))
+  const hasNext = filters.page < totalPages
+  const lastItem = items[items.length - 1] || null
   return {
     items,
     facets,
@@ -276,20 +461,36 @@ async function fetchNormalRows(
 }
 
 function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
-  const categories = normalizeCategoryFilters(input.categories ?? input.category)
+  const explicitCategories = normalizeCategoryFilters(input.categories ?? input.category)
+  const markets = normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country)
+  const rawQuery = clean(input.q).slice(0, 80)
+  const parsedSearchState = parseMarketplaceSearchState(rawQuery, { markets })
+  const categories = explicitCategories.length
+    ? explicitCategories
+    : normalizeCategoryFilters(parsedSearchState.categories)
+  const geoAreaValue = input.geoAreaId || input.geoPlaceCode
+  const geoArea =
+    resolveMarketplaceGeoArea(geoAreaValue) ||
+    resolveStaticMarketplaceGeoArea(geoAreaValue) ||
+    parsedSearchState.geoArea
+  const bounds = normalizeSearchBounds(input)
   const sort = normalizeSort(input.sort)
   const cursor = decodeCursor(input.cursor, sort)
 
   return {
     categories,
-    markets: normalizeCountryFilters(input.markets ?? input.countries ?? input.countryCode ?? input.country),
-    q: clean(input.q).slice(0, 80),
-    make: clean(input.make).slice(0, 80),
+    markets,
+    preferredMarket: markets.length ? '' : normalizePreferredMarket(input.displayMarket),
+    q: parsedSearchState.query || rawQuery,
+    make: clean(input.make).slice(0, 80) || parsedSearchState.make,
     model: clean(input.model).slice(0, 80),
     city: clean(input.city).slice(0, 80),
     municipality: clean(input.municipality).slice(0, 80),
-    postalCode: clean(input.postalCode).slice(0, 40),
+    postalCode: clean(input.postalCode).slice(0, 40) || parsedSearchState.postalCode,
     county: clean(input.county || input.region).slice(0, 80),
+    geoArea,
+    geoFilterMode: input.geoFilterMode === 'strict' ? 'strict' : 'legacy',
+    bounds,
     fuelType: clean(input.fuelType || input.fuel).slice(0, 80),
     gearbox: clean(input.gearbox).slice(0, 80),
     bodyType: clean(input.bodyType).slice(0, 80),
@@ -299,10 +500,10 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     equipment: clean(input.equipment).slice(0, 80),
     fourWheelDrive: truthy(input.fourWheelDrive),
     leasingPossible: truthy(input.leasingPossible) || clean(input.mode) === 'leasing',
-    offerType: clean(input.offerType).toLowerCase(),
+    offerType: normalizeOfferTypeFilter(input, parsedSearchState.offerType),
     verifiedOnly: truthy(input.verifiedOnly),
     minPrice: positiveNumber(input.minPrice),
-    maxPrice: positiveNumber(input.maxPrice),
+    maxPrice: positiveNumber(input.maxPrice) ?? parsedSearchState.maxPrice,
     minYear: positiveNumber(input.minYear),
     maxYear: positiveNumber(input.maxYear),
     maxMileage: positiveNumber(input.maxMileage),
@@ -317,6 +518,21 @@ function normalizeMarketplaceSearchInput(input: MarketplaceSearchInput) {
     page: clampInt(input.page, 1, 10_000, 1),
     limit: clampInt(input.limit, 1, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE),
   }
+}
+
+function normalizeParsedOfferType(value: string) {
+  return value === 'leasing' ? 'lease' : value
+}
+
+function normalizeOfferTypeFilter(input: MarketplaceSearchInput, parsedOfferType: string) {
+  const explicit = clean(input.offerType).toLowerCase()
+  if (explicit === 'sale' || explicit === 'lease') return explicit
+  const parsed = normalizeParsedOfferType(parsedOfferType)
+  if (parsed === 'sale' || parsed === 'lease') return parsed
+  const mode = clean(input.mode).toLowerCase()
+  if (mode === 'leasing') return 'lease'
+  if (mode === 'sale') return 'sale'
+  return ''
 }
 
 function emptyMarketplaceSearchResult(filters: ReturnType<typeof normalizeMarketplaceSearchInput>): MarketplaceSearchResult {
@@ -347,7 +563,7 @@ async function getVerifiedMarketplaceSellerIds() {
         ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
       const privateVerified =
         profile.account_type !== 'business' &&
-        ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+        ['verified', 'format_validated'].includes(String(profile.identity_status || ''))
       return businessVerified || privateVerified
     })
     .map((profile) => profile.user_id)
@@ -380,6 +596,21 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.model) query = query.eq('model', filters.model)
   if (filters.city) query = query.ilike('city', filters.city)
   if (filters.postalCode) query = query.ilike('postal_code', filters.postalCode)
+  if (filters.geoArea) {
+    if (filters.geoFilterMode === 'strict') {
+      query = applyStrictGeoAreaFilter(query, filters.geoArea)
+    } else {
+      const geoAreaFilters = marketplaceGeoAreaOrFilters(filters.geoArea)
+      if (geoAreaFilters.length) query = query.or(geoAreaFilters.join(','))
+    }
+  }
+  if (filters.bounds) {
+    query = query
+      .gte('latitude', filters.bounds.south)
+      .lte('latitude', filters.bounds.north)
+      .gte('longitude', filters.bounds.west)
+      .lte('longitude', filters.bounds.east)
+  }
   if (filters.county) {
     const countyTerms = locationFilterCountryScopes(filters.markets).flatMap((country) =>
       marketplaceRegionMunicipalitySearchTerms(country, filters.county),
@@ -425,8 +656,12 @@ function applyMarketplaceListingFilters<T extends {
   if (filters.sellerType && filters.sellerType !== 'all') query = query.eq('seller_type', filters.sellerType)
   if (filters.equipment) query = query.ilike('equipment', `%${escapeIlike(filters.equipment)}%`)
   if (filters.fourWheelDrive) query = query.ilike('equipment', '%fyrhjuls%')
-  if (filters.offerType === 'sale' || filters.offerType === 'lease') {
-    query = query.eq('offer_type', filters.offerType)
+  if (filters.offerType === 'sale' && filters.leasingPossible) {
+    query = query.eq('offer_type', 'sale_and_lease')
+  } else if (filters.offerType === 'sale') {
+    query = query.in('offer_type', ['sale', 'sale_and_lease'])
+  } else if (filters.offerType === 'lease') {
+    query = query.in('offer_type', ['lease', 'sale_and_lease'])
   } else if (filters.offerType === 'sale_and_lease') {
     query = query.eq('offer_type', 'sale_and_lease')
   } else if (filters.leasingPossible) {
@@ -462,6 +697,20 @@ function applyMarketplaceListingFilters<T extends {
   }
 
   return query
+}
+
+function applyStrictGeoAreaFilter<T extends {
+  eq: (column: string, value: string | boolean) => T
+  or: (filters: string) => T
+}>(query: T, geoArea: NonNullable<ReturnType<typeof normalizeMarketplaceSearchInput>['geoArea']>) {
+  if (geoArea.level === 'country') {
+    return query.eq('country_code', geoArea.countryCode)
+  }
+  if (geoArea.level === 'postal_code' && geoArea.postalCode) {
+    return query.eq('postal_code', geoArea.postalCode)
+  }
+  const filters = marketplaceGeoAreaOrFilters(geoArea)
+  return filters.length ? query.or(filters.join(',')) : query.eq('geo_area_id', geoArea.id)
 }
 
 function marketplaceSearchTokens(query: string) {
@@ -503,8 +752,8 @@ function marketplaceSearchOrFiltersForToken(token: string, markets: string[]) {
     petrol: ['bensin'],
     gasoline: ['bensin'],
     diesel: ['diesel'],
-    excavator: ['grÃ¤vmaskin', 'grÃ¤vare'],
-    tracked: ['bandgrÃ¤vare', 'band'],
+    excavator: ['grävmaskin', 'grävare'],
+    tracked: ['bandgrävare', 'band'],
     tractor: ['traktor'],
     gps: ['gps'],
     caravan: ['husvagn'],
@@ -574,6 +823,10 @@ function normalizeCountryFilters(value: unknown) {
         .filter((item) => /^[A-Z]{2}$/.test(item)),
     ),
   ]
+}
+
+function normalizePreferredMarket(value: unknown) {
+  return normalizeCountryFilters(value)[0] || ''
 }
 
 function clean(value: unknown) {
@@ -717,6 +970,8 @@ function emptyMarketplaceFacets() {
   return {
     makes: [],
     models: [],
+    regions: [],
+    municipalities: [],
     fuels: [],
     gearboxes: [],
     bodyTypes: [],
@@ -730,7 +985,7 @@ async function getDynamicMarketplaceFacets(
 ) {
   let query = admin
     .from('marketplace_listings')
-    .select('category,make,model,fuel_type,gearbox,body_type,structured_data,offer_type')
+    .select('category,make,model,municipality,city,fuel_type,gearbox,body_type,structured_data,offer_type')
   query = applyMarketplaceListingFilters(query, filters)
   const { data, error } = await query.limit(10_000)
   if (error) throw new Error(error.message)
@@ -754,6 +1009,8 @@ async function getDynamicMarketplaceFacets(
   for (const row of rows) {
     add('makes', row.make)
     add('models', row.model)
+    add('regions', row.municipality || row.city)
+    add('municipalities', row.municipality || row.city)
     add('fuels', row.fuel_type)
     add('gearboxes', row.gearbox)
     add('bodyTypes', row.body_type)
@@ -777,6 +1034,8 @@ async function getDynamicMarketplaceFacets(
   return {
     makes: list('makes'),
     models: list('models'),
+    regions: list('regions'),
+    municipalities: list('municipalities'),
     fuels: list('fuels'),
     gearboxes: list('gearboxes'),
     bodyTypes: list('bodyTypes'),

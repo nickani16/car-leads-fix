@@ -9,11 +9,11 @@ import {
   CarFront,
   ChevronDown,
   CircleHelp,
+  CircleUserRound,
   CreditCard,
   FilePlus2,
   Heart,
-  Home,
-  LogIn,
+  Handshake,
   LogOut,
   Mail,
   MessageSquareText,
@@ -23,7 +23,6 @@ import {
   Settings,
   ShieldCheck,
   Store,
-  UserPlus,
   UserRound,
   X,
   type LucideIcon,
@@ -35,6 +34,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
+import { shouldUseDarkFloatingGlass } from '@/lib/floating-glass-tone'
 import BrandLogo from './BrandLogo'
 import { autorellCategoryIcons } from './AutorellCategoryIcons'
 import { FlagIcon, MarketSelectorModal } from './PublicFooter'
@@ -42,9 +42,15 @@ import SiteSearch from './SiteSearch'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   categorySearchPath,
+  isLeasingMarketplaceCategory,
   marketplaceCategories,
   marketplaceLanguage,
+  type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
+import {
+  applyMarketplaceSearchModeParams,
+  type MarketplaceSearchMode,
+} from '@/lib/marketplace-search-seo'
 import {
   categoryLandingMenuHref,
   getCategoryLanding,
@@ -65,6 +71,7 @@ import {
 } from '@/lib/saved-searches'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from './AuthModal'
+import HeaderNotificationCenter from './HeaderNotificationCenter'
 
 type AuthView = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -75,7 +82,12 @@ type PublicHeaderProps = {
     label: string
     slug: string
   }
+  marketplaceResultsPage?: boolean
+  marketplaceMode?: MarketplaceSearchMode
   marketCode?: string
+  hideOnMobile?: boolean
+  lockMobileBottomNav?: boolean
+  hideMobileBottomNav?: boolean
 }
 
 type MenuItem = {
@@ -83,12 +95,111 @@ type MenuItem = {
   label: string
   description: string
   icon: LucideIcon
+  slug?: MarketplaceCategorySlug
+  requiresLogin?: boolean
+}
+
+type SearchMegaCopy = {
+  intro: string
+  saleText: string
+  leasingText: string
+  openCategory: string
+  openLeasing: string
+}
+
+const searchMegaCopy: Record<PublicLocale, SearchMegaCopy> = {
+  sv: {
+    intro: 'Välj en fordonskategori och gå direkt till matchande annonser.',
+    saleText: 'Se fordon som är redo att köpas.',
+    leasingText: 'Visa leasingannonser från företagssäljare.',
+    openCategory: 'Öppna kategori',
+    openLeasing: 'Öppna leasing',
+  },
+  en: {
+    intro: 'Choose one vehicle category and go straight to matching listings.',
+    saleText: 'Browse vehicles that are ready to buy.',
+    leasingText: 'Show leasing listings from business sellers.',
+    openCategory: 'Open category',
+    openLeasing: 'Open leasing',
+  },
+  de: {
+    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
+    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
+    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
+    openCategory: 'Kategorie öffnen',
+    openLeasing: 'Leasing öffnen',
+  },
+  at: {
+    intro: 'Wählen Sie eine Fahrzeugkategorie und gehen Sie direkt zu passenden Anzeigen.',
+    saleText: 'Fahrzeuge ansehen, die direkt gekauft werden können.',
+    leasingText: 'Leasinganzeigen von gewerblichen Verkäufern anzeigen.',
+    openCategory: 'Kategorie öffnen',
+    openLeasing: 'Leasing öffnen',
+  },
+  be: {
+    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
+    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
+    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
+    openCategory: 'Categorie openen',
+    openLeasing: 'Leasing openen',
+  },
+  fr: {
+    intro: 'Choisissez une catégorie de véhicule et accédez directement aux annonces correspondantes.',
+    saleText: 'Parcourez les véhicules prêts à être achetés.',
+    leasingText: 'Afficher les annonces de leasing des vendeurs professionnels.',
+    openCategory: 'Ouvrir la catégorie',
+    openLeasing: 'Ouvrir le leasing',
+  },
+  es: {
+    intro: 'Elige una categoría de vehículo y ve directamente a los anuncios correspondientes.',
+    saleText: 'Consulta vehículos listos para comprar.',
+    leasingText: 'Muestra anuncios de leasing de vendedores profesionales.',
+    openCategory: 'Abrir categoría',
+    openLeasing: 'Abrir leasing',
+  },
+  it: {
+    intro: 'Scegli una categoria di veicoli e vai direttamente agli annunci corrispondenti.',
+    saleText: "Sfoglia veicoli pronti per l'acquisto.",
+    leasingText: 'Mostra annunci di leasing da venditori professionali.',
+    openCategory: 'Apri categoria',
+    openLeasing: 'Apri leasing',
+  },
+  pl: {
+    intro: 'Wybierz kategorię pojazdu i przejdź bezpośrednio do pasujących ogłoszeń.',
+    saleText: 'Przeglądaj pojazdy gotowe do zakupu.',
+    leasingText: 'Pokaż oferty leasingu od sprzedawców firmowych.',
+    openCategory: 'Otwórz kategorię',
+    openLeasing: 'Otwórz leasing',
+  },
+  nl: {
+    intro: 'Kies een voertuigcategorie en ga direct naar passende advertenties.',
+    saleText: 'Bekijk voertuigen die klaar zijn om te kopen.',
+    leasingText: 'Toon leaseadvertenties van zakelijke verkopers.',
+    openCategory: 'Categorie openen',
+    openLeasing: 'Leasing openen',
+  },
+  fi: {
+    intro: 'Valitse ajoneuvoluokka ja siirry suoraan sopiviin ilmoituksiin.',
+    saleText: 'Selaa ostovalmiita ajoneuvoja.',
+    leasingText: 'Näytä yritysmyyjien leasing-ilmoitukset.',
+    openCategory: 'Avaa luokka',
+    openLeasing: 'Avaa leasing',
+  },
+  da: {
+    intro: 'Vælg en køretøjskategori og gå direkte til matchende annoncer.',
+    saleText: 'Se køretøjer, der er klar til køb.',
+    leasingText: 'Vis leasingannoncer fra erhvervssælgere.',
+    openCategory: 'Åbn kategori',
+    openLeasing: 'Åbn leasing',
+  },
 }
 
 type HeaderAccount = {
   authenticated: boolean
   displayName?: string
   accountType?: 'private' | 'business' | null
+  isAdmin?: boolean
+  profileComplete?: boolean
   unreadMessages: number
   conversationCount: number
 }
@@ -314,30 +425,244 @@ const copy = {
 
 const sellerItems: Record<'sv' | 'en' | 'de', MenuItem[]> = {
   sv: [
-    { href: '/sell-vehicle', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront },
-    { href: '/pricing', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
-    { href: '/how-selling-works', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
+    { href: '/account/listings/new', label: 'Annonsera fordon på Autorell', description: 'Gratis att komma igång för privatpersoner och företag.', icon: CarFront, requiresLogin: true },
+    { href: '/help-center/payment/private-listing-prices', label: 'Pris för att annonsera fordon', description: 'Du betalar bara för längre annonstid och extra synlighet.', icon: Store },
+    { href: '/help-center', label: 'Hur det fungerar', description: 'Skapa annons, ta emot kontakt och sälj tryggt.', icon: CircleHelp },
   ],
   en: [
-    { href: '/sell-vehicle', label: 'Sell vehicle', description: 'Free to start for private and business sellers.', icon: CarFront },
-    { href: '/pricing', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
-    { href: '/how-selling-works', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
+    { href: '/account/listings/new', label: 'Advertise vehicles on Autorell', description: 'Free to start for private and business sellers.', icon: CarFront, requiresLogin: true },
+    { href: '/help-center/payment/private-listing-prices', label: 'Pricing', description: 'Pay only for longer listing time and extra visibility.', icon: Store },
+    { href: '/help-center', label: 'How it works', description: 'Create a listing, receive enquiries and sell safely.', icon: CircleHelp },
   ],
   de: [
-    { href: '/sell-vehicle', label: 'Verkaufen', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront },
-    { href: '/pricing', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
-    { href: '/how-selling-works', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
+    { href: '/account/listings/new', label: 'Fahrzeug auf Autorell inserieren', description: 'Kostenlos starten für private und gewerbliche Verkäufer.', icon: CarFront, requiresLogin: true },
+    { href: '/help-center/payment/private-listing-prices', label: 'Preise', description: 'Nur längere Laufzeit und mehr Sichtbarkeit kosten extra.', icon: Store },
+    { href: '/help-center', label: 'So geht’s', description: 'Anzeige erstellen, Anfragen erhalten und sicher verkaufen.', icon: CircleHelp },
   ],
+}
+
+const sellToDealerMenuCopy: Record<PublicLocale, { label: string; description: string }> = {
+  sv: { label: 'Sälj till en handlare', description: 'Skicka fordonsuppgifter och få bud från anslutna handlare.' },
+  en: { label: 'Sell to a dealer', description: 'Share your vehicle details and receive offers from connected dealers.' },
+  de: { label: 'An einen Händler verkaufen', description: 'Fahrzeugdaten senden und Angebote von angeschlossenen Händlern erhalten.' },
+  at: { label: 'An einen Händler verkaufen', description: 'Fahrzeugdaten senden und Angebote von angeschlossenen Händlern erhalten.' },
+  be: { label: 'Verkopen aan een dealer', description: 'Deel je voertuiggegevens en ontvang biedingen van aangesloten dealers.' },
+  fr: { label: 'Vendre à un professionnel', description: 'Envoyez les informations du véhicule et recevez des offres de professionnels partenaires.' },
+  es: { label: 'Vender a un concesionario', description: 'Envía los datos del vehículo y recibe ofertas de concesionarios asociados.' },
+  it: { label: 'Vendi a un concessionario', description: 'Invia i dati del veicolo e ricevi offerte dai concessionari aderenti.' },
+  pl: { label: 'Sprzedaj dealerowi', description: 'Prześlij dane pojazdu i otrzymuj oferty od współpracujących dealerów.' },
+  nl: { label: 'Verkopen aan een dealer', description: 'Deel je voertuiggegevens en ontvang biedingen van aangesloten dealers.' },
+  fi: { label: 'Myy autoliikkeelle', description: 'Lähetä ajoneuvon tiedot ja vastaanota tarjouksia mukana olevilta autoliikkeiltä.' },
+  da: { label: 'Sælg til en forhandler', description: 'Send køretøjets oplysninger og modtag bud fra tilknyttede forhandlere.' },
+}
+
+const businessMenuCopy: Record<
+  PublicLocale,
+  {
+    solutionsLabel: string
+    solutionsDescription: string
+    plansLabel: string
+    plansDescription: string
+    inventoryLabel: string
+    inventoryDescription: string
+    dealerOffersLabel: string
+    dealerOffersDescription: string
+    integrationsLabel: string
+    integrationsDescription: string
+    businessHelpLabel: string
+    businessHelpDescription: string
+  }
+> = {
+  sv: {
+    solutionsLabel: 'Handlarlösningar',
+    solutionsDescription: 'Verktyg för handlare och återkommande professionella säljare.',
+    plansLabel: 'Planer',
+    plansDescription: 'Jämför företagsplaner och vad som ingår.',
+    inventoryLabel: 'Lager & annonser',
+    inventoryDescription: 'Svar om lager, aktiva annonser, status och uppföljning.',
+    dealerOffersLabel: 'Köp bilar / Dealer Offers',
+    dealerOffersDescription: 'Så hittar företag fordon och hanterar dealerförfrågningar.',
+    integrationsLabel: 'Integrationer',
+    integrationsDescription: 'Import, lagerflöden och tekniska kopplingar till Autorell.',
+    businessHelpLabel: 'Företagshjälp',
+    businessHelpDescription: 'Hjälp med konto, planer, annonser och företagsärenden.',
+  },
+  en: {
+    solutionsLabel: 'Dealer solutions',
+    solutionsDescription: 'Tools for dealers and recurring professional sellers.',
+    plansLabel: 'Plans',
+    plansDescription: 'Compare business plans and what is included.',
+    inventoryLabel: 'Inventory & listings',
+    inventoryDescription: 'Answers about stock, active listings, status and follow-up.',
+    dealerOffersLabel: 'Buy cars / Dealer Offers',
+    dealerOffersDescription: 'How companies find vehicles and handle dealer enquiries.',
+    integrationsLabel: 'Integrations',
+    integrationsDescription: 'Imports, inventory feeds and technical connections to Autorell.',
+    businessHelpLabel: 'Business help',
+    businessHelpDescription: 'Help with accounts, plans, listings and business cases.',
+  },
+  de: {
+    solutionsLabel: 'Händlerlösungen',
+    solutionsDescription: 'Werkzeuge für Händler und regelmäßig aktive gewerbliche Verkäufer.',
+    plansLabel: 'Tarife',
+    plansDescription: 'Unternehmenstarife und enthaltene Leistungen vergleichen.',
+    inventoryLabel: 'Bestand & Anzeigen',
+    inventoryDescription: 'Antworten zu Bestand, aktiven Anzeigen, Status und Nachverfolgung.',
+    dealerOffersLabel: 'Autos kaufen / Dealer Offers',
+    dealerOffersDescription: 'Wie Unternehmen Fahrzeuge finden und Händleranfragen bearbeiten.',
+    integrationsLabel: 'Integrationen',
+    integrationsDescription: 'Importe, Bestandsfeeds und technische Anbindungen an Autorell.',
+    businessHelpLabel: 'Unternehmenshilfe',
+    businessHelpDescription: 'Hilfe zu Konto, Tarifen, Anzeigen und Unternehmensfällen.',
+  },
+  at: {
+    solutionsLabel: 'Händlerlösungen',
+    solutionsDescription: 'Werkzeuge für Händler und regelmäßig aktive gewerbliche Verkäufer.',
+    plansLabel: 'Tarife',
+    plansDescription: 'Unternehmenstarife und enthaltene Leistungen vergleichen.',
+    inventoryLabel: 'Bestand & Anzeigen',
+    inventoryDescription: 'Antworten zu Bestand, aktiven Anzeigen, Status und Nachverfolgung.',
+    dealerOffersLabel: 'Autos kaufen / Dealer Offers',
+    dealerOffersDescription: 'Wie Unternehmen Fahrzeuge finden und Händleranfragen bearbeiten.',
+    integrationsLabel: 'Integrationen',
+    integrationsDescription: 'Importe, Bestandsfeeds und technische Anbindungen an Autorell.',
+    businessHelpLabel: 'Unternehmenshilfe',
+    businessHelpDescription: 'Hilfe zu Konto, Tarifen, Anzeigen und Unternehmensfällen.',
+  },
+  be: {
+    solutionsLabel: 'Dealeroplossingen',
+    solutionsDescription: 'Tools voor dealers en professionele verkopers met een terugkerend aanbod.',
+    plansLabel: 'Abonnementen',
+    plansDescription: 'Vergelijk zakelijke abonnementen en wat inbegrepen is.',
+    inventoryLabel: 'Voorraad & advertenties',
+    inventoryDescription: 'Antwoorden over voorraad, actieve advertenties, status en opvolging.',
+    dealerOffersLabel: 'Auto’s kopen / Dealer Offers',
+    dealerOffersDescription: 'Hoe bedrijven voertuigen vinden en dealerreacties behandelen.',
+    integrationsLabel: 'Integraties',
+    integrationsDescription: 'Import, voorraadfeeds en technische koppelingen met Autorell.',
+    businessHelpLabel: 'Hulp voor bedrijven',
+    businessHelpDescription: 'Hulp bij accounts, plannen, advertenties en zakelijke vragen.',
+  },
+  fr: {
+    solutionsLabel: 'Solutions pour professionnels',
+    solutionsDescription: 'Outils pour les professionnels de l’automobile et les vendeurs réguliers.',
+    plansLabel: 'Formules',
+    plansDescription: 'Comparez les formules professionnelles et leurs services inclus.',
+    inventoryLabel: 'Stock et annonces',
+    inventoryDescription: 'Réponses sur stock, annonces actives, statuts et suivi.',
+    dealerOffersLabel: 'Acheter / Dealer Offers',
+    dealerOffersDescription: 'Comment les entreprises trouvent des véhicules et traitent les demandes.',
+    integrationsLabel: 'Intégrations',
+    integrationsDescription: 'Imports, flux de stock et connexions techniques à Autorell.',
+    businessHelpLabel: 'Aide aux entreprises',
+    businessHelpDescription: 'Aide pour comptes, offres, annonces et dossiers professionnels.',
+  },
+  es: {
+    solutionsLabel: 'Soluciones para concesionarios',
+    solutionsDescription: 'Herramientas para concesionarios y vendedores profesionales habituales.',
+    plansLabel: 'Planes',
+    plansDescription: 'Compara los planes para empresas y todo lo que incluyen.',
+    inventoryLabel: 'Inventario y anuncios',
+    inventoryDescription: 'Respuestas sobre inventario, anuncios activos, estados y seguimiento.',
+    dealerOffersLabel: 'Comprar coches / Dealer Offers',
+    dealerOffersDescription: 'Cómo las empresas encuentran vehículos y gestionan consultas.',
+    integrationsLabel: 'Integraciones',
+    integrationsDescription: 'Importaciones, feeds e integraciones técnicas con Autorell.',
+    businessHelpLabel: 'Ayuda para empresas',
+    businessHelpDescription: 'Ayuda con cuentas, planes, anuncios y casos de empresa.',
+  },
+  it: {
+    solutionsLabel: 'Soluzioni per concessionari',
+    solutionsDescription: 'Strumenti per concessionari e venditori professionali abituali.',
+    plansLabel: 'Piani',
+    plansDescription: 'Confronta i piani aziendali e i servizi inclusi.',
+    inventoryLabel: 'Inventario e annunci',
+    inventoryDescription: 'Risposte su inventario, annunci attivi, stati e follow-up.',
+    dealerOffersLabel: 'Acquisto auto / Dealer Offers',
+    dealerOffersDescription: 'Come le aziende trovano veicoli e gestiscono richieste dealer.',
+    integrationsLabel: 'Integrazioni',
+    integrationsDescription: 'Import, feed inventario e collegamenti tecnici con Autorell.',
+    businessHelpLabel: 'Aiuto per aziende',
+    businessHelpDescription: 'Aiuto con account, piani, annunci e casi aziendali.',
+  },
+  pl: {
+    solutionsLabel: 'Rozwiązania dla dealerów',
+    solutionsDescription: 'Narzędzia dla dealerów i regularnych sprzedawców profesjonalnych.',
+    plansLabel: 'Plany',
+    plansDescription: 'Porównaj plany firmowe i ich zakres.',
+    inventoryLabel: 'Zapasy i ogłoszenia',
+    inventoryDescription: 'Odpowiedzi o zapasach, aktywnych ogłoszeniach, statusie i kontroli.',
+    dealerOffersLabel: 'Zakup aut / Dealer Offers',
+    dealerOffersDescription: 'Jak firmy znajdują pojazdy i obsługują zapytania dealerów.',
+    integrationsLabel: 'Integracje',
+    integrationsDescription: 'Import, feedy zapasów i połączenia techniczne z Autorell.',
+    businessHelpLabel: 'Pomoc dla firm',
+    businessHelpDescription: 'Pomoc przy kontach, planach, ogłoszeniach i sprawach firmowych.',
+  },
+  nl: {
+    solutionsLabel: 'Dealeroplossingen',
+    solutionsDescription: 'Tools voor dealers en professionele verkopers met een terugkerend aanbod.',
+    plansLabel: 'Abonnementen',
+    plansDescription: 'Vergelijk zakelijke abonnementen en wat inbegrepen is.',
+    inventoryLabel: 'Voorraad & advertenties',
+    inventoryDescription: 'Antwoorden over voorraad, actieve advertenties, status en opvolging.',
+    dealerOffersLabel: 'Auto’s kopen / Dealer Offers',
+    dealerOffersDescription: 'Hoe bedrijven voertuigen vinden en dealerreacties behandelen.',
+    integrationsLabel: 'Integraties',
+    integrationsDescription: 'Import, voorraadfeeds en technische koppelingen met Autorell.',
+    businessHelpLabel: 'Hulp voor bedrijven',
+    businessHelpDescription: 'Hulp bij accounts, plannen, advertenties en zakelijke vragen.',
+  },
+  fi: {
+    solutionsLabel: 'Ratkaisut autoliikkeille',
+    solutionsDescription: 'Työkalut autoliikkeille ja säännöllisesti myyville ammattilaisille.',
+    plansLabel: 'Paketit',
+    plansDescription: 'Vertaa yrityspaketteja ja niihin sisältyviä palveluja.',
+    inventoryLabel: 'Varasto ja ilmoitukset',
+    inventoryDescription: 'Vastauksia varastosta, aktiivisista ilmoituksista, tilasta ja seurannasta.',
+    dealerOffersLabel: 'Autojen osto / Dealer Offers',
+    dealerOffersDescription: 'Näin yritykset löytävät ajoneuvoja ja käsittelevät liikkeiden kyselyjä.',
+    integrationsLabel: 'Integraatiot',
+    integrationsDescription: 'Tuonnit, varastosyötteet ja tekniset yhteydet Autorelliin.',
+    businessHelpLabel: 'Yritysapu',
+    businessHelpDescription: 'Apua tileihin, paketteihin, ilmoituksiin ja yritysasioihin.',
+  },
+  da: {
+    solutionsLabel: 'Forhandlerløsninger',
+    solutionsDescription: 'Værktøjer til forhandlere og professionelle sælgere med løbende salg.',
+    plansLabel: 'Abonnementer',
+    plansDescription: 'Sammenlign virksomhedsabonnementer og deres indhold.',
+    inventoryLabel: 'Lager og annoncer',
+    inventoryDescription: 'Svar om lager, aktive annoncer, status og opfølgning.',
+    dealerOffersLabel: 'Køb biler / Dealer Offers',
+    dealerOffersDescription: 'Sådan finder virksomheder køretøjer og håndterer forhandlerforespørgsler.',
+    integrationsLabel: 'Integrationer',
+    integrationsDescription: 'Import, lagerfeeds og tekniske forbindelser til Autorell.',
+    businessHelpLabel: 'Virksomhedshjælp',
+    businessHelpDescription: 'Hjælp til konto, planer, annoncer og virksomhedssager.',
+  },
 }
 
 export default function PublicHeader({
   locale: providedLocale,
   marketplaceChannel,
+  marketplaceResultsPage = false,
+  marketplaceMode = 'all',
   marketCode,
+  hideOnMobile = false,
+  lockMobileBottomNav = false,
+  hideMobileBottomNav = false,
 }: PublicHeaderProps) {
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
   const unprefixedPathname = stripLocalePrefix(pathname)
+  const isMarketplaceRoute =
+    pathname === '/marketplace' ||
+    pathname.includes('/marketplace/') ||
+    pathname.endsWith('/marketplace') ||
+    unprefixedPathname === '/marketplace' ||
+    unprefixedPathname.startsWith('/marketplace/')
+  const keepMobileBottomNavVisible = lockMobileBottomNav || marketplaceResultsPage || isMarketplaceRoute
   const language = marketplaceLanguage(locale)
   const t =
     locale === 'sv' || locale === 'de' || locale === 'en'
@@ -371,40 +696,76 @@ export default function PublicHeader({
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login')
   const [authInitialView, setAuthInitialView] = useState<AuthView>('login')
   const [authDestination, setAuthDestination] = useState<string | undefined>()
+  const [authBusinessRegistration, setAuthBusinessRegistration] = useState(false)
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
+  const [headerAccountResolved, setHeaderAccountResolved] = useState(false)
   const [activePathname, setActivePathname] = useState('')
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [savedSearchCount, setSavedSearchCount] = useState(0)
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false)
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [searchMenuOpen, setSearchMenuOpen] = useState(false)
+  const [searchMenuIntent, setSearchMenuIntent] = useState<MarketplaceSearchMode>(marketplaceMode)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
+  const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
   const [mobileSellMenuOpen, setMobileSellMenuOpen] = useState(false)
+  const [mobileBusinessMenuOpen, setMobileBusinessMenuOpen] = useState(false)
   const [mobileHelpMenuOpen, setMobileHelpMenuOpen] = useState(false)
   const [visible, setVisible] = useState(true)
   const [atPageTop, setAtPageTop] = useState(true)
+  const [mobileNavOverMedia, setMobileNavOverMedia] = useState(false)
   const lastScrollY = useRef(0)
   const profileMenuRef = useRef<HTMLDivElement | null>(null)
+  const searchMenuRef = useRef<HTMLDivElement | null>(null)
   const sellMenuRef = useRef<HTMLDivElement | null>(null)
+  const businessMenuRef = useRef<HTMLDivElement | null>(null)
   const helpMenuRef = useRef<HTMLDivElement | null>(null)
+  const mobileBottomNavRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const difference = currentScrollY - lastScrollY.current
+      const nearPageBottom =
+        currentScrollY + window.innerHeight >= document.documentElement.scrollHeight - 160
       setAtPageTop(currentScrollY < 8)
 
-      if (currentScrollY < 10) setVisible(true)
+      if (isMarketplaceRoute) {
+        if (currentScrollY < 10) {
+          setVisible(true)
+        } else {
+          setVisible(false)
+          setOpen(false)
+          setMarketSelectorOpen(false)
+          setMobileCategoryOpen(false)
+          setMobileMoreOpen(false)
+          setSearchMenuOpen(false)
+          setSellMenuOpen(false)
+          setBusinessMenuOpen(false)
+          setHelpMenuOpen(false)
+          setMobileSellMenuOpen(false)
+          setMobileBusinessMenuOpen(false)
+          setMobileHelpMenuOpen(false)
+        }
+        lastScrollY.current = currentScrollY
+        return
+      }
+
+      if (currentScrollY < 10 || nearPageBottom) setVisible(true)
       else if (difference > 1) {
         setVisible(false)
         setOpen(false)
         setMarketSelectorOpen(false)
         setMobileCategoryOpen(false)
         setMobileMoreOpen(false)
+        setSearchMenuOpen(false)
         setSellMenuOpen(false)
+        setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
         setMobileSellMenuOpen(false)
+        setMobileBusinessMenuOpen(false)
         setMobileHelpMenuOpen(false)
       } else if (difference < -1) setVisible(true)
 
@@ -414,6 +775,79 @@ export default function PublicHeader({
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [isMarketplaceRoute])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const root = document.documentElement
+    const mobileNavVisible =
+      !hideMobileBottomNav &&
+      (keepMobileBottomNavVisible || visible || open || mobileCategoryOpen || mobileMoreOpen)
+
+    root.style.setProperty('--autorell-mobile-footer-reserve', mobileNavVisible ? '5.5rem' : '4.75rem')
+    return () => {
+      root.style.removeProperty('--autorell-mobile-footer-reserve')
+    }
+  }, [hideMobileBottomNav, keepMobileBottomNavVisible, mobileCategoryOpen, mobileMoreOpen, open, visible])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let frame = 0
+    const updateNavContrast = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        setMobileNavOverMedia((current) => shouldUseDarkFloatingGlass(mobileBottomNavRef.current, current))
+      })
+    }
+
+    updateNavContrast()
+    window.addEventListener('scroll', updateNavContrast, { passive: true })
+    document.addEventListener('scroll', updateNavContrast, { passive: true, capture: true })
+    window.addEventListener('resize', updateNavContrast)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateNavContrast)
+      document.removeEventListener('scroll', updateNavContrast, { capture: true })
+      window.removeEventListener('resize', updateNavContrast)
+    }
+  }, [activePathname, isMarketplaceRoute])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+    let largestViewportHeight = 0
+    const updateMobileBottomInset = () => {
+      const viewport = window.visualViewport
+      const viewportHeight = Math.round(viewport?.height || window.innerHeight)
+      largestViewportHeight = Math.max(largestViewportHeight, viewportHeight)
+      const screenHeight = Math.max(window.screen?.height || 0, window.screen?.availHeight || 0)
+      const browserToolbarInset = viewport
+        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        : 0
+      const roundedBrowserToolbarInset = Math.round(browserToolbarInset)
+      const viewportShortByScreen = screenHeight > 0 && viewportHeight < screenHeight - 120
+      const viewportShortBySession = largestViewportHeight > 0 && viewportHeight < largestViewportHeight - 48
+      const browserChromeVisible = roundedBrowserToolbarInset > 24 || viewportShortByScreen || viewportShortBySession
+      root.style.setProperty('--autorell-mobile-browser-inset', `${roundedBrowserToolbarInset}px`)
+      root.style.setProperty('--autorell-mobile-bottom-gap', browserChromeVisible ? '12px' : '20px')
+    }
+
+    updateMobileBottomInset()
+    window.visualViewport?.addEventListener('resize', updateMobileBottomInset)
+    window.visualViewport?.addEventListener('scroll', updateMobileBottomInset)
+    window.addEventListener('resize', updateMobileBottomInset)
+    window.addEventListener('orientationchange', updateMobileBottomInset)
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateMobileBottomInset)
+      window.visualViewport?.removeEventListener('scroll', updateMobileBottomInset)
+      window.removeEventListener('resize', updateMobileBottomInset)
+      window.removeEventListener('orientationchange', updateMobileBottomInset)
+      root.style.removeProperty('--autorell-mobile-browser-inset')
+      root.style.removeProperty('--autorell-mobile-bottom-gap')
+    }
   }, [])
 
   useEffect(() => {
@@ -429,6 +863,11 @@ export default function PublicHeader({
     }, 0)
     return () => window.clearTimeout(timer)
   }, [unprefixedPathname])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchMenuIntent(marketplaceMode), 0)
+    return () => window.clearTimeout(timer)
+  }, [marketplaceMode])
 
   const refreshHeaderAccount = useCallback(async () => {
     try {
@@ -452,6 +891,8 @@ export default function PublicHeader({
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: fallback }),
       )
+    } finally {
+      setHeaderAccountResolved(true)
     }
   }, [])
 
@@ -485,7 +926,11 @@ export default function PublicHeader({
     }
     const timer = window.setTimeout(() => {
       syncSaved()
-      void fetchSavedListingIds().then((result) => setSavedListingCount(result.ids.length)).catch(() => undefined)
+      void fetchSavedListingIds()
+        .then((result) => {
+          if (result.authenticated) setSavedListingCount(result.ids.length)
+        })
+        .catch(() => undefined)
     }, 0)
     window.addEventListener('autorell:saved-listings', syncSaved)
     window.addEventListener(SAVED_SEARCHES_EVENT, syncSaved)
@@ -512,23 +957,29 @@ export default function PublicHeader({
   }, [open])
 
   useEffect(() => {
-    if (!profileMenuOpen && !sellMenuOpen && !helpMenuOpen) return
+    if (!profileMenuOpen && !searchMenuOpen && !sellMenuOpen && !businessMenuOpen && !helpMenuOpen) return
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
       if (profileMenuRef.current?.contains(target)) return
+      if (searchMenuRef.current?.contains(target)) return
       if (sellMenuRef.current?.contains(target)) return
+      if (businessMenuRef.current?.contains(target)) return
       if (helpMenuRef.current?.contains(target)) return
       setProfileMenuOpen(false)
+      setSearchMenuOpen(false)
       setSellMenuOpen(false)
+      setBusinessMenuOpen(false)
       setHelpMenuOpen(false)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setProfileMenuOpen(false)
+        setSearchMenuOpen(false)
         setSellMenuOpen(false)
+        setBusinessMenuOpen(false)
         setHelpMenuOpen(false)
       }
     }
@@ -539,13 +990,21 @@ export default function PublicHeader({
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [profileMenuOpen, sellMenuOpen, helpMenuOpen])
+  }, [profileMenuOpen, searchMenuOpen, sellMenuOpen, businessMenuOpen, helpMenuOpen])
 
   useEffect(() => {
-    const auth = new URLSearchParams(window.location.search).get('auth')
+    const params = new URLSearchParams(window.location.search)
+    const auth = params.get('auth')
     if (!auth) return
-    if (auth === 'login') openAuthModal('login')
-    if (auth === 'register' || auth === 'registrera') openAuthModal('register')
+    const next = params.get('next')
+    const destination =
+      next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/api/')
+        ? next
+        : undefined
+    if (auth === 'login') openAuthModal('login', destination)
+    if (auth === 'register' || auth === 'registrera') {
+      openAuthModal('register', destination, params.get('account') === 'business')
+    }
     if (auth === 'forgot-password') openAuthModal('forgot')
     if (auth === 'reset-password') openAuthModal('reset')
   }, [pathname])
@@ -558,6 +1017,7 @@ export default function PublicHeader({
     return {
       href: localizePublicHref(locale, categorySearchPath(category.slug)),
       label,
+      slug: category.slug,
       description:
         locale === 'sv'
           ? 'Se annonser från privatpersoner och företag i hela Europa.'
@@ -569,6 +1029,41 @@ export default function PublicHeader({
       icon: category.icon,
     }
   })
+  const searchIntentOptions = [
+    {
+      key: 'all' as const,
+      label: publicLabel('All', 'Alla', 'Alle'),
+      shortLabel: publicLabel('All', 'Alla', 'Alle'),
+      text: publicLabel(
+        'Show vehicles for sale and leasing together.',
+        'Visa fordon till salu och leasing tillsammans.',
+        'Fahrzeuge zum Kauf und Leasing gemeinsam anzeigen.',
+      ),
+    },
+    {
+      key: 'sale' as const,
+      label: publicLabel('Vehicles for sale', 'Fordon till salu', 'Fahrzeuge kaufen'),
+      shortLabel: publicLabel('Buy', 'Köp', 'Kaufen'),
+      text: searchMegaCopy[locale].saleText,
+    },
+    {
+      key: 'leasing' as const,
+      label: publicLabel('Vehicle leasing', 'Leasing av fordon', 'Fahrzeugleasing'),
+      shortLabel: publicLabel('Leasing', 'Leasing', 'Leasing'),
+      text: searchMegaCopy[locale].leasingText,
+    },
+  ]
+  const searchCategoryHref = (href: string) => {
+    const [pathname, search = ''] = href.split('?')
+    const params = new URLSearchParams(search)
+    applyMarketplaceSearchModeParams(params, searchMenuIntent)
+    const query = params.toString()
+    return query ? `${pathname}?${query}` : pathname
+  }
+  const visibleSearchCategoryItems =
+    searchMenuIntent === 'leasing'
+      ? buyItems.filter((item) => item.slug && isLeasingMarketplaceCategory(item.slug))
+      : buyItems
   const topCategoryLabels: Partial<Record<(typeof marketplaceCategories)[number]['slug'], Record<'sv' | 'en' | 'de', string>>> = {
     agriculture: { sv: 'Lantbruk', en: 'Farm', de: 'Landwirtschaft' },
     construction: { sv: 'Entreprenad', en: 'Construction', de: 'Baumaschinen' },
@@ -615,8 +1110,8 @@ export default function PublicHeader({
   const languageOptions: Array<readonly [string, string, string, string]> = [
     ['eu', 'EU', 'English', 'https://www.autorell.com/?market=en'] as const,
     ...([
-      ['se', 'SE', 'Sverige', 'https://www.autorell.com/se'] as const,
-      ['de', 'DE', 'Deutschland', 'https://www.autorell.com/de'] as const,
+      ['se', 'SE', 'Sverige', 'https://www.autorell.se/'] as const,
+      ['de', 'DE', 'Deutschland', 'https://www.autorell.de/'] as const,
       ...euBuyerMarkets
         .filter((market) => !highlightedMarketCodes.has(market.code))
         .map(
@@ -650,16 +1145,20 @@ export default function PublicHeader({
     (['eu', 'EU', 'Europe', 'https://www.autorell.com/'] as const)
 
   const homeHref = localizePublicHref(locale, '/')
-  const marketPathPrefix = activeMarketCode === 'eu' ? '' : `/${activeMarketCode}`
+  const marketPathPrefix =
+    activeMarketCode === 'eu' || activeMarketCode === 'se' || activeMarketCode === 'de'
+      ? ''
+      : `/${activeMarketCode}`
   const accountHref = `${marketPathPrefix}/account`
   const accountMessagesHref = `${marketPathPrefix}/account/messages`
   const savedHref = `${marketPathPrefix}/saved`
   const savedSearchesHref = `${marketPathPrefix}/saved-searches`
   const vehicleSearchHref = localizePublicHref(locale, '/marketplace')
-  const isHomePage = activePathname === '/'
   const isFindCarsPage = activePathname === '/find-cars'
   const isMarketplaceResults =
-    activePathname === '/marketplace' || activePathname.startsWith('/marketplace/')
+    marketplaceResultsPage ||
+    activePathname === '/marketplace' ||
+    activePathname.startsWith('/marketplace/')
   const firstPathSegment = unprefixedPathname.split('/').filter(Boolean)[0] || ''
   const isListingDetail = new Set([
     'listings',
@@ -681,26 +1180,102 @@ export default function PublicHeader({
     ? showTopCategoryNav
       ? 'h-[110px] min-[1120px]:h-[80px]'
       : 'h-[110px] min-[1120px]:h-[62px]'
-    : showTopCategoryNav
+    : hideOnMobile
+      ? 'h-0 min-[1120px]:h-[62px]'
+      : showTopCategoryNav
       ? 'h-[56px] min-[1120px]:h-[80px]'
       : 'h-[56px] min-[1120px]:h-[62px]'
   const desktopMainRowHeightClass = showTopCategoryNav
     ? 'min-[1120px]:h-[52px]'
     : 'min-[1120px]:h-[62px]'
   const isBusinessAccount = headerAccount.accountType === 'business'
+  const isAdminAccount = Boolean(headerAccount.isAdmin)
+  const privateListingHref = localizePublicHref(locale, '/account/listings/new')
+  const incompletePrivateListingHref = localizePublicHref(
+    locale,
+    `/account/profile?reason=listing&next=${encodeURIComponent(privateListingHref)}`,
+  )
   const createListingHref = isBusinessAccount
     ? `${marketPathPrefix}/account/company/listings/create`
-    : localizePublicHref(locale, '/account/listings/new')
-  const sellMenuLinks = sellerItems[language].map((item) => {
+    : headerAccount.authenticated && headerAccount.profileComplete === false
+      ? incompletePrivateListingHref
+      : privateListingHref
+  const baseSellMenuLinks = sellerItems[language].map((item) => {
     const translatedItem =
       locale === 'sv' || locale === 'de' || locale === 'en'
         ? item
         : translatePublicObject(locale, item)
     return {
       ...translatedItem,
-      href: localizePublicHref(locale, item.href),
+      requiresLogin: item.requiresLogin,
+      href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
     }
   })
+  const localizedDealerSell = sellToDealerMenuCopy[locale]
+  const sellMenuLinks = [
+    baseSellMenuLinks[0],
+    {
+      href: localizePublicHref(locale, '/sell-to-dealer'),
+      label: localizedDealerSell.label,
+      description: localizedDealerSell.description,
+      icon: Handshake,
+    },
+    ...baseSellMenuLinks.slice(1),
+  ].filter((item): item is MenuItem => Boolean(item))
+  const localizedBusinessMenu = businessMenuCopy[locale]
+  const businessMenuLinks = [
+    {
+      href: localizePublicHref(locale, '/business'),
+      label: localizedBusinessMenu.solutionsLabel,
+      description: localizedBusinessMenu.solutionsDescription,
+      icon: Store,
+    },
+    {
+      href: localizePublicHref(locale, '/pricing#business'),
+      label: localizedBusinessMenu.plansLabel,
+      description: localizedBusinessMenu.plansDescription,
+      icon: CreditCard,
+    },
+    {
+      href: localizePublicHref(locale, '/help-center/business/inventory-listings'),
+      label: localizedBusinessMenu.inventoryLabel,
+      description: localizedBusinessMenu.inventoryDescription,
+      icon: FilePlus2,
+    },
+    {
+      href: localizePublicHref(locale, '/help-center/business/dealer-offers-buying'),
+      label: localizedBusinessMenu.dealerOffersLabel,
+      description: localizedBusinessMenu.dealerOffersDescription,
+      icon: Handshake,
+    },
+    {
+      href: localizePublicHref(locale, '/help-center/business/business-integrations'),
+      label: localizedBusinessMenu.integrationsLabel,
+      description: localizedBusinessMenu.integrationsDescription,
+      icon: Settings,
+    },
+    {
+      href: localizePublicHref(locale, '/help-center/business/business-help'),
+      label: localizedBusinessMenu.businessHelpLabel,
+      description: localizedBusinessMenu.businessHelpDescription,
+      icon: CircleHelp,
+    },
+  ]
+  const contactMenuCopy: Record<PublicLocale, { label: string; description: string }> = {
+    sv: { label: 'Kontakta oss', description: 'Allmän kontakt för frågor, support och Autorell-ärenden.' },
+    de: { label: 'Kontakt', description: 'Allgemeiner Kontakt für Fragen, Support und Autorell-Anliegen.' },
+    en: { label: 'Contact us', description: 'General contact for questions, support and Autorell cases.' },
+    at: { label: 'Kontakt', description: 'Allgemeiner Kontakt für Fragen, Support und Autorell-Anliegen.' },
+    be: { label: 'Contact opnemen', description: 'Algemeen contact voor vragen, support en Autorell-zaken.' },
+    fr: { label: 'Nous contacter', description: 'Contact général pour questions, support et demandes Autorell.' },
+    es: { label: 'Contactar', description: 'Contacto general para preguntas, soporte y casos de Autorell.' },
+    it: { label: 'Contattaci', description: 'Contatto generale per domande, supporto e richieste Autorell.' },
+    pl: { label: 'Kontakt', description: 'Kontakt ogólny w sprawie pytań, wsparcia i spraw Autorell.' },
+    nl: { label: 'Contact opnemen', description: 'Algemeen contact voor vragen, support en Autorell-zaken.' },
+    fi: { label: 'Ota yhteyttä', description: 'Yleinen yhteys kysymyksiin, tukeen ja Autorell-asioihin.' },
+    da: { label: 'Kontakt os', description: 'Generel kontakt til spørgsmål, support og Autorell-sager.' },
+  }
+  const contactMenuItem = contactMenuCopy[locale] || contactMenuCopy.en
   const helpMenuLinks = [
     {
       href: localizePublicHref(locale, '/help-center'),
@@ -715,8 +1290,8 @@ export default function PublicHeader({
       icon: Newspaper,
     },
     {
-      href: localizePublicHref(locale, '/safety-tips'),
-      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheit'),
+      href: localizePublicHref(locale, '/help-center'),
+      label: publicLabel('Safety tips', 'Säkerhetstips', 'Sicherheitstipps'),
       description: publicLabel('Practical checks before you buy or sell.', 'Praktiska kontroller innan du köper eller säljer.', 'Praktische Checks vor Kauf oder Verkauf.'),
       icon: ShieldCheck,
     },
@@ -725,6 +1300,12 @@ export default function PublicHeader({
       label: publicLabel('Report a problem', 'Rapportera problem', 'Melden'),
       description: publicLabel('Tell Autorell if something does not look right.', 'Meddela Autorell om något inte ser rätt ut.', 'Melden Sie Autorell, wenn etwas nicht stimmt.'),
       icon: MessageSquareText,
+    },
+    {
+      href: localizePublicHref(locale, '/contact'),
+      label: contactMenuItem.label,
+      description: contactMenuItem.description,
+      icon: Mail,
     },
   ]
 
@@ -735,12 +1316,19 @@ export default function PublicHeader({
       icon: Search,
     },
     {
-      href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'),
+      href: sellMenuLinks[0]?.href || createListingHref,
       label: publicLabel(t.sell, 'Sälja', t.sell),
       icon: Plus,
       children: sellMenuLinks,
+      menu: 'sell' as const,
     },
-    { href: localizePublicHref(locale, '/pricing#business'), label: t.business, icon: Building2 },
+    {
+      href: localizePublicHref(locale, '/business'),
+      label: t.business,
+      icon: Building2,
+      children: businessMenuLinks,
+      menu: 'business' as const,
+    },
     {
       href: localizePublicHref(locale, '/help-center'),
       label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe'),
@@ -753,33 +1341,73 @@ export default function PublicHeader({
     ? `${marketPathPrefix}/account/company/listings`
     : `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
-    { kind: 'link' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
-    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-vehicle'), label: publicLabel(t.sell, 'Sälja', t.sell) },
-    { kind: 'link' as const, href: localizePublicHref(locale, '/pricing#business'), label: t.business },
+    { kind: 'search' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
+    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || createListingHref, label: publicLabel(t.sell, 'Sälja', t.sell) },
+    { kind: 'business' as const, href: localizePublicHref(locale, '/business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
   ]
   const desktopAccountLinks = [
     { href: savedHref, label: publicLabel(t.saved, 'Sparade annonser', t.saved), icon: Heart },
-    { href: savedSearchesHref, label: publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen'), icon: Bookmark },
+    { href: savedSearchesHref, label: translatePublic(locale, 'Saved searches'), icon: Bookmark },
     { href: accountMessagesHref, label: t.messages, icon: MessageSquareText },
   ]
   const savedListingBadge = savedListingCount > 99 ? '99+' : savedListingCount ? String(savedListingCount) : ''
   const savedSearchBadge = savedSearchCount > 99 ? '99+' : savedSearchCount ? String(savedSearchCount) : ''
-  const profileMenuLinks = [
-    { href: createListingHref, label: publicLabel('Create listing', 'Skapa annons', 'Anzeige erstellen'), icon: FilePlus2 },
-    ...(isBusinessAccount
-      ? [{ href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 }]
-      : []),
-    { href: isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : accountHref, label: publicLabel('Settings', 'Inställningar', 'Einstellungen'), icon: Settings },
-    ...(isBusinessAccount
-      ? [{ href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard }]
-      : []),
-    { href: accountListingsHref, label: publicLabel('My listings', 'Mina annonser', 'Meine Anzeigen'), icon: CarFront },
-  ]
+  const accountMenuCopyByLocale: Record<
+    PublicLocale,
+    { pages: string; create: string; listings: string; settings: string; signOut: string; privateAccount: string; businessAccount: string; newHere: string; startHere: string }
+  > = {
+    sv: { pages: 'Mina sidor', create: 'Skapa annons', listings: 'Mina annonser', settings: 'Inställningar', signOut: 'Logga ut', privateAccount: 'Privatkonto', businessAccount: 'Företagskonto', newHere: 'Ny på webbplatsen?', startHere: 'Börja här' },
+    de: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto', newHere: 'Neu auf der Website?', startHere: 'Hier starten' },
+    en: { pages: 'My pages', create: 'Create listing', listings: 'My listings', settings: 'Settings', signOut: 'Sign out', privateAccount: 'Private account', businessAccount: 'Business account', newHere: 'New on the website?', startHere: 'Start here' },
+    at: { pages: 'Meine Seiten', create: 'Anzeige erstellen', listings: 'Meine Anzeigen', settings: 'Einstellungen', signOut: 'Abmelden', privateAccount: 'Privatkonto', businessAccount: 'Firmenkonto', newHere: 'Neu auf der Website?', startHere: 'Hier starten' },
+    be: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount', newHere: 'Nieuw op de website?', startHere: 'Begin hier' },
+    fr: { pages: 'Mes pages', create: 'Créer une annonce', listings: 'Mes annonces', settings: 'Paramètres', signOut: 'Déconnexion', privateAccount: 'Compte particulier', businessAccount: 'Compte professionnel', newHere: 'Nouveau sur le site ?', startHere: 'Commencer ici' },
+    es: { pages: 'Mis páginas', create: 'Crear anuncio', listings: 'Mis anuncios', settings: 'Ajustes', signOut: 'Cerrar sesión', privateAccount: 'Cuenta particular', businessAccount: 'Cuenta de empresa', newHere: '¿Nuevo en el sitio?', startHere: 'Empieza aquí' },
+    it: { pages: 'Le mie pagine', create: 'Crea annuncio', listings: 'I miei annunci', settings: 'Impostazioni', signOut: 'Esci', privateAccount: 'Account privato', businessAccount: 'Account aziendale', newHere: 'Nuovo sul sito?', startHere: 'Inizia qui' },
+    pl: { pages: 'Moje strony', create: 'Dodaj ogłoszenie', listings: 'Moje ogłoszenia', settings: 'Ustawienia', signOut: 'Wyloguj', privateAccount: 'Konto prywatne', businessAccount: 'Konto firmowe', newHere: 'Nowy na stronie?', startHere: 'Zacznij tutaj' },
+    nl: { pages: 'Mijn pagina’s', create: 'Advertentie maken', listings: 'Mijn advertenties', settings: 'Instellingen', signOut: 'Uitloggen', privateAccount: 'Privéaccount', businessAccount: 'Bedrijfsaccount', newHere: 'Nieuw op de website?', startHere: 'Begin hier' },
+    fi: { pages: 'Omat sivut', create: 'Luo ilmoitus', listings: 'Omat ilmoitukset', settings: 'Asetukset', signOut: 'Kirjaudu ulos', privateAccount: 'Yksityistili', businessAccount: 'Yritystili', newHere: 'Uusi sivustolla?', startHere: 'Aloita tästä' },
+    da: { pages: 'Mine sider', create: 'Opret annonce', listings: 'Mine annoncer', settings: 'Indstillinger', signOut: 'Log ud', privateAccount: 'Privatkonto', businessAccount: 'Firmakonto', newHere: 'Ny på websitet?', startHere: 'Start her' },
+  }
+  const accountMenuCopy = accountMenuCopyByLocale[locale] || accountMenuCopyByLocale.en
+  const incompleteProfileCopy = getIncompleteProfileCopy(locale)
+  const completeProfileHref = localizePublicHref(
+    locale,
+    headerAccount.accountType === 'business' ? '/account/company/profile' : '/account/profile',
+  )
+  const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
+  const accountSettingsHref = isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : `${marketPathPrefix}/account/settings`
+  const profileMenuLinks = isAdminAccount
+    ? [
+        { href: '/admin', label: 'Admin', icon: ShieldCheck },
+      ]
+    : isBusinessAccount
+    ? [
+        { href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 },
+        { href: accountProfileHref, label: accountMenuCopy.pages, icon: UserRound },
+        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
+        { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
+        { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
+        { href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard },
+      ]
+    : [
+        { href: accountHref, label: accountMenuCopy.pages, icon: UserRound },
+        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
+        { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
+        { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
+      ]
   const mobileAccountName =
     headerAccount.displayName?.trim().split(/\s+/)[0] ||
     (headerAccount.authenticated ? t.myAutorell : t.signIn)
-  const mobileProfileLabel = publicLabel('My profile', 'Min profil', t.profileNav)
+  const mobileProfileLabel = isAdminAccount ? 'Admin' : accountMenuCopy.pages
+  const mobileAccountTypeLabel = isAdminAccount
+    ? 'Admin'
+    : headerAccount.accountType === 'business'
+      ? accountMenuCopy.businessAccount
+      : headerAccount.accountType === 'private'
+        ? accountMenuCopy.privateAccount
+        : accountMenuCopy.pages
   const mobileAccountInitials =
     headerAccount.displayName
       ?.trim()
@@ -793,31 +1421,40 @@ export default function PublicHeader({
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
+    setSearchMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
   }
 
-  function toggleDesktopMenu(menu: 'sell' | 'help' | 'profile') {
+  function toggleDesktopMenu(menu: 'search' | 'sell' | 'business' | 'help' | 'profile') {
+    setSearchMenuOpen((current) => (menu === 'search' ? !current : false))
     setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
+    setBusinessMenuOpen((current) => (menu === 'business' ? !current : false))
     setHelpMenuOpen((current) => (menu === 'help' ? !current : false))
     setProfileMenuOpen((current) => (menu === 'profile' ? !current : false))
   }
 
-  function openAuthModal(mode: AuthView, destination?: string) {
+  function openAuthModal(mode: AuthView, destination?: string, businessRegistration = false) {
     const nextMode = mode === 'register' ? 'register' : 'login'
     setAuthInitialMode(nextMode)
     setAuthInitialView(mode)
     setAuthDestination(destination)
+    setAuthBusinessRegistration(mode === 'register' && businessRegistration)
     setAuthModalOpen(true)
     setOpen(false)
     setMobileCategoryOpen(false)
     setMobileMoreOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
   }
 
@@ -861,9 +1498,12 @@ export default function PublicHeader({
       document.getElementById(href.split('#')[1])?.scrollIntoView({ behavior: 'smooth' })
     }
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     closeMobile()
   }
@@ -871,9 +1511,12 @@ export default function PublicHeader({
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
     setProfileMenuOpen(false)
+    setSearchMenuOpen(false)
     setSellMenuOpen(false)
+    setBusinessMenuOpen(false)
     setHelpMenuOpen(false)
     setMobileSellMenuOpen(false)
+    setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     closeMobile()
     window.location.assign(homeHref)
@@ -883,12 +1526,6 @@ export default function PublicHeader({
     event: ReactMouseEvent<HTMLAnchorElement>,
     href: string,
   ) {
-    const targetPath = stripLocalePrefix(new URL(href, window.location.origin).pathname)
-    if (targetPath === '/sell-vehicle') {
-      event.preventDefault()
-      openAuthModal('login', href)
-      return
-    }
     handleInternalNavigation(event, href)
   }
 
@@ -900,6 +1537,8 @@ export default function PublicHeader({
       />
       <div
         className={`fixed inset-x-0 top-0 z-[120] transform-gpu transition-transform duration-300 ${
+          hideOnMobile ? 'listing-mobile-hidden-header hidden min-[1120px]:block' : ''
+        } ${
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -919,7 +1558,7 @@ export default function PublicHeader({
                         : label
                     return (
                       <Link
-                        key={href}
+                        key={`${label}:${href}`}
                         href={href}
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex h-[30px] shrink-0 items-center border-b-2 transition hover:border-[#0866ff] hover:text-[#111] ${
@@ -948,7 +1587,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className={`relative mx-auto flex h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:px-4 2xl:px-4`}>
+          <div className={`relative mx-auto h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${hideOnMobile ? 'hidden min-[1120px]:flex' : 'flex'} ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:px-4 2xl:px-4`}>
             <Link
               href={homeHref}
               aria-label="Autorell"
@@ -966,14 +1605,124 @@ export default function PublicHeader({
                   activePathname === targetPath ||
                   (targetPath === '/marketplace' && (isMarketplaceResults || isFindCarsPage)) ||
                   (item.kind === 'sell' &&
-                    sellMenuLinks.some((sellItem) => stripLocalePrefix(sellItem.href.split('?')[0] || sellItem.href) === activePathname)) ||
+                    [
+                      '/account/listings/new',
+                      '/account/company/listings/create',
+                      '/sell-car',
+                      '/sell-to-dealer',
+                      '/sell-van',
+                      '/sell-construction',
+                    ].includes(activePathname)) ||
+                  (item.kind === 'business' &&
+                    businessMenuLinks.some((businessItem) => stripLocalePrefix((businessItem.href.split('#')[0] || businessItem.href).split('?')[0] || businessItem.href) === activePathname)) ||
                   (item.kind === 'help' &&
                     helpMenuLinks.some((helpItem) => stripLocalePrefix(helpItem.href.split('?')[0] || helpItem.href) === activePathname))
+
+                if (item.kind === 'search') {
+                  return (
+                    <div
+                      key={`${item.kind}:${label}:${href}`}
+                      ref={searchMenuRef}
+                      className="relative flex h-full items-center"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={searchMenuOpen}
+                        onClick={() => toggleDesktopMenu('search')}
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(720px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-[#d9e1ec] bg-white shadow-[0_24px_70px_rgba(16,24,40,.16)] transition ${
+                          searchMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        <div className="grid gap-4 p-4">
+                          <div className="rounded-[14px] bg-[#f6f9ff] px-4 py-3 ring-1 ring-[#dbe8ff]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">
+                              {t.shopByCategory}
+                            </p>
+                            <p className="mt-1 text-[13px] font-[400] leading-5 text-[#475467]">
+                              {searchMegaCopy[locale].intro}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 rounded-[14px] bg-[#f4f7fb] p-1.5 ring-1 ring-[#e2e8f0]" role="tablist" aria-label={publicLabel('Choose listing type', 'Välj annonstyp', 'Anzeigentyp wählen')}>
+                            {searchIntentOptions.map((option) => {
+                              const selected = searchMenuIntent === option.key
+                              return (
+                                <button
+                                  key={option.key}
+                                  type="button"
+                                  role="tab"
+                                  aria-selected={selected}
+                                  onClick={() => setSearchMenuIntent(option.key)}
+                                  className={`min-w-0 overflow-hidden rounded-[11px] px-2.5 py-2.5 text-left transition ${
+                                    selected
+                                      ? 'bg-white text-[#101828] shadow-[0_8px_20px_rgba(16,24,40,.08)] ring-1 ring-[#d8e1ee]'
+                                      : 'text-[#475467] hover:bg-white/70 hover:text-[#101828]'
+                                  }`}
+                                >
+                                  <span className="block min-w-0 truncate text-[13px] font-[500] leading-5">{option.label}</span>
+                                  <span className="mt-0.5 block max-h-8 min-w-0 overflow-hidden whitespace-normal break-words text-[11px] font-[400] leading-4 text-[#667085] [overflow-wrap:anywhere]">{option.text}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <div className="grid grid-cols-3 gap-2.5">
+                            {visibleSearchCategoryItems.map(({ href: categoryHref, label: categoryLabel, icon: Icon, slug: categorySlug }) => {
+                              const CategoryIcon =
+                                (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                              const itemHref = searchCategoryHref(categoryHref)
+                              return (
+                                <Link
+                                  key={categoryHref}
+                                  href={itemHref}
+                                  onClick={(event) => handleInternalNavigation(event, itemHref)}
+                                  className="group flex min-h-[74px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe5ee] bg-white px-3.5 text-[#101828] transition hover:-translate-y-0.5 hover:border-[#b7cdfb] hover:bg-[#f8fbff] hover:text-[#0866ff] hover:shadow-[0_12px_26px_rgba(16,24,40,.08)]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-3">
+                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#edf5ff] text-[#101828] transition group-hover:bg-[#0866ff] group-hover:text-white">
+                                      <CategoryIcon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                                    </span>
+                                    <span className="min-w-0">
+                                      <span className="block truncate text-[14px] font-[500] leading-tight">
+                                        {categoryLabel}
+                                      </span>
+                                      <span className="mt-1 block text-[12px] font-[400] leading-4 text-[#667085] group-hover:text-[#475467]">
+                                        {searchMenuIntent === 'leasing'
+                                          ? searchMegaCopy[locale].openLeasing
+                                          : searchMenuIntent === 'sale'
+                                            ? searchMegaCopy[locale].openCategory
+                                            : publicLabel('Open all', 'Öppna alla', 'Alle öffnen')}
+                                      </span>
+                                    </span>
+                                  </span>
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
 
                 if (item.kind === 'sell') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={sellMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1000,12 +1749,17 @@ export default function PublicHeader({
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon }) => (
+                        {sellMenuLinks.map(({ href: sellHref, label: sellLabel, description, icon: Icon, requiresLogin }) => (
                           <Link
                             key={sellHref}
                             href={sellHref}
                             onClick={(event) => {
                               setSellMenuOpen(false)
+                              if (requiresLogin) {
+                                event.preventDefault()
+                                openAuthModal('login', sellHref)
+                                return
+                              }
                               handleInternalNavigation(event, sellHref)
                             }}
                             className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
@@ -1026,10 +1780,66 @@ export default function PublicHeader({
                   )
                 }
 
+                if (item.kind === 'business') {
+                  return (
+                    <div
+                      key={`${item.kind}:${label}:${href}`}
+                      ref={businessMenuRef}
+                      className="relative flex h-full items-center"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={businessMenuOpen}
+                        onClick={() => toggleDesktopMenu('business')}
+                        style={{ fontWeight: 500 }}
+                        className={`flex h-full items-center gap-1.5 border-b-2 text-[14px] !font-medium transition hover:border-[#0866ff] hover:text-[#0866ff] ${
+                          isActive
+                            ? 'border-transparent text-[#0866ff]'
+                            : 'border-transparent text-[#101828]'
+                        }`}
+                      >
+                        <span className="font-medium" style={{ fontWeight: 500 }}>
+                          {label}
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition ${businessMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+                      </button>
+                      <div
+                        className={`absolute left-0 top-full z-[150] mt-2 w-max min-w-[18rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                          businessMenuOpen
+                            ? 'pointer-events-auto translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-1 opacity-0'
+                        }`}
+                      >
+                        {businessMenuLinks.map(({ href: businessHref, label: businessLabel, description, icon: Icon }) => (
+                          <Link
+                            key={businessHref}
+                            href={businessHref}
+                            onClick={(event) => {
+                              setBusinessMenuOpen(false)
+                              handleInternalNavigation(event, businessHref)
+                            }}
+                            className="group grid min-h-[58px] w-max max-w-full grid-cols-[36px_max-content] items-start gap-3 px-4 py-2.5 pr-7 text-[#101828] transition hover:bg-[#f5f9ff] hover:text-[#0866ff]"
+                          >
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#edf5ff] text-[#0866ff]">
+                              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0 max-w-[min(34rem,calc(100vw-8rem))]">
+                              <span className="block w-max max-w-full whitespace-normal text-[14px] font-[500] leading-snug">{businessLabel}</span>
+                              <span className="mt-0.5 block w-max max-w-full whitespace-normal break-words text-[12px] font-[400] leading-5 text-[#667085] group-hover:text-[#475467]">
+                                {description}
+                              </span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+
                 if (item.kind === 'help') {
                   return (
                     <div
-                      key={href}
+                      key={`${item.kind}:${label}:${href}`}
                       ref={helpMenuRef}
                       className="relative flex h-full items-center"
                     >
@@ -1058,7 +1868,7 @@ export default function PublicHeader({
                       >
                         {helpMenuLinks.map(({ href: helpHref, label: helpLabel, description, icon: Icon }) => (
                           <Link
-                            key={helpHref}
+                            key={`${helpHref}:${helpLabel}`}
                             href={helpHref}
                             onClick={(event) => {
                               setHelpMenuOpen(false)
@@ -1084,7 +1894,7 @@ export default function PublicHeader({
 
                 return (
                   <Link
-                    key={href}
+                    key={`${label}:${href}`}
                     href={href}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={(event) => handleInternalNavigation(event, href)}
@@ -1101,6 +1911,16 @@ export default function PublicHeader({
             </nav>
 
             <div className="ml-auto hidden h-full shrink-0 items-center gap-3 min-[1120px]:flex xl:gap-4">
+              {headerAccountResolved && !headerAccount.authenticated ? (
+                <Link
+                  href={createListingHref}
+                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[14px] font-medium text-[#0866ff] transition-colors duration-150 hover:bg-[#eef5ff] active:bg-[#e1edff]"
+                >
+                  <Plus className="h-[17px] w-[17px]" strokeWidth={1.8} />
+                  <span>{accountMenuCopy.create}</span>
+                </Link>
+              ) : null}
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
@@ -1126,6 +1946,15 @@ export default function PublicHeader({
                       <span>{label}</span>
                     </Link>
                   ))}
+                  <HeaderNotificationCenter
+                    locale={locale}
+                    authenticated
+                    unreadMessages={headerAccount.unreadMessages}
+                    savedSearchCount={savedSearchCount}
+                    messagesHref={accountMessagesHref}
+                    savedSearchesHref={savedSearchesHref}
+                    onRequireAuth={() => openAuthModal('login')}
+                  />
                   <div ref={profileMenuRef} className="relative flex h-full items-center">
                     <button
                       type="button"
@@ -1133,19 +1962,36 @@ export default function PublicHeader({
                       aria-expanded={profileMenuOpen}
                       className="inline-flex h-full items-center gap-1.5 text-[13px] font-medium text-[#101828] transition hover:text-[#0866ff]"
                     >
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e9f0fd] text-[10px] font-semibold text-[#0866ff]">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[#00887a] text-[10px] font-semibold text-white">
                         {mobileAccountInitials}
                       </span>
-                      <span>{language === 'sv' ? 'Min profil' : t.myAutorell}</span>
+                      <span>{accountMenuCopy.pages}</span>
                       <ChevronDown className={`h-4 w-4 transition ${profileMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <div
-                      className={`absolute right-0 top-full z-[150] mt-2 w-56 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
+                      className={`absolute right-0 top-full z-[150] mt-2 w-72 overflow-hidden rounded-[8px] border border-[#d9e1ec] bg-white py-2 shadow-[0_18px_45px_rgba(16,24,40,.16)] transition ${
                         profileMenuOpen
                           ? 'pointer-events-auto translate-y-0 opacity-100'
                           : 'pointer-events-none -translate-y-1 opacity-0'
                       }`}
                     >
+                      {headerAccount.profileComplete === false ? (
+                        <div className="mx-2 mb-2 rounded-[8px] border border-[#cfe0ff] bg-[#eef5ff] p-3">
+                          <strong className="block text-sm font-[600] text-[#101828]">
+                            {incompleteProfileCopy.title}
+                          </strong>
+                          <p className="mt-1 text-xs font-[400] leading-5 text-[#475467]">
+                            {incompleteProfileCopy.description}
+                          </p>
+                          <Link
+                            href={completeProfileHref}
+                            onClick={(event) => handleInternalNavigation(event, completeProfileHref)}
+                            className="mt-2.5 inline-flex min-h-9 w-full items-center justify-center rounded-[7px] border border-[#0866ff] bg-white px-3 text-xs font-[600] text-[#0866ff] transition hover:bg-[#e5efff]"
+                          >
+                            {incompleteProfileCopy.action}
+                          </Link>
+                        </div>
+                      ) : null}
                       {profileMenuLinks.map(({ href, label, icon: Icon }) => (
                         <Link
                           key={href}
@@ -1163,20 +2009,46 @@ export default function PublicHeader({
                         className="flex min-h-11 w-full items-center gap-3 border-t border-[#edf1f6] px-4 pt-2 text-left text-sm font-medium text-[#b42318] transition hover:bg-[#fff5f5]"
                       >
                         <LogOut className="h-4.5 w-4.5" strokeWidth={1.9} />
-                        {publicLabel('Sign out', 'Logga ut', 'Abmelden')}
+                        {accountMenuCopy.signOut}
                       </button>
                     </div>
                   </div>
                 </>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => openAuthModal('login')}
-                  className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
-                >
-                  <UserRound className="h-[21px] w-[21px]" strokeWidth={2} />
-                  <span>{t.signIn}</span>
-                </button>
+                <>
+                  <Link
+                    href={savedHref}
+                    onClick={(event) => handleInternalNavigation(event, savedHref)}
+                    aria-label={publicLabel(t.saved, 'Sparade annonser', t.saved)}
+                    className="inline-grid h-10 w-10 place-items-center rounded-full text-[#101828] transition hover:bg-[#f2f6ff] hover:text-[#0866ff]"
+                  >
+                    <span className="relative">
+                      <Heart className="h-5 w-5" strokeWidth={1.9} />
+                      {savedListingBadge ? (
+                        <span className="absolute -right-2.5 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                          {savedListingBadge}
+                        </span>
+                      ) : null}
+                    </span>
+                  </Link>
+                  <HeaderNotificationCenter
+                    locale={locale}
+                    authenticated={false}
+                    unreadMessages={0}
+                    savedSearchCount={savedSearchCount}
+                    messagesHref={accountMessagesHref}
+                    savedSearchesHref={savedSearchesHref}
+                    onRequireAuth={() => openAuthModal('login', savedSearchesHref)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login')}
+                    className="inline-flex h-full items-center gap-2.5 px-2 text-[14px] font-medium text-[#101828] transition hover:text-[#0866ff]"
+                  >
+                    <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.55} />
+                    <span>{t.signIn}</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -1232,15 +2104,15 @@ export default function PublicHeader({
                 {t.shopByCategory}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
-                {buyItems.map(({ href, label, icon: Icon }, index) => {
-                  const categorySlug = marketplaceCategories[index]?.slug
+                {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                   const CategoryIcon =
                     (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                  const itemHref = searchCategoryHref(href)
 
                   return (
                     <Link
-                      key={href}
-                      href={href}
+                      key={`${searchMenuIntent}-${itemHref}`}
+                      href={itemHref}
                       onClick={closeMobile}
                       className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#344054] transition hover:border-[#bcd3ff] hover:bg-white"
                     >
@@ -1254,19 +2126,30 @@ export default function PublicHeader({
 
             <nav className="mt-6 grid gap-2">
               {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
-                const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                const expanded =
+                  menu === 'help'
+                    ? mobileHelpMenuOpen
+                    : menu === 'business'
+                      ? mobileBusinessMenuOpen
+                      : mobileSellMenuOpen
                 const toggleExpanded = () => {
                   if (menu === 'help') {
                     setMobileHelpMenuOpen((current) => !current)
+                    setMobileBusinessMenuOpen(false)
                     setMobileSellMenuOpen(false)
+                  } else if (menu === 'business') {
+                    setMobileBusinessMenuOpen((current) => !current)
+                    setMobileSellMenuOpen(false)
+                    setMobileHelpMenuOpen(false)
                   } else {
                     setMobileSellMenuOpen((current) => !current)
+                    setMobileBusinessMenuOpen(false)
                     setMobileHelpMenuOpen(false)
                   }
                 }
 
                 return (
-                <div key={href}>
+                <div key={`${menu || 'link'}:${label}:${href}`}>
                   {children ? (
                     <>
                       <button
@@ -1290,22 +2173,34 @@ export default function PublicHeader({
                       >
                         <div className="overflow-hidden">
                           <div className="grid gap-2 rounded-[15px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
-                            {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
-                              <Link
-                                key={childHref}
-                                href={childHref}
-                                onClick={(event) => handleInternalNavigation(event, childHref)}
-                                className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
-                              >
-                                <span className="flex min-w-0 items-center gap-3">
-                                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
-                                    <ChildIcon className="h-4 w-4" />
+                            {children.map((child) => {
+                              const { href: childHref, label: childLabel, icon: ChildIcon } = child
+                              const requiresLogin = 'requiresLogin' in child && child.requiresLogin
+                              return (
+                                <Link
+                                  key={`${childHref}:${childLabel}`}
+                                  href={childHref}
+                                  onClick={(event) => {
+                                    if (requiresLogin) {
+                                      event.preventDefault()
+                                      closeMobile()
+                                      openAuthModal('login', childHref)
+                                      return
+                                    }
+                                    handleInternalNavigation(event, childHref)
+                                  }}
+                                  className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-3">
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                      <ChildIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="min-w-0 truncate">{childLabel}</span>
                                   </span>
-                                  <span className="min-w-0 truncate">{childLabel}</span>
-                                </span>
-                                <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                              </Link>
-                            ))}
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                                </Link>
+                              )
+                            })}
                           </div>
                         </div>
                       </div>
@@ -1330,15 +2225,6 @@ export default function PublicHeader({
             </nav>
 
             <Link
-              href={localizePublicHref(locale, '/sell-vehicle')}
-              onClick={closeMobile}
-              className="mt-6 flex min-h-14 items-center justify-between rounded-[15px] bg-[#0866ff] px-5 text-base font-semibold text-white shadow-[0_16px_36px_rgba(8,102,255,.24)]"
-            >
-              {t.mobileCta}
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-
-            <Link
               href={localizePublicHref(locale, '/contact')}
               onClick={closeMobile}
               className="mt-3 flex min-h-14 items-center justify-between rounded-[15px] border border-[#d9e2f0] bg-white px-5 text-base font-semibold text-[#101828] shadow-[0_12px_28px_rgba(32,33,36,.08)]"
@@ -1358,7 +2244,7 @@ export default function PublicHeader({
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <Link href={accountHref} onClick={closeMobile} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-sm font-medium text-white">
                     <UserRound size={17} />
-                    {t.myAutorell}
+                    {accountMenuCopy.pages}
                   </Link>
                   <Link href={accountMessagesHref} onClick={closeMobile} className="relative flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-sm text-white">
                     <MessageSquareText size={17} />
@@ -1371,15 +2257,27 @@ export default function PublicHeader({
                   </Link>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => openAuthModal('register')} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#0866ff] px-4 text-left text-sm font-medium text-white">
-                    <UserPlus size={17} />
-                    {t.createAccount}
-                  </button>
-                  <button type="button" onClick={() => openAuthModal('login')} className="flex min-h-12 items-center gap-3 rounded-[12px] bg-[#242424] px-4 text-left text-sm text-white">
-                    <LogIn size={17} />
-                    {t.signIn}
-                  </button>
+                <div className="mt-4 flex items-center gap-4">
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#101828]" strokeWidth={1.55} />
+                  <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login')}
+                      className="block text-left text-base font-semibold text-[#101828]"
+                    >
+                      {t.signIn}
+                    </button>
+                    <p className="mt-0.5 text-sm leading-5 text-[#475467]">
+                      {accountMenuCopy.newHere}{' '}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('register')}
+                        className="font-semibold text-[#0866ff]"
+                      >
+                        {accountMenuCopy.startHere}
+                      </button>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -1388,7 +2286,7 @@ export default function PublicHeader({
         </div>
       </div>
       <div
-        className={`fixed left-0 right-auto top-0 z-[130] grid h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${
+        className={`fixed left-0 right-auto top-0 z-[130] h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${hideOnMobile ? 'hidden' : 'grid'} ${
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -1438,7 +2336,7 @@ export default function PublicHeader({
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
+              aria-label={translatePublic(locale, 'Saved searches')}
               className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
             >
               <span className="relative">
@@ -1450,23 +2348,14 @@ export default function PublicHeader({
                 ) : null}
               </span>
             </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedSearchesHref)}
-              aria-label={publicLabel('Saved searches', 'Sparade sökningar', 'Gespeicherte Suchen')}
-              className="hidden h-11 w-11 shrink-0 place-items-center text-[#101828] transition hover:text-[#0866ff]"
-            >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            </button>
-          )}
+          ) : null}
           {headerAccount.authenticated ? (
             <Link
               href={accountHref}
               onClick={closeMobile}
               className="flex h-11 shrink-0 items-center gap-2 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e9f0fd] text-[12px] font-semibold text-[#0866ff]">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#00887a] text-[12px] font-semibold text-white">
                 {mobileAccountInitials}
               </span>
               <span className="whitespace-nowrap">{mobileProfileLabel}</span>
@@ -1477,7 +2366,7 @@ export default function PublicHeader({
               onClick={() => openAuthModal('login', accountHref)}
               className="flex h-11 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[13px] font-semibold text-[#101828]"
             >
-              <UserRound className="h-[21px] w-[21px]" strokeWidth={1.8} />
+              <CircleUserRound className="h-[23px] w-[23px]" strokeWidth={1.55} />
               <span>{t.signIn}</span>
             </button>
           )}
@@ -1506,15 +2395,15 @@ export default function PublicHeader({
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {buyItems.map(({ href, label, icon: Icon }, index) => {
-                const categorySlug = marketplaceCategories[index]?.slug
+              {visibleSearchCategoryItems.map(({ href, label, icon: Icon, slug: categorySlug }) => {
                 const CategoryIcon =
                   (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
+                const itemHref = searchCategoryHref(href)
 
                 return (
                   <Link
-                    key={href}
-                    href={href}
+                    key={`${searchMenuIntent}-${itemHref}`}
+                    href={itemHref}
                     onClick={closeMobile}
                     className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#101828] transition active:scale-[.99]"
                   >
@@ -1536,69 +2425,97 @@ export default function PublicHeader({
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
-            <section className="mb-6 rounded-[24px] bg-[#f6f6f4] p-5">
-              {headerAccount.authenticated ? (
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
+            {headerAccountResolved && !headerAccount.authenticated ? (
+              <>
                 <Link
-                  href={accountHref}
-                  onClick={closeMobile}
-                  className="flex items-center gap-3 text-[#101828]"
+                  href={createListingHref}
+                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
+                  className="mb-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[15px] font-medium text-[#0866ff] transition-colors active:bg-[#eaf2ff]"
                 >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#e9f0fd] text-sm font-semibold text-[#0866ff] ring-1 ring-[#d6e4ff]">
-                    {mobileAccountInitials}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
-                      {mobileAccountName}
-                    </strong>
-                    <span className="mt-0.5 block text-sm font-medium text-[#667085]">
-                      {t.myAutorell}
-                    </span>
-                  </span>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-[#0866ff]">
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
+                  <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" />
+                  <span>{accountMenuCopy.create}</span>
                 </Link>
-              ) : (
+                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
+              </>
+            ) : null}
+            <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
+              {headerAccount.authenticated ? (
                 <div>
-                  <div className="flex items-start gap-3">
-                    <UserRound className="mt-0.5 h-7 w-7 shrink-0 text-[#202124]" strokeWidth={1.7} />
-                    <div>
-                      <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-[#202124]">
-                        {t.signIn}
-                      </h2>
-                      <p className="mt-1 max-w-[28rem] text-[15px] font-medium leading-6 text-[#344054]">
-                        {publicLabel(
-                          'Save vehicles, searches and contact sellers faster.',
-                          'Spara fordon, sökningar och få enklare kontakt med säljare.',
-                          'Fahrzeuge und Suchen speichern und Verkäufer einfacher kontaktieren.',
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('login', accountHref)}
-                    className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#0866ff] bg-white px-5 text-[15px] font-semibold text-[#0866ff]"
+                  <Link
+                    href={accountHref}
+                    onClick={closeMobile}
+                    className="flex items-center gap-3 text-[#101828]"
                   >
-                    {publicLabel(
-                      'Sign in or create an account',
-                      'Logga in eller skapa konto',
-                      'Anmelden oder Konto erstellen',
-                    )}
-                  </button>
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00887a] text-sm font-semibold text-white ring-1 ring-[#00766a]">
+                      {mobileAccountInitials}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block truncate text-[19px] font-semibold tracking-[-0.02em]">
+                        {mobileAccountName}
+                      </strong>
+                      <span className="mt-0.5 block text-sm font-medium text-[#667085]">
+                        {mobileAccountTypeLabel}
+                      </span>
+                    </span>
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eaf1ff] text-[#0866ff]">
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </Link>
+                  {headerAccount.profileComplete === false ? (
+                    <div className="mt-4 rounded-[10px] border border-[#cfe0ff] bg-[#eef5ff] p-3">
+                      <strong className="block text-sm font-[600] text-[#101828]">
+                        {incompleteProfileCopy.title}
+                      </strong>
+                      <p className="mt-1 text-xs font-[400] leading-5 text-[#475467]">
+                        {incompleteProfileCopy.description}
+                      </p>
+                      <Link
+                        href={completeProfileHref}
+                        onClick={closeMobile}
+                        className="mt-2.5 inline-flex min-h-9 w-full items-center justify-center rounded-[7px] border border-[#0866ff] bg-white px-3 text-xs font-[600] text-[#0866ff]"
+                      >
+                        {incompleteProfileCopy.action}
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 py-1">
+                  <CircleUserRound className="h-11 w-11 shrink-0 text-[#202124]" strokeWidth={1.55} />
+                  <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('login', accountHref)}
+                      className="block text-left text-[16px] font-semibold leading-6 text-[#202124] transition-colors hover:text-[#0866ff]"
+                    >
+                      {t.signIn}
+                    </button>
+                    <p className="text-[14px] leading-5 text-[#475467]">
+                      {accountMenuCopy.newHere}{' '}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('register')}
+                        className="font-semibold text-[#0866ff] transition-colors hover:text-[#005bd8]"
+                      >
+                        {accountMenuCopy.startHere}
+                      </button>
+                    </p>
+                  </div>
                 </div>
               )}
             </section>
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
 
-            <section className="mb-7">
+            <section className="mb-5">
               <div className="-mx-1 flex flex-wrap gap-2">
-                {buyItems.map(({ href, label }, index) => {
-                  const categorySlug = marketplaceCategories[index]?.slug
+                {visibleSearchCategoryItems.map(({ href, label, slug: categorySlug }) => {
                   const isActive = categorySlug === mobileMenuActiveSlug
+                  const itemHref = searchCategoryHref(href)
                   return (
                     <Link
-                      key={href}
-                      href={href}
+                      key={`${searchMenuIntent}-${itemHref}`}
+                      href={itemHref}
                       onClick={closeMobile}
                       className={`min-h-8 rounded-full px-3 py-1.5 text-[13px] font-semibold shadow-[0_4px_14px_rgba(16,24,40,.09)] ring-1 transition active:scale-[.99] ${
                         isActive
@@ -1612,18 +2529,35 @@ export default function PublicHeader({
                 })}
               </div>
             </section>
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-5 h-px bg-[#e4e7ec]" />
 
             <section className="mb-7">
               <div className="grid gap-2">
                 {mobileMainLinks.map(({ href, label, icon: Icon, children, menu }) => {
-                  const expanded = menu === 'help' ? mobileHelpMenuOpen : mobileSellMenuOpen
+                  const expanded =
+                    menu === 'help'
+                      ? mobileHelpMenuOpen
+                      : menu === 'business'
+                        ? mobileBusinessMenuOpen
+                        : mobileSellMenuOpen
                   const toggleExpanded = () => {
-                    if (menu === 'help') setMobileHelpMenuOpen((current) => !current)
-                    else setMobileSellMenuOpen((current) => !current)
+                    if (menu === 'help') {
+                      setMobileHelpMenuOpen((current) => !current)
+                      setMobileBusinessMenuOpen(false)
+                      setMobileSellMenuOpen(false)
+                    } else if (menu === 'business') {
+                      setMobileBusinessMenuOpen((current) => !current)
+                      setMobileSellMenuOpen(false)
+                      setMobileHelpMenuOpen(false)
+                    } else {
+                      setMobileSellMenuOpen((current) => !current)
+                      setMobileBusinessMenuOpen(false)
+                      setMobileHelpMenuOpen(false)
+                    }
                   }
 
                   return (
-                  <div key={href}>
+                  <div key={`${menu || 'link'}:${label}:${href}`}>
                     {children ? (
                       <>
                         <button
@@ -1647,22 +2581,34 @@ export default function PublicHeader({
                         >
                           <div className="overflow-hidden">
                             <div className="grid gap-2 rounded-[16px] border border-[#dbe6f4] bg-[#f7fbff] p-2">
-                              {children.map(({ href: childHref, label: childLabel, icon: ChildIcon }) => (
-                                <Link
-                                  key={childHref}
-                                  href={childHref}
-                                  onClick={(event) => handleInternalNavigation(event, childHref)}
-                                  className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
-                                >
-                                  <span className="flex min-w-0 items-center gap-3">
-                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
-                                      <ChildIcon className="h-4 w-4" />
+                              {children.map((child) => {
+                                const { href: childHref, label: childLabel, icon: ChildIcon } = child
+                                const requiresLogin = 'requiresLogin' in child && child.requiresLogin
+                                return (
+                                  <Link
+                                    key={`${childHref}:${childLabel}`}
+                                    href={childHref}
+                                    onClick={(event) => {
+                                      if (requiresLogin) {
+                                        event.preventDefault()
+                                        closeMobile()
+                                        openAuthModal('login', childHref)
+                                        return
+                                      }
+                                      handleInternalNavigation(event, childHref)
+                                    }}
+                                    className="flex min-h-12 items-center justify-between rounded-[12px] bg-white px-3 text-[15px] font-semibold text-[#101828] shadow-[0_6px_16px_rgba(16,24,40,.035)] transition active:bg-[#f2f7ff]"
+                                  >
+                                    <span className="flex min-w-0 items-center gap-3">
+                                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#edf5ff] text-[#0866ff]">
+                                        <ChildIcon className="h-4 w-4" />
+                                      </span>
+                                      <span className="min-w-0 truncate">{childLabel}</span>
                                     </span>
-                                    <span className="min-w-0 truncate">{childLabel}</span>
-                                  </span>
-                                  <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                                </Link>
-                              ))}
+                                    <ArrowRight className="h-4 w-4 shrink-0 text-[#98a2b3]" />
+                                  </Link>
+                                )
+                              })}
                             </div>
                           </div>
                         </div>
@@ -1687,34 +2633,54 @@ export default function PublicHeader({
               </div>
             </section>
 
+            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
+            <section className="pb-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMoreOpen(false)
+                  setMarketSelectorOpen(true)
+                }}
+                aria-label={t.chooseLanguage}
+                className="flex min-h-12 w-full items-center justify-between px-1 text-left text-[15px] font-semibold text-[#101828] transition-colors hover:text-[#0866ff]"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <FlagIcon code={activeMarket[1]} size="sm" />
+                  <span className="truncate">{activeMarket[2]}</span>
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-[#667085]" />
+              </button>
+            </section>
+
           </div>
         </>
       ) : null}
       <nav
-        className={`fixed bottom-0 left-0 right-0 z-[120] w-full transform-gpu overflow-hidden border-t border-[#e6ebf2] bg-white/96 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur transition-transform duration-300 min-[1120px]:hidden ${
-          visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-full'
+        ref={mobileBottomNavRef}
+        className={`pointer-events-none fixed bottom-0 left-1/2 z-[120] -translate-x-1/2 transform-gpu pb-[var(--autorell-mobile-bottom-gap,20px)] transition-transform duration-300 min-[1120px]:hidden ${hideMobileBottomNav || authModalOpen ? 'hidden' : ''} ${
+          keepMobileBottomNavVisible || visible || open || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : 'translate-y-[115%]'
         }`}
+        aria-label={publicLabel('Mobile navigation', 'Mobil navigering', 'Mobile Navigation')}
+        data-autorell-mobile-nav-tone={mobileNavOverMedia ? 'light' : 'dark'}
+        style={{ width: 'min(960px, calc(100vw - 32px))' }}
       >
-        <div className="grid h-[54px] w-full grid-cols-4 px-1 pt-1">
-          <Link
-            href={homeHref}
-            onClick={closeMobile}
-            className={`hidden min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isHomePage ? 'text-[#0866ff]' : 'text-[#202124]'
-            }`}
-          >
-            <Home className="h-[22px] w-[22px]" strokeWidth={1.7} />
-            <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.home}</span>
-          </Link>
+        <div
+          className={`pointer-events-auto grid h-[56px] w-full grid-cols-4 items-center rounded-[28px] px-1.5 backdrop-blur-[28px] backdrop-saturate-[165%] transition-[background-color,color] duration-300 ${
+            mobileNavOverMedia
+              ? 'bg-[#111827]/70 supports-[backdrop-filter]:bg-[#111827]/58'
+              : 'bg-white/78 supports-[backdrop-filter]:bg-white/58'
+          }`}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
+        >
           <Link
             href={vehicleSearchHref}
             onClick={closeMobile}
-            className={`order-1 flex min-w-0 flex-col items-center justify-center gap-0.5 ${
-              isMarketplaceResults || isFindCarsPage ? 'text-[#0866ff]' : 'text-[#202124]'
+            className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
+              isMarketplaceResults || isFindCarsPage ? 'bg-[#eef5ff] text-[#0866ff]' : mobileNavOverMedia ? 'text-white' : 'text-[#101828]'
             }`}
           >
-            <Search className="h-[22px] w-[22px]" strokeWidth={1.8} />
-            <span className="max-w-full truncate text-[10px] font-medium leading-none">
+            <Search className="h-[21px] w-[21px]" strokeWidth={1.8} />
+            <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">
               {publicLabel('Search', 'Sök', 'Suche')}
             </span>
           </Link>
@@ -1722,69 +2688,78 @@ export default function PublicHeader({
             <Link
               href={accountMessagesHref}
               onClick={closeMobile}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${
+                unprefixedPathname.startsWith('/account/messages') ? 'bg-[#eef5ff] text-[#0866ff]' : mobileNavOverMedia ? 'text-white' : 'text-[#101828]'
+              }`}
             >
               <span className="relative">
-                <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.7} />
                 {headerAccount.unreadMessages ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                     {headerAccount.unreadMessages > 99 ? '99+' : headerAccount.unreadMessages}
                   </span>
                 ) : null}
               </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.messages}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => openAuthModal('login', accountMessagesHref)}
-              className="order-2 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
-              <MessageSquareText className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.messages}</span>
+              <MessageSquareText className="h-[21px] w-[21px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.messages}</span>
             </button>
           )}
           {headerAccount.authenticated ? (
             <Link
               href={savedHref}
               onClick={closeMobile}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <span className="relative">
-                <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
                 {savedListingCount ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                     {savedListingBadge}
                   </span>
                 ) : null}
               </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
             </Link>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('login', savedHref)}
-              className="order-3 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+            <Link
+              href={savedHref}
+              onClick={closeMobile}
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
-              <Heart className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">{t.saved}</span>
-            </button>
+              <span className="relative">
+                <Heart className="h-[21px] w-[21px]" strokeWidth={1.7} />
+                {savedListingCount ? (
+                  <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
+                    {savedListingBadge}
+                  </span>
+                ) : null}
+              </span>
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">{t.saved}</span>
+            </Link>
           )}
           {headerAccount.authenticated ? (
             <Link
               href={savedSearchesHref}
               onClick={closeMobile}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
               <span className="relative">
-                <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
+                <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
                 {savedSearchBadge ? (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#0866ff] px-1 text-[9px] font-semibold leading-none text-white">
                     {savedSearchBadge}
                   </span>
                 ) : null}
               </span>
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">
                 {mobileSavedSearchesLabel}
               </span>
             </Link>
@@ -1792,10 +2767,10 @@ export default function PublicHeader({
             <button
               type="button"
               onClick={() => openAuthModal('login', savedSearchesHref)}
-              className="order-4 flex min-w-0 flex-col items-center justify-center gap-0.5 text-[#202124]"
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[22px] px-0.5 py-1.5 transition active:scale-[.98] ${mobileNavOverMedia ? 'text-white' : 'text-[#101828]'}`}
             >
-              <Bookmark className="h-[22px] w-[22px]" strokeWidth={1.7} />
-              <span className="max-w-full truncate text-[10px] font-medium leading-none">
+              <Bookmark className="h-[21px] w-[21px]" strokeWidth={1.7} />
+              <span className="max-w-full truncate text-[9px] font-normal leading-none min-[380px]:text-[10px]">
                 {mobileSavedSearchesLabel}
               </span>
             </button>
@@ -1809,10 +2784,11 @@ export default function PublicHeader({
       />
       {authModalOpen ? (
         <AuthModal
-          key={`${authInitialView}:${authDestination || ''}`}
+          key={`${authInitialView}:${authDestination || ''}:${authBusinessRegistration ? 'business' : 'private'}`}
           isOpen={authModalOpen}
           initialMode={authInitialMode}
           initialView={authInitialView}
+          initialBusinessRegistration={authBusinessRegistration}
           postLoginDestination={authDestination}
           locale={locale}
           onClose={() => setAuthModalOpen(false)}
@@ -1821,5 +2797,23 @@ export default function PublicHeader({
       ) : null}
     </>
   )
+}
+
+function getIncompleteProfileCopy(locale: PublicLocale) {
+  const copy: Record<PublicLocale, { title: string; description: string; action: string }> = {
+    sv: { title: 'Din profil är inte komplett', description: 'Fyll i de viktigaste uppgifterna innan du skapar en annons.', action: 'Komplettera din profil' },
+    en: { title: 'Your profile is incomplete', description: 'Add the essential details before creating a listing.', action: 'Complete your profile' },
+    de: { title: 'Ihr Profil ist unvollständig', description: 'Ergänzen Sie die wichtigsten Angaben, bevor Sie eine Anzeige erstellen.', action: 'Profil vervollständigen' },
+    at: { title: 'Ihr Profil ist unvollständig', description: 'Ergänzen Sie die wichtigsten Angaben, bevor Sie eine Anzeige erstellen.', action: 'Profil vervollständigen' },
+    be: { title: 'Je profiel is niet compleet', description: 'Vul de belangrijkste gegevens in voordat je een advertentie plaatst.', action: 'Profiel voltooien' },
+    fr: { title: 'Votre profil est incomplet', description: 'Ajoutez les informations essentielles avant de créer une annonce.', action: 'Compléter votre profil' },
+    es: { title: 'Tu perfil está incompleto', description: 'Añade los datos esenciales antes de crear un anuncio.', action: 'Completar el perfil' },
+    it: { title: 'Il tuo profilo è incompleto', description: 'Aggiungi i dati essenziali prima di creare un annuncio.', action: 'Completa il profilo' },
+    pl: { title: 'Twój profil jest niekompletny', description: 'Uzupełnij najważniejsze dane przed utworzeniem ogłoszenia.', action: 'Uzupełnij profil' },
+    nl: { title: 'Je profiel is niet compleet', description: 'Vul de belangrijkste gegevens in voordat je een advertentie plaatst.', action: 'Profiel voltooien' },
+    fi: { title: 'Profiilisi on puutteellinen', description: 'Täydennä tärkeimmät tiedot ennen ilmoituksen luomista.', action: 'Täydennä profiili' },
+    da: { title: 'Din profil er ikke komplet', description: 'Tilføj de vigtigste oplysninger, før du opretter en annonce.', action: 'Udfyld din profil' },
+  }
+  return copy[locale]
 }
 

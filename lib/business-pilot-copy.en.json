@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Autorell pilot programme",
+    "title": "Become one of Autorell's first partner dealers",
+    "body": [
+      "We are selecting a limited number of vehicle dealers who can connect their existing inventory to Autorell at no cost during the pilot period.",
+      "Autorell imports your inventory, keeps prices and stock status automatically updated, and gives you statistics for exposure, clicks and customer enquiries.",
+      "When the partnership begins to create documented commercial value, we will work with you on a separate agreement for continued cooperation."
+    ],
+    "benefits": [
+      "Free inventory connection",
+      "No integration fee",
+      "Automatic inventory updates",
+      "No commitment during the pilot period",
+      "Traffic and lead statistics",
+      "Personal onboarding",
+      "Multiple locations can be connected",
+      "A separate commercial agreement only after value has been created"
+    ],
+    "primaryCta": "Apply for the pilot programme",
+    "secondaryCta": "Learn about inventory connection",
+    "availabilityNote": "A limited number of companies will be accepted into the first pilot round."
+  },
+  "pilotPage": {
+    "metaTitle": "Free dealer inventory pilot | Autorell",
+    "metaDescription": "Apply to connect your vehicle inventory to Autorell with free onboarding, automatic synchronisation and no automatic paid subscription.",
+    "heroEyebrow": "Pilot programme for vehicle dealers",
+    "heroTitle": "Connect your vehicle inventory at no cost",
+    "heroIntro": "Autorell is looking for selected vehicle dealers for a free pilot programme. We connect your existing inventory, keep the listings automatically updated and measure the results together with you.",
+    "primaryCta": "Apply to the pilot programme",
+    "secondaryCta": "How inventory import works",
+    "includedTitle": "This is included",
+    "includedIntro": "The first connection is designed to be practical, measurable and free from automatic commercial commitments.",
+    "included": [
+      "Free onboarding",
+      "Free technical connection",
+      "Import of your existing vehicle inventory",
+      "Automatic synchronisation of new, changed and removed vehicles",
+      "Company profile on Autorell",
+      "Listing view statistics",
+      "Click and lead statistics",
+      "Support during the pilot period",
+      "No commitment during the pilot period"
+    ],
+    "stepsTitle": "How it works",
+    "steps": [
+      {
+        "title": "Send your application",
+        "text": "Your company submits a short application with information about its inventory and preferred connection method."
+      },
+      {
+        "title": "Autorell reviews the company",
+        "text": "We review the company, its inventory and the technical source before anything is connected."
+      },
+      {
+        "title": "Approve the pilot terms",
+        "text": "The company approves the pilot terms and confirms its rights to the vehicle data and images."
+      },
+      {
+        "title": "We connect the source",
+        "text": "Autorell connects the verified website and prepares an import preview. XML, CSV, API and DMS requests go through separate technical onboarding."
+      },
+      {
+        "title": "Inventory is published and kept current",
+        "text": "Approved listings are published and new, changed or sold vehicles are synchronised safely."
+      }
+    ],
+    "afterTitle": "After the pilot period",
+    "afterLead": "The pilot programme does not automatically become a paid subscription.",
+    "afterBody": "If Autorell can demonstrate relevant traffic, leads or other commercial value, the parties may discuss a separate commercial agreement.",
+    "afterNote": "No payment, invoice or subscription can start without a new, explicit approval from the company.",
+    "faqTitle": "Questions about the pilot",
+    "faqs": [
+      {
+        "question": "Does the pilot programme cost anything?",
+        "answer": "No. Technical connection, onboarding, inventory import and automatic synchronisation are free during the agreed pilot period."
+      },
+      {
+        "question": "Do we need to publish listings manually?",
+        "answer": "No. Once the source and preview have been approved, Autorell can create and update the listings from the connected inventory."
+      },
+      {
+        "question": "What types of inventory can be connected?",
+        "answer": "Passenger cars, vans and other supported vehicle categories can be assessed. The exact scope is confirmed during the technical review."
+      },
+      {
+        "question": "How often is the inventory updated?",
+        "answer": "The frequency depends on the source and pilot setup. A daily sync is the normal starting point, with more frequent synchronisation where agreed and technically possible."
+      },
+      {
+        "question": "What happens when a vehicle is sold?",
+        "answer": "A sold or removed vehicle is first confirmed through a successful sync and is then paused or marked as sold. A temporary source outage never removes the whole inventory."
+      },
+      {
+        "question": "Can several locations be connected?",
+        "answer": "Yes. Several locations can be connected when the source data identifies them or when they are mapped during onboarding."
+      },
+      {
+        "question": "What happens after the pilot period?",
+        "answer": "We review the documented results together. Continued cooperation requires a separate agreement accepted by both parties."
+      },
+      {
+        "question": "Do we automatically become a paying customer?",
+        "answer": "No. There is no automatic conversion, payment or subscription after the pilot."
+      },
+      {
+        "question": "Who owns the listings, images and vehicle data?",
+        "answer": "The company retains its rights to its material and confirms that it may provide it for publication. Autorell only receives the rights needed to import, store, display and synchronise it under the pilot terms."
+      },
+      {
+        "question": "Can we end the pilot project?",
+        "answer": "Yes. The pilot can be ended without a subscription commitment. The practical removal of imported material is handled in a controlled way with the company."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Pilot application",
+    "title": "Tell us about your inventory",
+    "intro": "The application does not start an integration or create a paid subscription. Autorell reviews it and contacts the named person first.",
+    "companySection": "Company",
+    "contactSection": "Contact person",
+    "inventorySection": "Inventory and connection",
+    "consentSection": "Consent",
+    "companyName": "Company name",
+    "registrationNumber": "Company registration number",
+    "country": "Country",
+    "website": "Website",
+    "contactName": "Contact person",
+    "contactRole": "Job title",
+    "email": "Email",
+    "phone": "Phone number",
+    "inventorySize": "Approximate number of active vehicles",
+    "locationCount": "Number of locations",
+    "currentSystem": "Current inventory system",
+    "integrationMethod": "Preferred integration method",
+    "message": "Additional information",
+    "selectOption": "Select an option",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2,000" },
+      { "value": "2000_plus", "label": "More than 2,000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Website import (pilot available)" },
+      { "value": "xml", "label": "XML feed (technical onboarding)" },
+      { "value": "csv", "label": "CSV file (technical onboarding)" },
+      { "value": "api", "label": "API (technical onboarding)" },
+      { "value": "dms", "label": "DMS system (admin onboarding)" },
+      { "value": "unknown", "label": "Not sure yet" }
+    ],
+    "privacyConsent": "I have read and accept Autorell's privacy policy.",
+    "contactConsent": "I agree that Autorell may contact the company about the pilot programme.",
+    "privacyLink": "Read the privacy policy",
+    "submit": "Send application",
+    "submitting": "Sending application",
+    "requiredNote": "Fields marked with * are required.",
+    "successTitle": "Thank you for your application",
+    "successBody": "Autorell will review the company and contact the named person. No integration or publication starts before the company has been approved and the pilot terms have been accepted.",
+    "successReference": "Application reference",
+    "sendAnother": "Send another application",
+    "genericError": "The application could not be sent. Please check the fields and try again.",
+    "rateLimitError": "Too many applications have been sent from this connection. Please try again later.",
+    "duplicateError": "An application for this email address was submitted recently. Autorell will contact you after reviewing it."
+  }
+}

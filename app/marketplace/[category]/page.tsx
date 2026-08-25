@@ -10,9 +10,10 @@ import {
   formatMarketplacePriceDisplay,
   getMarketplaceExchangeRates,
 } from '@/lib/currency-rates'
-import { euCountryCodes } from '@/lib/eu-countries'
+import { euCountryCodes, getEuCountryName } from '@/lib/eu-countries'
 import {
   getMarketplaceCategory,
+  isLeasingMarketplaceCategory,
   marketplaceCategories,
   marketplaceCategoryAliases,
   marketplaceLanguage,
@@ -22,14 +23,40 @@ import {
   getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
+import { searchMarketplaceListings } from '@/lib/marketplace-search-v2'
 import {
   isPublicLanguage,
+  localizePublicHref,
+  stripLocalePrefix,
   translatePublic,
   type PublicLocale,
 } from '@/lib/public-i18n'
-import { cleanSeoText } from '@/lib/market-seo'
-import { swedishMunicipalities } from '@/lib/swedish-regions.generated'
-import { buildSeoPath, slugifySeoPart, type SeoLocation, type SeoMarketCode } from '@/lib/seo-routes'
+import { getPublicLanguageAlternates, publicHostForLocale } from '@/lib/public-seo'
+import {
+  normalizeSearchBounds,
+  parseMarketplaceSearchState,
+  resolveMarketplaceGeoArea,
+} from '@/lib/marketplace-search-state'
+import {
+  resolveStaticMarketplaceGeoArea,
+  resolveStaticMarketplaceGeoAreaBySlug,
+} from '@/lib/marketplace-geo'
+import {
+  applyMarketplaceSearchModeParams,
+  getMarketplaceSearchSeo,
+  resolveMarketplaceSearchMode,
+} from '@/lib/marketplace-search-seo'
+import {
+  getSeoCategoryPath,
+  resolveGeoLandingRoute,
+  type GeoLandingRoute,
+} from '@/lib/seo-geo-landings'
+
+type MarketplaceCategoryPageProps = {
+  params: Promise<{ category: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  seoLanding?: GeoLandingRoute | null
+}
 
 export function generateStaticParams() {
   return [{ category: 'vehicles' }, ...marketplaceCategories.map(({ slug }) => ({ category: slug }))]
@@ -44,9 +71,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
-  const category = requestedCategory === 'vehicles'
+  const explicitCategory = getExplicitMarketplaceCategory(resolvedSearchParams)
+  const metadataMode = getSearchMode(resolvedSearchParams)
+  const requestedMetadataCategory = explicitCategory || requestedCategory
+  const metadataCategory = metadataMode === 'leasing' && requestedMetadataCategory !== 'vehicles' && !isLeasingMarketplaceCategory(requestedMetadataCategory)
+    ? 'cars'
+    : requestedMetadataCategory
+  const category = metadataCategory === 'vehicles'
     ? getAggregateMarketplaceCategory()
-    : getMarketplaceCategory(requestedCategory)
+    : getMarketplaceCategory(metadataCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
@@ -60,22 +93,72 @@ export async function generateMetadata({
           : requestedLanguage && isPublicLanguage(requestedLanguage)
             ? requestedLanguage
             : 'en'
-  const language = marketplaceLanguage(locale)
-  const label =
-    locale === 'sv' || locale === 'de' || locale === 'en'
-      ? category.labels[language]
-      : translatePublic(locale, category.labels.en)
-  const host = 'https://www.autorell.com'
+  const host = publicHostForLocale(locale)
   const filter = getSearchParam(resolvedSearchParams, 'filter')
-  const seo = getMarketplaceSeoCopy(category.slug, label, locale, filter)
+  const metadataMarkets = getSearchParamList(resolvedSearchParams, 'markets')
+  const metadataCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
+  if (!metadataMarkets.length && metadataCountry) metadataMarkets.push(metadataCountry)
+  const metadataSearch = parseMarketplaceSearchState(getSearchParam(resolvedSearchParams, 'q') || filter, {
+    markets: metadataMarkets,
+  })
+  const metadataGeoValue =
+    getSearchParam(resolvedSearchParams, 'geoAreaId') ||
+    getSearchParam(resolvedSearchParams, 'geoPlaceCode')
+  const metadataLocationHint =
+    getSearchParam(resolvedSearchParams, 'chips') ||
+    getSearchParam(resolvedSearchParams, 'city') ||
+    getSearchParam(resolvedSearchParams, 'municipality') ||
+    getSearchParam(resolvedSearchParams, 'region')
+  const metadataGeoArea =
+    resolveMarketplaceGeoArea(metadataGeoValue) ||
+    resolveStaticMarketplaceGeoArea(metadataGeoValue) ||
+    (marketCode && metadataLocationHint
+      ? resolveStaticMarketplaceGeoAreaBySlug(marketCode, metadataLocationHint)
+      : null) ||
+    metadataSearch.geoArea
+  const metadataMake = getSearchParam(resolvedSearchParams, 'make') || metadataSearch.make
+  const metadataModel = getSearchParam(resolvedSearchParams, 'model') || (metadataMake ? metadataSearch.query : '')
+  const metadataFreeText = metadataMake ? '' : metadataSearch.query || getSearchParam(resolvedSearchParams, 'q')
+  const metadataCondition = getSearchParam(resolvedSearchParams, 'condition') || filter
   const pathname = requestHeaders.get('x-autorell-pathname')
-  const canonicalPath = pathname || `/marketplace/${category.slug}`
+  const metadataUsesPageMarket = usesPageMarket(metadataMarkets, marketCode)
+  const localizedCategoryPath = category.slug !== 'vehicles' && marketCode && metadataMode !== 'all' && metadataUsesPageMarket
+    ? getSeoCategoryPath(marketCode.toLowerCase(), category.slug, metadataMode === 'leasing')
+    : null
+  const canonicalPath = localizedCategoryPath || pathname || `/marketplace/${category.slug}`
+  const canResolveCanonicalLanding = !metadataFreeText && !metadataCondition && (
+    !metadataLocationHint || Boolean(metadataGeoArea)
+  )
+  const canonicalLanding = localizedCategoryPath && marketCode && metadataMode !== 'all' && canResolveCanonicalLanding
+    ? await resolveCanonicalSeoLanding({
+        market: marketCode.toLowerCase(),
+        categoryPath: localizedCategoryPath,
+        make: metadataMake,
+        model: metadataModel,
+        place: metadataGeoArea,
+      })
+    : null
+  const seo = canonicalLanding
+    ? { title: canonicalLanding.title, description: canonicalLanding.description }
+    : getMarketplaceSearchSeo({
+        locale,
+        category: category.slug,
+        allVehicles: category.slug === 'vehicles',
+        mode: metadataMode,
+        make: metadataMake,
+        model: metadataModel,
+        freeText: metadataFreeText,
+        place:
+          metadataGeoArea?.name ||
+          metadataLocationHint ||
+          getMetadataMarketName(metadataMarkets, marketCode, locale),
+        condition: metadataCondition,
+      })
   const marketplaceSeo = resolveMarketplaceSeoCanonical(
-    locale,
-    marketCode,
-    category.slug,
     resolvedSearchParams,
     canonicalPath,
+    canonicalLanding?.canonicalPath,
+    host,
   )
   const canonical = marketplaceSeo.canonical || (
     filter
@@ -83,11 +166,16 @@ export async function generateMetadata({
       : `${host}${canonicalPath}`
   )
   const { title, description } = seo
+  const canonicalUrl = new URL(canonical)
+  const alternatePath = `${stripLocalePrefix(canonicalUrl.pathname)}${canonicalUrl.search}`
 
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: canonicalLanding ? undefined : getPublicLanguageAlternates(alternatePath),
+    },
     robots: marketplaceSeo.robots,
     openGraph: {
       title,
@@ -99,13 +187,17 @@ export async function generateMetadata({
   }
 }
 
-export default async function MarketplaceCategoryPage({
+export default function MarketplaceCategoryPage(
+  props: Omit<MarketplaceCategoryPageProps, 'seoLanding'>,
+) {
+  return renderMarketplaceCategoryPage(props as MarketplaceCategoryPageProps)
+}
+
+async function renderMarketplaceCategoryPage({
   params,
   searchParams,
-}: {
-  params: Promise<{ category: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+  seoLanding = null,
+}: MarketplaceCategoryPageProps) {
   const { category: requestedCategory } = await params
   const resolvedSearchParams = await searchParams
   if (requestedCategory === 'all' || requestedCategory === 'all-vehicles' || requestedCategory === 'alla-fordon') {
@@ -123,7 +215,7 @@ export default async function MarketplaceCategoryPage({
     : getMarketplaceCategory(requestedCategory)
   const requestHeaders = await headers()
   const requestedLanguage = requestHeaders.get('x-autorell-language')
-  const marketCode = requestHeaders.get('x-autorell-market') || undefined
+  const marketCode = seoLanding?.countryCode || requestHeaders.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
   const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
     .map((value) => value.toUpperCase())
@@ -141,7 +233,7 @@ export default async function MarketplaceCategoryPage({
     requestedMarkets.find((value) => value !== 'EU') ||
     requestedCountry ||
     automaticCountry
-  const locale: PublicLocale =
+  const locale: PublicLocale = seoLanding?.locale || (
     marketCode?.toUpperCase() === 'AT'
       ? 'at'
       : marketCode?.toUpperCase() === 'BE'
@@ -151,17 +243,57 @@ export default async function MarketplaceCategoryPage({
           : requestedLanguage && isPublicLanguage(requestedLanguage)
             ? requestedLanguage
             : 'en'
+  )
+  const explicitCategory = getExplicitMarketplaceCategory(resolvedSearchParams)
+  const requestedMode = getSearchMode(resolvedSearchParams)
+  const routeCategory = explicitCategory || requestedCategory
+  const normalizedRouteCategory = requestedMode === 'leasing' && !isLeasingMarketplaceCategory(routeCategory)
+    ? 'cars'
+    : routeCategory
+  if (!seoLanding && (explicitCategory || normalizedRouteCategory !== requestedCategory)) {
+    permanentRedirect(getMarketplaceCategoryRedirectHref(locale, normalizedRouteCategory, resolvedSearchParams))
+  }
+  if (!seoLanding) {
+    const normalizedModeHref = getMarketplaceModeRedirectHref(locale, requestedCategory, resolvedSearchParams)
+    if (normalizedModeHref) permanentRedirect(normalizedModeHref)
+  }
   const language = marketplaceLanguage(locale)
   const label =
     locale === 'sv' || locale === 'de' || locale === 'en'
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const displayCurrency = displayCurrencyForMarket(marketCode || defaultCountry)
+  const initialMarkets = requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []
+  const initialQuery = getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')
+  const parsedInitialSearch = parseMarketplaceSearchState(initialQuery, {
+    markets: initialMarkets,
+  })
+  const initialGeoArea =
+    seoLanding?.place || resolveMarketplaceGeoArea(
+      getSearchParam(resolvedSearchParams, 'geoAreaId') ||
+      getSearchParam(resolvedSearchParams, 'geoPlaceCode'),
+    ) || parsedInitialSearch.geoArea
+  const initialGeoBounds = normalizeSearchBounds({
+    north: getSearchParam(resolvedSearchParams, 'north'),
+    east: getSearchParam(resolvedSearchParams, 'east'),
+    south: getSearchParam(resolvedSearchParams, 'south'),
+    west: getSearchParam(resolvedSearchParams, 'west'),
+  }) || initialGeoArea?.bounds || null
+  const initialSearchChips = getSearchParamList(resolvedSearchParams, 'chips')
+  if (!initialSearchChips.length && initialGeoArea) {
+    initialSearchChips.push(initialGeoArea.name)
+  }
+  const initialMaxPrice =
+    getSearchParam(resolvedSearchParams, 'maxPrice') ||
+    (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
 
-  const data = await getPublishedMarketplaceCategoryListings(
-    requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
-    requestedCategory === 'vehicles' ? 360 : 240,
-  )
+  const fetchedData = seoLanding
+    ? await getSeoLandingListings(seoLanding)
+    : await getPublishedMarketplaceCategoryListings(
+        requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
+        requestedCategory === 'vehicles' ? 360 : 240,
+      )
+  const data = preferMarketplaceCountry(fetchedData || [], automaticCountry)
   const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
@@ -193,12 +325,14 @@ export default async function MarketplaceCategoryPage({
         gearbox: listing.gearbox,
         bodyType: listing.body_type,
         country: listing.country_code,
+        region: listing.municipality || listing.city || '',
         city: listing.city,
         municipality: listing.municipality,
         latitude: typeof listing.latitude === 'number' ? listing.latitude : null,
         longitude: typeof listing.longitude === 'number' ? listing.longitude : null,
         priceLabel: price.label,
         priceValue: Number(listing.price),
+        displayPriceValue: price.displayAmount,
         imageUrl: listing.images?.[0] || null,
         imageUrls: (listing.images || []).filter((image: unknown): image is string => typeof image === 'string' && Boolean(image)),
         sellerLogoUrl: sellerProfile?.logoUrl || null,
@@ -210,6 +344,14 @@ export default async function MarketplaceCategoryPage({
         condition: listing.condition,
         color: listing.color,
         equipment: listing.equipment,
+        description: listing.description,
+        offerType: normalizeListingOfferType(listing.offer_type),
+        leaseData: listing.lease_data && typeof listing.lease_data === 'object' && !Array.isArray(listing.lease_data)
+          ? listing.lease_data as Record<string, unknown>
+          : null,
+        insuranceOffers: Array.isArray(listing.insurance_offers)
+          ? listing.insurance_offers as VehicleSearchListing['insuranceOffers']
+          : null,
       }
     }),
   )
@@ -219,6 +361,8 @@ export default async function MarketplaceCategoryPage({
       <PublicHeader
         locale={locale}
         marketCode={marketCode}
+        marketplaceMode={requestedMode}
+        marketplaceResultsPage
         marketplaceChannel={{
           label,
           slug: requestedCategory === 'vehicles' ? 'vehicles' : category.slug,
@@ -229,19 +373,28 @@ export default async function MarketplaceCategoryPage({
         locale={locale}
         defaultCountry={defaultCountry}
         automaticCountry={automaticCountry}
-        initialMarkets={requestedMarkets.length ? requestedMarkets : requestedCountry ? [requestedCountry] : []}
+        initialMarkets={initialMarkets}
         initialCategories={requestedCategories}
         initialCategory={requestedCategory === 'vehicles' ? 'all' : category.slug}
-        initialQuery={getSearchParam(resolvedSearchParams, 'q') || getSearchParam(resolvedSearchParams, 'filter')}
-        initialSearchChips={getSearchParamList(resolvedSearchParams, 'chips')}
-        initialMake={getSearchParam(resolvedSearchParams, 'make')}
+        initialQuery={initialQuery}
+        initialSearchChips={initialSearchChips}
+        initialMake={getSearchParam(resolvedSearchParams, 'make') || parsedInitialSearch.make}
         initialModel={getSearchParam(resolvedSearchParams, 'model')}
-        initialRegion={getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county')}
-        initialCity={getSearchParam(resolvedSearchParams, 'city')}
-        initialMunicipality={getSearchParam(resolvedSearchParams, 'municipality')}
+        initialRegion={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'region') || getSearchParam(resolvedSearchParams, 'county') || initialGeoArea?.region || ''}
+        initialCity={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'city') || initialGeoArea?.locality || ''}
+        initialMunicipality={seoLanding ? '' : getSearchParam(resolvedSearchParams, 'municipality') || initialGeoArea?.municipality || ''}
+        initialGeoAreaId={initialGeoArea?.id || ''}
+        initialGeoBounds={initialGeoBounds}
+        initialGeoFilterMode={initialGeoArea ? 'strict' : 'legacy'}
         initialMinPrice={getSearchParam(resolvedSearchParams, 'minPrice')}
-        initialMaxPrice={getSearchParam(resolvedSearchParams, 'maxPrice')}
+        initialMaxPrice={initialMaxPrice}
         initialMode={getSearchMode(resolvedSearchParams)}
+        initialModeExplicit={
+          hasSearchParam(resolvedSearchParams, 'mode') ||
+          hasSearchParam(resolvedSearchParams, 'intent') ||
+          hasSearchParam(resolvedSearchParams, 'offerType') ||
+          getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')
+        }
         initialMinYear={getSearchParam(resolvedSearchParams, 'minYear')}
         initialMaxYear={getSearchParam(resolvedSearchParams, 'maxYear')}
         initialMinMileage={getSearchParam(resolvedSearchParams, 'minMileage')}
@@ -259,9 +412,38 @@ export default async function MarketplaceCategoryPage({
         initialLeasingPossible={getBooleanSearchParam(resolvedSearchParams, 'leasingPossible')}
         initialEquipmentQuery={getSearchParam(resolvedSearchParams, 'equipment')}
         initialSortBy={getSearchParam(resolvedSearchParams, 'sort') || 'published'}
+        initialPage={Math.max(1, Number.parseInt(getSearchParam(resolvedSearchParams, 'page') || '1', 10) || 1)}
+        seoLanding={seoLanding ? {
+          h1: seoLanding.h1,
+          description: seoLanding.description,
+          zeroResultsText: seoLanding.zeroResultsText,
+          breadcrumbs: seoLanding.breadcrumbs,
+          relatedLinks: seoLanding.relatedLinks,
+        } : undefined}
+        preserveCanonicalUrl={Boolean(seoLanding)}
+        syncCategoryRoute={!seoLanding}
       />
     </>
   )
+}
+
+async function getSeoLandingListings(landing: GeoLandingRoute) {
+  try {
+    const result = await searchMarketplaceListings({
+      categories: landing.category,
+      markets: landing.countryCode,
+      make: landing.make,
+      model: landing.model,
+      geoAreaId: landing.place?.id,
+      geoFilterMode: landing.place ? 'strict' : 'legacy',
+      mode: landing.leasing ? 'leasing' : 'sale',
+      offerType: landing.leasing ? 'lease' : 'sale',
+      limit: 48,
+    })
+    return result.items as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
+  } catch {
+    return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
+  }
 }
 
 function getSearchParam(
@@ -270,6 +452,18 @@ function getSearchParam(
 ) {
   const value = params[key]
   return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function hasSearchParam(
+  params: { [key: string]: string | string[] | undefined },
+  key: string,
+) {
+  const value = params[key]
+  return Array.isArray(value) ? value.some((item) => String(item || '').trim()) : Boolean(String(value || '').trim())
+}
+
+function normalizeListingOfferType(value: unknown): VehicleSearchListing['offerType'] {
+  return value === 'lease' || value === 'sale_and_lease' || value === 'sale' ? value : null
 }
 
 function getSearchParamList(
@@ -284,6 +478,79 @@ function getSearchParamList(
     .filter(Boolean)
 }
 
+function getExplicitMarketplaceCategory(
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const category = getSearchParamList(params, 'categories')[0]
+  if (!category) return ''
+  const normalized = marketplaceCategoryAliases[category] || category
+  return marketplaceCategories.some(({ slug }) => slug === normalized) ? normalized : ''
+}
+
+function getMarketplaceCategoryRedirectHref(
+  locale: PublicLocale,
+  category: string,
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const mode = getSearchMode(params)
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      key === 'categories' ||
+      key === 'mode' ||
+      key === 'offerType' ||
+      key === 'intent' ||
+      (key === 'leasingPossible' && mode === 'leasing') ||
+      value === undefined
+    ) return
+    const values = Array.isArray(value) ? value : [value]
+    values.forEach((item) => query.append(key, item))
+  })
+  applyMarketplaceSearchModeParams(query, mode)
+  const pathname = localizePublicHref(locale, `/marketplace/${category}`)
+  return query.size ? `${pathname}?${query.toString()}` : pathname
+}
+
+function getMarketplaceModeRedirectHref(
+  locale: PublicLocale,
+  category: string,
+  params: { [key: string]: string | string[] | undefined },
+) {
+  const mode = getSearchMode(params)
+  const expectedMode = mode === 'all' ? '' : mode
+  const expectedOfferType = mode === 'sale' ? 'sale' : mode === 'leasing' ? 'lease' : ''
+  const currentMode = getSearchParam(params, 'mode').toLowerCase()
+  const currentOfferType = getSearchParam(params, 'offerType').toLowerCase()
+  const hasLegacyIntent = hasSearchParam(params, 'intent')
+  const hasRedundantLeasingPossible = mode === 'leasing' && hasSearchParam(params, 'leasingPossible')
+
+  if (
+    currentMode === expectedMode &&
+    currentOfferType === expectedOfferType &&
+    !hasLegacyIntent &&
+    !hasRedundantLeasingPossible
+  ) {
+    return null
+  }
+
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      key === 'mode' ||
+      key === 'offerType' ||
+      key === 'intent' ||
+      (key === 'leasingPossible' && mode === 'leasing') ||
+      value === undefined
+    ) return
+    const values = Array.isArray(value) ? value : [value]
+    values.forEach((item) => query.append(key, item))
+  })
+  applyMarketplaceSearchModeParams(query, mode)
+
+  const pathname = localizePublicHref(locale, `/marketplace/${category}`)
+  return query.size ? `${pathname}?${query.toString()}` : pathname
+}
+
 function getBooleanSearchParam(
   params: { [key: string]: string | string[] | undefined },
   key: string,
@@ -295,123 +562,69 @@ function getBooleanSearchParam(
 function getSearchMode(
   params: { [key: string]: string | string[] | undefined },
 ) {
-  const value = (getSearchParam(params, 'mode') || getSearchParam(params, 'intent')).toLowerCase()
-  return value === 'leasing' ? 'leasing' : 'sale'
+  return resolveMarketplaceSearchMode({
+    mode: getSearchParam(params, 'mode'),
+    intent: getSearchParam(params, 'intent'),
+    offerType: getSearchParam(params, 'offerType'),
+    leasingPossible: getSearchParam(params, 'leasingPossible'),
+  })
 }
 
-function getMarketplaceSeoCopy(
-  slug: string,
-  label: string,
+function getMetadataMarketName(
+  markets: string[],
+  marketCode: string | undefined,
   locale: PublicLocale,
-  filter?: string,
 ) {
-  const normalizedFilter = normalizeFilterLabel(filter)
-  const lowerLabel = label.toLocaleLowerCase()
-  const allVehicles = slug === 'vehicles'
-  const names = {
-    sv: allVehicles ? 'Fordon' : label,
-    de: allVehicles ? 'Fahrzeuge' : label,
-    en: allVehicles ? 'Vehicles' : label,
-    fr: allVehicles ? 'Véhicules' : label,
-    es: allVehicles ? 'Vehículos' : label,
-    it: allVehicles ? 'Veicoli' : label,
-    pl: allVehicles ? 'Pojazdy' : label,
-    nl: allVehicles ? 'Voertuigen' : label,
-    da: allVehicles ? 'Køretøjer' : label,
-    fi: allVehicles ? 'Ajoneuvot' : label,
-  } as Partial<Record<PublicLocale, string>>
-  const name = names[locale] || label
-  const lowerName = name.toLocaleLowerCase()
-  const copy = getMarketplaceSeoTemplates(locale, name, lowerName, lowerLabel)
-  const title =
-    normalizedFilter === 'used'
-      ? copy.usedTitle
-      : normalizedFilter === 'new'
-        ? copy.newTitle
-        : copy.baseTitle
-
-  return {
-    title: cleanSeoText(title, 65),
-    description: cleanSeoText(copy.description, 150),
+  const normalizedMarkets = markets.map((value) => value.toUpperCase())
+  if (normalizedMarkets.some((value) => value === 'EU' || value === 'ALL')) {
+    return getLocalizedEuropeName(locale)
   }
+  const selected = normalizedMarkets
+    .filter((value) => euCountryCodes.has(value))
+  if (selected.length > 1) return getLocalizedEuropeName(locale)
+  const countryCode = selected.length === 1
+    ? selected[0]
+    : marketCode && euCountryCodes.has(marketCode.toUpperCase())
+      ? marketCode.toUpperCase()
+      : ''
+  return countryCode ? getEuCountryName(countryCode, locale) : ''
 }
 
-function getMarketplaceSeoTemplates(
-  locale: PublicLocale,
-  name: string,
-  lowerName: string,
-  lowerLabel: string,
-) {
-  const templates = {
-    sv: {
-      baseTitle: `${name} till salu | Begagnat och nytt | Autorell`,
-      newTitle: `Nya ${lowerName} till salu | Autorell`,
-      usedTitle: `Begagnade ${lowerName} till salu | Autorell`,
-      description: `Sök ${lowerLabel} till salu. Jämför nya och begagnade annonser från privatpersoner och företag på Autorell.`,
-    },
-    de: {
-      baseTitle: `${name} kaufen | Neu und gebraucht | Autorell`,
-      newTitle: `Neue ${lowerName} kaufen | Autorell`,
-      usedTitle: `Gebrauchte ${lowerName} kaufen | Autorell`,
-      description: `${name} suchen und vergleichen. Finden Sie neue und gebrauchte Angebote von privaten und gewerblichen Verkäufern.`,
-    },
-    en: {
-      baseTitle: `${name} for sale | Used and new | Autorell`,
-      newTitle: `New ${lowerName} for sale | Autorell`,
-      usedTitle: `Used ${lowerName} for sale | Autorell`,
-      description: `Search ${lowerLabel} for sale. Compare used and new listings from private and business sellers on Autorell.`,
-    },
-    fr: {
-      baseTitle: `${name} à vendre | Neuf et occasion | Autorell`,
-      newTitle: `${name} neufs à vendre | Autorell`,
-      usedTitle: `${name} d'occasion à vendre | Autorell`,
-      description: `Recherchez ${lowerLabel} à vendre. Comparez annonces neuves et d'occasion de particuliers et professionnels sur Autorell.`,
-    },
-    es: {
-      baseTitle: `${name} en venta | Nuevos y usados | Autorell`,
-      newTitle: `${name} nuevos en venta | Autorell`,
-      usedTitle: `${name} usados en venta | Autorell`,
-      description: `Busca ${lowerLabel} en venta. Compara anuncios nuevos y usados de particulares y empresas en Autorell.`,
-    },
-    it: {
-      baseTitle: `${name} in vendita | Nuovi e usati | Autorell`,
-      newTitle: `${name} nuovi in vendita | Autorell`,
-      usedTitle: `${name} usati in vendita | Autorell`,
-      description: `Cerca ${lowerLabel} in vendita. Confronta annunci nuovi e usati di privati e aziende su Autorell.`,
-    },
-    pl: {
-      baseTitle: `${name} na sprzedaż | Nowe i używane | Autorell`,
-      newTitle: `Nowe ${lowerName} na sprzedaż | Autorell`,
-      usedTitle: `Używane ${lowerName} na sprzedaż | Autorell`,
-      description: `Szukaj ${lowerLabel} na sprzedaż. Porównuj nowe i używane ogłoszenia prywatne i firmowe w Autorell.`,
-    },
-    nl: {
-      baseTitle: `${name} te koop | Nieuw en gebruikt | Autorell`,
-      newTitle: `Nieuwe ${lowerName} te koop | Autorell`,
-      usedTitle: `Gebruikte ${lowerName} te koop | Autorell`,
-      description: `Zoek ${lowerLabel} te koop. Vergelijk nieuwe en gebruikte advertenties van particuliere en zakelijke verkopers.`,
-    },
-    da: {
-      baseTitle: `${name} til salg | Nye og brugte | Autorell`,
-      newTitle: `Nye ${lowerName} til salg | Autorell`,
-      usedTitle: `Brugte ${lowerName} til salg | Autorell`,
-      description: `Søg ${lowerLabel} til salg. Sammenlign nye og brugte annoncer fra private og virksomheder på Autorell.`,
-    },
-    fi: {
-      baseTitle: `${name} myynnissä | Uudet ja käytetyt | Autorell`,
-      newTitle: `Uudet ${lowerName} myynnissä | Autorell`,
-      usedTitle: `Käytetyt ${lowerName} myynnissä | Autorell`,
-      description: `Etsi ${lowerLabel} myynnissä. Vertaa uusia ja käytettyjä ilmoituksia yksityisiltä ja yrityksiltä Autorellissa.`,
-    },
-  } as Partial<Record<PublicLocale, {
-    baseTitle: string
-    newTitle: string
-    usedTitle: string
-    description: string
-  }>>
-
-  return templates[locale] || templates.en!
+function usesPageMarket(markets: string[], marketCode: string | undefined) {
+  if (!markets.length) return true
+  if (!marketCode) return false
+  const normalized = [...new Set(markets.map((value) => value.toUpperCase()).filter(Boolean))]
+  return normalized.length === 1 && normalized[0] === marketCode.toUpperCase()
 }
+
+function preferMarketplaceCountry<T extends { country_code?: string | null }>(listings: T[], countryCode: string) {
+  const preferredCountry = countryCode.toUpperCase()
+  if (!preferredCountry) return listings
+  const local: T[] = []
+  const other: T[] = []
+  for (const listing of listings) {
+    if ((listing.country_code || '').toUpperCase() === preferredCountry) local.push(listing)
+    else other.push(listing)
+  }
+  return [...local, ...other]
+}
+
+function getLocalizedEuropeName(locale: PublicLocale) {
+  const effectiveLocale = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  return ({
+    sv: 'Europa',
+    de: 'Europa',
+    en: 'Europe',
+    fr: 'Europe',
+    es: 'Europa',
+    it: 'Europa',
+    pl: 'Europa',
+    nl: 'Europa',
+    da: 'Europa',
+    fi: 'Eurooppa',
+  } satisfies Record<Exclude<PublicLocale, 'at' | 'be'>, string>)[effectiveLocale]
+}
+
 function getAggregateMarketplaceCategory() {
   return {
     slug: 'vehicles',
@@ -428,25 +641,12 @@ function getAggregateMarketplaceCategory() {
   } as const
 }
 
-function normalizeFilterLabel(filter?: string) {
-  const value = (filter || '').toLowerCase()
-  if (value.includes('begagn') || value.includes('used') || value.includes('gebraucht')) {
-    return 'used'
-  }
-  if (value.includes('nya') || value.includes('new') || value.includes('neu')) {
-    return 'new'
-  }
-  return ''
-}
-
 function resolveMarketplaceSeoCanonical(
-  locale: PublicLocale,
-  marketCode: string | undefined,
-  category: string,
   params: { [key: string]: string | string[] | undefined },
   fallbackPath: string,
+  cleanSeoPath?: string | null,
+  host = 'https://www.autorell.com',
 ) {
-  const host = 'https://www.autorell.com'
   const meaningfulParams = canonicalSearchParams(params)
   if (!meaningfulParams.size) {
     return {
@@ -455,40 +655,32 @@ function resolveMarketplaceSeoCanonical(
     }
   }
 
-  const canonicalAllowed = new Set(['category', 'categories', 'make', 'model', 'city', 'municipality', 'markets', 'page'])
-  const keys = [...meaningfulParams.keys()]
-  const canCanonicalizeToSeo = keys.every((key) => canonicalAllowed.has(key))
-  const page = normalizeCanonicalPage(getSearchParam(params, 'page'))
-  const onlyPagination = keys.every((key) => key === 'page')
-  const seoMarket = marketplaceSeoMarket(locale, marketCode)
-  const seoCategory = normalizeMarketplaceCategory(getSearchParam(params, 'categories') || getSearchParam(params, 'category') || category)
-  const make = getSearchParam(params, 'make') || undefined
-  const model = getSearchParam(params, 'model') || undefined
-  const location = seoLocationFromMarketplaceParams(seoMarket, params)
-  const canonicalPath = canCanonicalizeToSeo && seoMarket && !onlyPagination
-    ? buildSeoPath({
-        market: seoMarket,
-        category: seoCategory,
-        make,
-        model,
-        location,
-      })
-    : null
-  const selfCanonical = `${host}${fallbackPath}?${meaningfulParams.toString()}`
-  const pagedCanonical = canonicalPath && page > 1 ? `${canonicalPath}?page=${page}` : canonicalPath
-
   return {
-    canonical: pagedCanonical ? `${host}${pagedCanonical}` : selfCanonical,
+    canonical: `${host}${cleanSeoPath || fallbackPath}`,
     robots: {
-      index: Boolean(pagedCanonical || onlyPagination),
+      index: false,
       follow: true,
     },
   }
 }
 
-function normalizeCanonicalPage(value: string) {
-  const page = Number(value)
-  return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1
+async function resolveCanonicalSeoLanding({
+  market,
+  categoryPath,
+  make,
+  model,
+  place,
+}: {
+  market: string
+  categoryPath: string
+  make: string
+  model: string
+  place: ReturnType<typeof resolveStaticMarketplaceGeoAreaBySlug> | ReturnType<typeof resolveMarketplaceGeoArea>
+}) {
+  const categorySlug = categoryPath.split('/').filter(Boolean).at(-1)
+  if (!categorySlug) return null
+  const segments = [make, model, place?.slug].filter(Boolean) as string[]
+  return resolveGeoLandingRoute(market, categorySlug, segments)
 }
 
 function canonicalSearchParams(params: { [key: string]: string | string[] | undefined }) {
@@ -503,32 +695,6 @@ function canonicalSearchParams(params: { [key: string]: string | string[] | unde
     }
   }
   return searchParams
-}
-
-function marketplaceSeoMarket(locale: PublicLocale, marketCode: string | undefined): SeoMarketCode | null {
-  const code = (marketCode || '').toUpperCase()
-  if (code === 'SE' || locale === 'sv') return 'se'
-  if (code === 'DE' || locale === 'de') return 'de'
-  if (code === 'ES' || locale === 'es') return 'es'
-  return null
-}
-
-function seoLocationFromMarketplaceParams(
-  market: SeoMarketCode | null,
-  params: { [key: string]: string | string[] | undefined },
-): SeoLocation | undefined {
-  if (!market) return undefined
-  const city = getSearchParam(params, 'city')
-  if (city) {
-    return { market, type: 'city', name: city, slug: slugifySeoPart(city) }
-  }
-  const municipality = getSearchParam(params, 'municipality')
-  if (!municipality || market !== 'se') return undefined
-  const normalized = municipality.replace(/\s+kommun$/i, '')
-  const item = swedishMunicipalities.find((candidate) => candidate.name.toLowerCase() === normalized.toLowerCase())
-  return item
-    ? { market, type: 'municipality', name: `${item.name} kommun`, slug: `${item.slug}-kommun` }
-    : undefined
 }
 
 

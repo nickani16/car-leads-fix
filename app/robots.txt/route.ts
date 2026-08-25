@@ -1,11 +1,7 @@
-import {
-  getPublicMarket,
-  getPublicMarketConfig,
-} from '@/lib/public-market'
+import { sitemapHostForRequest } from '@/lib/sitemap-utils'
 
 export function GET(request: Request) {
-  const market = getPublicMarket(request)
-  const { host } = getPublicMarketConfig(market)
+  const canonicalSitemap = `${sitemapHostForRequest(request)}/sitemap.xml`
   const body = [
     'User-Agent: *',
     'Allow: /',
@@ -31,7 +27,7 @@ export function GET(request: Request) {
     'Disallow: /*?*gclid=',
     'Disallow: /*?*fbclid=',
     '',
-    `Sitemap: ${host}/sitemap.xml`,
+    `Sitemap: ${canonicalSitemap}`,
     '',
   ].join('\n')
 

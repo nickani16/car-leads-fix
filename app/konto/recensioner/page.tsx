@@ -6,6 +6,7 @@ import { generateAccountMetadata } from '@/lib/account-seo'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
 import { publicSellerName } from '@/lib/public-seller'
+import { AccountBreadcrumbs } from '@/app/account/AccountBreadcrumbs'
 import ReviewFlowPanel from '../ReviewFlowPanel'
 
 export const generateMetadata = generateAccountMetadata('reviews')
@@ -133,6 +134,14 @@ export default async function ReviewsPage() {
 
   return (
     <main className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-12">
+      <AccountBreadcrumbs
+        locale={locale}
+        items={[
+          { key: 'account', href: '/account' },
+          { key: 'reviews' },
+        ]}
+        className="mb-5"
+      />
       <section className="overflow-hidden rounded-[28px] border border-[#dfe6f1] bg-white shadow-[0_22px_65px_rgba(16,24,40,.065)]">
         <div className="flex items-start gap-4 bg-[#eef6ff] p-7 sm:p-9">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-white text-[#0866ff] shadow-sm">
@@ -151,6 +160,7 @@ export default async function ReviewsPage() {
         opportunities={opportunities}
         visibleReviews={visibleReviews}
         copy={copy.panel}
+        locale={locale}
       />
     </main>
   )
@@ -175,6 +185,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
       submitting: 'Submitting...',
       submitted: 'Review submitted for Autorell review.',
       visibleTitle: 'Reviews about you',
+      error: 'Review could not be saved.',
     },
   }
   if (locale === 'sv') {
@@ -197,6 +208,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
         submitting: 'Skickar...',
         submitted: 'Omdömet har skickats för granskning av Autorell.',
         visibleTitle: 'Omdömen om dig',
+        error: 'Omdömet kunde inte sparas.',
       },
     }
   }
@@ -219,6 +231,7 @@ function getReviewsPageCopy(locale: PublicLocale) {
         submitting: 'Wird gesendet...',
         submitted: 'Bewertung wurde zur Prüfung an Autorell gesendet.',
         visibleTitle: 'Bewertungen über Sie',
+        error: 'Die Bewertung konnte nicht gespeichert werden.',
       },
     }
   }

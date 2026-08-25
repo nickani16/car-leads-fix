@@ -16,6 +16,15 @@ export function writeSavedListingIds(ids: string[]) {
   window.dispatchEvent(new CustomEvent(SAVED_LISTINGS_EVENT))
 }
 
+export function saveGuestListingId(listingId: string) {
+  const current = readSavedListingIds()
+  writeSavedListingIds([listingId, ...current].slice(0, 80))
+}
+
+export function removeGuestListingId(listingId: string) {
+  writeSavedListingIds(readSavedListingIds().filter((id) => id !== listingId))
+}
+
 export async function fetchSavedListingIds() {
   const response = await fetch('/api/saved-listings', {
     credentials: 'same-origin',

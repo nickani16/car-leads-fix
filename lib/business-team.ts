@@ -13,7 +13,7 @@ export const BUSINESS_TEAM_SEAT_LIMITS = {
   enterprise: 200,
 } as const
 
-export const COMPANY_TEAM_ROLES = ['admin', 'manager', 'sales', 'staff', 'viewer'] as const
+export const COMPANY_TEAM_ROLES = ['admin', 'manager', 'finance', 'sales', 'staff', 'viewer'] as const
 export type CompanyTeamRole = (typeof COMPANY_TEAM_ROLES)[number]
 
 export type CompanyTeamMember = {
@@ -22,6 +22,7 @@ export type CompanyTeamMember = {
   createdAt: string | null
   name: string
   email: string
+  billingNotificationsEnabled: boolean
 }
 
 export type CompanyTeamInvitation = {
@@ -66,10 +67,11 @@ export async function getCompanyTeamOverview(
   companyId: string,
   planKey: string | null | undefined,
 ): Promise<CompanyTeamOverview> {
+  const now = new Date().toISOString()
   const [{ data: members }, { data: invitations }] = await Promise.all([
     admin
       .from('marketplace_company_members')
-      .select('user_id,role,created_at')
+      .select('user_id,role,created_at,billing_notifications_enabled')
       .eq('company_id', companyId)
       .order('created_at', { ascending: true }),
     admin
@@ -77,6 +79,7 @@ export async function getCompanyTeamOverview(
       .select('id,email,role,status,email_status,expires_at,created_at')
       .eq('company_id', companyId)
       .eq('status', 'pending')
+      .gt('expires_at', now)
       .order('created_at', { ascending: false }),
   ])
 
@@ -103,10 +106,18 @@ export async function getCompanyTeamOverview(
       createdAt: member.created_at || null,
       name,
       email: String(profile?.email || ''),
+      billingNotificationsEnabled: Boolean(member.billing_notifications_enabled),
     }
   })
 
-  const normalizedInvitations = (invitations || []).map((invitation) => ({
+  const invitationsByEmail = new Map<string, NonNullable<typeof invitations>[number]>()
+  for (const invitation of invitations || []) {
+    const email = String(invitation.email || '').trim().toLowerCase()
+    if (!email || invitationsByEmail.has(email)) continue
+    invitationsByEmail.set(email, invitation)
+  }
+
+  const normalizedInvitations = Array.from(invitationsByEmail.values()).map((invitation) => ({
     id: String(invitation.id),
     email: String(invitation.email),
     role: String(invitation.role || 'staff'),
@@ -219,31 +230,91 @@ function buildTeamInvitationMessage(
 
 function teamInviteCopy(locale: EmailLocale) {
   const copies = {
-    sv: {
-      title: 'Du är inbjuden till ett företagskonto',
-      cta: 'Acceptera inbjudan',
-      footer: 'Logga in eller skapa konto med samma e-postadress som inbjudan skickades till.',
-      subject: (company: string) => `${company} har bjudit in dig till Autorell`,
-      body: (company: string, inviter: string, role: string) => `${inviter} har bjudit in dig till ${company} på Autorell med rollen ${role}.`,
-    },
     en: {
       title: 'You are invited to a company account',
       cta: 'Accept invitation',
-      footer: 'Sign in or create an account using the same email address that received this invitation.',
+      footer: 'Sign in with a one-time code or create a password using the same email address that received this invitation.',
       subject: (company: string) => `${company} invited you to Autorell`,
       body: (company: string, inviter: string, role: string) => `${inviter} invited you to ${company} on Autorell with the ${role} role.`,
     },
+    sv: {
+      title: 'Du är inbjuden till ett företagskonto',
+      cta: 'Acceptera inbjudan',
+      footer: 'Logga in med engångskod eller skapa ett lösenord med samma e-postadress som inbjudan skickades till.',
+      subject: (company: string) => `${company} har bjudit in dig till Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} har bjudit in dig till ${company} på Autorell med rollen ${role}.`,
+    },
+    da: {
+      title: 'Du er inviteret til en virksomhedskonto',
+      cta: 'Acceptér invitation',
+      footer: 'Log ind med engangskode eller opret en adgangskode med den samme e-mailadresse, som invitationen blev sendt til.',
+      subject: (company: string) => `${company} har inviteret dig til Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} har inviteret dig til ${company} på Autorell med rollen ${role}.`,
+    },
+    fi: {
+      title: 'Sinut on kutsuttu yritystilille',
+      cta: 'Hyväksy kutsu',
+      footer: 'Kirjaudu sisään kertakoodilla tai luo salasana samalla sähköpostiosoitteella, johon kutsu lähetettiin.',
+      subject: (company: string) => `${company} kutsui sinut Autorelliin`,
+      body: (company: string, inviter: string, role: string) => `${inviter} kutsui sinut yrityksen ${company} Autorell-tilille roolilla ${role}.`,
+    },
+    de: {
+      title: 'Sie wurden zu einem Unternehmenskonto eingeladen',
+      cta: 'Einladung annehmen',
+      footer: 'Melden Sie sich mit einem Einmalcode an oder erstellen Sie ein Passwort mit derselben E-Mail-Adresse, an die diese Einladung gesendet wurde.',
+      subject: (company: string) => `${company} hat Sie zu Autorell eingeladen`,
+      body: (company: string, inviter: string, role: string) => `${inviter} hat Sie zu ${company} auf Autorell mit der Rolle ${role} eingeladen.`,
+    },
+    fr: {
+      title: 'Vous êtes invité à un compte entreprise',
+      cta: 'Accepter l’invitation',
+      footer: 'Connectez-vous avec un code à usage unique ou créez un mot de passe avec la même adresse e-mail que celle qui a reçu cette invitation.',
+      subject: (company: string) => `${company} vous a invité sur Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} vous a invité à rejoindre ${company} sur Autorell avec le rôle ${role}.`,
+    },
+    it: {
+      title: 'Sei stato invitato a un account aziendale',
+      cta: 'Accetta invito',
+      footer: 'Accedi con un codice monouso o crea una password usando lo stesso indirizzo e-mail che ha ricevuto questo invito.',
+      subject: (company: string) => `${company} ti ha invitato su Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} ti ha invitato a ${company} su Autorell con il ruolo ${role}.`,
+    },
+    es: {
+      title: 'Has sido invitado a una cuenta de empresa',
+      cta: 'Aceptar invitación',
+      footer: 'Inicia sesión con un código de un solo uso o crea una contraseña con el mismo correo que recibió esta invitación.',
+      subject: (company: string) => `${company} te invitó a Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} te invitó a ${company} en Autorell con el rol ${role}.`,
+    },
+    nl: {
+      title: 'Je bent uitgenodigd voor een bedrijfsaccount',
+      cta: 'Uitnodiging accepteren',
+      footer: 'Log in met een eenmalige code of maak een wachtwoord met hetzelfde e-mailadres waarop deze uitnodiging is ontvangen.',
+      subject: (company: string) => `${company} heeft je uitgenodigd voor Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} heeft je uitgenodigd voor ${company} op Autorell met de rol ${role}.`,
+    },
+    pl: {
+      title: 'Zaproszono Cię do konta firmowego',
+      cta: 'Akceptuj zaproszenie',
+      footer: 'Zaloguj się kodem jednorazowym albo utwórz hasło przy użyciu tego samego adresu e-mail, na który wysłano zaproszenie.',
+      subject: (company: string) => `${company} zaprasza Cię do Autorell`,
+      body: (company: string, inviter: string, role: string) => `${inviter} zaprasza Cię do ${company} w Autorell z rolą ${role}.`,
+    },
   }
-  return locale === 'sv' ? copies.sv : copies.en
+  return copies[locale] || copies.en
 }
 
 function roleLabel(role: CompanyTeamRole, locale: EmailLocale) {
-  const sv: Record<CompanyTeamRole, string> = {
-    admin: 'admin',
-    manager: 'ansvarig',
-    sales: 'säljare',
-    staff: 'personal',
-    viewer: 'läsbehörig',
+  const labels: Partial<Record<EmailLocale, Record<CompanyTeamRole, string>>> = {
+    sv: { admin: 'admin', manager: 'ansvarig', finance: 'ekonomi', sales: 'säljare', staff: 'personal', viewer: 'läsbehörig' },
+    da: { admin: 'admin', manager: 'manager', finance: 'økonomi', sales: 'sælger', staff: 'medarbejder', viewer: 'visning' },
+    fi: { admin: 'admin', manager: 'vastuuhenkilö', finance: 'talous', sales: 'myyjä', staff: 'henkilöstö', viewer: 'katselija' },
+    de: { admin: 'Admin', manager: 'Manager', finance: 'Finanzen', sales: 'Vertrieb', staff: 'Mitarbeiter', viewer: 'Leser' },
+    fr: { admin: 'admin', manager: 'responsable', finance: 'finance', sales: 'ventes', staff: 'personnel', viewer: 'lecture' },
+    it: { admin: 'admin', manager: 'responsabile', finance: 'finanza', sales: 'vendite', staff: 'staff', viewer: 'lettore' },
+    es: { admin: 'admin', manager: 'responsable', finance: 'finanzas', sales: 'ventas', staff: 'personal', viewer: 'lectura' },
+    nl: { admin: 'admin', manager: 'manager', finance: 'financiën', sales: 'verkoop', staff: 'medewerker', viewer: 'lezer' },
+    pl: { admin: 'admin', manager: 'menedżer', finance: 'finanse', sales: 'sprzedaż', staff: 'pracownik', viewer: 'podgląd' },
   }
-  return locale === 'sv' ? sv[role] : role
+  return labels[locale]?.[role] || role
 }

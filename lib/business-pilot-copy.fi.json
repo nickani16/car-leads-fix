@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Autorellin pilottiohjelma",
+    "title": "Ryhdy yhdeksi Autorellin ensimmäisistä kumppaniliikkeistä",
+    "body": [
+      "Valitsemme rajallisen määrän ajoneuvoliikkeitä, jotka voivat liittää nykyisen ajoneuvovarastonsa Autorelliin maksutta pilottijakson ajaksi.",
+      "Autorell tuo varastonne, pitää hinnat ja varastotilanteen automaattisesti ajan tasalla sekä tarjoaa tilastot näkyvyydestä, klikkauksista ja asiakasyhteydenotoista.",
+      "Kun yhteistyö alkaa tuottaa dokumentoitua kaupallista arvoa, laadimme yhdessä erillisen sopimuksen yhteistyön jatkamisesta."
+    ],
+    "benefits": [
+      "Maksuton varastoliitäntä",
+      "Ei integraatiomaksua",
+      "Automaattiset varastopäivitykset",
+      "Ei sitoutumista pilottijakson aikana",
+      "Liikenne- ja liiditilastot",
+      "Henkilökohtainen käyttöönotto",
+      "Useita toimipisteitä voidaan liittää",
+      "Erillinen kaupallinen sopimus vasta arvon syntymisen jälkeen"
+    ],
+    "primaryCta": "Hae pilottiohjelmaan",
+    "secondaryCta": "Lue varastoliitännästä",
+    "availabilityNote": "Ensimmäiselle pilottikierrokselle hyväksytään rajallinen määrä yrityksiä."
+  },
+  "pilotPage": {
+    "metaTitle": "Maksuton varastopilotti autoliikkeille | Autorell",
+    "metaDescription": "Hae ajoneuvovarastosi liittämistä Autorelliin maksuttomalla käyttöönotolla, automaattisella synkronoinnilla ja ilman automaattista maksullista tilausta.",
+    "heroEyebrow": "Pilottiohjelma ajoneuvoliikkeille",
+    "heroTitle": "Liitä ajoneuvovarastosi maksutta",
+    "heroIntro": "Autorell etsii valittuja ajoneuvoliikkeitä maksuttomaan pilottiohjelmaan. Liitämme nykyisen varastonne, pidämme ilmoitukset automaattisesti ajan tasalla ja mittaamme tulokset yhdessä kanssanne.",
+    "primaryCta": "Hae pilottiohjelmaan",
+    "secondaryCta": "Näin varastotuonti toimii",
+    "includedTitle": "Tämä sisältyy",
+    "includedIntro": "Ensimmäinen liitäntä on käytännöllinen, mitattava eikä sisällä automaattisia kaupallisia sitoumuksia.",
+    "included": [
+      "Maksuton käyttöönotto",
+      "Maksuton tekninen liitäntä",
+      "Nykyisen ajoneuvovaraston tuonti",
+      "Uusien, muuttuneiden ja poistuneiden ajoneuvojen automaattinen synkronointi",
+      "Yritysprofiili Autorellissa",
+      "Ilmoitusten näyttötilastot",
+      "Klikkaus- ja liiditilastot",
+      "Tuki pilottijakson aikana",
+      "Ei sitoutumista pilottijakson aikana"
+    ],
+    "stepsTitle": "Näin se toimii",
+    "steps": [
+      {
+        "title": "Lähetä hakemus",
+        "text": "Yritys lähettää lyhyen hakemuksen, jossa kerrotaan varastosta ja toivotusta liitäntätavasta."
+      },
+      {
+        "title": "Autorell arvioi yrityksen",
+        "text": "Arvioimme yrityksen, varaston ja teknisen lähteen ennen minkään liittämistä."
+      },
+      {
+        "title": "Hyväksy pilottiehdot",
+        "text": "Yritys hyväksyy pilottiehdot ja vahvistaa oikeutensa ajoneuvotietoihin ja kuviin."
+      },
+      {
+        "title": "Liitämme lähteen",
+        "text": "Autorell liittää vahvistetun verkkosivuston ja laatii tuonnin esikatselun. XML-, CSV-, API- ja DMS-pyynnöt käsitellään erillisessä teknisessä käyttöönotossa."
+      },
+      {
+        "title": "Varasto julkaistaan ja pidetään ajan tasalla",
+        "text": "Hyväksytyt ilmoitukset julkaistaan ja uudet, muuttuneet tai myydyt ajoneuvot synkronoidaan turvallisesti."
+      }
+    ],
+    "afterTitle": "Pilottijakson jälkeen",
+    "afterLead": "Pilottiohjelma ei muutu automaattisesti maksulliseksi tilaukseksi.",
+    "afterBody": "Jos Autorell voi osoittaa olennaista liikennettä, liidejä tai muuta kaupallista arvoa, osapuolet voivat keskustella erillisestä kaupallisesta sopimuksesta.",
+    "afterNote": "Maksu, lasku tai tilaus ei voi alkaa ilman yrityksen uutta ja nimenomaista hyväksyntää.",
+    "faqTitle": "Kysymyksiä pilottiohjelmasta",
+    "faqs": [
+      {
+        "question": "Maksaako pilottiohjelma jotain?",
+        "answer": "Ei. Tekninen liitäntä, käyttöönotto, varastotuonti ja automaattinen synkronointi ovat maksuttomia sovitun pilottijakson ajan."
+      },
+      {
+        "question": "Pitääkö meidän julkaista ilmoitukset käsin?",
+        "answer": "Ei. Kun lähde ja esikatselu on hyväksytty, Autorell voi luoda ja päivittää ilmoitukset liitetystä varastosta."
+      },
+      {
+        "question": "Millaisia varastoja voidaan liittää?",
+        "answer": "Henkilöautot, pakettiautot ja muut tuetut ajoneuvoluokat voidaan arvioida. Tarkka laajuus vahvistetaan teknisessä arvioinnissa."
+      },
+      {
+        "question": "Kuinka usein varasto päivitetään?",
+        "answer": "Tiheys riippuu lähteestä ja pilotin toteutuksesta. Päivittäinen synkronointi on tavallinen lähtötaso, ja synkronointia voidaan tihentää, kun siitä sovitaan ja se on teknisesti mahdollista."
+      },
+      {
+        "question": "Mitä tapahtuu, kun ajoneuvo myydään?",
+        "answer": "Myyty tai poistettu ajoneuvo vahvistetaan ensin onnistuneessa synkronoinnissa ja asetetaan sitten tauolle tai merkitään myydyksi. Tilapäinen lähdehäiriö ei koskaan poista koko varastoa."
+      },
+      {
+        "question": "Voidaanko useita toimipisteitä liittää?",
+        "answer": "Kyllä. Useita toimipisteitä voidaan liittää, kun ne tunnistetaan lähdetiedoista tai määritetään käyttöönoton aikana."
+      },
+      {
+        "question": "Mitä tapahtuu pilottijakson jälkeen?",
+        "answer": "Käymme dokumentoidut tulokset läpi yhdessä. Yhteistyön jatkaminen edellyttää erillistä sopimusta, jonka molemmat osapuolet hyväksyvät."
+      },
+      {
+        "question": "Muutummeko automaattisesti maksavaksi asiakkaaksi?",
+        "answer": "Ette. Pilotin jälkeen ei tapahdu automaattista siirtymää, maksua tai tilausta."
+      },
+      {
+        "question": "Kuka omistaa ilmoitukset, kuvat ja ajoneuvotiedot?",
+        "answer": "Yritys säilyttää oikeutensa materiaaliin ja vahvistaa voivansa antaa sen julkaistavaksi. Autorell saa vain pilottiehdoissa tarvittavat oikeudet materiaalin tuontiin, tallennukseen, näyttämiseen ja synkronointiin."
+      },
+      {
+        "question": "Voimmeko lopettaa pilottiprojektin?",
+        "answer": "Kyllä. Pilotti voidaan lopettaa ilman tilausvelvoitetta. Tuodun materiaalin käytännön poistaminen hoidetaan hallitusti yhdessä yrityksen kanssa."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Pilottihakemus",
+    "title": "Kertokaa meille varastostanne",
+    "intro": "Hakemus ei käynnistä integraatiota eikä luo maksullista tilausta. Autorell arvioi sen ja ottaa ensin yhteyttä nimettyyn henkilöön.",
+    "companySection": "Yritys",
+    "contactSection": "Yhteyshenkilö",
+    "inventorySection": "Varasto ja liitäntä",
+    "consentSection": "Suostumukset",
+    "companyName": "Yrityksen nimi",
+    "registrationNumber": "Y-tunnus tai vastaava yritysnumero",
+    "country": "Maa",
+    "website": "Verkkosivusto",
+    "contactName": "Yhteyshenkilö",
+    "contactRole": "Tehtävänimike",
+    "email": "Sähköposti",
+    "phone": "Puhelinnumero",
+    "inventorySize": "Aktiivisten ajoneuvojen arvioitu määrä",
+    "locationCount": "Toimipisteiden määrä",
+    "currentSystem": "Nykyinen varastojärjestelmä",
+    "integrationMethod": "Toivottu integraatiotapa",
+    "message": "Lisätiedot",
+    "selectOption": "Valitse vaihtoehto",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2 000" },
+      { "value": "2000_plus", "label": "Yli 2 000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Tuonti verkkosivustolta (käytettävissä pilotissa)" },
+      { "value": "xml", "label": "XML-syöte (tekninen käyttöönotto)" },
+      { "value": "csv", "label": "CSV-tiedosto (tekninen käyttöönotto)" },
+      { "value": "api", "label": "API (tekninen käyttöönotto)" },
+      { "value": "dms", "label": "DMS-järjestelmä (hallinnollinen käyttöönotto)" },
+      { "value": "unknown", "label": "Emme tiedä vielä" }
+    ],
+    "privacyConsent": "Olen lukenut ja hyväksyn Autorellin tietosuojakäytännön.",
+    "contactConsent": "Hyväksyn, että Autorell voi ottaa yritykseen yhteyttä pilottiohjelmasta.",
+    "privacyLink": "Lue tietosuojakäytäntö",
+    "submit": "Lähetä hakemus",
+    "submitting": "Hakemusta lähetetään",
+    "requiredNote": "Tähdellä * merkityt kentät ovat pakollisia.",
+    "successTitle": "Kiitos hakemuksestanne",
+    "successBody": "Autorell arvioi yrityksen ja ottaa yhteyttä nimettyyn henkilöön. Integraatiota tai julkaisua ei aloiteta ennen yrityksen hyväksyntää ja pilottiehtojen hyväksymistä.",
+    "successReference": "Hakemuksen viite",
+    "sendAnother": "Lähetä uusi hakemus",
+    "genericError": "Hakemusta ei voitu lähettää. Tarkista kentät ja yritä uudelleen.",
+    "rateLimitError": "Tästä yhteydestä on lähetetty liian monta hakemusta. Yritä myöhemmin uudelleen.",
+    "duplicateError": "Tälle sähköpostiosoitteelle on lähetetty äskettäin hakemus. Autorell ottaa yhteyttä arvioinnin jälkeen."
+  }
+}

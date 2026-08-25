@@ -3,6 +3,8 @@
 import { Star, UserCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { localizedAccountError } from '@/lib/account-error-i18n'
+import type { PublicLocale } from '@/lib/public-i18n'
 
 type ReviewOpportunity = {
   listingId: string
@@ -33,16 +35,19 @@ type Copy = {
   submitting: string
   submitted: string
   visibleTitle: string
+  error: string
 }
 
 export default function ReviewFlowPanel({
   opportunities,
   visibleReviews,
   copy,
+  locale,
 }: {
   opportunities: ReviewOpportunity[]
   visibleReviews: VisibleReview[]
   copy: Copy
+  locale: PublicLocale
 }) {
   const router = useRouter()
   const [active, setActive] = useState(opportunities[0]?.revieweeId || '')
@@ -77,7 +82,7 @@ export default function ReviewFlowPanel({
     const result = (await response.json()) as { error?: string }
     setLoading(false)
     if (!response.ok) {
-      setMessage(result.error || 'Review could not be saved.')
+      setMessage(localizedAccountError(locale, result, copy.error))
       return
     }
     setComment('')

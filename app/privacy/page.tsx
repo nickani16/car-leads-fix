@@ -1,1 +1,1 @@
-export { default } from '../integritet/page'
+export { default, generateMetadata } from '../integritet/page'

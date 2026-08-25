@@ -15,6 +15,7 @@ import {
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import {
   currencyForCountry,
+  isLeasingMarketplaceCategory,
   isSupportedCurrency,
   normalizeMarketplaceCategory,
 } from '@/lib/marketplace'
@@ -22,7 +23,7 @@ import {
   fieldsForCategoryAndSubcategory,
   listingColorOptions,
 } from '@/lib/listing-form-options'
-import { buildListingSearchDocument, isLeaseOffer, isSaleOffer, normalizeOfferType, type LeaseData } from '@/lib/listing-schema'
+import { buildListingSearchDocument, isLeaseOffer, isSaleOffer, normalizeOfferType, type LeaseData, type OfferType } from '@/lib/listing-schema'
 import {
   equipmentLabel,
   equipmentOptionByKey,
@@ -45,6 +46,7 @@ import {
   type ListingIdentifierInput,
 } from '@/lib/marketplace-security'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
+import { listingNeedsReview, listingRiskScore } from '@/lib/listing-review-resolution'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -87,6 +89,32 @@ function isMissingGeoListingColumnError(error: { code?: string; message?: string
   return /geo_place_code|location_source/i.test(error.message || '')
 }
 
+function isMissingInsuranceListingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error || error.code !== 'PGRST204') return false
+  return /insurance_offers/i.test(error.message || '')
+}
+
+function normalizeListingPackageId(packageId: string) {
+  return packageId in listingPackageDetails ? packageId : 'free_7d'
+}
+
+function buildDefaultListingDescription({
+  title,
+  city,
+  offerType,
+}: {
+  title: string
+  city: string
+  offerType: OfferType
+}) {
+  const listingTitle = title || 'Fordon'
+  const offerLabel = offerType === 'lease' ? 'leasing' : 'till salu'
+  const description = city
+    ? `${listingTitle} ${offerLabel} i ${city}.`
+    : `${listingTitle} ${offerLabel}.`
+  return `Strukturerad Autorell-annons: ${description}`
+}
+
 function numberOrNull(value: string) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
@@ -97,7 +125,10 @@ function collectStructuredTechnicalData(
   category: ReturnType<typeof normalizeMarketplaceCategory>,
 ) {
   const technicalData: Record<string, string | number | string[]> = {}
-  const fields = fieldsForCategoryAndSubcategory(category, { bodyType: text(form, 'bodyType') })
+  const fields = fieldsForCategoryAndSubcategory(category, {
+    bodyType: text(form, 'bodyType'),
+    fuelType: text(form, 'fuelType'),
+  })
 
   for (const field of fields) {
     const rawValue = text(form, field.name)
@@ -221,6 +252,65 @@ function optionalNumber(value: string) {
   return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : undefined
 }
 
+type ListingInsuranceOffer = {
+  provider: string
+  monthlyCost?: number
+  currency?: string
+  interestRate?: number
+  deductible?: number
+  coverage?: string
+  termsUrl?: string
+  note?: string
+}
+
+function cleanShortText(value: unknown, max = 160) {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, max)
+}
+
+function cleanOptionalUrl(value: unknown) {
+  const raw = cleanShortText(value, 300)
+  if (!raw) return undefined
+  try {
+    const url = new URL(raw)
+    return url.protocol === 'https:' ? url.toString() : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function parseInsuranceOffers(form: FormData, fallbackCurrency: string) {
+  const raw = text(form, 'insuranceOffers')
+  if (!raw) return []
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return null
+  }
+  if (!Array.isArray(parsed)) return null
+  const offers = parsed
+    .slice(0, 6)
+    .map((item): ListingInsuranceOffer | null => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const provider = cleanShortText(record.provider, 80)
+      if (!provider) return null
+      const requestedCurrency = cleanShortText(record.currency, 3).toUpperCase()
+      return {
+        provider,
+        monthlyCost: optionalNumber(String(record.monthlyCost || '')),
+        currency: isSupportedCurrency(requestedCurrency) ? requestedCurrency : fallbackCurrency,
+        interestRate: optionalNumber(String(record.interestRate || '')),
+        deductible: optionalNumber(String(record.deductible || '')),
+        coverage: cleanShortText(record.coverage, 140) || undefined,
+        termsUrl: cleanOptionalUrl(record.termsUrl),
+        note: cleanShortText(record.note, 220) || undefined,
+      }
+    })
+    .filter((offer): offer is ListingInsuranceOffer => Boolean(offer))
+  return offers
+}
+
 function checkbox(form: FormData, key: string) {
   return form.get(key) === 'on'
 }
@@ -334,6 +424,19 @@ async function insertListingImageRows(
   }
 }
 
+function logOptionalListingSideEffect(
+  label: string,
+  result: PromiseSettledResult<{ error?: { message?: string } | null }>,
+) {
+  if (result.status === 'rejected') {
+    console.warn(`Optional listing side effect failed: ${label}`, result.reason)
+    return
+  }
+  if (result.value?.error) {
+    console.warn(`Optional listing side effect failed: ${label}`, result.value.error.message || result.value.error)
+  }
+}
+
 export async function POST(request: Request) {
   let quotaReservation: Extract<BusinessListingQuotaReservation, { allowed: true }> | null = null
   let quotaReservationAttached = false
@@ -435,12 +538,21 @@ export async function POST(request: Request) {
     const category = normalizeMarketplaceCategory(
       getCategoryPricing(text(form, 'category')).slug,
     )
-    const packageId = text(form, 'packageId')
-    if (!(packageId in listingPackageDetails)) {
-      return listingFormError('Välj ett giltigt annonspaket.', 4, 'packageId')
-    }
+    const packageId = normalizeListingPackageId(text(form, 'packageId'))
     if (form.get('listingTerms') !== 'on') {
       return listingFormError('Godkänn annons- och betalningsvillkoren.', 4, 'listingTerms')
+    }
+    const requiresImmediateServiceConsent =
+      profile.account_type === 'private' && packageId !== 'free_7d'
+    if (
+      requiresImmediateServiceConsent &&
+      form.get('digitalServiceConsent') !== 'on'
+    ) {
+      return listingFormError(
+        'Godkänn att den betalda annonstjänsten börjar levereras direkt.',
+        4,
+        'digitalServiceConsent',
+      )
     }
     const missingConfirmation = sellerListingConfirmationKeys.find(
       (key) => form.get(key) !== 'on',
@@ -451,12 +563,15 @@ export async function POST(request: Request) {
 
     const make = text(form, 'make')
     const model = text(form, 'model')
+    const variant = text(form, 'variant')
+    const title = `${make} ${model} ${variant}`.trim()
     const offerType = normalizeOfferType(form.get('offerType'))
-    const sellerNote = text(form, 'sellerNote')
-    const description =
-      sellerNote ||
-      `Strukturerad Autorell-annons: ${make} ${model}.`
+    const sellerNote =
+      text(form, 'sellerNote') ||
+      text(form, 'description') ||
+      text(form, 'sellerDescription')
     const city = text(form, 'city')
+    const description = sellerNote || buildDefaultListingDescription({ title, city, offerType })
     const rawRegion = text(form, 'county') || text(form, 'region')
     const rawMunicipality = text(form, 'municipality')
     const geoPlaceCode = text(form, 'geoPlaceCode')
@@ -502,6 +617,13 @@ export async function POST(request: Request) {
     const currency = isSupportedCurrency(requestedCurrency)
       ? requestedCurrency
       : currencyForCountry(listingCountryCode)
+    const insuranceOffers = parseInsuranceOffers(form, currency)
+    if (insuranceOffers === null) {
+      return listingFormError('Finansieringserbjudandet har ogiltigt format.', 0, 'insuranceOffers')
+    }
+    if (profile.account_type !== 'business' && insuranceOffers.length) {
+      return listingFormError('Finansieringserbjudanden kan bara läggas till av företagskonton.', 0, 'insuranceOffers', 403)
+    }
     const modelYearInput = text(form, 'modelYear')
     const modelYear = modelYearInput === '1950+' ? 1950 : Number(modelYearInput)
     const mileage = ['cars', 'vans', 'motorcycles', 'motorhomes', 'trucks'].includes(category)
@@ -551,6 +673,13 @@ export async function POST(request: Request) {
     if (!city) return listingFormError('Fyll i ort.', 0, 'city')
     if (isSaleOffer(offerType) && (!Number.isFinite(price) || price <= 0)) {
       return listingFormError('Fyll i ett giltigt försäljningspris.', 0, 'price')
+    }
+    if (isLeaseOffer(offerType) && !isLeasingMarketplaceCategory(category)) {
+      return listingFormError(
+        'Leasing kan bara användas för bilar, transportbilar, lastbilar, lantbruksmaskiner och entreprenadmaskiner.',
+        0,
+        'offerType',
+      )
     }
     const leaseData: LeaseData = {
       monthlyPrice: optionalNumber(text(form, 'leaseMonthlyPrice')),
@@ -657,18 +786,6 @@ export async function POST(request: Request) {
           .eq('phone', profile.phone),
       ])
     const riskFlags: string[] = []
-    if (
-      !identifiers.vin &&
-      ['cars', 'vans', 'motorcycles', 'motorhomes', 'caravans', 'trucks'].includes(category)
-    ) {
-      riskFlags.push('missing_vin')
-    }
-    if (
-      !identifiers.serialNumber &&
-      ['agriculture', 'construction'].includes(category)
-    ) {
-      riskFlags.push('missing_serial_number')
-    }
     if (price < lowPriceThreshold(category)) riskFlags.push('unusually_low_price')
     if (
       profile.created_at &&
@@ -683,18 +800,8 @@ export async function POST(request: Request) {
     if (profile.risk_status && profile.risk_status !== 'standard') {
       riskFlags.push(`profile_${profile.risk_status}`)
     }
-    const riskScore = Math.min(
-      100,
-      riskFlags.reduce((score, flag) => {
-        if (flag === 'unusually_low_price') return score + 30
-        if (flag === 'many_listings_short_time') return score + 25
-        if (flag === 'same_phone_multiple_accounts') return score + 25
-        if (flag === 'new_user') return score + 15
-        if (flag.startsWith('profile_')) return score + 35
-        return score + 20
-      }, 0),
-    )
-    const reviewStatus = riskScore >= 50 ? 'flagged' : 'approved'
+    const riskScore = listingRiskScore(riskFlags)
+    const reviewStatus = listingNeedsReview(riskFlags) ? 'flagged' : 'approved'
     const geocoded = await geocodeListingLocation({
       address,
       postalCode,
@@ -739,11 +846,11 @@ export async function POST(request: Request) {
     const listingInsert = {
         seller_user_id: user.id,
         category,
-        title: `${make} ${model} ${text(form, 'variant')}`.trim(),
+        title,
         description,
         make,
         model,
-        variant: text(form, 'variant') || null,
+        variant: variant || null,
         registration_reference: identifiers.registrationNumber || null,
         model_year: Number.isInteger(modelYear) ? modelYear : null,
         mileage_km: Number.isFinite(mileage)
@@ -774,6 +881,7 @@ export async function POST(request: Request) {
         currency,
         offer_type: offerType,
         lease_data: leaseData,
+        insurance_offers: insuranceOffers,
         structured_data: structuredData,
         search_document: searchDocument,
         images,
@@ -814,7 +922,10 @@ export async function POST(request: Request) {
       .select('id,status,review_status,reference_number,listing_number')
       .single()
 
-    if (isMissingGeoListingColumnError(error)) {
+    if (isMissingGeoListingColumnError(error) || isMissingInsuranceListingColumnError(error)) {
+      if (isMissingInsuranceListingColumnError(error)) {
+        delete (listingInsert as Record<string, unknown>).insurance_offers
+      }
       delete (listingInsert as Record<string, unknown>).location_source
       delete (listingInsert as Record<string, unknown>).geo_place_code
       const retry = await admin
@@ -847,7 +958,51 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       null
     const userAgent = request.headers.get('user-agent')?.slice(0, 1000) || null
-    await Promise.all([
+    const legalAcceptances: Array<{
+      user_id: string
+      listing_id: string
+      acceptance_scope: string
+      acceptance_key: string
+      accepted: boolean
+      terms_version: string
+      ip_address: string | null
+      user_agent: string | null
+      metadata: { reference_number: string }
+    }> = sellerListingConfirmationKeys.map((key) => ({
+      user_id: user.id,
+      listing_id: listing.id,
+      acceptance_scope:
+        key === 'privacy_policy'
+          ? 'privacy'
+          : key === 'purchase_terms'
+            ? 'purchase'
+            : 'listing',
+      acceptance_key: key,
+      accepted: true,
+      terms_version:
+        key === 'privacy_policy'
+          ? MARKETPLACE_PRIVACY_VERSION
+          : key === 'purchase_terms'
+            ? MARKETPLACE_PURCHASE_TERMS_VERSION
+            : MARKETPLACE_TERMS_VERSION,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      metadata: { reference_number: listing.reference_number },
+    }))
+    if (requiresImmediateServiceConsent) {
+      legalAcceptances.push({
+        user_id: user.id,
+        listing_id: listing.id,
+        acceptance_scope: 'purchase',
+        acceptance_key: 'immediate_digital_service',
+        accepted: true,
+        terms_version: MARKETPLACE_PURCHASE_TERMS_VERSION,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        metadata: { reference_number: listing.reference_number },
+      })
+    }
+    const optionalSideEffects = await Promise.allSettled([
       admin.from('marketplace_listing_identifiers').insert({
         listing_id: listing.id,
         seller_user_id: user.id,
@@ -896,29 +1051,7 @@ export async function POST(request: Request) {
           })),
         },
       }),
-      admin.from('marketplace_legal_acceptances').insert(
-        sellerListingConfirmationKeys.map((key) => ({
-          user_id: user.id,
-          listing_id: listing.id,
-          acceptance_scope:
-            key === 'privacy_policy'
-              ? 'privacy'
-              : key === 'purchase_terms'
-                ? 'purchase'
-                : 'listing',
-          acceptance_key: key,
-          accepted: true,
-          terms_version:
-            key === 'privacy_policy'
-              ? MARKETPLACE_PRIVACY_VERSION
-              : key === 'purchase_terms'
-                ? MARKETPLACE_PURCHASE_TERMS_VERSION
-                : MARKETPLACE_TERMS_VERSION,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          metadata: { reference_number: listing.reference_number },
-        })),
-      ),
+      admin.from('marketplace_legal_acceptances').insert(legalAcceptances),
       admin.from('marketplace_listing_events').insert({
         listing_id: listing.id,
         actor_user_id: user.id,
@@ -944,6 +1077,22 @@ export async function POST(request: Request) {
             })),
           )
         : Promise.resolve({ error: null }),
+      reviewStatus === 'flagged'
+        ? admin.from('moderation_cases').insert({
+            listing_id: listing.id,
+            subject_user_id: user.id,
+            source: 'automatic',
+            case_type: 'listing_risk_review',
+            severity: riskSeverity(riskScore),
+            priority: riskScore,
+            status: 'open',
+            evidence: {
+              risk_score: riskScore,
+              risk_flags: riskFlags,
+              reference_number: listing.reference_number,
+            },
+          })
+        : Promise.resolve({ error: null }),
       serialPlateImage
         ? admin.from('marketplace_listing_documents').insert({
             listing_id: listing.id,
@@ -959,6 +1108,12 @@ export async function POST(request: Request) {
           })
         : Promise.resolve({ error: null }),
     ])
+    optionalSideEffects.forEach((result, index) => {
+      logOptionalListingSideEffect(
+        ['identifiers', 'legal_acceptances', 'listing_event', 'risk_events', 'moderation_case', 'serial_plate_document'][index] || `side_effect_${index}`,
+        result,
+      )
+    })
 
     return NextResponse.json({
       success: true,

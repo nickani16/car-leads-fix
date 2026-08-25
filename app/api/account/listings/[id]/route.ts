@@ -19,6 +19,12 @@ import {
 } from '@/lib/marketplace-security'
 import { requireBusinessListingEntitlement } from '@/lib/billing/business-entitlement'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { listingPackageDetails } from '@/lib/marketplace-pricing'
+import {
+  listingNeedsReview,
+  listingRiskScore,
+  reviewableListingRiskFlags,
+} from '@/lib/listing-review-resolution'
 
 const actions = new Set([
   'mark_sold', 'update_listing', 'pause', 'resume', 'unpublish', 'delete', 'relist', 'duplicate',
@@ -37,6 +43,35 @@ function normalizePrice(value: unknown) {
 function numberOrNull(value: unknown) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null
+}
+
+function optionalDecimal(value: unknown) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : undefined
+}
+
+function normalizeInsuranceOffers(value: unknown, fallbackCurrency: string) {
+  if (!Array.isArray(value)) return []
+  return value
+    .slice(0, 6)
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const record = item as Record<string, unknown>
+      const provider = clean(record.provider).slice(0, 80)
+      if (!provider) return null
+      const termsUrl = clean(record.termsUrl).slice(0, 300)
+      return {
+        provider,
+        monthlyCost: optionalDecimal(record.monthlyCost),
+        currency: clean(record.currency).toUpperCase().slice(0, 3) || fallbackCurrency,
+        interestRate: optionalDecimal(record.interestRate),
+        deductible: optionalDecimal(record.deductible),
+        coverage: clean(record.coverage).slice(0, 140) || undefined,
+        termsUrl: termsUrl.startsWith('https://') ? termsUrl : undefined,
+        note: clean(record.note).slice(0, 220) || undefined,
+      }
+    })
+    .filter(Boolean)
 }
 
 function cleanTechnicalInput(value: unknown) {
@@ -112,6 +147,10 @@ export async function PATCH(
   const body = (await request.json()) as {
     action?: string
     buyerUserId?: string
+    make?: string
+    model?: string
+    variant?: string
+    modelYear?: number | string
     price?: number | string
     city?: string
     address?: string
@@ -124,6 +163,7 @@ export async function PATCH(
     phoneVisibility?: string
     mileage?: number | string
     operatingHours?: number | string
+    insuranceOffers?: unknown[]
     technicalData?: Record<string, unknown>
     identifiers?: Partial<Record<keyof ListingIdentifierInput, string | number | null>>
   }
@@ -135,7 +175,7 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: listing } = await admin
     .from('marketplace_listings')
-    .select('id,seller_user_id,status,review_status,title,price,currency,description,make,model,variant,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data')
+    .select('id,seller_user_id,status,review_status,risk_score,risk_flags,title,price,currency,description,make,model,variant,model_year,city,country_code,country,address,postal_code,latitude,longitude,seller_type,phone_visibility,category,offer_type,lease_data,structured_data,package_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -235,6 +275,10 @@ export async function PATCH(
     }
 
     const nextPrice = normalizePrice(body.price)
+    const make = clean(body.make)
+    const model = clean(body.model)
+    const variant = clean(body.variant)
+    const modelYear = Number(body.modelYear)
     const city = clean(body.city)
     const address = clean(body.address)
     const postalCode = clean(body.postalCode) || listing.postal_code
@@ -282,6 +326,16 @@ export async function PATCH(
         : body.phoneVisibility === 'public'
           ? 'public'
           : 'registered_only'
+    const shouldUpdateInsuranceOffers = Array.isArray(body.insuranceOffers)
+    const insuranceOffers = listing.seller_type === 'business' && shouldUpdateInsuranceOffers
+      ? normalizeInsuranceOffers(body.insuranceOffers || [], String(listing.currency || 'EUR'))
+      : []
+    if (!make || !model || !Number.isInteger(modelYear) || modelYear < 1950 || modelYear > 2027) {
+      return NextResponse.json(
+        { error: 'Märke, modell och årsmodell krävs.' },
+        { status: 400 },
+      )
+    }
     if (!nextPrice || !city) {
       return NextResponse.json(
         { error: 'Pris och ort krävs.' },
@@ -292,6 +346,7 @@ export async function PATCH(
     const now = new Date().toISOString()
     const oldPrice = Number(listing.price)
     const priceChanged = oldPrice !== nextPrice
+    const nextTitle = [make, model, variant].filter(Boolean).join(' ')
     const geocoded = await geocodeListingLocation({
       address,
       postalCode,
@@ -301,14 +356,31 @@ export async function PATCH(
     })
     const latitude = geocoded?.latitude ?? parseCoordinate(body.latitude) ?? listing.latitude
     const longitude = geocoded?.longitude ?? parseCoordinate(body.longitude) ?? listing.longitude
+    const nextRiskFlags = reviewableListingRiskFlags(listing.risk_flags)
+    const nextRiskScore = listingRiskScore(nextRiskFlags)
+    const reviewResolved = !listingNeedsReview(nextRiskFlags)
+    const publishAfterReview = listing.status === 'pending_review' && reviewResolved
+    const packageDetails = listingPackageDetails[
+      listing.package_id as keyof typeof listingPackageDetails
+    ] || listingPackageDetails.free_7d
+    const expiresAt = publishAfterReview
+      ? new Date(new Date(now).getTime() + packageDetails.durationDays * 86400000).toISOString()
+      : null
+    const nextStatus = publishAfterReview ? 'published' : listing.status
+    const nextReviewStatus = reviewResolved ? 'approved' : 'flagged'
     const patch: Record<string, unknown> = {
+      title: nextTitle,
+      make,
+      model,
+      variant: variant || null,
+      model_year: modelYear,
       price: nextPrice,
       city,
       country,
       address: address || null,
       latitude,
       longitude,
-      description: description || listing.description,
+      description: description || null,
       equipment: equipmentTextFromKeys(equipmentKeys) || null,
       phone_visibility: phoneVisibility,
       updated_at: now,
@@ -324,23 +396,46 @@ export async function PATCH(
       condition: technicalInput.condition ? clean(technicalInput.condition) : null,
       known_faults: technicalInput.damageStatus ? clean(technicalInput.damageStatus) : null,
       service_history: technicalInput.serviceHistory ? clean(technicalInput.serviceHistory) : null,
+      registration_reference: identifiers.registrationNumber || null,
+      vin: identifiers.vin || null,
+      chassis_number: identifiers.chassisNumber || identifiers.vin || null,
+      serial_number: identifiers.serialNumber || null,
+      frame_number: identifiers.frameNumber || null,
+      battery_serial_number: identifiers.batterySerialNumber || null,
+      total_weight_kg: identifiers.totalWeightKg,
+      axle_configuration: identifiers.axleConfiguration || null,
+      machine_type: identifiers.machineType || null,
+      risk_flags: nextRiskFlags,
+      risk_score: nextRiskScore,
+      review_status: nextReviewStatus,
+      ...(publishAfterReview
+        ? {
+            status: 'published',
+            published_at: now,
+            expires_at: expiresAt,
+          }
+        : {}),
+    }
+    if (listing.seller_type === 'business' && shouldUpdateInsuranceOffers) {
+      patch.insurance_offers = insuranceOffers
     }
     const structuredData = {
       ...(listing.structured_data && typeof listing.structured_data === 'object' ? listing.structured_data : {}),
       ...technicalData,
       category,
-      make: listing.make,
-      model: listing.model,
-      variant: listing.variant,
+      make,
+      model,
+      variant,
+      model_year: modelYear,
       equipment_keys: equipmentKeys,
     }
     patch.structured_data = structuredData
     patch.search_document = buildListingSearchDocument({
       category,
-      make: listing.make,
-      model: listing.model,
-      variant: listing.variant,
-        offerType: normalizeOfferType(listing.offer_type),
+      make,
+      model,
+      variant,
+      offerType: normalizeOfferType(listing.offer_type),
       technicalData: structuredData,
       equipment: equipmentTextFromKeys(equipmentKeys),
       leaseData: listing.lease_data,
@@ -410,17 +505,35 @@ export async function PATCH(
         actor_role: isOwner ? 'seller' : 'admin',
         event_type: priceChanged ? 'listing_price_and_details_updated' : 'listing_details_updated',
         from_status: listing.status,
-        to_status: listing.status,
+        to_status: nextStatus,
         from_review_status: listing.review_status,
-        to_review_status: listing.review_status,
+        to_review_status: nextReviewStatus,
         metadata: {
           old_price: oldPrice,
           new_price: nextPrice,
           currency: listing.currency,
           equipment_keys: equipmentKeys,
+          title: nextTitle,
+          make,
+          model,
+          variant,
+          model_year: modelYear,
           phone_visibility: phoneVisibility,
+          review_resolved: reviewResolved,
+          auto_published: publishAfterReview,
         },
       }),
+      publishAfterReview
+        ? admin
+            .from('moderation_cases')
+            .update({
+              status: 'closed',
+              closed_at: now,
+              updated_at: now,
+            })
+            .eq('listing_id', listing.id)
+            .in('status', ['open', 'assigned', 'awaiting_information', 'action_taken'])
+        : Promise.resolve({ error: null }),
       priceChanged
         ? admin.from('marketplace_listing_price_history').insert({
             listing_id: listing.id,
@@ -433,7 +546,11 @@ export async function PATCH(
     ])
 
     revalidateTag('marketplace-listings', 'max')
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      status: nextStatus,
+      reviewStatus: nextReviewStatus,
+    })
   }
 
   if (!['published', 'paused'].includes(listing.status)) {

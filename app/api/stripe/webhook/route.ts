@@ -122,8 +122,11 @@ async function handleStripeEvent(event: Stripe.Event) {
     case 'invoice.created':
     case 'invoice.finalized':
     case 'invoice.sent':
+    case 'invoice.paid':
     case 'invoice.payment_succeeded':
     case 'invoice.payment_failed':
+    case 'invoice.marked_uncollectible':
+    case 'invoice.voided':
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
@@ -185,7 +188,7 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
     updates.payment_warning_at = now.toISOString()
     updates.grace_period_ends_at = new Date(now.getTime() + Math.max(0, graceDays) * 86_400_000).toISOString()
   }
-  if (event.type === 'invoice.payment_succeeded') {
+  if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.paid') {
     updates.status = 'active'
     updates.payment_status = 'paid'
     updates.payment_warning_at = null
@@ -198,6 +201,9 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
     updates.status = 'canceled'
     updates.cancelled_at = new Date().toISOString()
     updates.cancellation_effective_at ||= new Date().toISOString()
+  }
+  if (event.type === 'invoice.marked_uncollectible' || event.type === 'invoice.voided') {
+    updates.payment_status = 'failed'
   }
 
   await admin
@@ -225,7 +231,7 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         dueAt: stripeTimestampToIso(invoice.due_date || null),
       })
     }
-    if (event.type === 'invoice.payment_succeeded') {
+    if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.paid') {
       await sendBusinessBillingEmail(admin, {
         deliveryKey: `business-payment-receipt-${invoice.id}`,
         kind: 'payment_receipt',
@@ -241,6 +247,23 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         invoiceUrl: invoice.hosted_invoice_url || null,
         pdfUrl: invoice.invoice_pdf || null,
         dueAt: stripeTimestampToIso(invoice.due_date || null),
+      })
+      await createAdminBillingNotification(admin, {
+        createdByEvent: event.id,
+        type: 'business_invoice_paid',
+        title: 'Business invoice paid',
+        body: `${invoice.number || invoice.id} has been paid.`,
+        priority: 'normal',
+        resourceId: invoice.id,
+        actionUrl: '/admin/payments',
+        metadata: {
+          stripe_subscription_id: subscriptionId,
+          subscription_id: subscription.id,
+          user_id: subscription.user_id,
+          plan_key: subscription.plan_key,
+          amount_minor: invoice.amount_paid || invoice.amount_due || invoice.total || null,
+          currency: invoice.currency,
+        },
       })
     }
     if (event.type === 'invoice.payment_failed') {
@@ -260,10 +283,27 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
         pdfUrl: invoice.invoice_pdf || null,
         dueAt: stripeTimestampToIso(invoice.due_date || null),
       })
+      await createAdminBillingNotification(admin, {
+        createdByEvent: event.id,
+        type: 'business_invoice_payment_failed',
+        title: 'Business invoice payment failed',
+        body: `${invoice.number || invoice.id} could not be paid.`,
+        priority: 'high',
+        resourceId: invoice.id,
+        actionUrl: '/admin/payments',
+        metadata: {
+          stripe_subscription_id: subscriptionId,
+          subscription_id: subscription.id,
+          user_id: subscription.user_id,
+          plan_key: subscription.plan_key,
+          amount_remaining: invoice.amount_remaining || invoice.amount_due || invoice.total || null,
+          currency: invoice.currency,
+        },
+      })
     }
   }
 
-  if (event.type === 'invoice.payment_succeeded') {
+  if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.paid') {
     await admin
       .from('payment_orders')
       .update({
@@ -303,6 +343,39 @@ async function syncSubscriptionEvent(event: Stripe.Event) {
       })
       .eq('user_id', subscription.user_id)
   }
+}
+
+async function createAdminBillingNotification(
+  admin: ReturnType<typeof createAdminClient>,
+  input: {
+    createdByEvent: string
+    type: string
+    title: string
+    body: string
+    priority: 'low' | 'normal' | 'high' | 'critical'
+    resourceId: string
+    actionUrl: string
+    metadata: Record<string, unknown>
+  },
+) {
+  const { data: existing } = await admin
+    .from('admin_notifications')
+    .select('id')
+    .eq('created_by_event', input.createdByEvent)
+    .maybeSingle()
+  if (existing) return
+
+  await admin.from('admin_notifications').insert({
+    notification_type: input.type,
+    title: input.title,
+    body: input.body,
+    priority: input.priority,
+    resource_type: 'business_invoice',
+    resource_id: input.resourceId,
+    action_url: input.actionUrl,
+    created_by_event: input.createdByEvent,
+    metadata: input.metadata,
+  })
 }
 
 async function upsertBusinessInvoice(

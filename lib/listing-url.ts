@@ -39,6 +39,26 @@ export function buildListingPath(listing: ListingUrlSource, locale?: ListingUrlL
   return `${market.prefix}/${market.adSegment}/${listing.id}/${readableSlug}`
 }
 
+export function listingPathForHostname(path: string, hostname?: string | null) {
+  const normalizedHost = (hostname || '')
+    .split(',')[0]
+    .trim()
+    .split(':')[0]
+    .toLowerCase()
+  const countryPrefix =
+    normalizedHost === 'autorell.se' || normalizedHost === 'www.autorell.se'
+      ? '/se'
+      : normalizedHost === 'autorell.de' || normalizedHost === 'www.autorell.de'
+        ? '/de'
+        : ''
+
+  if (!countryPrefix) return path
+  if (path === countryPrefix) return '/'
+  return path.startsWith(`${countryPrefix}/`)
+    ? path.slice(countryPrefix.length) || '/'
+    : path
+}
+
 export function listingLocalePath(locale: ListingUrlLocale) {
   const markets: Record<ListingUrlLocale, { prefix: string; adSegment: string }> = {
     sv: { prefix: '/se', adSegment: 'annons' },

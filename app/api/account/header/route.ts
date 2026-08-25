@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { getAdminContext } from '@/lib/admin/context'
+import { isMarketplaceProfileComplete } from '@/lib/account-profile-bootstrap'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,11 +27,12 @@ export async function GET() {
     )
   }
 
+  const adminContext = await getAdminContext().catch(() => null)
   const admin = createAdminClient()
   const [{ data: profile }, { data: conversations }] = await Promise.all([
     admin
       .from('marketplace_profiles')
-      .select('account_type,display_name,first_name,company_name')
+      .select('account_type,display_name,first_name,last_name,birth_date,phone,address_line_1,postal_code,city,company_name,registration_number')
       .eq('user_id', user.id)
       .maybeSingle(),
     admin
@@ -66,16 +69,20 @@ export async function GET() {
     ).length
   }
 
-  const displayName =
-    profile?.account_type === 'business'
-      ? profile.company_name || profile.display_name || user.email?.split('@')[0] || 'Autorell'
-      : profile?.first_name || profile?.display_name || user.email?.split('@')[0] || 'Autorell'
+  const fallbackName = user.email?.split('@')[0] || 'Autorell'
+  const displayName = adminContext
+    ? fallbackName
+    : profile?.account_type === 'business'
+      ? profile.company_name || profile.display_name || fallbackName
+      : profile?.first_name || profile?.display_name || fallbackName
 
   return NextResponse.json(
     {
       authenticated: true,
       displayName,
       accountType: profile?.account_type || null,
+      isAdmin: Boolean(adminContext),
+      profileComplete: Boolean(adminContext) || isMarketplaceProfileComplete(profile),
       unreadMessages,
       conversationCount: visibleConversationCount,
     },

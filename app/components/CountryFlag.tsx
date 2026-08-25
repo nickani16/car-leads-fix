@@ -53,7 +53,7 @@ export default function CountryFlag({
   if (normalized === 'eu') {
     return (
       <span
-        className={`relative block overflow-hidden rounded-[5px] bg-[#1747a6] shadow-[inset_0_0_0_1px_rgba(14,32,68,.16),0_2px_7px_rgba(25,42,63,.14)] ${className}`}
+        className={`relative block overflow-hidden rounded-[5px] bg-[#1747a6] shadow-[0_2px_7px_rgba(25,42,63,.14)] ${className}`}
         aria-hidden="true"
       >
         {Array.from({ length: 12 }, (_, index) => {
@@ -75,7 +75,7 @@ export default function CountryFlag({
 
   return (
     <span
-      className={`grid place-items-center overflow-hidden rounded-[5px] bg-cover bg-center text-[8px] font-semibold tracking-[0.08em] text-white shadow-[inset_0_0_0_1px_rgba(14,32,68,.14),0_2px_7px_rgba(25,42,63,.14)] ${className}`}
+      className={`grid place-items-center overflow-hidden rounded-[5px] bg-cover bg-center text-[8px] font-semibold tracking-[0.08em] text-white shadow-[0_2px_7px_rgba(25,42,63,.14)] ${className}`}
       style={{
         background: flagBackgrounds[normalized] || '#365363',
       }}

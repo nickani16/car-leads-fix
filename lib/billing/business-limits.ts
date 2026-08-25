@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
 
 export const BUSINESS_PLAN_LIMITS = {
-  free: 5,
+  free: 10,
   starter: 25,
   growth: 100,
   professional: 500,

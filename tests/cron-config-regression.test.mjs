@@ -9,6 +9,9 @@ test('production cron config does not include removed notifications job', () => 
     ? vercelConfig.crons.map((cron) => cron.path)
     : []
 
-  assert.deepEqual(paths, ['/api/cron/business-billing'])
+  assert.deepEqual(paths, [
+    '/api/cron/business-billing',
+    '/api/cron/dealer-inventory-import',
+  ])
   assert.doesNotMatch(JSON.stringify(vercelConfig), /\/api\/cron\/notifications/)
 })

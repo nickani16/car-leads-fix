@@ -6,11 +6,13 @@ import {
 } from './marketplace'
 import { sanitizePublicListingSellerName } from './public-seller'
 import { createAdminClient } from './supabase/admin'
+import { hasVerifiedAccountEmail } from './email-verification'
 
 const publicListingTtl = 300
 
 type MarketplaceQuery = {
   eq: (column: string, value: string | boolean) => MarketplaceQuery
+  neq: (column: string, value: string | boolean) => MarketplaceQuery
   not: (column: string, operator: string, value: unknown) => MarketplaceQuery
   is: (column: string, value: null) => MarketplaceQuery
   or: (filters: string) => MarketplaceQuery
@@ -30,6 +32,7 @@ type MarketplacePublicRow = Record<string, unknown> & {
   category?: string | null
   title: string
   description?: string | null
+  metadata?: Record<string, unknown> | null
   make: string | null
   model: string | null
   variant?: string | null
@@ -42,6 +45,7 @@ type MarketplacePublicRow = Record<string, unknown> & {
   condition?: string | null
   country_code: string
   country?: string | null
+  region?: string | null
   city: string | null
   municipality?: string | null
   address?: string | null
@@ -95,35 +99,49 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
     countryCode: string | null,
     sort: 'top' | 'latest',
     limit = 8,
+    category: MarketplaceCategorySlug | 'vehicles' | null = null,
   ) => {
-    let query = createAdminClient()
-      .from('marketplace_listings')
-      .select(marketplacePublicSelect)
-      .eq('status', 'published')
-      .not('published_at', 'is', null)
-      .is('sold_at', null)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`) as unknown as MarketplaceQuery
-
     const normalizedCountry = (countryCode || '').toUpperCase()
-    if (normalizedCountry && normalizedCountry !== 'EU') {
-      query = query.eq('country_code', normalizedCountry)
-    }
-
     const now = new Date().toISOString()
-    if (sort === 'top') {
-      query = query
-        .eq('boost_status', 'active')
-        .not('boost_started_at', 'is', null)
-        .lte('boost_started_at', now)
-        .gt('boost_expires_at', now)
+    const buildQuery = (marketScope: 'local' | 'other' | 'all') => {
+      let query = createAdminClient()
+        .from('marketplace_listings')
+        .select(marketplacePublicSelect)
+        .eq('status', 'published')
+        .not('published_at', 'is', null)
+        .is('sold_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+      if (normalizedCountry && normalizedCountry !== 'EU' && marketScope !== 'all') {
+        query = marketScope === 'local'
+          ? query.eq('country_code', normalizedCountry)
+          : query.neq('country_code', normalizedCountry)
+      }
+      if (category && category !== 'vehicles') query = query.eq('category', category)
+      if (sort === 'top') {
+        query = query
+          .eq('boost_status', 'active')
+          .not('boost_started_at', 'is', null)
+          .lte('boost_started_at', now)
+          .gt('boost_expires_at', now)
+      }
+      return query
+        .order(sort === 'top' ? 'boost_started_at' : 'sort_refreshed_at', { ascending: sort === 'top', nullsFirst: false })
+        .order('published_at', { ascending: false })
+        .limit(limit)
     }
 
-    const { data } = await query
-      .order(sort === 'top' ? 'boost_started_at' : 'sort_refreshed_at', { ascending: sort === 'top', nullsFirst: false })
-      .order('published_at', { ascending: false })
-      .limit(limit)
+    if (!normalizedCountry || normalizedCountry === 'EU') {
+      const { data } = await buildQuery('all')
+      return (data || []).map(sanitizePublicListingSellerName)
+    }
 
-    return (data || []).map(sanitizePublicListingSellerName)
+    const [{ data: local }, { data: other }] = await Promise.all([
+      buildQuery('local'),
+      buildQuery('other'),
+    ])
+    return [...(local || []), ...(other || [])]
+      .slice(0, limit)
+      .map(sanitizePublicListingSellerName)
   },
   ['published-marketplace-home-listings'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
@@ -237,43 +255,113 @@ export const getFeaturedMarketplaceCategoryListings = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
-export const getMarketplaceListingForPublicDetail = unstable_cache(
-  async (id: string) => {
-    const admin = createAdminClient()
-    const [{ data }, { data: imageRows }] = await Promise.all([
-      admin
+export async function getMarketplaceListingForPublicDetail(id: string) {
+  const admin = createAdminClient()
+  const listingQuery = admin
+    .from('marketplace_listings')
+    .select(`${marketplacePublicSelect},insurance_offers`)
+    .eq('id', id)
+    .in('status', ['published', 'sold'])
+    .maybeSingle()
+  const imageQuery = admin
+      .from('marketplace_listing_images')
+      .select('webp_url,avif_url,position')
+      .eq('listing_id', id)
+      .is('deleted_at', null)
+      .order('position', { ascending: true })
+
+  const [listingResult, imageResult] = await Promise.all([
+    listingQuery,
+    imageQuery,
+  ])
+  let { data } = listingResult
+  const { error } = listingResult
+  const { data: imageRows } = imageResult
+
+  if (error) {
+    console.error('[marketplace-public-detail] primary listing select failed', { id, error })
+    const fallback = await admin
+      .from('marketplace_listings')
+      .select(marketplacePublicSelect)
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle()
+    if (fallback.error) {
+      console.error('[marketplace-public-detail] fallback listing select failed', { id, error: fallback.error })
+      const minimal = await admin
         .from('marketplace_listings')
-        .select(marketplacePublicSelect)
+        .select('*')
         .eq('id', id)
         .in('status', ['published', 'sold'])
-        .maybeSingle(),
-      admin
-        .from('marketplace_listing_images')
-        .select('webp_url,avif_url,position')
-        .eq('listing_id', id)
-        .is('deleted_at', null)
-        .order('position', { ascending: true }),
-    ])
+        .maybeSingle()
+      if (minimal.error) {
+        console.error('[marketplace-public-detail] minimal listing select failed', { id, error: minimal.error })
+      }
+      data = minimal.data || null
+    } else {
+      data = fallback.data ? { ...fallback.data, insurance_offers: null } : null
+    }
+  }
 
-    if (!data) return null
+  if (!data) {
+    const minimal = await admin
+      .from('marketplace_listings')
+      .select('*')
+      .eq('id', id)
+      .in('status', ['published', 'sold'])
+      .maybeSingle()
+    if (minimal.error) {
+      console.error('[marketplace-public-detail] empty primary result and minimal retry failed', { id, error: minimal.error })
+    }
+    data = minimal.data || null
+  }
 
-    const status = String(data.status || '')
-    const isExpiredPublished =
-      status === 'published' &&
-      data.expires_at &&
-      new Date(data.expires_at).getTime() <= Date.now()
+  if (!data) return null
 
-    if (isExpiredPublished) return null
-    const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
-    listing.image_variants = (imageRows || []).map((image) => ({
-      listingUrl: image.webp_url,
-      fullscreenUrl: image.avif_url,
-    }))
-    return listing
-  },
-  ['public-marketplace-listing-detail-by-id'],
-  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
-)
+  const status = String(data.status || '')
+  const isExpiredPublished =
+    status === 'published' &&
+    data.expires_at &&
+    new Date(data.expires_at).getTime() <= Date.now()
+
+  if (isExpiredPublished) return null
+  const listing = sanitizePublicListingSellerName(data) as MarketplacePublicRow
+  const orderedImageRows = orderImageRowsByListingImages(imageRows || [], listing.images || [])
+  listing.image_variants = orderedImageRows.map((image) => ({
+    listingUrl: image.webp_url,
+    fullscreenUrl: image.avif_url,
+  }))
+  return listing
+}
+
+function orderImageRowsByListingImages<
+  T extends { webp_url?: string | null; avif_url?: string | null; position?: number | string | null },
+>(imageRows: T[], listingImages: string[]) {
+  if (!imageRows.length) return imageRows
+  const rowsByKey = new Map(
+    imageRows.flatMap((row) => {
+      const keys = [imageOrderKey(row.webp_url), imageOrderKey(row.avif_url)].filter(Boolean)
+      return keys.map((key) => [key, row] as const)
+    }),
+  )
+  const ordered = listingImages
+    .map((image) => rowsByKey.get(imageOrderKey(image)))
+    .filter((row): row is T => Boolean(row))
+  if (!ordered.length) return imageRows
+  const used = new Set(ordered)
+  const leftovers = imageRows
+    .filter((row) => !used.has(row))
+    .sort((a, b) => Number(a.position || 0) - Number(b.position || 0))
+  return [...ordered, ...leftovers]
+}
+
+function imageOrderKey(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/[?#].*$/, '')
+    .replace(/\/(?:card|listing)\.webp$/i, '')
+    .replace(/\/fullscreen\.avif$/i, '')
+}
 
 export const getPublishedMarketplaceListingCount = unstable_cache(
   async (countryCode: string | null) => {
@@ -334,9 +422,10 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
   const ids = [...new Set(userIds.filter(Boolean))]
   if (!ids.length) return new Map<string, 'verified' | 'unverified'>()
 
-  const { data } = await createAdminClient()
+  const admin = createAdminClient()
+  const { data } = await admin
     .from('marketplace_profiles')
-    .select('user_id,account_type,identity_status,business_verification_status')
+    .select('user_id,email,account_type,identity_status,business_verification_status,risk_status')
     .in('user_id', ids)
 
   const trust = new Map<string, 'verified' | 'unverified'>()
@@ -344,9 +433,7 @@ export async function getMarketplaceSellerTrustByUserIds(userIds: string[]) {
     const businessVerified =
       profile.account_type === 'business' &&
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
-    const privateVerified =
-      profile.account_type !== 'business' &&
-      ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+    const privateVerified = profile.account_type !== 'business' && await isPrivateSellerTrusted(admin, profile)
     trust.set(profile.user_id, businessVerified || privateVerified ? 'verified' : 'unverified')
   }
   return trust
@@ -358,12 +445,13 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     return new Map<string, { logoUrl: string | null; trust: 'verified' | 'unverified'; ratingAverage: number | null; ratingCount: number }>()
   }
 
-  const { data } = await createAdminClient()
+  const admin = createAdminClient()
+  const { data } = await admin
     .from('marketplace_profiles')
-    .select('user_id,account_type,identity_status,business_verification_status,logo_url')
+    .select('user_id,email,account_type,identity_status,business_verification_status,risk_status,logo_url')
     .in('user_id', ids)
 
-  const { data: reviewData } = await createAdminClient()
+  const { data: reviewData } = await admin
     .from('marketplace_reviews')
     .select('reviewee_id,rating')
     .in('reviewee_id', ids)
@@ -384,9 +472,7 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
     const businessVerified =
       profile.account_type === 'business' &&
       ['verified', 'vat_validated'].includes(String(profile.business_verification_status || ''))
-    const privateVerified =
-      profile.account_type !== 'business' &&
-      ['verified', 'basic_checked'].includes(String(profile.identity_status || ''))
+    const privateVerified = profile.account_type !== 'business' && await isPrivateSellerTrusted(admin, profile)
     const stats = reviewStats.get(profile.user_id)
     profiles.set(profile.user_id, {
       logoUrl: typeof profile.logo_url === 'string' && profile.logo_url ? profile.logo_url : null,
@@ -397,3 +483,25 @@ export async function getMarketplaceSellerPublicProfiles(userIds: string[]) {
   }
   return profiles
 }
+
+async function isPrivateSellerTrusted(
+  admin: ReturnType<typeof createAdminClient>,
+  profile: { user_id: string; email?: string | null; identity_status?: string | null; risk_status?: string | null },
+) {
+  const identityStatus = String(profile.identity_status || '')
+  const riskOk = !['restricted', 'blocked', 'suspended'].includes(String(profile.risk_status || '')) && identityStatus !== 'rejected'
+  if (!riskOk) return false
+
+  if (['verified', 'format_validated'].includes(identityStatus)) {
+    return true
+  }
+
+  const authUser = await admin.auth.admin
+    .getUserById(profile.user_id)
+    .then((result) => result.data.user)
+    .catch(() => null)
+
+  return hasVerifiedAccountEmail(profile.email, authUser)
+}
+
+

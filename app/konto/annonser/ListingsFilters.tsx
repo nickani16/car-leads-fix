@@ -8,6 +8,8 @@ import {
   type AccountListingFilters,
   type AccountListingTab,
 } from '@/lib/account-listings-management'
+import { type PublicLocale } from '@/lib/public-i18n'
+import { accountListingText } from '@/lib/account-listings-i18n'
 
 const tabLabels: Record<AccountListingTab, { sv: string; en: string }> = {
   all: { sv: 'Alla', en: 'All' },
@@ -34,7 +36,7 @@ export default function ListingsFilters({
   categories: string[]
   countries: string[]
   accountType: string
-  locale: string
+  locale: PublicLocale
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -42,7 +44,7 @@ export default function ListingsFilters({
   const [search, setSearch] = useState(filters.query)
   const searchTouched = useRef(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const isSwedish = locale === 'sv'
+  const t = (sv: string, en: string) => accountListingText(locale, en, sv)
 
   const update = useCallback((changes: Record<string, string | number | null>) => {
     const params = new URLSearchParams(currentParams.toString())
@@ -79,38 +81,38 @@ export default function ListingsFilters({
 
   const filterFields = (
     <>
-      <FilterSelect label={isSwedish ? 'Kategori' : 'Category'} value={filters.category} onChange={(value) => update({ category: value })} className={fieldClass}>
-        <option value="all">{isSwedish ? 'Alla kategorier' : 'All categories'}</option>
-        {categories.map((category) => <option key={category} value={category}>{categoryLabel(category, isSwedish)}</option>)}
+      <FilterSelect label={t('Kategori', 'Category')} value={filters.category} onChange={(value) => update({ category: value })} className={fieldClass}>
+        <option value="all">{t('Alla kategorier', 'All categories')}</option>
+        {categories.map((category) => <option key={category} value={category}>{categoryLabel(category, locale)}</option>)}
       </FilterSelect>
-      <FilterSelect label={isSwedish ? 'Marknad' : 'Market'} value={filters.country} onChange={(value) => update({ country: value })} className={fieldClass}>
-        <option value="all">{isSwedish ? 'Alla marknader' : 'All markets'}</option>
+      <FilterSelect label={t('Marknad', 'Market')} value={filters.country} onChange={(value) => update({ country: value })} className={fieldClass}>
+        <option value="all">{t('Alla marknader', 'All markets')}</option>
         {countries.map((country) => <option key={country} value={country.toLowerCase()}>{country.toUpperCase()}</option>)}
       </FilterSelect>
-      <FilterSelect label={isSwedish ? 'Paket' : 'Package'} value={filters.package} onChange={(value) => update({ package: value })} className={fieldClass}>
-        <option value="all">{isSwedish ? 'Alla paket' : 'All packages'}</option>
+      <FilterSelect label={t('Paket', 'Package')} value={filters.package} onChange={(value) => update({ package: value })} className={fieldClass}>
+        <option value="all">{t('Alla paket', 'All packages')}</option>
         <option value="free_7d">Start · 5</option>
         <option value="standard_15d">Standard · 15</option>
         <option value="premium_30d">Premium · 30</option>
       </FilterSelect>
-      <FilterSelect label={isSwedish ? 'Marknadsföring' : 'Promotion'} value={filters.marketing} onChange={(value) => update({ marketing: value })} className={fieldClass}>
-        <option value="all">{isSwedish ? 'Alla' : 'All'}</option>
-        <option value="active">{isSwedish ? 'Aktiv marknadsföring' : 'Active promotion'}</option>
-        <option value="none">{isSwedish ? 'Utan marknadsföring' : 'Without promotion'}</option>
+      <FilterSelect label={t('Marknadsföring', 'Promotion')} value={filters.marketing} onChange={(value) => update({ marketing: value })} className={fieldClass}>
+        <option value="all">{t('Alla', 'All')}</option>
+        <option value="active">{t('Aktiv marknadsföring', 'Active promotion')}</option>
+        <option value="none">{t('Utan marknadsföring', 'Without promotion')}</option>
       </FilterSelect>
-      {accountType === 'business' ? <FilterSelect label={isSwedish ? 'Säljartyp' : 'Seller type'} value={filters.sellerType} onChange={(value) => update({ sellerType: value })} className={fieldClass}>
-        <option value="all">{isSwedish ? 'Alla säljartyper' : 'All seller types'}</option>
-        <option value="business">{isSwedish ? 'Företag' : 'Business'}</option>
-        <option value="private">{isSwedish ? 'Privat' : 'Private'}</option>
+      {accountType === 'business' ? <FilterSelect label={t('Säljartyp', 'Seller type')} value={filters.sellerType} onChange={(value) => update({ sellerType: value })} className={fieldClass}>
+        <option value="all">{t('Alla säljartyper', 'All seller types')}</option>
+        <option value="business">{t('Företag', 'Business')}</option>
+        <option value="private">{t('Privat', 'Private')}</option>
       </FilterSelect> : null}
     </>
   )
 
   return (
-    <section className="mt-6" aria-label={isSwedish ? 'Filtrera dina annonser' : 'Filter your listings'}>
+    <section className="mt-6" aria-label={t('Filtrera dina annonser', 'Filter your listings')}>
       <div
         role="tablist"
-        aria-label={isSwedish ? 'Annonsstatus' : 'Listing status'}
+        aria-label={t('Annonsstatus', 'Listing status')}
         className="flex snap-x gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]"
       >
         {accountListingTabs.map((tab, index) => {
@@ -128,7 +130,7 @@ export default function ListingsFilters({
               onKeyDown={(event) => handleTabKeys(event, index)}
               className={`min-h-10 shrink-0 snap-start rounded-full border px-4 text-sm font-semibold outline-none transition focus-visible:ring-4 focus-visible:ring-[#0866ff]/20 ${selected ? 'border-[#0866ff] bg-[#0866ff] text-white' : 'border-[#d8e1ed] bg-white text-[#475467] hover:border-[#9ebcf0] hover:text-[#0866ff]'}`}
             >
-              {tabLabels[tab][isSwedish ? 'sv' : 'en']} ({counts[tab] || 0})
+              {t(tabLabels[tab].sv, tabLabels[tab].en)} ({counts[tab] || 0})
             </button>
           )
         })}
@@ -137,37 +139,37 @@ export default function ListingsFilters({
       <div className="mt-4 rounded-[20px] border border-[#dfe6f1] bg-white p-3 shadow-[0_10px_35px_rgba(16,24,40,.04)] sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
           <label className="min-w-0 flex-1">
-            <span className="sr-only">{isSwedish ? 'Sök bland dina annonser' : 'Search your listings'}</span>
+            <span className="sr-only">{t('Sök bland dina annonser', 'Search your listings')}</span>
             <span className="relative block">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
               <input
                 type="search"
                 value={search}
                 onChange={(event) => { searchTouched.current = true; setSearch(event.target.value) }}
-                placeholder={isSwedish ? 'Sök bland dina annonser' : 'Search your listings'}
-                className="h-12 w-full rounded-[14px] border border-[#cbd5e1] bg-white pl-10 pr-10 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                placeholder={t('Sök bland dina annonser', 'Search your listings')}
+                className="h-12 w-full rounded-[14px] border border-[#cbd5e1] bg-white pl-10 pr-10 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
               />
-              {search ? <button type="button" onClick={() => { searchTouched.current = true; setSearch('') }} aria-label={isSwedish ? 'Rensa sökning' : 'Clear search'} className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#667085] hover:bg-[#f2f4f7] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-4 w-4" /></button> : null}
+              {search ? <button type="button" onClick={() => { searchTouched.current = true; setSearch('') }} aria-label={t('Rensa sökning', 'Clear search')} className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#667085] hover:bg-[#f2f4f7] focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-4 w-4" /></button> : null}
             </span>
           </label>
 
-          <FilterSelect label={isSwedish ? 'Sortera' : 'Sort'} value={filters.sort} onChange={(value) => update({ sort: value })} className={`${fieldClass} w-full lg:w-[210px]`}>
-            <option value="updated_desc">{isSwedish ? 'Senast uppdaterad' : 'Recently updated'}</option>
-            <option value="created_desc">{isSwedish ? 'Nyast skapad' : 'Newest created'}</option>
-            <option value="created_asc">{isSwedish ? 'Äldst skapad' : 'Oldest created'}</option>
-            <option value="price_asc">{isSwedish ? 'Pris stigande' : 'Price ascending'}</option>
-            <option value="price_desc">{isSwedish ? 'Pris fallande' : 'Price descending'}</option>
-            <option value="views_desc">{isSwedish ? 'Mest visningar' : 'Most viewed'}</option>
-            <option value="favorites_desc">{isSwedish ? 'Flest favoriter' : 'Most favorites'}</option>
-            <option value="expires_asc">{isSwedish ? 'Snart utgående' : 'Expiring soon'}</option>
+          <FilterSelect label={t('Sortera', 'Sort')} value={filters.sort} onChange={(value) => update({ sort: value })} className={`${fieldClass} w-full lg:w-[210px]`}>
+            <option value="updated_desc">{t('Senast uppdaterad', 'Recently updated')}</option>
+            <option value="created_desc">{t('Nyast skapad', 'Newest created')}</option>
+            <option value="created_asc">{t('Äldst skapad', 'Oldest created')}</option>
+            <option value="price_asc">{t('Pris stigande', 'Price ascending')}</option>
+            <option value="price_desc">{t('Pris fallande', 'Price descending')}</option>
+            <option value="views_desc">{t('Mest visningar', 'Most viewed')}</option>
+            <option value="favorites_desc">{t('Flest favoriter', 'Most favorites')}</option>
+            <option value="expires_asc">{t('Snart utgående', 'Expiring soon')}</option>
           </FilterSelect>
 
-          {accountType === 'business' ? <FilterSelect label={isSwedish ? 'Per sida' : 'Per page'} value={String(filters.pageSize)} onChange={(value) => update({ pageSize: value })} className={`${fieldClass} w-full lg:w-[105px]`}>
+          {accountType === 'business' ? <FilterSelect label={t('Per sida', 'Per page')} value={String(filters.pageSize)} onChange={(value) => update({ pageSize: value })} className={`${fieldClass} w-full lg:w-[105px]`}>
             <option value="25">25</option><option value="50">50</option><option value="100">100</option>
           </FilterSelect> : null}
 
           <button type="button" onClick={() => dialogRef.current?.showModal()} className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[#cbd5e1] bg-white px-4 text-sm font-semibold text-[#344054] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20 lg:hidden">
-            <Filter className="h-4 w-4" /> {isSwedish ? 'Filter' : 'Filters'}
+            <Filter className="h-4 w-4" /> {t('Filter', 'Filters')}
           </button>
         </div>
 
@@ -175,16 +177,16 @@ export default function ListingsFilters({
           {filterFields}
         </div>
 
-        {hasActiveFilters(filters) ? <button type="button" onClick={() => router.push(pathname)} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><RotateCcw className="h-4 w-4" />{isSwedish ? 'Rensa sökning och filter' : 'Clear search and filters'}</button> : null}
+        {hasActiveFilters(filters) ? <button type="button" onClick={() => router.push(pathname)} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0866ff] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><RotateCcw className="h-4 w-4" />{t('Rensa sökning och filter', 'Clear search and filters')}</button> : null}
       </div>
 
       <dialog ref={dialogRef} aria-labelledby="mobile-filter-title" className="m-0 ml-auto h-full max-h-none w-[min(92vw,420px)] max-w-none translate-x-0 bg-white p-0 text-[#101828] shadow-2xl backdrop:bg-[#07152d]/55 open:flex open:flex-col">
         <div className="flex items-center justify-between border-b border-[#e4eaf3] p-5">
-          <h2 id="mobile-filter-title" className="text-xl font-semibold">{isSwedish ? 'Filtrera annonser' : 'Filter listings'}</h2>
-          <button type="button" onClick={() => dialogRef.current?.close()} aria-label={isSwedish ? 'Stäng filter' : 'Close filters'} className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button>
+          <h2 id="mobile-filter-title" className="text-xl font-semibold">{t('Filtrera annonser', 'Filter listings')}</h2>
+          <button type="button" onClick={() => dialogRef.current?.close()} aria-label={t('Stäng filter', 'Close filters')} className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f4f7] outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/20"><X className="h-5 w-5" /></button>
         </div>
         <div className="grid flex-1 content-start gap-4 overflow-y-auto p-5">{filterFields}</div>
-        <div className="border-t border-[#e4eaf3] p-5"><button type="button" onClick={() => dialogRef.current?.close()} className="h-12 w-full rounded-[13px] bg-[#0866ff] text-sm font-semibold text-white outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/30">{isSwedish ? 'Visa resultat' : 'Show results'}</button></div>
+        <div className="border-t border-[#e4eaf3] p-5"><button type="button" onClick={() => dialogRef.current?.close()} className="h-12 w-full rounded-[13px] bg-[#0866ff] text-sm font-semibold text-white outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/30">{t('Visa resultat', 'Show results')}</button></div>
       </dialog>
     </section>
   )
@@ -208,12 +210,19 @@ function hasActiveFilters(filters: AccountListingFilters) {
   )
 }
 
-function categoryLabel(value: string, swedish: boolean) {
-  const labels: Record<string, [string, string]> = {
-    cars: ['Bilar', 'Cars'], vans: ['Transportbilar', 'Vans'], motorcycles: ['Motorcyklar', 'Motorcycles'],
-    motorhomes: ['Husbilar', 'Motorhomes'], caravans: ['Husvagnar', 'Caravans'], trucks: ['Lastbilar', 'Trucks'],
-    agriculture: ['Lantbruk', 'Agriculture'], construction: ['Entreprenad', 'Construction'],
-    'electric-bikes': ['Elcyklar', 'Electric bikes'],
+function categoryLabel(value: string, locale: PublicLocale) {
+  const labels: Record<string, { sv: string; en: string }> = {
+    cars: { sv: 'Bilar', en: 'Cars' },
+    vans: { sv: 'Transportbilar', en: 'Vans' },
+    motorcycles: { sv: 'Motorcyklar', en: 'Motorcycles' },
+    motorhomes: { sv: 'Husbilar', en: 'Motorhomes' },
+    caravans: { sv: 'Husvagnar', en: 'Caravans' },
+    trucks: { sv: 'Lastbilar', en: 'Trucks' },
+    agriculture: { sv: 'Lantbruk', en: 'Agriculture' },
+    construction: { sv: 'Entreprenad', en: 'Construction' },
+    'electric-bikes': { sv: 'Elcyklar', en: 'Electric bikes' },
   }
-  return labels[value]?.[swedish ? 0 : 1] || value
+  const label = labels[value]
+  if (!label) return value
+  return accountListingText(locale, label.en, label.sv)
 }

@@ -5,6 +5,7 @@ import ts from 'typescript'
 const root = process.cwd()
 const files = [
   'app/components/BusinessMarketplaceHome.tsx',
+  'app/components/HomeHeroVehicleSearch.tsx',
   'app/components/MarketplaceCategoryBrowser.tsx',
   'app/components/MarketplaceSearch.tsx',
   'app/components/PublicHeader.tsx',
@@ -17,6 +18,8 @@ const files = [
   'app/vanliga-fragor/FaqPageClient.tsx',
   'app/components/CookieConsent.tsx',
   'app/components/PublicLegalPage.tsx',
+  'app/terms/page.tsx',
+  'app/withdrawal/page.tsx',
   'app/components/EmailCodeAuth.tsx',
   'app/login/page.tsx',
   'app/foretag/page.tsx',
@@ -89,6 +92,12 @@ const manualStrings = [
   'Navigation',
   'Legal',
   'Cookie settings',
+  'Information about necessary cookies, consent-based analytics, performance measurement, advertising and how you manage your choices on Autorell.',
+  'Exercise withdrawal right',
+  'Exercise your right of withdrawal',
+  'Consumer rights',
+  'Submit an unambiguous withdrawal request for an eligible Autorell digital service and receive an immediate reference.',
+  'Use this function to clearly notify Autorell that you want to withdraw from an eligible digital service agreement. Submitting the form does not create a withdrawal right where none applies, but it records the time and content of your request immediately.',
 ]
 
 function propertyName(node) {
@@ -232,6 +241,7 @@ function extractEnglishStrings() {
       file.endsWith('vanliga-fragor/page.tsx') ||
       file.endsWith('FaqPageClient.tsx') ||
       file.endsWith('PublicLegalPage.tsx') ||
+      file.endsWith('terms/page.tsx') ||
       file.includes('dealer-market')
     ) {
       collectRenderableStrings(ast, output)
@@ -261,6 +271,11 @@ function chunks(values, maxCharacters = 4800) {
 }
 
 const separator = ' ZXQ_SPLIT_987654321 '
+const separatorArtifactPattern = /ZXQ|_9Q_|SPLIT_\d|_\d+SPLIT|987654321/i
+
+function hasSeparatorArtifact(value) {
+  return separatorArtifactPattern.test(String(value || ''))
+}
 
 async function translateChunk(locale, values) {
   const text = values.join(separator)
@@ -282,8 +297,14 @@ async function translateChunk(locale, values) {
   const translated = body[0].map((part) => part[0]).join('')
   const parts = translated.split(separator).map((part) => part.trim())
 
-  if (parts.length !== values.length) {
-    if (values.length === 1) return [translated.trim()]
+  if (parts.length !== values.length || parts.some(hasSeparatorArtifact)) {
+    if (values.length === 1) {
+      const single = translated.trim()
+      if (hasSeparatorArtifact(single)) {
+        throw new Error('Translation response contains a separator artifact')
+      }
+      return [single]
+    }
 
     const midpoint = Math.ceil(values.length / 2)
     const left = await translateChunk(locale, values.slice(0, midpoint))
@@ -307,16 +328,19 @@ async function main() {
     : locales
 
   for (const locale of localesToGenerate) {
+    const existing = output[locale] || {}
+    for (const [key, value] of Object.entries(existing)) {
+      if (hasSeparatorArtifact(value)) delete existing[key]
+    }
+
     if (
-      output[locale] &&
-      Object.keys(output[locale]).length === strings.length &&
+      Object.keys(existing).length === strings.length &&
       strings.every((value) => Object.hasOwn(output[locale], value))
     ) {
       console.log(`${locale}: already complete`)
       continue
     }
 
-    const existing = output[locale] || {}
     const missingStrings = strings.filter((value) => !Object.hasOwn(existing, value))
     const translated = []
     for (const group of chunks(missingStrings)) {

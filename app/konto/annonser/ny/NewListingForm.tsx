@@ -12,7 +12,9 @@ import {
   ChevronRight,
   GripVertical,
   ImagePlus,
+  Loader2,
   Search,
+  ShieldCheck,
   Star,
   Trash2,
   X,
@@ -25,6 +27,7 @@ import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import {
   currencyForCountry,
   getMarketplaceCategory,
+  isLeasingMarketplaceCategory,
   marketplaceLanguage,
   normalizeMarketplaceCategory,
   type SupportedCurrency,
@@ -50,6 +53,7 @@ import {
   listingRequirementsByCategory,
   sellerListingConfirmationKeys,
 } from '@/lib/marketplace-security'
+import { brandCorrectionSuggestion, matchingBrandSuggestions } from '@/lib/listing-brand-suggestions'
 import {
   normalizePostalCode,
   validatePostalCode,
@@ -58,6 +62,7 @@ import {
   marketplaceMunicipalityLabel,
   marketplaceRegionLabel,
 } from '@/lib/marketplace-locations'
+import { localizedAccountError } from '@/lib/account-error-i18n'
 
 type StepId = 0 | 1 | 2 | 3 | 4
 type Values = Record<string, string>
@@ -74,6 +79,20 @@ type GeoPlaceOption = {
   postalCode: string | null
   source?: 'verified'
 }
+type CompanyLocationOption = {
+  id: string
+  name: string
+  locationType: string
+  countryCode: string
+  region: string
+  municipality: string
+  city: string
+  postalCode: string
+  addressLine1: string
+  contactEmail: string
+  contactPhone: string
+  isPrimary: boolean
+}
 type UploadImage = {
   id: string
   file: File
@@ -86,6 +105,17 @@ type ListingCreationError = {
   code?: string
   step?: StepId
   field?: string
+}
+type ListingInsuranceOfferDraft = {
+  id: string
+  provider: string
+  monthlyCost: string
+  currency: string
+  interestRate: string
+  deductible: string
+  coverage: string
+  termsUrl: string
+  note: string
 }
 
 const steps = [
@@ -109,10 +139,56 @@ const swedishMileageFactor = 10
 const minModelYear = 1950
 const maxModelYear = 2027
 const listingRequestTimeoutMs = 60_000
+const listingPackageIds = new Set(['free_7d', 'standard_15d', 'premium_30d'])
 const modelYearOptions = Array.from(
   { length: maxModelYear - minModelYear + 1 },
   (_, index) => String(maxModelYear - index),
 )
+
+function createInsuranceOfferDraft(currency: SupportedCurrency): ListingInsuranceOfferDraft {
+  return {
+    id: crypto.randomUUID(),
+    provider: '',
+    monthlyCost: '',
+    currency,
+    interestRate: '',
+    deductible: '',
+    coverage: '',
+    termsUrl: '',
+    note: '',
+  }
+}
+
+function normalizeInsuranceOfferDrafts(
+  offers: ListingInsuranceOfferDraft[],
+  currency: SupportedCurrency,
+) {
+  if (!Array.isArray(offers)) return []
+  return offers.slice(0, 6).map((offer) => ({
+    ...createInsuranceOfferDraft(currency),
+    ...offer,
+    id: offer.id || crypto.randomUUID(),
+    currency: offer.currency || currency,
+  }))
+}
+
+function serializeInsuranceOffers(
+  offers: ListingInsuranceOfferDraft[],
+  fallbackCurrency: SupportedCurrency,
+) {
+  return offers
+    .map((offer) => ({
+      provider: offer.provider.trim(),
+      monthlyCost: offer.monthlyCost.trim(),
+      currency: offer.currency || fallbackCurrency,
+      interestRate: offer.interestRate.trim(),
+      deductible: offer.deductible.trim(),
+      coverage: offer.coverage.trim(),
+      termsUrl: offer.termsUrl.trim(),
+      note: offer.note.trim(),
+    }))
+    .filter((offer) => offer.provider)
+}
 
 export default function NewListingForm({
   accountType,
@@ -121,6 +197,7 @@ export default function NewListingForm({
   defaultCurrency,
   defaultCategory,
   locale,
+  companyLocations = [],
 }: {
   accountType: 'private' | 'business'
   countryCode: string
@@ -128,6 +205,7 @@ export default function NewListingForm({
   defaultCurrency: SupportedCurrency
   defaultCategory: string
   locale: PublicLocale
+  companyLocations?: CompanyLocationOption[]
 }) {
   const [step, setStep] = useState<StepId>(0)
   const listingCountryCode = countryCode.toUpperCase()
@@ -135,13 +213,14 @@ export default function NewListingForm({
     normalizeMarketplaceCategory(defaultCategory),
   )
   const createInitialValues = () => ({
-    packageId: 'free_7d',
+    packageId: normalizeListingPackageId(''),
     currency: defaultCurrency,
     phoneVisibility: 'public',
     offerType: 'sale' as OfferType,
   })
   const [values, setValues] = useState<Values>(createInitialValues)
   const [equipment, setEquipment] = useState<string[]>([])
+  const [insuranceOffers, setInsuranceOffers] = useState<ListingInsuranceOfferDraft[]>([])
   const [equipmentSearch, setEquipmentSearch] = useState('')
   const [images, setImages] = useState<UploadImage[]>([])
   const [mainImageId, setMainImageId] = useState('')
@@ -149,12 +228,14 @@ export default function NewListingForm({
   const [draggedImageId, setDraggedImageId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [publishProgress, setPublishProgress] = useState(0)
   const [draftNotice, setDraftNotice] = useState(false)
   const [regionOptions, setRegionOptions] = useState<GeoRegionOption[]>([])
   const [placeOptions, setPlaceOptions] = useState<GeoPlaceOption[]>([])
   const [placeQuery, setPlaceQuery] = useState('')
   const [geoPlaceCode, setGeoPlaceCode] = useState('')
   const [locationSource, setLocationSource] = useState<'verified' | 'manual' | ''>('')
+  const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const draftRestored = useRef(false)
   const draftImagesRestored = useRef(false)
@@ -167,8 +248,25 @@ export default function NewListingForm({
   const usesSwedishMileage = listingCountryCode.toUpperCase() === 'SE'
   const mileageUnit = usesSwedishMileage ? 'mil' : 'km'
   const selectedCategoryLabel = categoryLabelForLocale(category, locale)
+  const leasingAllowedForCategory = isLeasingMarketplaceCategory(category)
+  const selectedOfferType = normalizeOfferType(values.offerType)
+  const isLeasingOfferSelected = isLeaseOffer(selectedOfferType)
+  const visibleMarketplaceCategories = isLeasingOfferSelected
+    ? marketplaceCategories.filter((item) => isLeasingMarketplaceCategory(item.slug))
+    : marketplaceCategories
+  const allowedOfferTypeValues = leasingAllowedForCategory
+    ? offerTypeValues
+    : offerTypeValues.filter((item) => item.value !== 'lease')
+  const makeSuggestions = useMemo(
+    () => matchingBrandSuggestions(category, values.make || ''),
+    [category, values.make],
+  )
+  const makeCorrectionSuggestion = useMemo(
+    () => brandCorrectionSuggestion(category, values.make || ''),
+    [category, values.make],
+  )
   const progress = Math.round(((step + 1) / steps.length) * 100)
-  const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT'].includes(listingCountryCode)
+  const usesMunicipalityDropdown = ['SE', 'DK', 'FI', 'NL', 'BE', 'AT', 'DE', 'ES', 'FR', 'IT', 'PL'].includes(listingCountryCode)
   const orderedImages = useMemo(() => {
     if (!mainImageId) return images
     const main = images.find((image) => image.id === mainImageId)
@@ -182,10 +280,15 @@ export default function NewListingForm({
       try {
         const saved = window.localStorage.getItem(draftKey)
         if (saved) {
-          const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[] }
-          if (draft.values) setValues((current) => ({ ...current, ...draft.values }))
+          const draft = JSON.parse(saved) as { step?: StepId; category?: string; values?: Values; equipment?: string[]; insuranceOffers?: ListingInsuranceOfferDraft[] }
+          if (draft.values) setValues((current) => ({
+            ...current,
+            ...draft.values,
+            packageId: normalizeListingPackageId(draft.values?.packageId),
+          }))
           if (draft.category) setCategory(normalizeMarketplaceCategory(draft.category))
           if (draft.equipment) setEquipment(draft.equipment)
+          if (draft.insuranceOffers) setInsuranceOffers(normalizeInsuranceOfferDrafts(draft.insuranceOffers, defaultCurrency))
           if (typeof draft.step === 'number') setStep(Math.min(4, Math.max(0, draft.step)) as StepId)
           setDraftNotice(true)
         }
@@ -195,7 +298,7 @@ export default function NewListingForm({
       draftRestored.current = true
     }, 0)
     return () => window.clearTimeout(timeout)
-  }, [draftKey])
+  }, [defaultCurrency, draftKey])
 
   useEffect(() => {
     let active = true
@@ -219,8 +322,39 @@ export default function NewListingForm({
 
   useEffect(() => {
     if (!draftRestored.current) return
-    window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, savedAt: new Date().toISOString() }))
-  }, [category, draftKey, equipment, step, values])
+    window.localStorage.setItem(draftKey, JSON.stringify({ step, category, values, equipment, insuranceOffers, savedAt: new Date().toISOString() }))
+  }, [category, draftKey, equipment, insuranceOffers, step, values])
+
+  useEffect(() => {
+    if (leasingAllowedForCategory) return
+    const timeout = window.setTimeout(() => {
+      setValues((current) => (
+        isLeaseOffer(normalizeOfferType(current.offerType))
+          ? { ...current, offerType: 'sale' }
+          : current
+      ))
+    }, 0)
+    return () => window.clearTimeout(timeout)
+  }, [leasingAllowedForCategory])
+
+  useEffect(() => {
+    if (!loading) {
+      const frame = window.requestAnimationFrame(() => setPublishProgress(0))
+      return () => window.cancelAnimationFrame(frame)
+    }
+    const frame = window.requestAnimationFrame(() => setPublishProgress(8))
+    const interval = window.setInterval(() => {
+      setPublishProgress((current) => {
+        if (current >= 92) return current
+        const increment = current < 35 ? 9 : current < 70 ? 6 : 3
+        return Math.min(92, current + increment)
+      })
+    }, 650)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearInterval(interval)
+    }
+  }, [loading])
 
   useEffect(() => {
     if (!draftImagesRestored.current) return
@@ -317,6 +451,7 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: place.name,
+      city: current.city || place.city || place.name,
       county: place.regionName || place.regionCode || current.county || '',
       postalCode: place.postalCode || current.postalCode || '',
     }))
@@ -329,6 +464,7 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
+      city: current.city || value,
     }))
   }
 
@@ -338,6 +474,25 @@ export default function NewListingForm({
     setValues((current) => ({
       ...current,
       municipality: value,
+      city: current.city || value,
+    }))
+  }
+
+  function changeCompanyLocation(locationId: string) {
+    setSelectedCompanyLocationId(locationId)
+    const location = companyLocations.find((item) => item.id === locationId)
+    if (!location) return
+    setGeoPlaceCode('')
+    setLocationSource('manual')
+    setPlaceQuery(location.municipality || location.city || '')
+    setValues((current) => ({
+      ...current,
+      county: location.region || current.county || '',
+      municipality: location.municipality || location.city || current.municipality || '',
+      city: location.city || current.city || '',
+      postalCode: location.postalCode || current.postalCode || '',
+      addressLine1: location.addressLine1 || current.addressLine1 || '',
+      sellerCountryCode: location.countryCode || current.sellerCountryCode || listingCountryCode,
     }))
   }
 
@@ -347,11 +502,22 @@ export default function NewListingForm({
     setValues((current) => ({
       packageId: current.packageId || 'free_7d',
       currency: current.currency || currencyForCountry(listingCountryCode),
-      offerType: current.offerType || 'sale',
+      offerType: isLeasingMarketplaceCategory(nextCategory)
+        ? current.offerType || 'sale'
+        : 'sale',
     }))
     setEquipment([])
     setEquipmentSearch('')
     setOpenField(null)
+  }
+
+  function chooseMainImage(imageId: string) {
+    setMainImageId(imageId)
+    setImages((current) => {
+      const selected = current.find((image) => image.id === imageId)
+      if (!selected) return current
+      return [selected, ...current.filter((image) => image.id !== imageId)]
+    })
   }
 
   function validate(targetStep = step) {
@@ -379,6 +545,9 @@ export default function NewListingForm({
         return missing(copy.errors.operatingHours)
       }
       const offerType = normalizeOfferType(values.offerType)
+      if (isLeaseOffer(offerType) && !leasingAllowedForCategory) {
+        return missing(translatePublic(locale, 'Leasing is only available for cars, vans, trucks, agricultural machinery and construction machinery.'))
+      }
       if (isLeaseOffer(offerType) && !values.leaseMonthlyPrice) return missing(translatePublic(locale, 'Enter the monthly lease price.'))
       if (offerType !== 'lease' && !values.price) return missing(copy.errors.price)
       if (!values.county) return missing(copy.errors.chooseField.replace('{field}', marketplaceRegionLabel(listingCountryCode, locale).toLowerCase()))
@@ -386,9 +555,6 @@ export default function NewListingForm({
         return missing(copy.errors.chooseField.replace('{field}', marketplaceMunicipalityLabel(listingCountryCode, locale).toLowerCase()))
       }
       if (!values.city) return missing(copy.errors.city)
-      if (usesMunicipalityDropdown && locationSource !== 'verified') {
-        return missing((copy.errors as Record<string, string>).location || 'Choose a verified place or use the manual fallback.')
-      }
       if (
         values.postalCode &&
         !validatePostalCode(values.postalCode, listingCountryCode)
@@ -418,9 +584,17 @@ export default function NewListingForm({
     }
 
     if (targetStep === 4) {
-      if (!values.packageId) return missing(copy.errors.package)
+      const packageId = normalizeListingPackageId(values.packageId)
+      if (!packageId) return missing(copy.errors.package)
       if (values.listingTerms !== 'on') {
         return missing(copy.errors.terms)
+      }
+      if (
+        accountType === 'private' &&
+        packageId !== 'free_7d' &&
+        values.digitalServiceConsent !== 'on'
+      ) {
+        return missing(getImmediateServiceConsentCopy(locale).error)
       }
     }
 
@@ -488,22 +662,41 @@ export default function NewListingForm({
     const form = new FormData()
     form.set('category', category)
     form.set('sellerCountryCode', listingCountryCode)
+    const selectedPackageId = normalizeListingPackageId(values.packageId)
+    form.set('packageId', selectedPackageId)
     form.set('geoPlaceCode', usesMunicipalityDropdown ? geoPlaceCode : '')
-    form.set('locationSource', usesMunicipalityDropdown ? locationSource || 'unverified' : 'manual')
+    form.set(
+      'locationSource',
+      usesMunicipalityDropdown
+        ? locationSource === 'verified' && geoPlaceCode
+          ? 'verified'
+          : values.municipality || values.city
+            ? 'manual'
+            : 'unverified'
+        : 'manual',
+    )
     form.set('offerType', normalizeOfferType(values.offerType))
     const allowedTechnicalKeys = new Set(
       fieldsForCategoryAndSubcategory(category, values).map((field) => field.name),
     )
     Object.entries(values).forEach(([key, value]) => {
+      if (key === 'packageId') return
       if (structuredListingFieldNames.includes(key) && !allowedTechnicalKeys.has(key)) return
       if (value) form.set(key, key === 'mileage' ? mileageInputToKilometers(value, usesSwedishMileage) : value)
     })
+    form.set('sellerNote', (values.sellerNote || '').trim())
     form.set(
       'color',
       values.colorChoice === 'other' ? 'Annan färg' : values.colorChoice || '',
     )
     form.set('equipmentKeys', JSON.stringify(equipment))
+    if (accountType === 'business') {
+      form.set('insuranceOffers', JSON.stringify(serializeInsuranceOffers(insuranceOffers, (values.currency || defaultCurrency) as SupportedCurrency)))
+    }
     if (values.listingTerms === 'on') form.set('listingTerms', 'on')
+    if (values.digitalServiceConsent === 'on') {
+      form.set('digitalServiceConsent', 'on')
+    }
     sellerListingConfirmationKeys.forEach((key) => form.set(key, 'on'))
     orderedImages.forEach((image) => form.append('images', image.file, image.name))
 
@@ -512,7 +705,7 @@ export default function NewListingForm({
       console.info('[autorell:create-listing] submit started', {
         imageCount: orderedImages.length,
         totalImageBytes: orderedImages.reduce((sum, image) => sum + image.size, 0),
-        packageId: values.packageId,
+        packageId: selectedPackageId,
         country: listingCountryCode,
         locale,
       })
@@ -541,6 +734,7 @@ export default function NewListingForm({
       setLoading(false)
       return
     }
+    setPublishProgress(100)
     window.localStorage.removeItem(draftKey)
     void deleteDraftImages(draftKey)
     if (result.requiresPayment) {
@@ -550,7 +744,7 @@ export default function NewListingForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             listingId: result.listingId,
-            packageId: result.packageId || values.packageId,
+            packageId: result.packageId || selectedPackageId,
             market: billingMarketCode || listingCountryCode,
             locale,
           }),
@@ -560,32 +754,34 @@ export default function NewListingForm({
           url?: string
         }
         if (!checkoutResponse.ok || !checkout.url) {
-          setError(checkout.error || copy.errors.checkout)
-          setLoading(false)
+          window.location.assign(createdListingHref(locale, result.listingId, 'checkout_failed'))
           return
         }
         window.location.assign(checkout.url)
         return
       } catch (caught) {
-        setError(
-          caught instanceof DOMException && caught.name === 'AbortError'
-            ? copy.errors.checkoutTimeout
-            : copy.errors.checkout,
+        window.location.assign(
+          createdListingHref(
+            locale,
+            result.listingId,
+            caught instanceof DOMException && caught.name === 'AbortError' ? 'checkout_timeout' : 'checkout_failed',
+          ),
         )
-        setLoading(false)
         return
       }
     }
     window.location.assign(
-      localizePublicHref(locale, `/account/listings/created?listing=${encodeURIComponent(result.listingId)}`),
+      createdListingHref(locale, result.listingId),
     )
   }
 
   return (
     <form
       onSubmit={submit}
-      className="overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
+      aria-busy={loading}
+      className="relative overflow-hidden rounded-[28px] border border-[#dce3ee] bg-white shadow-[0_24px_80px_rgba(16,24,40,.08)]"
     >
+      {loading ? <PublishingOverlay copy={copy} progress={publishProgress} /> : null}
       {draftNotice ? <div className="border-b border-[#bfdbfe] bg-[#eff6ff] px-5 py-3 text-sm text-[#1d4ed8] sm:px-7"><strong>{copy.draftRestoredTitle}</strong> {copy.draftRestoredText}</div> : null}
       <div ref={stepHeaderRef} className="border-b border-[#e6ebf2] bg-[#fbfcff] p-5 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -642,7 +838,7 @@ export default function NewListingForm({
                 onToggle={() => setOpenField(openField === 'category' ? null : 'category')}
               >
                 <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {marketplaceCategories.map((item) => (
+                  {visibleMarketplaceCategories.map((item) => (
                     <ChoiceButton
                       key={item.slug}
                       selected={category === item.slug}
@@ -657,10 +853,10 @@ export default function NewListingForm({
             <div className="md:col-span-2">
               <p className="mb-2 block text-sm font-semibold">Erbjudande</p>
               <div className="grid gap-2 sm:grid-cols-3">
-                {offerTypeValues.map((item) => (
+                {allowedOfferTypeValues.map((item) => (
                   <ChoiceButton
                     key={item.value}
-                    selected={normalizeOfferType(values.offerType) === item.value}
+                    selected={selectedOfferType === item.value}
                     onClick={() => setValue('offerType', item.value)}
                   >
                     {item.label}
@@ -668,7 +864,16 @@ export default function NewListingForm({
                 ))}
               </div>
             </div>
-            <Field name="make" label={copy.make} value={values.make || ''} onValueChange={setValue} required />
+            <Field
+              name="make"
+              label={copy.make}
+              value={values.make || ''}
+              locale={locale}
+              onValueChange={setValue}
+              suggestions={makeSuggestions}
+              correctionSuggestion={makeCorrectionSuggestion}
+              required
+            />
             <Field name="model" label={copy.model} value={values.model || ''} onValueChange={setValue} required />
             <Field name="variant" label={copy.variant} value={values.variant || ''} onValueChange={setValue} />
             <SelectNative name="modelYear" label={copy.modelYear} value={values.modelYear || ''} onValueChange={setValue} required>
@@ -698,18 +903,45 @@ export default function NewListingForm({
                 required
               />
             ) : null}
-            <PriceField
-              name="price"
-              label={copy.price}
-              currency={values.currency || defaultCurrency}
-              value={values.price || ''}
-              onValueChange={setValue}
-              required
-            />
-            {isLeaseOffer(normalizeOfferType(values.offerType)) ? (
+            {!isLeaseOffer(normalizeOfferType(values.offerType)) ? (
+              <PriceField
+                name="price"
+                label={copy.price}
+                currency={values.currency || defaultCurrency}
+                value={values.price || ''}
+                onValueChange={setValue}
+                required
+              />
+            ) : null}
+            {leasingAllowedForCategory && isLeaseOffer(normalizeOfferType(values.offerType)) ? (
               <LeaseOfferFields category={category} values={values} onChange={setValue} currency={values.currency || defaultCurrency} locale={locale} />
             ) : null}
+            {accountType === 'business' ? (
+              <div className="md:col-span-2">
+                <InsuranceOfferFields
+                  locale={locale}
+                  offers={insuranceOffers}
+                  currency={(values.currency || defaultCurrency) as SupportedCurrency}
+                  onChange={setInsuranceOffers}
+                />
+              </div>
+            ) : null}
             <input type="hidden" name="currency" value={values.currency || defaultCurrency} />
+            {accountType === 'business' && companyLocations.length ? (
+              <SelectNative
+                name="companyLocation"
+                label={copy.companyLocation}
+                value={selectedCompanyLocationId}
+                onValueChange={(_, value) => changeCompanyLocation(value)}
+              >
+                <option value="">{copy.chooseCompanyLocation}</option>
+                {companyLocations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {[location.name, location.city].filter(Boolean).join(' - ')}
+                  </option>
+                ))}
+              </SelectNative>
+            ) : null}
             <SelectNative
               name="county"
               label={marketplaceRegionLabel(listingCountryCode, locale)}
@@ -738,11 +970,11 @@ export default function NewListingForm({
                     ? formatMunicipalityCount(placeOptions.length, listingCountryCode, locale)
                     : ''
                 }
-                manualLabel=""
-                allowManual={false}
+                manualLabel={localizeFormText(locale, 'Min ort saknas', 'My place is missing', 'Mein Ort fehlt')}
+                allowManual
                 onQueryChange={changeLocationPlaceQuery}
                 onSelect={changeLocationPlace}
-                onManual={() => {}}
+                onManual={changeManualMunicipality}
               />
             ) : (
               <Field
@@ -835,7 +1067,7 @@ export default function NewListingForm({
               label={copy.equipment}
               value={
                 equipment.length
-                  ? `${equipment.length} valda`
+                  ? copy.selectedEquipmentCount.replace('{count}', String(equipment.length))
                   : copy.chooseEquipment
               }
               open={openField === 'equipment'}
@@ -848,6 +1080,7 @@ export default function NewListingForm({
                 onSearch={setEquipmentSearch}
                 onSelectedKeys={setEquipment}
                 locale={locale}
+                copy={copy}
               />
             </SelectCard>
           </StepShell>
@@ -856,12 +1089,12 @@ export default function NewListingForm({
         {step === 2 ? (
           <ImageStep
             copy={copy}
-            images={images}
+            images={orderedImages}
             mainImageId={mainImageId}
             draggedImageId={draggedImageId}
             onDraggedImageId={setDraggedImageId}
             onImages={setImages}
-            onMainImageId={setMainImageId}
+            onMainImageId={chooseMainImage}
           />
         ) : null}
 
@@ -924,14 +1157,73 @@ export default function NewListingForm({
         ) : (
           <button
             disabled={loading}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:opacity-60"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 font-semibold text-white disabled:opacity-80"
           >
             {loading ? copy.publishing : copy.publish}
-            <Check className="h-4 w-4" />
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
           </button>
         )}
       </div>
     </form>
+  )
+}
+
+function PublishingOverlay({
+  copy,
+  progress,
+}: {
+  copy: ListingFormCopy
+  progress: number
+}) {
+  const visibleProgress = Math.max(1, Math.min(100, Math.round(progress)))
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="absolute inset-0 z-20 flex items-end bg-white/88 p-4 backdrop-blur-[3px] sm:items-center sm:justify-center sm:p-8"
+    >
+      <div className="w-full rounded-[24px] border border-[#d7e5ff] bg-white p-5 shadow-[0_24px_80px_rgba(16,24,40,.18)] sm:max-w-lg sm:p-7">
+        <div className="flex items-start gap-4">
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef5ff] text-[#0866ff]">
+            <ShieldCheck className="h-6 w-6" />
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#0866ff] text-white">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            </span>
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#101828]">{copy.publishWaitingTitle}</h3>
+            <p className="mt-1 text-sm leading-6 text-[#475467]">{copy.publishWaitingText}</p>
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-[#101828]">
+            <span>{copy.publishWaitingPercentLabel}</span>
+            <span>{visibleProgress} %</span>
+          </div>
+          <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#e8eef7]">
+            <div
+              className="h-full rounded-full bg-[#0866ff] transition-all duration-500 ease-out"
+              style={{ width: `${visibleProgress}%` }}
+            />
+          </div>
+        </div>
+        <div className="mt-5 grid gap-2 text-sm text-[#344054] sm:grid-cols-3">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <Check className="h-4 w-4 text-[#16a34a]" />
+            {copy.publishWaitingReview}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <Loader2 className="h-4 w-4 animate-spin text-[#0866ff]" />
+            {copy.publishWaitingImages}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f6fb] px-3 py-2">
+            <ShieldCheck className="h-4 w-4 text-[#0866ff]" />
+            {copy.publishWaitingPayment}
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1134,27 +1426,33 @@ function DatePickerCard({
             <button type="button" onClick={() => moveMonth(-1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="grid min-w-0 flex-1 grid-cols-[1fr_auto] gap-2">
-              <select
-                value={visibleMonth}
-                onChange={(event) => setVisibleMonth(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
-              >
-                {Array.from({ length: 12 }, (_, month) => (
-                  <option key={month} value={month}>
-                    {new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, month, 1))}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={visibleYear}
-                onChange={(event) => setVisibleYear(Number(event.target.value))}
-                className="h-10 rounded-[12px] border border-[#d7deed] bg-white px-3 text-sm font-medium outline-none"
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+            <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(96px,116px)] gap-2">
+              <div className="relative min-w-0">
+                <select
+                  value={visibleMonth}
+                  onChange={(event) => setVisibleMonth(Number(event.target.value))}
+                  className="h-10 w-full min-w-0 appearance-none rounded-[12px] border border-[#d7deed] bg-white py-0 pl-3 pr-8 text-sm font-medium text-[#101828] outline-none"
+                >
+                  {Array.from({ length: 12 }, (_, month) => (
+                    <option key={month} value={month}>
+                      {new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(visibleYear, month, 1))}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+              </div>
+              <div className="relative min-w-0">
+                <select
+                  value={visibleYear}
+                  onChange={(event) => setVisibleYear(Number(event.target.value))}
+                  className="h-10 w-full min-w-0 appearance-none rounded-[12px] border border-[#d7deed] bg-white py-0 pl-3 pr-8 text-sm font-medium text-[#101828] outline-none"
+                >
+                  {years.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667085]" />
+              </div>
             </div>
             <button type="button" onClick={() => moveMonth(1)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d7deed] text-[#344054]">
               <ChevronRight className="h-4 w-4" />
@@ -1263,6 +1561,7 @@ function EquipmentMultiSelect({
   onSearch,
   onSelectedKeys,
   locale,
+  copy,
 }: {
   category: MarketplaceCategorySlug
   selectedKeys: string[]
@@ -1270,6 +1569,7 @@ function EquipmentMultiSelect({
   onSearch: (value: string) => void
   onSelectedKeys: (value: string[]) => void
   locale: PublicLocale
+  copy: ListingFormCopy
 }) {
   const groups = equipmentGroupsForCategory(category)
   const selected = new Set(selectedKeys)
@@ -1288,6 +1588,11 @@ function EquipmentMultiSelect({
 
   return (
     <div className="space-y-5">
+      <div className="rounded-[16px] border border-[#cfe0ff] bg-[#f5f9ff] p-4">
+        <h4 className="text-sm font-semibold text-[#101828]">{copy.equipmentAssistTitle}</h4>
+        <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.equipmentAssistText}</p>
+      </div>
+
       {selectedOptions.length ? (
         <div className="flex flex-wrap gap-2">
           {selectedOptions.map((option) => (
@@ -1315,7 +1620,7 @@ function EquipmentMultiSelect({
           value={search}
           onChange={(event) => onSearch(event.target.value)}
           placeholder={localizeFormText(locale, 'Sök utrustning, t.ex. dragkrok, navigation eller värmepump', 'Search equipment, e.g. towbar, navigation or heat pump', 'Ausstattung suchen, z. B. Anhängerkupplung, Navigation oder Wärmepumpe')}
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-10 pr-4 text-sm font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white pl-10 pr-4 text-sm font-normal text-[#101828] outline-none placeholder:text-[#7b8494] placeholder:font-normal focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
       </label>
 
@@ -1474,6 +1779,7 @@ function ImageStep({
     const [moved] = next.splice(from, 1)
     next.splice(to, 0, moved)
     onImages(next)
+    onMainImageId(next[0]?.id || '')
     onDraggedImageId('')
   }
 
@@ -1617,16 +1923,25 @@ function PreviewStep({
             {copy.structuredDataText}
           </p>
         </div>
-        <label className="mt-4 block">
-          <span className="mb-2 block text-sm font-semibold">
+        <label className="mt-5 block rounded-[18px] border border-[#cfe0ff] bg-[#f8fbff] p-4">
+          <span className="block text-base font-semibold text-[#101828]">
             {copy.sellerNoteLabel}
           </span>
-          <textarea
-            value={values.sellerNote || ''}
-            onChange={(event) => onChange('sellerNote', event.target.value)}
-            placeholder={copy.sellerNotePlaceholder}
-            className="min-h-28 w-full rounded-[16px] border border-[#d7deed] p-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
-          />
+          <span className="mt-1 block text-sm leading-6 text-[#667085]">
+            {copy.sellerNoteIntro}
+          </span>
+          <span className="relative mt-3 block">
+            <textarea
+              value={values.sellerNote || ''}
+              onChange={(event) => onChange('sellerNote', event.target.value)}
+              className="min-h-28 w-full rounded-[16px] border border-[#d7deed] bg-white p-4 text-sm font-normal leading-6 text-[#101828] outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            />
+            {values.sellerNote ? null : (
+              <span className="pointer-events-none absolute left-4 right-4 top-4 text-sm font-normal leading-6 text-[#7b8494]">
+                {copy.sellerNotePlaceholder}
+              </span>
+            )}
+          </span>
           <span className="mt-2 block text-xs leading-5 text-[#667085]">
             {copy.sellerNoteHelp}
           </span>
@@ -1703,6 +2018,8 @@ function PublishStep({
   marketCode: string
 }) {
   const billingMarket = normalizeBillingMarket(marketCode)
+  const trustCopy = getCheckoutTrustCopy(locale)
+  const immediateServiceCopy = getImmediateServiceConsentCopy(locale)
   const numberLocale =
     locale === 'sv' ? 'sv-SE' :
     locale === 'da' ? 'da-DK' :
@@ -1755,6 +2072,15 @@ function PublishStep({
           )
         })}
       </div>
+      <div className="mt-4 grid gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f7fbff] p-4 text-sm text-[#475467] sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#0866ff] shadow-sm">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <strong className="block text-[#101828]">{trustCopy.title}</strong>
+          <span className="mt-1 block leading-6">{trustCopy.text}</span>
+        </div>
+      </div>
       {accountType === 'private' ? (
         <section className="mt-6 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
           <div>
@@ -1804,8 +2130,68 @@ function PublishStep({
           {copy.terms}
         </span>
       </label>
+      {accountType === 'private' && normalizeListingPackageId(values.packageId) !== 'free_7d' ? (
+        <label className="mt-3 flex gap-3 rounded-[18px] border border-[#bfd3fb] bg-[#f7fbff] p-4 text-sm leading-6 text-[#475467]">
+          <input
+            type="checkbox"
+            checked={values.digitalServiceConsent === 'on'}
+            onChange={(event) => onChange('digitalServiceConsent', event.target.checked ? 'on' : '')}
+            className="mt-1 h-4 w-4 accent-[#0866ff]"
+          />
+          <span>{immediateServiceCopy.label}</span>
+        </label>
+      ) : null}
     </section>
   )
+}
+
+function getImmediateServiceConsentCopy(locale: PublicLocale) {
+  const copy = {
+    en: {
+      label: 'I expressly request that the paid listing service starts immediately during the 14-day withdrawal period. I understand that the withdrawal right ends once the service has been fully performed.',
+      error: 'Confirm immediate delivery of the paid listing service before publishing.',
+    },
+    sv: {
+      label: 'Jag begär uttryckligen att den betalda annonstjänsten börjar levereras direkt under den 14 dagar långa ångerfristen. Jag förstår att ångerrätten upphör när tjänsten har fullgjorts.',
+      error: 'Godkänn att den betalda annonstjänsten börjar levereras direkt innan du publicerar.',
+    },
+    de: {
+      label: 'Ich verlange ausdrücklich, dass die kostenpflichtige Anzeigenleistung während der 14-tägigen Widerrufsfrist sofort beginnt. Mir ist bekannt, dass das Widerrufsrecht bei vollständiger Vertragserfüllung erlischt.',
+      error: 'Bestätigen Sie vor der Veröffentlichung den sofortigen Beginn der kostenpflichtigen Anzeigenleistung.',
+    },
+    fr: {
+      label: 'Je demande expressément que le service payant de publication commence immédiatement pendant le délai de rétractation de 14 jours. Je comprends que ce droit prend fin lorsque le service a été entièrement exécuté.',
+      error: 'Confirmez le début immédiat du service payant avant la publication.',
+    },
+    es: {
+      label: 'Solicito expresamente que el servicio de anuncio de pago comience de inmediato durante el plazo de desistimiento de 14 días. Entiendo que este derecho finaliza cuando el servicio se haya ejecutado por completo.',
+      error: 'Confirma el inicio inmediato del servicio de pago antes de publicar.',
+    },
+    it: {
+      label: 'Chiedo espressamente che il servizio di pubblicazione a pagamento inizi subito durante il periodo di recesso di 14 giorni. Comprendo che il diritto di recesso termina quando il servizio è stato eseguito integralmente.',
+      error: 'Conferma l’avvio immediato del servizio a pagamento prima della pubblicazione.',
+    },
+    pl: {
+      label: 'Wyraźnie żądam, aby płatna usługa ogłoszeniowa rozpoczęła się natychmiast w 14-dniowym okresie odstąpienia. Rozumiem, że prawo odstąpienia wygasa po pełnym wykonaniu usługi.',
+      error: 'Przed publikacją potwierdź natychmiastowe rozpoczęcie płatnej usługi.',
+    },
+    nl: {
+      label: 'Ik verzoek uitdrukkelijk dat de betaalde advertentieservice onmiddellijk begint tijdens de bedenktijd van 14 dagen. Ik begrijp dat het herroepingsrecht eindigt zodra de dienst volledig is uitgevoerd.',
+      error: 'Bevestig de onmiddellijke start van de betaalde dienst voordat u publiceert.',
+    },
+    fi: {
+      label: 'Pyydän nimenomaisesti, että maksullinen ilmoituspalvelu alkaa heti 14 päivän peruuttamisajan aikana. Ymmärrän, että peruuttamisoikeus päättyy, kun palvelu on suoritettu kokonaan.',
+      error: 'Vahvista maksullisen palvelun välitön aloitus ennen julkaisua.',
+    },
+    da: {
+      label: 'Jeg anmoder udtrykkeligt om, at den betalte annoncetjeneste begynder straks i den 14-dages fortrydelsesperiode. Jeg forstår, at fortrydelsesretten ophører, når tjenesten er fuldt leveret.',
+      error: 'Bekræft, at den betalte tjeneste skal begynde straks, før du offentliggør.',
+    },
+  } as const
+
+  if (locale === 'at') return copy.de
+  if (locale === 'be') return copy.nl
+  return copy[locale] || copy.en
 }
 
 function Field(
@@ -1818,23 +2204,104 @@ function Field(
     name: string
     value: string
     locale?: PublicLocale
+    suggestions?: readonly string[]
+    correctionSuggestion?: string | null
     onValueChange: (name: string, value: string) => void
   },
 ) {
-  const { label, helper, name, value, locale, onValueChange, ...rest } = props
+  const { label, helper, name, value, locale, suggestions = [], correctionSuggestion, onValueChange, ...rest } = props
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+  const visibleSuggestions = suggestions.filter((suggestion) => suggestion !== value)
+  const showSuggestions = suggestionsOpen && visibleSuggestions.length > 0
+  const showCorrection = suggestionsOpen && correctionSuggestion && correctionSuggestion !== value
+  const inputStyle: React.CSSProperties = {
+    ...rest.style,
+    ...(rest.type === 'date'
+      ? {
+          WebkitAppearance: 'none',
+          inlineSize: '100%',
+          maxInlineSize: '100%',
+          minInlineSize: 0,
+        }
+      : {}),
+  }
   return (
-    <label>
+    <label className="relative block min-w-0 max-w-full">
       <span className="mb-2 block text-sm font-semibold">{leaseLabel(locale || currentDocumentLocale(), label)}</span>
       <input
         {...rest}
         name={name}
         value={value}
-        onChange={(event) => onValueChange(String(name), event.target.value)}
-        className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+        style={inputStyle}
+        autoComplete={suggestions.length ? 'off' : rest.autoComplete}
+        onFocus={(event) => {
+          rest.onFocus?.(event)
+          setSuggestionsOpen(true)
+        }}
+        onBlur={(event) => {
+          rest.onBlur?.(event)
+          window.setTimeout(() => setSuggestionsOpen(false), 120)
+        }}
+        onChange={(event) => {
+          setSuggestionsOpen(true)
+          onValueChange(String(name), event.target.value)
+        }}
+        className="block box-border h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
+      {showSuggestions || showCorrection ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[252px] overflow-y-auto rounded-[14px] border border-[#d7deed] bg-white shadow-[0_16px_34px_rgba(16,24,40,.14)] [scrollbar-width:thin]">
+          {showCorrection ? (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onValueChange(String(name), correctionSuggestion)
+                setSuggestionsOpen(false)
+              }}
+              className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-[#edf1f6] bg-[#f7fbff] px-4 text-left text-sm font-semibold text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+            >
+              <span>{brandCorrectionLabel(locale || currentDocumentLocale(), correctionSuggestion)}</span>
+              <span className="text-xs font-semibold text-[#0866ff]">{correctionSuggestion}</span>
+            </button>
+          ) : null}
+          {visibleSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onValueChange(String(name), suggestion)
+                setSuggestionsOpen(false)
+              }}
+              className="flex min-h-10 w-full items-center px-4 text-left text-sm font-medium text-[#101828] transition hover:bg-[#eef5ff] hover:text-[#0866ff] focus-visible:bg-[#eef5ff] focus-visible:outline-none"
+            >
+              <span>{suggestion}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
       {helper ? <span className="mt-2 block text-xs leading-5 text-[#667085]">{helper}</span> : null}
     </label>
   )
+}
+
+function brandCorrectionLabel(locale: PublicLocale, suggestion: string) {
+  const labels: Record<PublicLocale, string> = {
+    sv: `Menade du ${suggestion}?`,
+    en: `Did you mean ${suggestion}?`,
+    de: `Meinten Sie ${suggestion}?`,
+    at: `Meinten Sie ${suggestion}?`,
+    be: `Bedoelde u ${suggestion}?`,
+    fr: `Vouliez-vous dire ${suggestion} ?`,
+    es: `¿Querías decir ${suggestion}?`,
+    it: `Intendevi ${suggestion}?`,
+    pl: `Czy chodziło o ${suggestion}?`,
+    nl: `Bedoelde u ${suggestion}?`,
+    fi: `Tarkoititko ${suggestion}?`,
+    da: `Mente du ${suggestion}?`,
+  }
+
+  return labels[locale] || labels.en
 }
 
 function LeaseOfferFields({
@@ -1851,11 +2318,12 @@ function LeaseOfferFields({
   locale: PublicLocale
 }) {
   const isMachine = category === 'agriculture' || category === 'construction'
+  const [availableFromOpen, setAvailableFromOpen] = useState(false)
   const label = (english: string) => leaseLabel(locale, english)
   return (
-    <section className="md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
+    <section className="min-w-0 md:col-span-2 rounded-[18px] border border-[#d7deed] bg-[#fbfcff] p-4">
       <h3 className="text-base font-semibold text-[#101828]">{label('Leasing')}</h3>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2">
         <PriceField
           name="leaseMonthlyPrice"
           locale={locale}
@@ -1874,8 +2342,6 @@ function LeaseOfferFields({
           value={values.leaseTermMonths || ''}
           onValueChange={onChange}
         />
-        <Field name="leaseMinTermMonths" label="Kortaste avtalsperiod (månader)" type="number" min="1" value={values.leaseMinTermMonths || ''} onValueChange={onChange} />
-        <Field name="leaseMaxTermMonths" label="Längsta avtalsperiod (månader)" type="number" min="1" value={values.leaseMaxTermMonths || ''} onValueChange={onChange} />
         <Field
           name="leaseInitialPayment"
           label="Första förhöjda avgift"
@@ -1894,7 +2360,14 @@ function LeaseOfferFields({
         <Field name="leaseResidualValue" label="Restvärde" type="number" value={values.leaseResidualValue || ''} onValueChange={onChange} />
         {!isMachine ? <Field name="leaseAnnualMileageKm" label="Tillåten körsträcka per år (km)" type="number" value={values.leaseAnnualMileageKm || ''} onValueChange={onChange} /> : null}
         {!isMachine ? <Field name="leaseExcessMileageCost" label="Kostnad per övermil" type="number" value={values.leaseExcessMileageCost || ''} onValueChange={onChange} /> : null}
-        <Field name="leaseAvailableFrom" label="Tillgänglig från" type="date" value={values.leaseAvailableFrom || ''} onValueChange={onChange} />
+        <DatePickerCard
+          label={label('Available from')}
+          value={values.leaseAvailableFrom || ''}
+          locale={locale}
+          open={availableFromOpen}
+          onToggle={() => setAvailableFromOpen((current) => !current)}
+          onChange={(value) => onChange('leaseAvailableFrom', value)}
+        />
         <label className="flex items-center gap-3 text-sm font-medium">
           <input
             type="checkbox"
@@ -1914,17 +2387,17 @@ function LeaseOfferFields({
           Företagsleasing
         </label>
         {[
-          ['leaseInsuranceIncluded', 'FÃ¶rsÃ¤kring ingÃ¥r'],
-          ['leaseMaintenanceIncluded', 'UnderhÃ¥ll ingÃ¥r'],
-          ['leaseRepairsIncluded', 'Reparationer ingÃ¥r'],
-          ...(!isMachine ? [['leaseTyresIncluded', 'DÃ¤ck ingÃ¥r']] : []),
-          ['leaseDeliveryIncluded', 'Leverans ingÃ¥r'],
+          ['leaseInsuranceIncluded', 'Försäkring ingår'],
+          ['leaseMaintenanceIncluded', 'Underhåll ingår'],
+          ['leaseRepairsIncluded', 'Reparationer ingår'],
+          ...(!isMachine ? [['leaseTyresIncluded', 'Däck ingår']] : []),
+          ['leaseDeliveryIncluded', 'Leverans ingår'],
           ...(!isMachine ? [['leasePrivate', 'Privatleasing']] : []),
           ['leaseOperational', 'Operationell leasing'],
           ['leaseFinancial', 'Finansiell leasing'],
-          ['leaseBuyoutAvailable', 'MÃ¶jlighet att kÃ¶pa ut'],
-          ['leaseTransportIncluded', 'Transport ingÃ¥r'],
-          ['leaseOperatorIncluded', 'FÃ¶rare eller operatÃ¶r ingÃ¥r'],
+          ['leaseBuyoutAvailable', 'Möjlighet att köpa ut'],
+          ['leaseTransportIncluded', 'Transport ingår'],
+          ['leaseOperatorIncluded', 'Förare eller operatör ingår'],
         ].map(([name, label]) => (
           <label key={name} className="flex items-center gap-3 text-sm font-medium">
             <input type="checkbox" checked={values[name] === 'on'} onChange={(event) => onChange(name, event.target.checked ? 'on' : '')} className="h-4 w-4 accent-[#0866ff]" />
@@ -1932,6 +2405,103 @@ function LeaseOfferFields({
           </label>
         ))}
       </div>
+    </section>
+  )
+}
+
+function InsuranceOfferFields({
+  locale,
+  offers,
+  currency,
+  onChange,
+}: {
+  locale: PublicLocale
+  offers: ListingInsuranceOfferDraft[]
+  currency: SupportedCurrency
+  onChange: (offers: ListingInsuranceOfferDraft[]) => void
+}) {
+  const t = (sv: string, en: string, de: string) => localizeFormText(locale, sv, en, de)
+
+  function updateOffer(id: string, key: keyof ListingInsuranceOfferDraft, value: string) {
+    onChange(offers.map((offer) => (
+      offer.id === id ? { ...offer, [key]: value } : offer
+    )))
+  }
+
+  return (
+    <section className="min-w-0 rounded-[20px] border border-[#d7e5ff] bg-[#f8fbff] p-4 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#0866ff] ring-1 ring-[#d7e5ff]">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="text-base font-semibold text-[#101828]">
+              {t('Finansieringserbjudanden', 'Finance offers', 'Finanzierungsangebote')}
+            </h3>
+            <p className="mt-1 text-sm leading-5 text-[#667085]">
+              {t(
+                'L\u00e4gg till frivilliga l\u00e5ne- och finansieringserbjudanden som visas p\u00e5 f\u00f6retagsannonsen.',
+                'Add optional loan and finance offers shown on the business listing.',
+                'F\u00fcgen Sie optionale Kredit- und Finanzierungsangebote hinzu, die in der Firmenanzeige angezeigt werden.',
+              )}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => offers.length < 6 && onChange([...offers, createInsuranceOfferDraft(currency)])}
+          disabled={offers.length >= 6}
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-[12px] border border-[#0866ff] bg-white px-4 text-sm font-semibold text-[#0866ff] transition hover:bg-[#eef5ff] disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:text-[#98a2b3]"
+        >
+          {t('L\u00e4gg till erbjudande', 'Add offer', 'Angebot hinzuf\u00fcgen')}
+        </button>
+      </div>
+      <p className="mt-4 rounded-[12px] border border-[#e4eaf3] bg-white px-3 py-2 text-xs font-medium leading-5 text-[#667085]">
+        {t(
+          'F\u00f6retagss\u00e4ljaren ansvarar f\u00f6r bolag, priser, r\u00e4ntor och villkor. Autorell visar bara informationen i annonsen.',
+          'The company seller is responsible for providers, prices, interest rates and terms. Autorell only displays the information on the listing.',
+          'Der gewerbliche Verk\u00e4ufer ist f\u00fcr Anbieter, Preise, Zinss\u00e4tze und Bedingungen verantwortlich. Autorell zeigt die Angaben nur in der Anzeige an.',
+        )}
+      </p>
+      {offers.length ? (
+        <div className="mt-4 grid gap-3">
+          {offers.map((offer, index) => (
+            <div key={offer.id} className="rounded-[18px] border border-[#d7deed] bg-white p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <strong className="text-sm font-semibold text-[#101828]">
+                  {t('Erbjudande', 'Offer', 'Angebot')} {index + 1}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => onChange(offers.filter((item) => item.id !== offer.id))}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-[#f2f4f7] text-[#667085] transition hover:bg-red-50 hover:text-red-600"
+                  aria-label={t('Ta bort', 'Remove', 'Entfernen')}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field name={`insuranceProvider-${offer.id}`} label={t('Bank eller kreditgivare', 'Bank or lender', 'Bank oder Kreditgeber')} value={offer.provider} onValueChange={(_, value) => updateOffer(offer.id, 'provider', value)} />
+                <PriceField name={`insuranceMonthly-${offer.id}`} label={t('M\u00e5nadskostnad', 'Monthly cost', 'Monatliche Kosten')} currency={offer.currency || currency} value={offer.monthlyCost} onValueChange={(_, value) => updateOffer(offer.id, 'monthlyCost', value)} />
+                <Field name={`insuranceInterest-${offer.id}`} label={t('R\u00e4nta (%)', 'Interest rate (%)', 'Zinssatz (%)')} type="number" step="0.01" value={offer.interestRate} onValueChange={(_, value) => updateOffer(offer.id, 'interestRate', value)} />
+                <Field name={`insuranceDeductible-${offer.id}`} label={t('Kontantinsats', 'Down payment', 'Anzahlung')} type="number" value={offer.deductible} onValueChange={(_, value) => updateOffer(offer.id, 'deductible', value)} />
+                <Field name={`insuranceCoverage-${offer.id}`} label={t('Villkor', 'Terms', 'Konditionen')} value={offer.coverage} onValueChange={(_, value) => updateOffer(offer.id, 'coverage', value)} />
+                <Field name={`insuranceTerms-${offer.id}`} label={t('Villkorsl\u00e4nk', 'Terms link', 'Link zu Bedingungen')} type="url" value={offer.termsUrl} onValueChange={(_, value) => updateOffer(offer.id, 'termsUrl', value)} />
+                <label className="block min-w-0 sm:col-span-2">
+                  <span className="mb-2 block text-sm font-semibold">{t('Kort notering', 'Short note', 'Kurzer Hinweis')}</span>
+                  <textarea
+                    value={offer.note}
+                    onChange={(event) => updateOffer(offer.id, 'note', event.target.value)}
+                    placeholder={t('Exempel: krav p\u00e5 kontantinsats, kreditpr\u00f6vning eller hur l\u00e4nge erbjudandet g\u00e4ller.', 'Example: down payment requirements, credit approval or offer validity.', 'Beispiel: Anzahlung, Bonit\u00e4tspr\u00fcfung oder G\u00fcltigkeit des Angebots.')}
+                    className="min-h-24 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 py-3 text-sm font-medium text-[#101828] outline-none placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                  />
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -1966,7 +2536,7 @@ function PriceField({
           min="0"
           step="1"
           onChange={(event) => onValueChange(name, event.target.value)}
-          className="h-12 w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+          className="block h-12 min-w-0 w-full max-w-full rounded-[14px] border border-[#d7deed] bg-white px-4 pr-20 font-medium outline-none focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
         />
         <span className="pointer-events-none absolute right-3 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[10px] border border-[#d7deed] bg-[#f7faff] px-3 text-sm font-semibold text-[#344054]">
           {currency.toUpperCase()}
@@ -2242,6 +2812,8 @@ function getListingFormCopy(locale: PublicLocale) {
     price: 'Price',
     currency: 'Currency',
     country: 'Country',
+    companyLocation: 'Company branch',
+    chooseCompanyLocation: 'Choose saved branch',
     county: 'Region',
     city: 'City',
     municipality: 'Municipality',
@@ -2254,6 +2826,9 @@ function getListingFormCopy(locale: PublicLocale) {
     chooseColor: 'Choose colour',
     equipment: 'Equipment',
     chooseEquipment: 'Choose equipment',
+    selectedEquipmentCount: '{count} selected',
+    equipmentAssistTitle: 'Find equipment faster',
+    equipmentAssistText: 'Search or open each group and tick everything that belongs to the vehicle. If something is missing, add it in the seller note on the preview step.',
     imagesTitle: 'Images',
     imagesText: 'Images are compressed before upload. Upload at least 5 images for a stronger listing. Drag images to reorder them.',
     addImages: 'Add images',
@@ -2268,10 +2843,11 @@ function getListingFormCopy(locale: PublicLocale) {
     previewText: 'This is how the listing can appear on Autorell. Go back if anything needs changing.',
     previewNotice: 'This is a preview. The listing is not published yet.',
     structuredDataTitle: 'Structured listing data',
-    structuredDataText: 'Specifications, equipment, condition and faults are shown as fixed choices and can be translated through Autorell language files.',
-    sellerNoteLabel: 'Additional seller information (optional)',
-    sellerNotePlaceholder: 'Short original text if something important is missing from the structured choices.',
-    sellerNoteHelp: 'This text is shown in the seller’s original language.',
+    structuredDataText: 'Use the fixed choices for specifications, equipment, condition and faults. They make the listing easier to search, compare and translate.',
+    sellerNoteLabel: 'Describe anything extra about the vehicle',
+    sellerNoteIntro: 'Use this only for important details that do not fit the structured choices above.',
+    sellerNotePlaceholder: 'Example: imported vehicle, recent service, extra wheels, special equipment or other details buyers should know.',
+    sellerNoteHelp: 'This optional text is shown in the seller’s original language.',
     noImage: 'No image uploaded',
     listingTitle: 'Listing title',
     priceMissing: 'Price missing',
@@ -2301,6 +2877,12 @@ function getListingFormCopy(locale: PublicLocale) {
     back: 'Back',
     next: 'Next',
     publishing: 'Publishing...',
+    publishWaitingTitle: 'Please wait, we are publishing your listing',
+    publishWaitingText: 'We are checking the details, uploading images and preparing the listing. Keep this window open.',
+    publishWaitingPercentLabel: 'Publishing progress',
+    publishWaitingReview: 'Details checked',
+    publishWaitingImages: 'Images uploaded',
+    publishWaitingPayment: 'Package prepared',
     publish: 'Publish listing',
     draftRestoredTitle: 'Your draft has been restored.',
     draftRestoredText: 'Details and images are saved automatically in this browser while you work.',
@@ -2347,6 +2929,8 @@ function getListingFormCopy(locale: PublicLocale) {
       price: 'Pris',
       currency: 'Valuta',
       country: 'Land',
+      companyLocation: 'Företagsfilial',
+      chooseCompanyLocation: 'Välj sparad filial',
       county: 'Län',
       city: 'Ort',
       municipality: 'Kommun',
@@ -2359,6 +2943,9 @@ function getListingFormCopy(locale: PublicLocale) {
       chooseColor: 'Välj färg',
       equipment: 'Utrustning',
       chooseEquipment: 'Välj utrustning',
+      selectedEquipmentCount: '{count} valda',
+      equipmentAssistTitle: 'Hitta utrustning snabbare',
+      equipmentAssistText: 'Sök eller öppna varje grupp och bocka i allt som finns på fordonet. Om något saknas lägger du det i egen information i förhandsvisningen.',
       imagesTitle: 'Bilder',
       imagesText: 'Bilder komprimeras innan de skickas. Ladda upp minst 5 bilder för en starkare annons. Dra bilderna för att ändra ordning.',
       addImages: 'Lägg till bilder',
@@ -2373,10 +2960,11 @@ function getListingFormCopy(locale: PublicLocale) {
       previewText: 'Så här kan annonsen upplevas på Autorell. Gå tillbaka om något behöver ändras.',
       previewNotice: 'Detta är en förhandsvisning. Annonsen är inte publicerad ännu.',
       structuredDataTitle: 'Strukturerad annonsdata',
-      structuredDataText: 'Specifikationer, utrustning, skick och skador/fel visas som fasta val och kan översättas via Autorells språkfiler.',
-      sellerNoteLabel: 'Ytterligare information från säljaren (valfritt)',
-      sellerNotePlaceholder: 'Kort originaltext om något viktigt saknas i de strukturerade valen.',
-      sellerNoteHelp: 'Denna text visas i säljarens originalspråk.',
+      structuredDataText: 'Använd de fasta valen för specifikationer, utrustning, skick och skador/fel. Då blir annonsen lättare att söka, jämföra och översätta.',
+      sellerNoteLabel: 'Beskriv extra information om objektet',
+      sellerNoteIntro: 'Använd detta bara för viktiga detaljer som inte passar i de strukturerade valen ovan.',
+      sellerNotePlaceholder: 'Exempel: import, nyligen servad, extra hjul, specialutrustning eller annat köparen bör känna till.',
+      sellerNoteHelp: 'Denna frivilliga text visas i säljarens originalspråk.',
       noImage: 'Ingen bild uppladdad',
       listingTitle: 'Annonsrubrik',
       priceMissing: 'Pris saknas',
@@ -2406,6 +2994,12 @@ function getListingFormCopy(locale: PublicLocale) {
       back: 'Tillbaka',
       next: 'Nästa',
       publishing: 'Publicerar...',
+      publishWaitingTitle: 'Vänta, vi publicerar din annons',
+      publishWaitingText: 'Vi kontrollerar uppgifterna, laddar upp bilderna och förbereder annonsen. Låt fönstret vara öppet.',
+      publishWaitingPercentLabel: 'Publiceringsstatus',
+      publishWaitingReview: 'Uppgifter kontrolleras',
+      publishWaitingImages: 'Bilder laddas upp',
+      publishWaitingPayment: 'Paket förbereds',
       publish: 'Publicera annons',
       draftRestoredTitle: 'Ditt utkast har återställts.',
       draftRestoredText: 'Uppgifter och bilder sparas automatiskt i den här webbläsaren medan du arbetar.',
@@ -2444,13 +3038,29 @@ function getListingFormCopy(locale: PublicLocale) {
       next: 'Weiter',
       publish: 'Anzeige veröffentlichen',
       publishing: 'Wird veröffentlicht...',
+      publishWaitingTitle: 'Bitte warten, wir veröffentlichen Ihre Anzeige',
+      publishWaitingText: 'Wir prüfen die Angaben, laden die Bilder hoch und bereiten die Anzeige vor. Lassen Sie dieses Fenster geöffnet.',
+      publishWaitingPercentLabel: 'Veröffentlichungsfortschritt',
+      publishWaitingReview: 'Angaben geprüft',
+      publishWaitingImages: 'Bilder werden hochgeladen',
+      publishWaitingPayment: 'Paket wird vorbereitet',
       processingImages: 'Bilder werden verarbeitet...',
+      selectedEquipmentCount: '{count} ausgewählt',
+      equipmentAssistTitle: 'Ausstattung schneller finden',
+      equipmentAssistText: 'Suchen Sie oder öffnen Sie jede Gruppe und markieren Sie alles, was zum Fahrzeug gehört. Fehlt etwas, ergänzen Sie es in den Verkäuferhinweisen in der Vorschau.',
+      structuredDataText: 'Nutzen Sie die festen Auswahlfelder für Spezifikationen, Ausstattung, Zustand und Schäden/Mängel. So lässt sich die Anzeige besser suchen, vergleichen und übersetzen.',
+      sellerNoteLabel: 'Zusätzliche Informationen zum Objekt beschreiben',
+      sellerNoteIntro: 'Nur für wichtige Details verwenden, die nicht in die strukturierten Auswahlfelder oben passen.',
+      sellerNotePlaceholder: 'Beispiel: Import, kürzlich gewartet, zusätzliche Räder, Sonderausstattung oder andere Details, die Käufer wissen sollten.',
+      sellerNoteHelp: 'Dieser optionale Text wird in der Originalsprache des Verkäufers angezeigt.',
       batchTitle: 'Mehrere Anzeigen gleichzeitig erstellen',
       batchText: 'Fertige Anzeige in die Warteschlange legen, die nächste erstellen, alles prüfen und gemeinsam veröffentlichen.',
       addToBatch: 'Zur Anzeigenwarteschlange',
       publishBatch: 'Warteschlange veröffentlichen',
       batchCount: '{count} Anzeigen bereit',
       removeFromBatch: 'Aus Warteschlange entfernen',
+      companyLocation: 'Unternehmensstandort',
+      chooseCompanyLocation: 'Gespeicherten Standort wählen',
       volumeOffers: [
         { title: '3 für 2', text: 'Gut für kleinere Pakete und wiederkehrende Verkäufer.' },
         { title: '6 für 4', text: 'Besserer Preis bei größerem Bestand.' },
@@ -2532,9 +3142,23 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Valitse',
     chooseColor: 'Valitse väri',
     chooseEquipment: 'Valitse varusteet',
+    selectedEquipmentCount: '{count} valittu',
+    equipmentAssistTitle: 'Löydä varusteet nopeammin',
+    equipmentAssistText: 'Hae tai avaa jokainen ryhmä ja valitse kaikki kohteeseen kuuluvat varusteet. Jos jotain puuttuu, lisää se myyjän lisätietoihin esikatselussa.',
     processingImages: 'Kuvia käsitellään...',
+    publishWaitingTitle: 'Odota, julkaisemme ilmoitustasi',
+    publishWaitingText: 'Tarkistamme tiedot, lataamme kuvat ja valmistelemme ilmoituksen. Pidä tämä ikkuna avoinna.',
+    publishWaitingPercentLabel: 'Julkaisun edistyminen',
+    publishWaitingReview: 'Tiedot tarkistetaan',
+    publishWaitingImages: 'Kuvia ladataan',
+    publishWaitingPayment: 'Pakettia valmistellaan',
     imagesTitle: 'Kuvat',
     previewTitle: 'Esikatselu',
+    structuredDataText: 'Käytä teknisille tiedoille, varusteille, kunnolle ja vioille kiinteitä valintoja. Ne helpottavat ilmoituksen hakua, vertailua ja kääntämistä.',
+    sellerNoteLabel: 'Kuvaile kohteen lisätiedot',
+    sellerNoteIntro: 'Käytä tätä vain tärkeisiin tietoihin, jotka eivät sovi yllä oleviin rakenteisiin valintoihin.',
+    sellerNotePlaceholder: 'Esimerkki: tuonti, hiljattain huollettu, lisärenkaat, erikoisvarusteet tai muu tieto ostajalle.',
+    sellerNoteHelp: 'Tämä valinnainen teksti näytetään myyjän alkuperäisellä kielellä.',
     technicalTitle: 'Tekniset tiedot ja tarkistus',
     technicalText: 'Vaihtoehdot näytetään vasta, kun avaat kohdan. Näin lomake pysyy selkeänä myös mobiilissa.',
     errors: {
@@ -2551,14 +3175,44 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Vælg',
     chooseColor: 'Vælg farve',
     chooseEquipment: 'Vælg udstyr',
+    selectedEquipmentCount: '{count} valgt',
+    equipmentAssistTitle: 'Find udstyr hurtigere',
+    equipmentAssistText: 'Søg eller åbn hver gruppe, og markér alt det udstyr, der hører til køretøjet. Hvis noget mangler, kan du tilføje det i sælgerens ekstra information i forhåndsvisningen.',
     processingImages: 'Behandler billeder...',
+    publishWaitingTitle: 'Vent, vi publicerer din annonce',
+    publishWaitingText: 'Vi kontrollerer oplysningerne, uploader billederne og gør annoncen klar. Hold vinduet åbent.',
+    publishWaitingPercentLabel: 'Publiceringsstatus',
+    publishWaitingReview: 'Oplysninger kontrolleres',
+    publishWaitingImages: 'Billeder uploades',
+    publishWaitingPayment: 'Pakke forberedes',
     imagesTitle: 'Billeder',
     previewTitle: 'Forhåndsvisning',
+    structuredDataText: 'Brug de faste valg til specifikationer, udstyr, stand og skader/fejl. Det gør annoncen lettere at søge, sammenligne og oversætte.',
+    sellerNoteLabel: 'Beskriv ekstra information om objektet',
+    sellerNoteIntro: 'Brug dette kun til vigtige detaljer, som ikke passer i de strukturerede valg ovenfor.',
+    sellerNotePlaceholder: 'Eksempel: import, nyligt serviceret, ekstra hjul, specialudstyr eller andet køberen bør vide.',
+    sellerNoteHelp: 'Denne valgfrie tekst vises på sælgerens originalsprog.',
     errors: {
       submit: 'Annoncen kunne ikke oprettes lige nu. Kontrollér oplysningerne, og prøv igen.',
       checkout: 'Annoncen blev gemt, men Stripe Checkout kunne ikke åbnes. Gå til Mine annoncer, og prøv betalingen igen.',
       checkoutTimeout: 'Annoncen blev gemt, men Stripe Checkout tog for lang tid om at åbne. Gå til Mine annoncer, og prøv betalingen igen.',
     },
+  },
+  be: {
+    selectedEquipmentCount: '{count} gekozen',
+    equipmentAssistTitle: 'Vind uitrusting sneller',
+    equipmentAssistText: 'Zoek of open elke groep en vink alles aan wat bij het voertuig hoort. Ontbreekt er iets, voeg het toe bij extra verkopersinformatie in het voorbeeld.',
+    structuredDataText: 'Gebruik de vaste keuzes voor specificaties, uitrusting, staat en schade/gebreken. Zo wordt de advertentie makkelijker te zoeken, vergelijken en vertalen.',
+    sellerNoteLabel: 'Beschrijf extra informatie over het object',
+    sellerNoteIntro: 'Gebruik dit alleen voor belangrijke details die niet in de gestructureerde keuzes hierboven passen.',
+    sellerNotePlaceholder: 'Voorbeeld: import, recent onderhoud, extra wielen, speciale uitrusting of andere details voor kopers.',
+    sellerNoteHelp: 'Deze optionele tekst wordt getoond in de oorspronkelijke taal van de verkoper.',
+    publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
+    publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
+    publishWaitingPercentLabel: 'Publicatievoortgang',
+    publishWaitingReview: 'Gegevens gecontroleerd',
+    publishWaitingImages: 'Afbeeldingen geüpload',
+    publishWaitingPayment: 'Pakket voorbereid',
   },
   fr: {
     steps: ['Catégorie et base', 'Détails techniques', 'Images', 'Aperçu', 'Forfait et publication'],
@@ -2568,7 +3222,21 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Choisir',
     chooseColor: 'Choisir la couleur',
     chooseEquipment: 'Choisir les équipements',
+    selectedEquipmentCount: '{count} sélectionné(s)',
+    equipmentAssistTitle: 'Trouver les équipements plus vite',
+    equipmentAssistText: 'Recherchez ou ouvrez chaque groupe et cochez tout ce qui appartient au véhicule. S’il manque quelque chose, ajoutez-le dans les informations vendeur de l’aperçu.',
     processingImages: 'Traitement des images...',
+    publishWaitingTitle: 'Veuillez patienter, nous publions votre annonce',
+    publishWaitingText: 'Nous vérifions les informations, téléversons les images et préparons l’annonce. Gardez cette fenêtre ouverte.',
+    publishWaitingPercentLabel: 'Progression de la publication',
+    publishWaitingReview: 'Informations vérifiées',
+    publishWaitingImages: 'Images téléversées',
+    publishWaitingPayment: 'Forfait préparé',
+    structuredDataText: 'Utilisez les choix fixes pour les caractéristiques, équipements, état et dommages/défauts. L’annonce sera plus facile à rechercher, comparer et traduire.',
+    sellerNoteLabel: 'Décrire les informations supplémentaires sur le véhicule',
+    sellerNoteIntro: 'À utiliser uniquement pour les détails importants qui ne rentrent pas dans les choix structurés ci-dessus.',
+    sellerNotePlaceholder: 'Exemple : import, entretien récent, roues supplémentaires, équipement spécial ou autre détail utile aux acheteurs.',
+    sellerNoteHelp: 'Ce texte facultatif est affiché dans la langue originale du vendeur.',
     errors: {
       submit: 'L’annonce ne peut pas être créée pour le moment. Vérifiez les informations et réessayez.',
       checkout: 'L’annonce a été enregistrée, mais Stripe Checkout n’a pas pu être ouvert. Ouvrez Mes annonces et réessayez le paiement.',
@@ -2583,7 +3251,21 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Elegir',
     chooseColor: 'Elegir color',
     chooseEquipment: 'Elegir equipamiento',
+    selectedEquipmentCount: '{count} seleccionados',
+    equipmentAssistTitle: 'Encuentra el equipamiento más rápido',
+    equipmentAssistText: 'Busca o abre cada grupo y marca todo lo que pertenece al vehículo. Si falta algo, añádelo en la información extra del vendedor en la vista previa.',
     processingImages: 'Procesando imágenes...',
+    publishWaitingTitle: 'Espera, estamos publicando tu anuncio',
+    publishWaitingText: 'Estamos revisando los datos, subiendo las imágenes y preparando el anuncio. Mantén esta ventana abierta.',
+    publishWaitingPercentLabel: 'Progreso de publicación',
+    publishWaitingReview: 'Datos revisados',
+    publishWaitingImages: 'Imágenes subidas',
+    publishWaitingPayment: 'Paquete preparado',
+    structuredDataText: 'Usa las opciones fijas para especificaciones, equipamiento, estado y daños/fallos. Así el anuncio será más fácil de buscar, comparar y traducir.',
+    sellerNoteLabel: 'Describe información extra sobre el vehículo',
+    sellerNoteIntro: 'Úsalo solo para detalles importantes que no encajen en las opciones estructuradas anteriores.',
+    sellerNotePlaceholder: 'Ejemplo: importación, revisión reciente, ruedas extra, equipamiento especial u otros detalles para el comprador.',
+    sellerNoteHelp: 'Este texto opcional se muestra en el idioma original del vendedor.',
     errors: {
       submit: 'El anuncio no se puede crear ahora mismo. Revisa los datos e inténtalo de nuevo.',
       checkout: 'El anuncio se ha guardado, pero no se pudo abrir Stripe Checkout. Abre Mis anuncios e intenta pagar de nuevo.',
@@ -2598,7 +3280,21 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Scegli',
     chooseColor: 'Scegli colore',
     chooseEquipment: 'Scegli equipaggiamento',
+    selectedEquipmentCount: '{count} selezionati',
+    equipmentAssistTitle: 'Trova più rapidamente le dotazioni',
+    equipmentAssistText: 'Cerca oppure apri ogni gruppo e seleziona tutto ciò che appartiene al veicolo. Se manca qualcosa, aggiungilo nelle informazioni extra del venditore nell’anteprima.',
     processingImages: 'Elaborazione immagini...',
+    publishWaitingTitle: 'Attendi, stiamo pubblicando il tuo annuncio',
+    publishWaitingText: 'Controlliamo i dati, carichiamo le immagini e prepariamo l’annuncio. Tieni aperta questa finestra.',
+    publishWaitingPercentLabel: 'Avanzamento pubblicazione',
+    publishWaitingReview: 'Dati controllati',
+    publishWaitingImages: 'Immagini caricate',
+    publishWaitingPayment: 'Pacchetto preparato',
+    structuredDataText: 'Usa le scelte fisse per specifiche, dotazioni, condizioni e danni/difetti. L’annuncio sarà più facile da cercare, confrontare e tradurre.',
+    sellerNoteLabel: 'Descrivi informazioni extra sul veicolo',
+    sellerNoteIntro: 'Usa questo campo solo per dettagli importanti che non rientrano nelle scelte strutturate sopra.',
+    sellerNotePlaceholder: 'Esempio: importazione, tagliando recente, ruote extra, dotazioni speciali o altri dettagli utili all’acquirente.',
+    sellerNoteHelp: 'Questo testo facoltativo viene mostrato nella lingua originale del venditore.',
     errors: {
       submit: 'Non è possibile creare l’annuncio in questo momento. Controlla i dati e riprova.',
       checkout: 'L’annuncio è stato salvato, ma non è stato possibile aprire Stripe Checkout. Apri I miei annunci e riprova il pagamento.',
@@ -2613,7 +3309,21 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Kies',
     chooseColor: 'Kies kleur',
     chooseEquipment: 'Kies uitrusting',
+    selectedEquipmentCount: '{count} gekozen',
+    equipmentAssistTitle: 'Vind uitrusting sneller',
+    equipmentAssistText: 'Zoek of open elke groep en vink alles aan wat bij het voertuig hoort. Ontbreekt er iets, voeg het toe bij extra verkopersinformatie in het voorbeeld.',
     processingImages: 'Afbeeldingen verwerken...',
+    publishWaitingTitle: 'Even wachten, we publiceren je advertentie',
+    publishWaitingText: 'We controleren de gegevens, uploaden de afbeeldingen en bereiden de advertentie voor. Houd dit venster open.',
+    publishWaitingPercentLabel: 'Publicatievoortgang',
+    publishWaitingReview: 'Gegevens gecontroleerd',
+    publishWaitingImages: 'Afbeeldingen geüpload',
+    publishWaitingPayment: 'Pakket voorbereid',
+    structuredDataText: 'Gebruik de vaste keuzes voor specificaties, uitrusting, staat en schade/gebreken. Zo wordt de advertentie makkelijker te zoeken, vergelijken en vertalen.',
+    sellerNoteLabel: 'Beschrijf extra informatie over het object',
+    sellerNoteIntro: 'Gebruik dit alleen voor belangrijke details die niet in de gestructureerde keuzes hierboven passen.',
+    sellerNotePlaceholder: 'Voorbeeld: import, recent onderhoud, extra wielen, speciale uitrusting of andere details voor kopers.',
+    sellerNoteHelp: 'Deze optionele tekst wordt getoond in de oorspronkelijke taal van de verkoper.',
     errors: {
       submit: 'De advertentie kan nu niet worden aangemaakt. Controleer de gegevens en probeer het opnieuw.',
       checkout: 'De advertentie is opgeslagen, maar Stripe Checkout kon niet worden geopend. Open Mijn advertenties en probeer de betaling opnieuw.',
@@ -2628,7 +3338,21 @@ const listingCopyOverrides: Partial<Record<PublicLocale, ListingCopyOverride>> =
     choose: 'Wybierz',
     chooseColor: 'Wybierz kolor',
     chooseEquipment: 'Wybierz wyposażenie',
+    selectedEquipmentCount: '{count} wybrano',
+    equipmentAssistTitle: 'Szybciej znajdź wyposażenie',
+    equipmentAssistText: 'Wyszukaj lub otwórz każdą grupę i zaznacz wszystko, co należy do pojazdu. Jeśli czegoś brakuje, dodaj to w dodatkowych informacjach sprzedającego w podglądzie.',
     processingImages: 'Przetwarzanie zdjęć...',
+    publishWaitingTitle: 'Poczekaj, publikujemy Twoje ogłoszenie',
+    publishWaitingText: 'Sprawdzamy dane, przesyłamy zdjęcia i przygotowujemy ogłoszenie. Pozostaw to okno otwarte.',
+    publishWaitingPercentLabel: 'Postęp publikacji',
+    publishWaitingReview: 'Dane sprawdzone',
+    publishWaitingImages: 'Zdjęcia przesłane',
+    publishWaitingPayment: 'Pakiet przygotowany',
+    structuredDataText: 'Użyj stałych wyborów dla specyfikacji, wyposażenia, stanu oraz uszkodzeń/usterek. Dzięki temu ogłoszenie łatwiej wyszukać, porównać i przetłumaczyć.',
+    sellerNoteLabel: 'Opisz dodatkowe informacje o pojeździe',
+    sellerNoteIntro: 'Użyj tego pola tylko dla ważnych szczegółów, które nie pasują do powyższych ustrukturyzowanych wyborów.',
+    sellerNotePlaceholder: 'Przykład: import, niedawny serwis, dodatkowe koła, specjalne wyposażenie lub inne informacje dla kupującego.',
+    sellerNoteHelp: 'Ten opcjonalny tekst jest wyświetlany w oryginalnym języku sprzedającego.',
     errors: {
       submit: 'Nie można teraz utworzyć ogłoszenia. Sprawdź dane i spróbuj ponownie.',
       checkout: 'Ogłoszenie zostało zapisane, ale nie udało się otworzyć Stripe Checkout. Otwórz Moje ogłoszenia i spróbuj zapłacić ponownie.',
@@ -3166,44 +3890,111 @@ function localizeFormText(locale: PublicLocale, sv: string, en: string, de: stri
   return translatePublic(locale, en)
 }
 
+function getCheckoutTrustCopy(locale: PublicLocale) {
+  const normalized = locale === 'at' ? 'de' : locale === 'be' ? 'nl' : locale
+  const copy: Record<string, { title: string; text: string }> = {
+    sv: {
+      title: 'Trygg betalning med Stripe',
+      text: 'Betalda paket öppnas i TLS/SSL-krypterad Stripe Checkout. Autorell ser eller lagrar aldrig dina kortuppgifter.',
+    },
+    en: {
+      title: 'Secure payment with Stripe',
+      text: 'Paid packages open in TLS/SSL-encrypted Stripe Checkout. Autorell never sees or stores your card details.',
+    },
+    de: {
+      title: 'Sichere Zahlung mit Stripe',
+      text: 'Kostenpflichtige Pakete öffnen sich im TLS/SSL-verschlüsselten Stripe Checkout. Autorell sieht oder speichert Ihre Kartendaten nie.',
+    },
+    fr: {
+      title: 'Paiement sécurisé avec Stripe',
+      text: 'Les forfaits payants s’ouvrent dans Stripe Checkout chiffré TLS/SSL. Autorell ne voit ni ne stocke jamais vos données de carte.',
+    },
+    es: {
+      title: 'Pago seguro con Stripe',
+      text: 'Los paquetes de pago se abren en Stripe Checkout cifrado con TLS/SSL. Autorell nunca ve ni almacena tus datos de tarjeta.',
+    },
+    it: {
+      title: 'Pagamento sicuro con Stripe',
+      text: 'I pacchetti a pagamento si aprono in Stripe Checkout crittografato TLS/SSL. Autorell non vede né conserva mai i dati della carta.',
+    },
+    nl: {
+      title: 'Veilig betalen met Stripe',
+      text: 'Betaalde pakketten openen in TLS/SSL-versleutelde Stripe Checkout. Autorell ziet of bewaart je kaartgegevens nooit.',
+    },
+    pl: {
+      title: 'Bezpieczna płatność przez Stripe',
+      text: 'Płatne pakiety otwierają się w szyfrowanym TLS/SSL Stripe Checkout. Autorell nigdy nie widzi ani nie przechowuje danych karty.',
+    },
+    fi: {
+      title: 'Turvallinen maksu Stripen kautta',
+      text: 'Maksulliset paketit avautuvat TLS/SSL-salatussa Stripe Checkoutissa. Autorell ei koskaan näe tai tallenna korttitietojasi.',
+    },
+    da: {
+      title: 'Sikker betaling med Stripe',
+      text: 'Betalte pakker åbnes i TLS/SSL-krypteret Stripe Checkout. Autorell ser eller gemmer aldrig dine kortoplysninger.',
+    },
+  }
+  return copy[normalized] || copy.en
+}
+
+function normalizeListingPackageId(packageId?: string) {
+  return packageId && listingPackageIds.has(packageId) ? packageId : 'free_7d'
+}
+
+function createdListingHref(locale: PublicLocale, listingId: string, payment?: 'checkout_failed' | 'checkout_timeout') {
+  const params = new URLSearchParams({ listing: listingId })
+  if (payment) params.set('payment', payment)
+  return localizePublicHref(locale, `/account/listings/created?${params.toString()}`)
+}
+
 function currentDocumentLocale(): PublicLocale {
   if (typeof document === 'undefined') return 'en'
-  const language = document.documentElement.lang.toLowerCase().split('-')[0]
-  return (['sv', 'de', 'en', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da'] as string[]).includes(language)
+  const supportedLocales = ['sv', 'de', 'en', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da'] as const
+  const pathLocale = window.location.pathname.split('/').filter(Boolean)[0]
+  const documentLocale = document.documentElement.lang.toLowerCase().split('-')[0]
+  const language = pathLocale === 'se' ? 'sv' : pathLocale || documentLocale
+  return (supportedLocales as readonly string[]).includes(language)
     ? language as PublicLocale
     : 'en'
 }
 
-function leaseLabel(locale: PublicLocale, value: string) {
-  const normalized = value.toLowerCase()
-  const english = normalized.includes('månad') || normalized.includes('mÃ¥nad') ? 'Monthly price' :
-    normalized.includes('mån') || normalized.includes('mÃ¥n') ? 'Contract term (months)' :
-    normalized.includes('kortaste') ? 'Minimum contract term (months)' :
-    normalized.includes('längsta') || normalized.includes('lÃ¤ngsta') ? 'Maximum contract term (months)' :
-    normalized.includes('första') || normalized.includes('fÃ¶rsta') ? 'Initial payment' :
-    normalized.includes('deposition') ? 'Deposit' :
-    normalized.includes('upplägg') || normalized.includes('upplÃ¤gg') ? 'Setup fee' :
-    normalized.includes('restvär') || normalized.includes('restvÃ¤r') ? 'Residual value' :
-    normalized.includes('tillåten') || normalized.includes('tillÃ¥ten') ? 'Allowed mileage per year (km)' :
-    normalized.includes('överm') || normalized.includes('Ã¶verm') ? 'Excess mileage cost' :
-    normalized.includes('tillgäng') || normalized.includes('tillgÃ¤ng') ? 'Available from' :
-    normalized.includes('service') ? 'Service included' :
-    normalized.includes('företags') || normalized.includes('fÃ¶retags') ? 'Business leasing' :
-    normalized.includes('försäkring') || normalized.includes('fÃ¶rsÃ¤kring') ? 'Insurance included' :
-    normalized.includes('underhåll') || normalized.includes('underhÃ¥ll') ? 'Maintenance included' :
-    normalized.includes('reparation') ? 'Repairs included' :
-    normalized.includes('däck') || normalized.includes('dÃ¤ck') ? 'Tyres included' :
-    normalized.includes('leverans') ? 'Delivery included' :
-    normalized.includes('privatleasing') ? 'Private leasing' :
-    normalized.includes('operationell') ? 'Operating lease' :
-    normalized.includes('finansiell') ? 'Financial lease' :
-    normalized.includes('köpa ut') || normalized.includes('kÃ¶pa ut') ? 'Buyout available' :
-    normalized.includes('transport') ? 'Transport included' :
-    normalized.includes('förare') || normalized.includes('fÃ¶rare') ? 'Driver or operator included' :
-    value
-  return translatePublic(locale, english)
-}
+const leaseLabelEntries = [
+  { english: 'Monthly price', sv: 'M\u00e5nadskostnad', keys: ['monthly price', 'm\u00e5nadskostnad'] },
+  { english: 'Contract term (months)', sv: 'Avtalsperiod (m\u00e5nader)', keys: ['contract term', 'avtalsperiod'] },
+  { english: 'Initial payment', sv: 'F\u00f6rsta f\u00f6rh\u00f6jda avgift', keys: ['initial payment', 'f\u00f6rsta f\u00f6rh\u00f6jda'] },
+  { english: 'Deposit', sv: 'Deposition', keys: ['deposit', 'deposition'] },
+  { english: 'Setup fee', sv: 'Uppl\u00e4ggningsavgift', keys: ['setup fee', 'uppl\u00e4ggningsavgift'] },
+  { english: 'Residual value', sv: 'Restv\u00e4rde', keys: ['residual value', 'restv\u00e4rde'] },
+  { english: 'Allowed mileage per year (km)', sv: 'Till\u00e5ten k\u00f6rstr\u00e4cka per \u00e5r (km)', keys: ['allowed mileage', 'till\u00e5ten k\u00f6rstr\u00e4cka'] },
+  { english: 'Excess mileage cost', sv: 'Kostnad per \u00f6vermil', keys: ['excess mileage', 'kostnad per \u00f6vermil'] },
+  { english: 'Available from', sv: 'Tillg\u00e4nglig fr\u00e5n', keys: ['available from', 'tillg\u00e4nglig fr\u00e5n'] },
+  { english: 'Service included', sv: 'Service ing\u00e5r', keys: ['service included', 'service ing\u00e5r'] },
+  { english: 'Business leasing', sv: 'F\u00f6retagsleasing', keys: ['business leasing', 'f\u00f6retagsleasing'] },
+  { english: 'Insurance included', sv: 'F\u00f6rs\u00e4kring ing\u00e5r', keys: ['insurance included', 'f\u00f6rs\u00e4kring ing\u00e5r'] },
+  { english: 'Maintenance included', sv: 'Underh\u00e5ll ing\u00e5r', keys: ['maintenance included', 'underh\u00e5ll ing\u00e5r'] },
+  { english: 'Repairs included', sv: 'Reparationer ing\u00e5r', keys: ['repairs included', 'reparationer ing\u00e5r'] },
+  { english: 'Tyres included', sv: 'D\u00e4ck ing\u00e5r', keys: ['tyres included', 'tires included', 'd\u00e4ck ing\u00e5r'] },
+  { english: 'Delivery included', sv: 'Leverans ing\u00e5r', keys: ['delivery included', 'leverans ing\u00e5r'] },
+  { english: 'Private leasing', sv: 'Privatleasing', keys: ['private leasing', 'privatleasing'] },
+  { english: 'Operating lease', sv: 'Operationell leasing', keys: ['operating lease', 'operationell leasing'] },
+  { english: 'Financial lease', sv: 'Finansiell leasing', keys: ['financial lease', 'finansiell leasing'] },
+  { english: 'Buyout available', sv: 'M\u00f6jlighet att k\u00f6pa ut', keys: ['buyout available', 'm\u00f6jlighet att k\u00f6pa ut'] },
+  { english: 'Transport included', sv: 'Transport ing\u00e5r', keys: ['transport included', 'transport ing\u00e5r'] },
+  { english: 'Driver or operator included', sv: 'F\u00f6rare eller operat\u00f6r ing\u00e5r', keys: ['driver or operator included', 'f\u00f6rare eller operat\u00f6r ing\u00e5r'] },
+  { english: 'Leasing', sv: 'Leasing', keys: ['leasing'] },
+] as const
 
+function leaseLabel(locale: PublicLocale, value: string) {
+  const repaired = repairMojibakeText(value)
+  const normalized = repaired.toLowerCase()
+  const entry = leaseLabelEntries.find((item) => {
+    if (item.english === 'Leasing') return normalized === 'leasing'
+    return item.keys.some((key) => normalized.includes(key))
+  })
+  if (entry) return locale === 'sv' ? entry.sv : translatePublic(locale, entry.english)
+  if (locale === 'sv' && repaired !== value) return repaired
+  return translatePublic(locale, repaired)
+}
 function localizeVehicleText(locale: PublicLocale, value?: string | null) {
   if (!value) return ''
   if (locale === 'sv') return value
@@ -3251,6 +4042,18 @@ function repairListingText(value: string) {
   return value.includes('\u00c3') ? decodeURIComponent(escape(value)) : value
 }
 
+function repairMojibakeText(value: string) {
+  let result = value
+  for (let index = 0; index < 3 && result.includes('\u00c3'); index += 1) {
+    try {
+      result = decodeURIComponent(escape(result))
+    } catch {
+      break
+    }
+  }
+  return result
+}
+
 function localizedListingText(locale: PublicLocale, english: string) {
   return listingTextOverrides[locale]?.[english] || translatePublic(locale, english)
 }
@@ -3260,16 +4063,7 @@ function localizedSubmissionError(
   result: ListingCreationError,
   fallback: string,
 ) {
-  const raw = (result.error || '').trim()
-  if (!raw) return fallback
-  if (result.code === 'listing_create_failed') return fallback
-  if (/Annonsen kunde inte skapas|Listing could not be created/i.test(raw)) return fallback
-  if (locale !== 'sv' && looksLikeSwedishApiError(raw)) return fallback
-  return raw
-}
-
-function looksLikeSwedishApiError(value: string) {
-  return /annons|annonspaket|publicering|konto|Kontakta support|försök|fyll i|välj|godkänn|ladda upp/i.test(value)
+  return localizedAccountError(locale, result, fallback)
 }
 
 function localizedVehicleTerm(locale: PublicLocale, english: string) {

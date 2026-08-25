@@ -2,19 +2,15 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getRequestLocale } from '@/lib/request-locale'
-import { normalizeBillingMarket, type BillingMarket } from '@/lib/billing/product-catalog'
-import type { PublicLocale } from '@/lib/public-i18n'
+import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
+import { generateAccountMetadata } from '@/lib/account-seo'
 import BusinessPlanChooser from './BusinessPlanChooser'
 
-export default async function BusinessSubscriptionPage({
-  localeOverride,
-  marketOverride,
-}: {
-  localeOverride?: PublicLocale
-  marketOverride?: BillingMarket
-} = {}) {
-  const locale = localeOverride || await getRequestLocale()
-  const market = marketOverride || normalizeBillingMarket(locale === 'sv' ? 'se' : locale === 'da' ? 'dk' : locale)
+export const generateMetadata = generateAccountMetadata('business-subscription')
+
+export default async function BusinessSubscriptionPage() {
+  const locale = await getRequestLocale()
+  const market = normalizeBillingMarket(locale === 'sv' ? 'se' : locale === 'da' ? 'dk' : locale)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')

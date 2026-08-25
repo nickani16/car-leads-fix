@@ -3,9 +3,12 @@
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { Layers, MapPin } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { createCategoryMapMarker } from './MapCategoryMarker'
 import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
+import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingLocationMapProps = {
+  locale?: PublicLocale
   latitude?: number | null
   longitude?: number | null
   title: string
@@ -14,12 +17,15 @@ type ListingLocationMapProps = {
   postalCode?: string | null
   city?: string | null
   country?: string | null
+  category?: string | null
+  offerType?: string | null
   approximate?: boolean
   mapSource?: string | null
   mapQuery?: string | null
 }
 
 export default function ListingLocationMap({
+  locale = 'sv',
   latitude,
   longitude,
   title,
@@ -28,6 +34,8 @@ export default function ListingLocationMap({
   postalCode,
   city,
   country,
+  category,
+  offerType,
   approximate = false,
   mapSource = null,
   mapQuery = null,
@@ -78,7 +86,13 @@ export default function ListingLocationMap({
           zoom: approximate ? 11 : 12.5,
           attributionControl: { compact: true },
         })
-        const marker = new maplibregl.Marker({ color: '#0866ff' })
+        const marker = new maplibregl.Marker({
+          element: createCategoryMapMarker({
+            category,
+            title,
+            offerType,
+          }),
+        })
           .setLngLat(coordinates)
           .addTo(map)
 
@@ -117,7 +131,7 @@ export default function ListingLocationMap({
       setMapReady(false)
       setMapFailed(false)
     }
-  }, [approximate, latitude, longitude, mapLayer])
+  }, [approximate, category, latitude, longitude, mapLayer, offerType, title])
 
   if (!hasCoordinates) {
     return (
@@ -129,15 +143,16 @@ export default function ListingLocationMap({
         postalCode={postalCode}
         city={city}
         country={country}
+        locale={locale}
       />
     )
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white shadow-sm">
+    <div className="autorell-listing-location-map overflow-hidden rounded-[16px] border border-[#dfe6f2] bg-white">
       <div className="flex items-start gap-3 border-b border-[#edf1f6] px-4 py-4 sm:px-5">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
-          <MapPin className="h-5 w-5" />
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[14px] bg-[#edf4ff] text-[#0866ff]">
+          <MapPin className="h-5 w-5 fill-[#0866ff]/10" />
         </span>
         <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
@@ -145,7 +160,9 @@ export default function ListingLocationMap({
             <p className="mt-1 text-sm font-medium leading-5 text-[#667085]">{locationText}</p>
           ) : null}
           {approximate ? (
-            <p className="mt-1 text-xs font-semibold text-[#0866ff]">Ungefärlig position baserad på annonsens postnummer, ort och land.</p>
+            <p className="mt-1 text-xs font-semibold text-[#0866ff]">
+              {translatePublic(locale, 'Approximate position based on the listing postal code, city and country.')}
+            </p>
           ) : null}
         </div>
       </div>
@@ -168,17 +185,13 @@ export default function ListingLocationMap({
         ) : null}
         <div ref={containerRef} className="absolute inset-0 z-10 h-full w-full" />
         <div className="absolute right-3 top-3 z-20">
-          <ListingMapLayerPicker mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
+          <ListingMapLayerPicker locale={locale} mapLayer={mapLayer} onMapLayerChange={setMapLayer} />
         </div>
         {!mapReady || mapFailed ? (
           <span className="pointer-events-none absolute left-1/2 top-1/2 z-20 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#0866ff] shadow-[0_8px_22px_rgba(16,24,40,.26)]">
             <MapPin className="h-7 w-7 fill-[#0866ff]/15" />
           </span>
         ) : null}
-        <span className="pointer-events-none absolute left-4 top-4 z-20 hidden rounded-[8px] bg-white/95 px-3 py-2 text-xs font-semibold text-[#101828] shadow-[0_10px_24px_rgba(16,24,40,.16)] backdrop-blur sm:inline-flex">
-          <MapPin className="h-7 w-7 fill-[#0866ff]/15" />
-          <span className="ml-2">{city || country}</span>
-        </span>
       </div>
       <ListingMapDebug
         listingId={listingId}
@@ -197,9 +210,11 @@ export default function ListingLocationMap({
 }
 
 function ListingMapLayerPicker({
+  locale,
   mapLayer,
   onMapLayerChange,
 }: {
+  locale: PublicLocale
   mapLayer: AutorellMapLayer
   onMapLayerChange: (layer: AutorellMapLayer) => void
 }) {
@@ -215,7 +230,7 @@ function ListingMapLayerPicker({
         }`}
       >
         <Layers className="h-4 w-4" />
-        Karta
+        {translatePublic(locale, 'Map')}
       </button>
       <button
         type="button"
@@ -226,7 +241,7 @@ function ListingMapLayerPicker({
             : 'bg-white text-[#0866ff] hover:bg-[#eef5ff]'
         }`}
       >
-        Satellit
+        {translatePublic(locale, 'Satellite')}
       </button>
     </div>
   )
@@ -240,6 +255,7 @@ function LocationFallback({
   postalCode,
   city,
   country,
+  locale = 'sv',
 }: {
   title: string
   listingId?: string
@@ -248,9 +264,10 @@ function LocationFallback({
   postalCode?: string | null
   city?: string | null
   country?: string | null
+  locale?: PublicLocale
 }) {
   return (
-    <div className="rounded-[16px] border border-[#dfe6f2] bg-white p-5 shadow-sm sm:p-6">
+    <div className="rounded-[16px] border border-[#dfe6f2] bg-white p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf4ff] text-[#0866ff]">
           <MapPin className="h-5 w-5" />
@@ -258,10 +275,10 @@ function LocationFallback({
         <div>
           <h2 className="text-lg font-semibold tracking-[-0.02em] text-[#101828]">{title}</h2>
           <p className="mt-1 text-sm font-medium leading-6 text-[#667085]">
-            {locationText || 'Ingen kartposition kan visas eftersom annonsen saknar tillräcklig sparad platsdata.'}
+            {locationText || translatePublic(locale, 'No map position can be shown because the listing is missing enough saved location data.')}
           </p>
           <p className="mt-2 text-sm leading-6 text-[#667085]">
-            Kartan visas först när annonsen har egna koordinater eller en adress/postnummer som kan geokodas.
+            {translatePublic(locale, 'The map is shown once the listing has coordinates or an address/postal code that can be geocoded.')}
           </p>
         </div>
       </div>

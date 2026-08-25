@@ -1,4 +1,4 @@
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
@@ -9,6 +9,11 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { createClient } from '@/lib/supabase/server'
+import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+} from '@/lib/account-profile-bootstrap'
 import RegisterForm from './RegisterForm'
 
 export default async function RegisterPage({
@@ -20,7 +25,11 @@ export default async function RegisterPage({
   const copy = getRegisterPageCopy(locale)
   const query = searchParams ? await searchParams : {}
   const accountParam = Array.isArray(query.account) ? query.account[0] : query.account
-  const initialAccountType = accountParam === 'business' ? 'business' : 'private'
+  const cookieStore = await cookies()
+  const accountIntentValue = accountParam || cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value
+  const initialAccountType = normalizeAccountIntent(accountIntentValue)
+  const nextParam = Array.isArray(query.next) ? query.next[0] : query.next
+  const completionDestination = safeReturnPath(nextParam) || localizePublicHref(locale, '/account')
   const requestHeaders = await headers()
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const supabase = await createClient()
@@ -28,23 +37,39 @@ export default async function RegisterPage({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect(localizePublicHref(locale, '/?auth=register'))
+  if (!user) {
+    const params = new URLSearchParams({ auth: 'register' })
+    if (completionDestination) params.set('next', completionDestination)
+    if (initialAccountType === 'business') params.set('account', 'business')
+    redirect(localizePublicHref(locale, `/?${params.toString()}`))
+  }
 
   const { data: profile } = await supabase
     .from('marketplace_profiles')
-    .select('user_id')
+    .select('user_id,risk_status,deleted_at,removed_by_admin')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (profile) redirect(localizePublicHref(locale, '/account'))
+  const canReactivate = Boolean(
+    profile?.deleted_at &&
+      !profile.removed_by_admin &&
+      profile.risk_status === 'restricted',
+  )
+  if (profile && !canReactivate) redirect(localizePublicHref(locale, '/account'))
+
+  const accountIntent = accountIntentFromCookieAndUser(accountIntentValue, user)
+  if (!profile && accountIntent.accountType === 'private') {
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    redirect(localizePublicHref(locale, '/account'))
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#101828]">
-      <PublicHeader locale={locale} marketCode={marketCode} />
+      <PublicHeader locale={locale} marketCode={marketCode} hideMobileBottomNav />
       <section className="border-b border-[#e4eaf3] bg-white">
         <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-12">
           <div className="lg:sticky lg:top-28">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0866ff]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0866ff]">
               {copy.eyebrow}
             </p>
             <h1 className="mt-4 max-w-xl text-4xl leading-[1.02] tracking-[-0.055em] sm:text-6xl">
@@ -66,13 +91,20 @@ export default async function RegisterPage({
             locale={locale}
             email={user.email || ''}
             initialCountryCode={marketCode}
-            initialAccountType={initialAccountType}
+            initialAccountType={accountIntent.accountType}
+            completionDestination={completionDestination}
           />
         </div>
       </section>
       <PublicFooter locale={locale} />
     </main>
   )
+}
+
+function safeReturnPath(value: unknown) {
+  const next = String(value || '').trim()
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/api/')) return ''
+  return next
 }
 
 function getRegisterPageCopy(locale: PublicLocale) {

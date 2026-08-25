@@ -1,6 +1,7 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Check, Mail, Send, X } from 'lucide-react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
@@ -10,6 +11,9 @@ type ListingContactFormButtonProps = {
   listingTitle: string
   locale: PublicLocale
   defaultCurrency?: string
+  buttonLabel?: string
+  buttonClassName?: string
+  iconClassName?: string
 }
 
 type ContactCopy = {
@@ -197,16 +201,44 @@ export default function ListingContactFormButton({
   listingTitle,
   locale,
   defaultCurrency = 'EUR',
+  buttonLabel,
+  buttonClassName,
+  iconClassName,
 }: ListingContactFormButtonProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const panelRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const text = getContactCopy(locale)
 
-  useEffect(() => {
-    document.body.classList.toggle('autorell-contact-modal-open', open)
+  useLayoutEffect(() => {
+    if (!open) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.classList.add('autorell-contact-modal-open')
+    document.body.style.overflow = 'hidden'
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    const resetModalScroll = () => {
+      panelRef.current?.scrollTo({ top: 0, left: 0 })
+      formRef.current?.scrollTo({ top: 0, left: 0 })
+    }
+
+    resetModalScroll()
+    const animationFrame = window.requestAnimationFrame(resetModalScroll)
+    const timeout = window.setTimeout(resetModalScroll, 80)
+
+    window.addEventListener('keydown', closeOnEscape)
     return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(timeout)
+      window.removeEventListener('keydown', closeOnEscape)
       document.body.classList.remove('autorell-contact-modal-open')
+      document.body.style.overflow = previousOverflow
     }
   }, [open])
 
@@ -245,24 +277,17 @@ export default function ListingContactFormButton({
     }
   }
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setOpen(true)
-          setStatus('idle')
-        }}
-        className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]"
-      >
-        <Mail className="h-4 w-4 text-[#0866ff]" />
-        {text.open}
-      </button>
-
-      {open ? (
-        <div className="fixed inset-0 z-[240] flex items-start justify-center overflow-y-auto bg-[#101828]/85 px-3 py-[calc(env(safe-area-inset-top)+1rem)] backdrop-blur-lg sm:items-center sm:px-4 sm:py-6">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-[560px] overflow-y-auto rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_30px_90px_rgba(16,24,40,.25)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
-            <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] px-5 py-5 sm:px-6">
+  const modal =
+    open && typeof document !== 'undefined'
+      ? createPortal(
+        <div
+          className="fixed inset-0 isolate z-[2147483647] flex items-start justify-center overflow-hidden bg-[#101828]/35 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-[2px] sm:items-center sm:px-6 sm:py-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setOpen(false)
+          }}
+        >
+          <div ref={panelRef} className="relative grid max-h-[calc(100svh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] w-full max-w-[620px] overflow-y-auto overscroll-contain rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
+            <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] bg-white px-5 py-4 sm:px-6 sm:py-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
                   {listingTitle}
@@ -276,13 +301,13 @@ export default function ListingContactFormButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={text.close}
-                className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3]"
+                className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3] sm:h-10 sm:w-10"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={submit} className="grid gap-4 px-5 py-5 sm:px-6">
+            <form ref={formRef} onSubmit={submit} className="grid gap-4 px-5 py-5 sm:px-6">
               <div className="grid gap-4 sm:grid-cols-2 sm:[&>label]:min-w-0">
                 <FormField label={text.name} name="name" required />
                 <FormField label={text.phone} name="phone" type="tel" required />
@@ -335,15 +360,33 @@ export default function ListingContactFormButton({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.22)] transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
+                className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
               >
                 <Send className="h-4 w-4" />
                 {loading ? text.sending : text.submit}
               </button>
             </form>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+      : null
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(true)
+          setStatus('idle')
+        }}
+        className={buttonClassName || 'inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#cfd8e6] bg-white px-5 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:bg-[#f5f9ff] hover:text-[#0866ff]'}
+      >
+        <Mail className={iconClassName || 'h-4 w-4 text-[#0866ff]'} />
+        {buttonLabel || text.open}
+      </button>
+
+      {modal}
     </>
   )
 }

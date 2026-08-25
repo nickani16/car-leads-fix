@@ -80,6 +80,8 @@ export default async function AdminDashboardPage({
     openReports,
     failedPayments,
     paidPayments,
+    openBusinessInvoices,
+    overdueBusinessInvoices,
     activeSubscriptions,
     expiringListings,
     suspiciousEvents,
@@ -95,6 +97,8 @@ export default async function AdminDashboardPage({
     canReadReports ? adminClient.from('marketplace_reports').select('id', { count: 'exact', head: true }).in('status', ['new', 'reviewing', 'investigating']) : emptyCount(),
     canReadPayments ? adminClient.from('payment_orders').select('id', { count: 'exact', head: true }).in('status', ['failed', 'expired']).gte('updated_at', from) : emptyCount(),
     canReadPayments ? adminClient.from('payment_orders').select('id', { count: 'exact', head: true }).in('status', ['paid', 'fulfilled']).gte('updated_at', from) : emptyCount(),
+    canReadPayments ? adminClient.from('business_invoices').select('id', { count: 'exact', head: true }).in('status', ['open', 'draft', 'uncollectible']) : emptyCount(),
+    canReadPayments ? adminClient.from('business_invoices').select('id', { count: 'exact', head: true }).in('status', ['open', 'uncollectible']).not('due_at', 'is', null).lt('due_at', nowIso) : emptyCount(),
     canReadSubscriptions ? adminClient.from('business_subscriptions').select('id', { count: 'exact', head: true }).in('status', ['active', 'trialing']) : emptyCount(),
     canReadListings ? listingCount().eq('status', 'published').gte('expires_at', nowIso).lte('expires_at', inSevenDays) : emptyCount(),
     canReadModeration || canReadSecurity ? adminClient.from('marketplace_listing_risk_events').select('id', { count: 'exact', head: true }).in('severity', ['high', 'critical']).gte('created_at', from) : emptyCount(),
@@ -115,6 +119,8 @@ export default async function AdminDashboardPage({
     ...(canReadCompanies ? [{ label: 'Företag att verifiera', value: pendingCompanies.count, helper: 'Manuell kontroll', href: '/admin/companies/verification', icon: Building2, tone: pendingCompanies.count ? 'amber' as const : 'green' as const }] : []),
     ...(canReadReports ? [{ label: 'Öppna rapporter', value: openReports.count, helper: 'Trust & safety', href: '/admin/reports', icon: Flag, tone: openReports.count ? 'red' as const : 'green' as const }] : []),
     ...(canReadPayments ? [{ label: 'Misslyckade betalningar', value: failedPayments.count, helper: 'Valt intervall', href: '#system-status', icon: CircleDollarSign, tone: failedPayments.count ? 'red' as const : 'green' as const }] : []),
+    ...(canReadPayments ? [{ label: 'Öppna företagsfakturor', value: openBusinessInvoices.count, helper: 'Kräver uppföljning', href: '/admin/invoices?status=open', icon: CircleDollarSign, tone: openBusinessInvoices.count ? 'amber' as const : 'green' as const }] : []),
+    ...(canReadPayments ? [{ label: 'Förfallna fakturor', value: overdueBusinessInvoices.count, helper: 'Spärrar annonsskapande', href: '/admin/invoices?status=open', icon: AlertTriangle, tone: overdueBusinessInvoices.count ? 'red' as const : 'green' as const }] : []),
     ...(canReadListings ? [{ label: 'Annonser löper ut', value: expiringListings.count, helper: 'Inom sju dagar', href: '/admin/listings?status=published', icon: AlertTriangle, tone: expiringListings.count ? 'amber' as const : 'green' as const }] : []),
     ...(canReadModeration || canReadSecurity ? [{ label: 'Säkerhetssignaler', value: suspiciousEvents.count, helper: 'Hög eller kritisk risk', href: '/admin/moderation?queue=risk', icon: ShieldAlert, tone: suspiciousEvents.count ? 'red' as const : 'green' as const }] : []),
   ]
@@ -126,6 +132,8 @@ export default async function AdminDashboardPage({
     pendingCompanies,
     openReports,
     failedPayments,
+    openBusinessInvoices,
+    overdueBusinessInvoices,
   ].some((result) => Boolean(result.error))
 
   return (
@@ -136,7 +144,7 @@ export default async function AdminDashboardPage({
           title="Kontrollcenter"
           description="Prioriterade köer, betalningssignaler och senaste aktivitet i hela Autorell. Alla värden hämtas serverbaserat."
         />
-        <form method="get" className="grid grid-cols-2 gap-2 rounded-2xl border border-[#dce3ee] bg-white p-3 shadow-sm sm:flex">
+        <form method="get" className="grid grid-cols-2 gap-2 rounded-2xl border border-[#dce3ee] bg-white/95 p-3 shadow-[0_10px_28px_rgba(16,24,40,.05)] sm:flex">
           <select name="range" defaultValue={range} aria-label="Tidsintervall" className="h-10 rounded-xl border border-[#d7deea] bg-white px-3 text-sm">
             <option value="today">I dag</option>
             <option value="7d">7 dagar</option>
@@ -154,7 +162,7 @@ export default async function AdminDashboardPage({
             <option value="private">Privat</option>
             <option value="business">Företag</option>
           </select>
-          <button className="h-10 rounded-xl bg-[#0866ff] px-4 text-sm font-bold text-white">Uppdatera</button>
+          <button className="h-10 rounded-xl bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#075ce6]">Uppdatera</button>
         </form>
       </div>
 
@@ -162,7 +170,7 @@ export default async function AdminDashboardPage({
         <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <LockNotice />
           <div>
-            <p className="font-bold">Legacy-åtkomst är aktiv</p>
+            <p className="font-semibold">Legacy-åtkomst är aktiv</p>
             <p className="mt-1 leading-6">RBAC-migrationen är förberedd men inte applicerad. Nuvarande super-adminåtkomst bevaras tills produktionsändringen godkänns.</p>
           </div>
         </div>
@@ -176,15 +184,15 @@ export default async function AdminDashboardPage({
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(({ label, value, helper, href, icon: Icon, tone }) => (
-          <Link key={label} href={href} className="group rounded-2xl border border-[#dce3ee] bg-white p-5 shadow-[0_8px_24px_rgba(16,24,40,.04)] transition hover:-translate-y-0.5 hover:border-[#b8cff5] hover:shadow-[0_14px_34px_rgba(16,24,40,.08)]">
+          <Link key={label} href={href} className="group rounded-2xl border border-[#dce3ee] bg-gradient-to-br from-white to-[#f7fbff] p-5 shadow-[0_8px_24px_rgba(16,24,40,.04)] transition hover:-translate-y-0.5 hover:border-[#b8cff5] hover:shadow-[0_14px_34px_rgba(16,24,40,.08)]">
             <div className="flex items-start justify-between gap-3">
               <span className={`grid h-10 w-10 place-items-center rounded-xl ${tone === 'red' ? 'bg-red-50 text-red-700' : tone === 'amber' ? 'bg-amber-50 text-amber-700' : tone === 'green' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-[#0866ff]'}`}>
                 <Icon className="h-[18px] w-[18px]" />
               </span>
               <ArrowRight className="h-4 w-4 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" />
             </div>
-            <p className="mt-5 text-3xl font-black tracking-tight text-[#101828]">{formatNumber(value)}</p>
-            <p className="mt-2 text-sm font-bold text-[#344054]">{label}</p>
+            <p className="mt-5 text-3xl font-semibold tracking-tight text-[#101828]">{formatNumber(value)}</p>
+            <p className="mt-2 text-sm font-medium text-[#344054]">{label}</p>
             <p className="mt-1 text-xs text-[#667085]">{helper}</p>
           </Link>
         ))}
@@ -194,16 +202,16 @@ export default async function AdminDashboardPage({
         {canReadListings ? <section>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black">Senaste annonser</h2>
+              <h2 className="text-lg font-semibold">Senaste annonser</h2>
               <p className="mt-1 text-xs text-[#667085]">Nya objekt som kan kräva operativ uppföljning.</p>
             </div>
-            <Link href="/admin/listings" className="text-sm font-bold text-[#0866ff]">Visa alla</Link>
+            <Link href="/admin/listings" className="text-sm font-semibold text-[#0866ff]">Visa alla</Link>
           </div>
           <AdminTable columns={['Annons', 'Plats', 'Risk', 'Status', 'Skapad']}>
             {(latestListings.data || []).map((listing) => (
               <tr key={listing.id} className="hover:bg-[#f8fafc]">
                 <td className="px-4 py-4">
-                  <Link href={`/admin/listings/${listing.id}`} className="font-bold text-[#101828] hover:text-[#0866ff]">{listing.title}</Link>
+                  <Link href={`/admin/listings/${listing.id}`} className="font-semibold text-[#101828] hover:text-[#0866ff]">{listing.title}</Link>
                   <p className="mt-1 text-xs text-[#667085]">{categoryLabel(listing.category)}</p>
                 </td>
                 <td className="px-4 py-4 text-[#475467]">{listing.city || 'Saknas'}, {listing.country_code || '--'}</td>
@@ -215,18 +223,19 @@ export default async function AdminDashboardPage({
           </AdminTable>
         </section> : (
           <section className="rounded-2xl border border-[#dce3ee] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-black">Rollanpassad överblick</h2>
+            <h2 className="text-lg font-semibold">Rollanpassad överblick</h2>
             <p className="mt-2 text-sm leading-6 text-[#667085]">Den här rollen har inga läsrättigheter till annonser. Dashboarden visar endast de datakällor som rollen uttryckligen får använda.</p>
           </section>
         )}
 
         <div className="space-y-6">
           <section id="system-status" className="rounded-2xl border border-[#dce3ee] bg-white p-5 shadow-sm">
-            <h2 className="text-base font-black">Systemsignaler</h2>
+            <h2 className="text-base font-semibold">Systemsignaler</h2>
             <div className="mt-4 space-y-3">
               <StatusRow label="Supabase dataåtkomst" ok={!queryError} detail={queryError ? 'Delvis fel' : 'Ansluten'} />
               {canReadSystem ? <StatusRow label="Stripe-webhookar" ok={!failedWebhooks.count} detail={failedWebhooks.count ? `${failedWebhooks.count} fel` : 'Inga fel i intervallet'} /> : null}
               {canReadPayments ? <StatusRow label="Betalningar" ok={!failedPayments.count} detail={`${formatNumber(paidPayments.count)} lyckade`} /> : null}
+              {canReadPayments ? <StatusRow label="Företagsfakturor" ok={!overdueBusinessInvoices.count} detail={overdueBusinessInvoices.count ? `${formatNumber(overdueBusinessInvoices.count)} förfallna` : `${formatNumber(openBusinessInvoices.count)} öppna`} /> : null}
               {canReadSubscriptions ? <StatusRow label="Företagsabonnemang" ok detail={`${formatNumber(activeSubscriptions.count)} aktiva`} /> : null}
               {permissions.includes('support.read') ? <StatusRow label="Supportdatamodell" ok={false} detail="Ej driftsatt" neutral /> : null}
             </div>
@@ -235,13 +244,13 @@ export default async function AdminDashboardPage({
           {permissions.includes('audit.read') ? (
             <section className="rounded-2xl border border-[#dce3ee] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-base font-black">Senaste adminaktivitet</h2>
-                <Link href="/admin/audit" className="text-xs font-bold text-[#0866ff]">Audit-logg</Link>
+                <h2 className="text-base font-semibold">Senaste adminaktivitet</h2>
+                <Link href="/admin/audit" className="text-xs font-semibold text-[#0866ff]">Audit-logg</Link>
               </div>
               <div className="mt-4 space-y-3">
                 {(latestAudit.data || []).map((entry) => (
                   <article key={entry.id} className="border-l-2 border-[#dbeafe] pl-3">
-                    <p className="text-sm font-bold text-[#344054]">{String(entry.action).replaceAll('_', ' ')}</p>
+                    <p className="text-sm font-medium text-[#344054]">{String(entry.action).replaceAll('_', ' ')}</p>
                     <p className="mt-1 text-xs text-[#667085]">{entry.actor_role} · {formatDate(entry.created_at)}</p>
                   </article>
                 ))}
@@ -270,7 +279,7 @@ function LockNotice() {
 function StatusRow({ label, ok, detail, neutral = false }: { label: string; ok: boolean; detail: string; neutral?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl bg-[#f8fafc] px-3 py-3">
-      <span className="flex items-center gap-2 text-sm font-semibold text-[#344054]">
+      <span className="flex items-center gap-2 text-sm font-medium text-[#344054]">
         {neutral ? <Webhook className="h-4 w-4 text-[#98a2b3]" /> : ok ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <AlertTriangle className="h-4 w-4 text-amber-600" />}
         {label}
       </span>

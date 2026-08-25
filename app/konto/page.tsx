@@ -18,16 +18,25 @@ import {
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
+import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountListingSummary, type AccountListingSummary } from '@/lib/account-listings-management'
 import { getRequestLocale } from '@/lib/request-locale'
 import { localizePublicHref, translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
-import { hasVerifiedEmailCode } from '@/lib/email-verification'
+import { hasVerifiedAccountEmail } from '@/lib/email-verification'
 import AccountLogoutButton from './AccountLogoutButton'
 import DeleteAccountPanel from './DeleteAccountPanel'
 import ProfileForm from './ProfileForm'
 import { generateAccountMetadata } from '@/lib/account-seo'
+import { getAdminContext } from '@/lib/admin/context'
+import { resolveBusinessAccountScope } from '@/lib/billing/business-account-scope'
+import { ACCOUNT_INTENT_COOKIE } from '@/lib/account-intent'
+import {
+  accountIntentFromCookieAndUser,
+  ensureMarketplaceProfile,
+  isMarketplaceProfileComplete,
+} from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('profile')
 
@@ -56,6 +65,9 @@ type ProfileRow = {
   business_verification_status: string | null
   business_onboarding_status?: string | null
   risk_status: string
+  suspended?: boolean | null
+  deleted_at?: string | null
+  removed_by_admin?: boolean | null
   national_id_last4: string | null
   display_name?: string | null
 }
@@ -77,6 +89,9 @@ export default async function AccountPage() {
   if (!user) redirect(localizePublicHref(locale, '/login'))
 
   const admin = createAdminClient()
+  const adminContext = await getAdminContext().catch(() => null)
+  if (adminContext) redirect('/admin')
+
   const { data: profile } = await supabase
     .from('marketplace_profiles')
     .select(`
@@ -104,13 +119,34 @@ export default async function AccountPage() {
       business_verification_status,
       business_onboarding_status,
       risk_status,
+      suspended,
+      deleted_at,
+      removed_by_admin,
       national_id_last4,
       display_name
     `)
     .eq('user_id', user.id)
     .maybeSingle<ProfileRow>()
 
-  if (!profile) redirect(localizePublicHref(locale, '/register'))
+  if (!profile) {
+    const cookieStore = await cookies()
+    const accountIntent = accountIntentFromCookieAndUser(
+      cookieStore.get(ACCOUNT_INTENT_COOKIE)?.value,
+      user,
+    )
+    if (accountIntent.accountType === 'business') {
+      redirect(localizePublicHref(locale, '/register?account=business'))
+    }
+    await ensureMarketplaceProfile({ user, locale, intent: accountIntent })
+    redirect(localizePublicHref(locale, '/account'))
+  }
+  if (
+    profile.deleted_at &&
+    !profile.removed_by_admin &&
+    profile.risk_status === 'restricted'
+  ) {
+    redirect(localizePublicHref(locale, '/register?reactivate=1'))
+  }
   if (profile.account_type === 'business') {
     await redirectBusinessAccountFromLegacyAccount(admin, user.id, profile, locale)
   }
@@ -139,29 +175,33 @@ export default async function AccountPage() {
   const conversations = (conversationData.data || []) as ConversationRow[]
   const visibleConversationCount = await countVisibleConversations(admin, user.id, conversations)
   const paymentCount = pendingPaymentCount.count || 0
-  const emailVerified = await hasVerifiedEmailCode(profile.email)
+  const emailVerified = await hasVerifiedAccountEmail(profile.email, user)
   const name = displayName(profile, user.email || copy.user)
   const firstName = profile.first_name || name.split(' ')[0] || copy.user
+  const accountNeedsReview =
+    ['restricted', 'blocked', 'suspended'].includes(String(profile.risk_status || '')) ||
+    String(profile.identity_status || '') === 'rejected'
   const privateVerificationComplete =
     emailVerified &&
-    profile.risk_status === 'standard' &&
-    !['needs_review', 'rejected'].includes(String(profile.identity_status || ''))
-  const verificationLabel = privateVerificationComplete ? copy.verified : copy.reviewPending
-  const profileComplete = Boolean(
-    profile.first_name &&
-      profile.last_name &&
-      profile.email &&
-      profile.phone &&
-      profile.address_line_1 &&
-      profile.postal_code &&
-      profile.city,
-  )
+    !accountNeedsReview
+  const verificationLabel = privateVerificationComplete
+    ? copy.basicCheckDone
+    : accountNeedsReview
+      ? copy.needsReview
+      : copy.verifyEmailStatus
+  const profileComplete = isMarketplaceProfileComplete(profile)
+  const createListingHref = profileComplete
+    ? localizePublicHref(locale, '/account/listings/new')
+    : localizePublicHref(
+        locale,
+        `/account/profile?reason=listing&next=${encodeURIComponent(localizePublicHref(locale, '/account/listings/new'))}`,
+      )
 
   const primaryActions = [
     {
       title: copy.createListing,
       text: copy.createListingText,
-      href: localizePublicHref(locale, '/account/listings/new'),
+      href: createListingHref,
       icon: Plus,
       cta: true,
     },
@@ -205,7 +245,7 @@ export default async function AccountPage() {
     { label: copy.overview, href: localizePublicHref(locale, '/account'), icon: UserRound, active: true },
     { label: copy.profile, href: localizePublicHref(locale, '/account/profile'), icon: UserRound },
     { label: copy.listings, href: localizePublicHref(locale, '/account/listings'), icon: FileText },
-    { label: copy.createListing, href: localizePublicHref(locale, '/account/listings/new'), icon: Plus },
+    { label: copy.createListing, href: createListingHref, icon: Plus },
     { label: copy.savedListings, href: localizePublicHref(locale, '/account/saved-listings'), icon: Heart },
     { label: copy.savedSearches, href: localizePublicHref(locale, '/account/saved-searches'), icon: Search },
     { label: copy.messages, href: localizePublicHref(locale, '/account/messages'), icon: MessageCircle },
@@ -220,7 +260,7 @@ export default async function AccountPage() {
           icon: UserRound,
           title: copy.profileNeedsWork,
           text: copy.profileNeedsWorkText,
-          href: '#profile-details',
+          href: localizePublicHref(locale, '/account/profile'),
           label: copy.completeProfile,
         }
       : null,
@@ -259,7 +299,7 @@ export default async function AccountPage() {
         <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-8 sm:px-8 lg:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#0866ff]">
                 {copy.eyebrow}
               </p>
               <h1 className="mt-3 text-4xl tracking-[-0.055em] text-[#101828] sm:text-5xl">
@@ -272,7 +312,7 @@ export default async function AccountPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href={localizePublicHref(locale, '/')}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-bold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#d6e1ee] bg-white px-4 text-sm font-semibold text-[#344054] transition hover:border-[#0866ff] hover:text-[#0866ff]"
               >
                 {copy.home}
               </Link>
@@ -283,97 +323,86 @@ export default async function AccountPage() {
             </div>
           </div>
 
-          <nav
-            aria-label={copy.accountNavigation}
-            className="mt-7 flex gap-2 overflow-x-auto rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-2"
-          >
-            {secondaryNavigation.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                aria-current={item.active ? 'page' : undefined}
-                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-[12px] px-3 text-sm font-bold transition ${
-                  item.active
-                    ? 'bg-[#0866ff] text-white shadow-[0_10px_24px_rgba(8,102,255,.18)]'
-                    : 'text-[#475467] hover:bg-white hover:text-[#0866ff]'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </div>
       </section>
 
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 py-6 sm:px-8 lg:py-9">
-        <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
-          <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
-                    {name}
-                  </h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold text-[#0866ff]">
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    {verificationLabel}
-                  </span>
+      <div className="mx-auto grid max-w-[var(--autorell-page-max)] gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[288px_minmax(0,1fr)] lg:py-9">
+        <AccountSidebar
+          copy={copy}
+          email={user.email || profile.email}
+          name={name}
+          navigation={secondaryNavigation}
+          verificationLabel={verificationLabel}
+        />
+
+        <div className="min-w-0 space-y-6">
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate text-2xl font-semibold tracking-[-0.035em] text-[#101828]">
+                      {name}
+                    </h2>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#0866ff]">
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      {verificationLabel}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
                 </div>
-                <p className="mt-2 text-sm font-medium text-[#475467]">{user.email}</p>
+                <a
+                  href="#profile-details"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-semibold text-white transition hover:bg-[#0866ff]"
+                >
+                  {copy.editProfile}
+                  <ArrowRight className="h-4 w-4" />
+                </a>
               </div>
-              <a
-                href="#profile-details"
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[12px] bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#0866ff]"
-              >
-                {copy.editProfile}
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
-              <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
-              <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
-              <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
-            </div>
-          </div>
-
-          <aside className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-[#eef5ff] text-[#0866ff]">
-                <Bell className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{copy.nextSteps}</h2>
-                <p className="text-sm text-[#667085]">{copy.nextStepsText}</p>
+              <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3">
+                <OverviewMetric icon={CheckCircle2} label={copy.activeListings} value={listingSummary.counts.active} href={localizePublicHref(locale, '/account/listings?status=active')} />
+                <OverviewMetric icon={CreditCard} label={copy.awaitingPaymentShort} value={listingSummary.counts.payment} href={localizePublicHref(locale, '/account/listings?status=payment')} />
+                <OverviewMetric icon={ShieldCheck} label={copy.inReview} value={listingSummary.counts.review} href={localizePublicHref(locale, '/account/listings?status=review')} />
+                <OverviewMetric icon={FileText} label={copy.draftsShort} value={listingSummary.counts.draft} href={localizePublicHref(locale, '/account/listings?status=draft')} />
               </div>
             </div>
-            <div className="mt-4 grid gap-2">
-              {attentionItems.length ? attentionItems.map((item) => (
-                <AttentionCard key={item.title} item={item} />
-              )) : (
-                <div className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
-                    <div>
-                      <h3 className="text-sm font-bold text-[#101828]">{copy.noUrgentActions}</h3>
-                      <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
+
+            <aside className="rounded-[24px] border border-[#dfe7f2] bg-white p-5 shadow-[0_18px_50px_rgba(16,24,40,.045)] sm:p-6">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[#eef5ff] text-[#0866ff]">
+                  <Bell className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold tracking-[-0.025em] text-[#101828]">{copy.nextSteps}</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.nextStepsText}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2">
+                {attentionItems.length ? attentionItems.map((item) => (
+                  <AttentionCard key={item.title} item={item} />
+                )) : (
+                  <div className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#101828]">{copy.noUrgentActions}</h3>
+                        <p className="mt-1 text-sm leading-6 text-[#667085]">{copy.noUrgentActionsText}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </aside>
-        </section>
+                )}
+              </div>
+            </aside>
+          </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {primaryActions.map((card) => (
             <AccountCard key={card.title} {...card} />
           ))}
         </section>
 
-        <section className="mt-6 grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-3">
           <SummaryPanel title={copy.buying} text={copy.buyingText} items={[
             [copy.savedListings, savedListingCount, localizePublicHref(locale, '/account/saved-listings')],
             [copy.savedSearches, savedSearchCount, localizePublicHref(locale, '/account/saved-searches')],
@@ -385,7 +414,7 @@ export default async function AccountPage() {
             [copy.expiredListings, listingSummary.counts.expired, localizePublicHref(locale, '/account/listings?status=expired')],
           ]} />
           <SummaryPanel title={copy.safety} text={copy.safetyText} items={[
-            [copy.profileStatus, profileComplete ? copy.complete : copy.needsUpdate, '#profile-details'],
+            [copy.profileStatus, profileComplete ? copy.complete : copy.needsUpdate, localizePublicHref(locale, '/account/profile')],
             [copy.accountType, copy.privateAccount, '#profile-details'],
             [copy.country, profile.country_code || copy.notSet, '#profile-details'],
           ]} />
@@ -397,7 +426,7 @@ export default async function AccountPage() {
         >
           <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0866ff]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0866ff]">
                 {copy.profileEyebrow}
               </p>
               <h2 className="mt-2 text-3xl tracking-[-0.045em]">{copy.profileTitle}</h2>
@@ -405,7 +434,7 @@ export default async function AccountPage() {
                 {copy.profileText}
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-bold text-[#0866ff]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#eef5ff] px-4 py-2 text-xs font-semibold text-[#0866ff]">
               <ShieldCheck className="h-4 w-4" />
               {copy.secureAccount}
             </span>
@@ -417,6 +446,7 @@ export default async function AccountPage() {
           locale={locale}
           homeHref={localizePublicHref(locale, '/')}
         />
+        </div>
       </div>
     </main>
   )
@@ -499,10 +529,15 @@ async function redirectBusinessAccountFromLegacyAccount(
   profile: ProfileRow,
   locale: PublicLocale,
 ) {
+  const scope = await resolveBusinessAccountScope(userId, admin)
+  if (scope.companyId && scope.subscriptionUserId !== userId) {
+    redirect(localizePublicHref(locale, '/account/company'))
+  }
+
   const { data: subscription } = await admin
     .from('business_subscriptions')
     .select('plan_key,status,payment_status,manually_activated,free_period_ends_at')
-    .eq('user_id', userId)
+    .eq('user_id', scope.subscriptionUserId)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -555,7 +590,7 @@ function AccountCard({
         </span>
         {badge ? (
           <span
-            className={`rounded-full px-2.5 py-1 text-xs font-black ${
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
               cta ? 'bg-white/20 text-white' : 'bg-[#f2f6ff] text-[#0866ff]'
             }`}
           >
@@ -592,15 +627,19 @@ function OverviewMetric({
   return (
     <Link
       href={href}
-      className="rounded-[16px] border border-[#dfe7f2] bg-[#f8fbff] p-4 transition hover:border-[#aac5ef] hover:bg-white"
+      className="group flex min-w-0 flex-col items-center justify-center gap-3 rounded-[18px] border border-[#dfe7f2] bg-[#f8fbff] p-3 text-center transition hover:border-[#aac5ef] hover:bg-white sm:flex-row sm:justify-start sm:gap-4 sm:p-4 sm:text-left"
     >
-      <Icon className="h-4 w-4 text-[#0866ff]" />
-      <strong className="mt-3 block text-2xl tracking-[-0.04em] text-[#101828]">
-        {value.toLocaleString()}
-      </strong>
-      <span className="mt-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#667085]">
-        {label}
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[13px] bg-white text-[#0866ff] ring-1 ring-[#dfe7f2] transition group-hover:ring-[#aac5ef] sm:h-10 sm:w-10">
+        <Icon className="h-4 w-4" />
       </span>
+      <div className="min-w-0">
+        <strong className="block text-3xl font-semibold leading-none tracking-[-0.04em] text-[#101828] sm:text-3xl">
+          {value.toLocaleString()}
+        </strong>
+        <span className="mt-2 block max-w-full break-words text-[10px] font-semibold uppercase leading-4 tracking-[0.04em] text-[#667085] sm:text-xs sm:tracking-[0.08em]">
+          {label}
+        </span>
+      </div>
     </Link>
   )
 }
@@ -613,6 +652,82 @@ type AttentionItem = {
   label: string
 }
 
+type AccountNavigationItem = {
+  label: string
+  href: string
+  icon: LucideIcon
+  active?: boolean
+}
+
+function AccountSidebar({
+  copy,
+  email,
+  name,
+  navigation,
+  verificationLabel,
+}: {
+  copy: ReturnType<typeof getPrivateAccountCopy>
+  email: string
+  name: string
+  navigation: AccountNavigationItem[]
+  verificationLabel: string
+}) {
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  return (
+    <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-hidden">
+      <div className="rounded-[22px] border border-[#dfe7f2] bg-white p-3 shadow-[0_16px_46px_rgba(16,24,40,.045)] sm:p-4 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col">
+        <div className="hidden items-center gap-3 rounded-[18px] bg-[#f8fbff] p-3 lg:flex">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#0866ff] text-sm font-semibold text-white">
+            {initials || 'AR'}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#101828]">{name}</p>
+            <p className="truncate text-xs text-[#667085]">{email}</p>
+            <p className="mt-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-[#0866ff]">
+              {verificationLabel}
+            </p>
+          </div>
+        </div>
+
+        <nav
+          aria-label={copy.accountNavigation}
+          className="grid grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:mt-4 lg:min-h-0 lg:grid-cols-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-1"
+        >
+          {navigation.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              aria-current={item.active ? 'page' : undefined}
+              className={`group flex min-h-[52px] items-center gap-3 rounded-[16px] border px-3 py-2.5 text-[15px] font-semibold leading-tight transition sm:text-sm ${
+                item.active
+                  ? 'border-[#0866ff] bg-[#0866ff] text-white shadow-[0_12px_24px_rgba(8,102,255,.2)]'
+                  : 'border-[#edf2f8] bg-[#fbfdff] text-[#475467] hover:border-[#d6e4f5] hover:bg-white hover:text-[#0866ff]'
+              }`}
+            >
+              <span
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-[12px] ${
+                  item.active
+                    ? 'bg-white/18 text-white'
+                    : 'bg-[#eef5ff] text-[#344054] group-hover:text-[#0866ff]'
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 whitespace-normal break-words">{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </aside>
+  )
+}
+
 function AttentionCard({ item }: { item: AttentionItem }) {
   return (
     <Link
@@ -622,9 +737,9 @@ function AttentionCard({ item }: { item: AttentionItem }) {
       <div className="flex items-start gap-3">
         <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#0866ff]" />
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-[#101828]">{item.title}</h3>
+          <h3 className="text-sm font-semibold text-[#101828]">{item.title}</h3>
           <p className="mt-1 text-sm leading-6 text-[#667085]">{item.text}</p>
-          <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-[#0866ff]">
+          <span className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#0866ff]">
             {item.label}
             <ArrowRight className="h-4 w-4" />
           </span>
@@ -704,7 +819,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     user: 'Autorell user',
     privateAccount: 'Private account',
     verified: 'Verified',
-    reviewPending: 'Review pending',
+    basicCheckDone: 'Basic check complete',
+    needsReview: 'Needs review',
+    verifyEmailStatus: 'Verify email',
     editProfile: 'Edit profile',
     accountNavigation: 'Account navigation',
     overview: 'Overview',
@@ -765,6 +882,82 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     secureAccount: 'Secure account',
   }
 
+  const sv = {
+    ...en,
+    eyebrow: 'Mina sidor',
+    welcome: 'Välkommen',
+    intro:
+      'En enkel översikt för köp, försäljning, sparade fordon, meddelanden och betalningar på Autorell.',
+    home: 'Startsida',
+    signOut: 'Logga ut',
+    user: 'Autorell-användare',
+    privateAccount: 'Privatkonto',
+    verified: 'Verifierad',
+    basicCheckDone: 'Grundkontroll klar',
+    needsReview: 'Behöver granskas',
+    verifyEmailStatus: 'Verifiera mejl',
+    editProfile: 'Redigera profil',
+    accountNavigation: 'Kontonavigation',
+    overview: 'Översikt',
+    profile: 'Profil',
+    listings: 'Annonser',
+    createListing: 'Skapa annons',
+    createListingText: 'Starta en ny fordonsannons och spara den som utkast medan du arbetar.',
+    manageListings: 'Mina annonser',
+    manageListingsText: 'Fortsätt utkast, slutför betalning, redigera, pausa eller markera som såld.',
+    savedListings: 'Sparade annonser',
+    savedListingsText: 'Fordon du sparat för att kunna jämföra och återvända senare.',
+    savedSearches: 'Sparade sökningar',
+    savedSearchesText: 'Sparade filter och sökningar för fordon du bevakar.',
+    messages: 'Meddelanden',
+    messagesText: 'Läs och svara på förfrågningar från köpare och säljare.',
+    payments: 'Betalningar',
+    paymentsText: 'Se annonsordrar, betalningsstatus och kvitton när de finns.',
+    settings: 'Inställningar',
+    support: 'Hjälp',
+    activeListings: 'Aktiva',
+    awaitingPaymentShort: 'Betalning',
+    inReview: 'Granskning',
+    draftsShort: 'Utkast',
+    nextSteps: 'Nästa steg',
+    nextStepsText: 'Bara det som behöver din uppmärksamhet.',
+    profileNeedsWork: 'Komplettera profilen',
+    profileNeedsWorkText: 'Lägg till kontakt- och adressuppgifter innan du publicerar annonser.',
+    completeProfile: 'Komplettera profil',
+    awaitingPayment: 'annonser väntar på betalning',
+    awaitingPaymentText: 'Betalning krävs innan annonsen kan gå vidare.',
+    continuePayment: 'Fortsätt betalning',
+    drafts: 'sparade utkast',
+    draftsText: 'Du kan fortsätta från den senast sparade versionen.',
+    continueDraft: 'Fortsätt utkast',
+    expiringSoon: 'annonser går snart ut',
+    expiringSoonText: 'Se över dem innan annonsperioden tar slut.',
+    reviewListings: 'Se annonser',
+    noUrgentActions: 'Allt ser lugnt ut',
+    noUrgentActionsText: 'Inga utkast, betalningar eller profilåtgärder kräver direkt uppmärksamhet.',
+    buying: 'Köpa',
+    buyingText: 'Sparade fordon, sökningar och konversationer följer ditt konto.',
+    selling: 'Sälja',
+    sellingText: 'Följ dina annonser från utkast till betalning, granskning, aktiv och såld.',
+    safety: 'Konto',
+    safetyText: 'Ditt privatkonto hålls separerat från företag och adminflöden.',
+    soldListings: 'Sålda',
+    expiredListings: 'Utgångna',
+    profileStatus: 'Profilstatus',
+    complete: 'Komplett',
+    needsUpdate: 'Behöver uppdateras',
+    accountType: 'Kontotyp',
+    country: 'Land',
+    notSet: 'Ej valt',
+    profileEyebrow: 'Profil och säkerhet',
+    profileTitle: 'Kontouppgifter',
+    profileText:
+      'Håll kontakt-, adress- och kontouppgifter uppdaterade så att annonser och meddelanden fungerar smidigt.',
+    secureAccount: 'Säkert konto',
+  }
+
+  if ((locale as string) === 'sv') return sv
+
   if (locale === 'sv') {
     return {
       ...en,
@@ -777,7 +970,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       user: 'Autorell-användare',
       privateAccount: 'Privatkonto',
       verified: 'Verifierad',
-      reviewPending: 'Granskning pågår',
+      basicCheckDone: 'Grundkontroll klar',
+      needsReview: 'Behöver granskas',
+      verifyEmailStatus: 'Verifiera mejl',
       editProfile: 'Redigera profil',
       accountNavigation: 'Kontonavigation',
       overview: 'Översikt',
@@ -851,7 +1046,9 @@ function getPrivateAccountCopy(locale: PublicLocale) {
       user: 'Autorell-Nutzer',
       privateAccount: 'Privatkonto',
       verified: 'Verifiziert',
-      reviewPending: 'Prüfung läuft',
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
       editProfile: 'Profil bearbeiten',
       overview: 'Übersicht',
       profile: 'Profil',
@@ -890,5 +1087,77 @@ function getPrivateAccountCopy(locale: PublicLocale) {
     }
   }
 
-  return translatePublicObject(locale, en)
+  return {
+    ...translatePublicObject(locale, en),
+    ...privateAccountStatusCopy(locale),
+  }
+}
+
+function privateAccountStatusCopy(locale: PublicLocale) {
+  const copy: Record<
+    PublicLocale,
+    { basicCheckDone: string; needsReview: string; verifyEmailStatus: string }
+  > = {
+    sv: {
+      basicCheckDone: 'Grundkontroll klar',
+      needsReview: 'Behöver granskas',
+      verifyEmailStatus: 'Verifiera mejl',
+    },
+    en: {
+      basicCheckDone: 'Basic check complete',
+      needsReview: 'Needs review',
+      verifyEmailStatus: 'Verify email',
+    },
+    de: {
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
+    },
+    at: {
+      basicCheckDone: 'Basisprüfung abgeschlossen',
+      needsReview: 'Prüfung erforderlich',
+      verifyEmailStatus: 'E-Mail verifizieren',
+    },
+    be: {
+      basicCheckDone: 'Basiscontrole voltooid',
+      needsReview: 'Controle nodig',
+      verifyEmailStatus: 'E-mail verifiëren',
+    },
+    fr: {
+      basicCheckDone: 'Contrôle de base terminé',
+      needsReview: 'Vérification nécessaire',
+      verifyEmailStatus: 'Vérifier l’e-mail',
+    },
+    es: {
+      basicCheckDone: 'Comprobación básica completada',
+      needsReview: 'Requiere revisión',
+      verifyEmailStatus: 'Verificar correo',
+    },
+    it: {
+      basicCheckDone: 'Controllo di base completato',
+      needsReview: 'Revisione necessaria',
+      verifyEmailStatus: 'Verifica e-mail',
+    },
+    pl: {
+      basicCheckDone: 'Podstawowa kontrola zakończona',
+      needsReview: 'Wymaga weryfikacji',
+      verifyEmailStatus: 'Zweryfikuj e-mail',
+    },
+    nl: {
+      basicCheckDone: 'Basiscontrole voltooid',
+      needsReview: 'Controle nodig',
+      verifyEmailStatus: 'E-mail verifiëren',
+    },
+    fi: {
+      basicCheckDone: 'Perustarkistus valmis',
+      needsReview: 'Vaatii tarkistuksen',
+      verifyEmailStatus: 'Vahvista sähköposti',
+    },
+    da: {
+      basicCheckDone: 'Grundkontrol fuldført',
+      needsReview: 'Kræver gennemgang',
+      verifyEmailStatus: 'Bekræft e-mail',
+    },
+  }
+  return copy[locale]
 }

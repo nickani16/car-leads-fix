@@ -61,5 +61,5 @@ test('super admin receives current and future permissions while MFA and audit re
   assert.match(context, /roles\.includes\('super_admin'\) \? \[\.\.\.ADMIN_PERMISSIONS\]/)
   assert.match(migration, /grant_new_permission_to_super_admin/)
   assert.match(migration, /Explicit full-platform authority; MFA and audit remain mandatory/)
-  assert.match(shell, /God Mode/)
+  assert.match(shell, /Full åtkomst/)
 })

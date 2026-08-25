@@ -67,16 +67,19 @@ const diacriticSignals: Array<[SupportedDetectionLanguage, RegExp, number]> = [
 export default function SellerDescriptionTranslationButton({
   text,
   locale,
+  sourceLanguage,
 }: {
   text: string
   locale: PublicLocale
+  sourceLanguage?: string | null
 }) {
   const trimmed = text.trim()
   if (trimmed.length < 24) return null
 
   const pageLanguage = normalizeComparableLanguage(locale)
   const detectedLanguage = detectLanguage(trimmed)
-  if (detectedLanguage && detectedLanguage === pageLanguage) return null
+  const originalLanguage = detectedLanguage || normalizeComparableLanguage(sourceLanguage)
+  if (!pageLanguage || !originalLanguage || originalLanguage === pageLanguage) return null
 
   const target = googleTargetLanguage[locale] || 'en'
   const href = `https://translate.google.com/?sl=auto&tl=${encodeURIComponent(target)}&text=${encodeURIComponent(trimmed)}&op=translate`
@@ -107,7 +110,9 @@ export default function SellerDescriptionTranslationButton({
   )
 }
 
-function normalizeComparableLanguage(locale: PublicLocale): SupportedDetectionLanguage | null {
+function normalizeComparableLanguage(locale: string | null | undefined): SupportedDetectionLanguage | null {
+  if (locale === 'at') return 'de'
+  if (locale === 'be') return 'nl'
   if (locale === 'sv' || locale === 'en' || locale === 'de' || locale === 'es' || locale === 'fr' || locale === 'it' || locale === 'nl' || locale === 'pl' || locale === 'da' || locale === 'fi') {
     return locale
   }

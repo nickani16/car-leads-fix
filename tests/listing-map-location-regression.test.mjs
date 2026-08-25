@@ -64,8 +64,8 @@ test('listing map resolver centers three listings from their own location data',
 
   const coordinateListing = await resolveListingMapLocation({
     id: 'listing-with-coordinates',
-    address: 'Sveavägen 10',
-    postalCode: '111 57',
+    address: null,
+    postalCode: null,
     city: 'Stockholm',
     countryCode: 'SE',
     latitude: 59.336,
@@ -76,6 +76,20 @@ test('listing map resolver centers three listings from their own location data',
   assert.equal(coordinateListing?.approximate, false)
   assert.equal(coordinateListing?.source, 'listing_coordinates')
   assert.equal(coordinateListing?.query, null)
+
+  geocodeResults.set('Sveavägen 10, 111 57, Stockholm, SE', [{ lat: '59.336900', lon: '18.062900' }])
+  const fullAddressBeatsStoredCoordinates = await resolveListingMapLocation({
+    id: 'listing-with-stale-city-coordinates',
+    address: 'Sveavägen 10',
+    postalCode: '111 57',
+    city: 'Stockholm',
+    countryCode: 'SE',
+    latitude: 59.3293,
+    longitude: 18.0686,
+  })
+  assert.equal(fullAddressBeatsStoredCoordinates?.source, 'geocoded_full_address')
+  assert.equal(fullAddressBeatsStoredCoordinates?.latitude, 59.3369)
+  assert.equal(fullAddressBeatsStoredCoordinates?.longitude, 18.0629)
 
   const fullAddressListing = await resolveListingMapLocation({
     id: 'listing-with-full-address',

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Mail } from 'lucide-react'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
 
 const newsletterCopy = {
@@ -11,6 +12,7 @@ const newsletterCopy = {
     eyebrow: 'Nyheter från Autorell',
     title: 'Få de viktigaste fordonsnyheterna i inkorgen.',
     text: 'Anmäl dig för marknadsnyheter, guider och utvalda fordon från Autorell. Kort, relevant och byggt för smartare fordonsaffärer.',
+    formTitle: 'Prenumerera på Autorells nyhetsbrev',
     placeholder: 'Din e-postadress',
     button: 'Anmäl mig',
     consent: 'Jag godkänner att Autorell skickar nyheter och erbjudanden via e-post.',
@@ -22,6 +24,7 @@ const newsletterCopy = {
     eyebrow: 'News from Autorell',
     title: 'Get the most important vehicle news in your inbox.',
     text: 'Sign up for market updates, guides and selected vehicles from Autorell. Short, relevant and built for smarter vehicle deals.',
+    formTitle: 'Subscribe to the Autorell newsletter',
     placeholder: 'Your email address',
     button: 'Sign me up',
     consent: 'I agree to receive news and offers from Autorell by email.',
@@ -33,6 +36,7 @@ const newsletterCopy = {
     eyebrow: 'Neuigkeiten von Autorell',
     title: 'Die wichtigsten Fahrzeug-News direkt ins Postfach.',
     text: 'Erhalten Sie Marktupdates, Ratgeber und ausgewählte Fahrzeuge von Autorell. Kurz, relevant und für bessere Fahrzeuggeschäfte gemacht.',
+    formTitle: 'Autorell-Newsletter abonnieren',
     placeholder: 'Ihre E-Mail-Adresse',
     button: 'Jetzt anmelden',
     consent: 'Ich stimme Nachrichten und Angeboten von Autorell per E-Mail zu.',
@@ -44,6 +48,7 @@ const newsletterCopy = {
     eyebrow: 'Actualités Autorell',
     title: 'Recevez les actualités véhicules importantes dans votre boîte mail.',
     text: 'Inscrivez-vous pour recevoir des tendances du marché, des guides et une sélection de véhicules Autorell. Court, pertinent et pensé pour de meilleures transactions.',
+    formTitle: 'Abonnez-vous à la newsletter Autorell',
     placeholder: 'Votre adresse e-mail',
     button: 'Je m’inscris',
     consent: 'J’accepte de recevoir les actualités et offres d’Autorell par e-mail.',
@@ -55,6 +60,7 @@ const newsletterCopy = {
     eyebrow: 'Noticias de Autorell',
     title: 'Recibe las noticias de vehículos más importantes en tu correo.',
     text: 'Suscríbete para recibir novedades del mercado, guías y vehículos seleccionados de Autorell. Breve, relevante y pensado para mejores operaciones.',
+    formTitle: 'Suscríbete al boletín de Autorell',
     placeholder: 'Tu correo electrónico',
     button: 'Suscribirme',
     consent: 'Acepto recibir noticias y ofertas de Autorell por correo electrónico.',
@@ -66,6 +72,7 @@ const newsletterCopy = {
     eyebrow: 'Notizie da Autorell',
     title: 'Ricevi le notizie più importanti sui veicoli nella tua casella.',
     text: 'Iscriviti per aggiornamenti di mercato, guide e veicoli selezionati da Autorell. Breve, rilevante e pensato per trattative più intelligenti.',
+    formTitle: 'Iscriviti alla newsletter di Autorell',
     placeholder: 'Il tuo indirizzo e-mail',
     button: 'Iscrivimi',
     consent: 'Accetto di ricevere notizie e offerte da Autorell via e-mail.',
@@ -77,6 +84,7 @@ const newsletterCopy = {
     eyebrow: 'Nieuws van Autorell',
     title: 'Ontvang het belangrijkste voertuignieuws in je inbox.',
     text: 'Schrijf je in voor marktupdates, gidsen en geselecteerde voertuigen van Autorell. Kort, relevant en gemaakt voor slimmere voertuigdeals.',
+    formTitle: 'Meld je aan voor de Autorell-nieuwsbrief',
     placeholder: 'Je e-mailadres',
     button: 'Aanmelden',
     consent: 'Ik ga akkoord met nieuws en aanbiedingen van Autorell per e-mail.',
@@ -88,6 +96,7 @@ const newsletterCopy = {
     eyebrow: 'Aktualności Autorell',
     title: 'Najważniejsze wiadomości motoryzacyjne prosto na e-mail.',
     text: 'Zapisz się, aby otrzymywać informacje rynkowe, poradniki i wybrane pojazdy od Autorell. Krótko, konkretnie i z myślą o lepszych transakcjach.',
+    formTitle: 'Zapisz się do newslettera Autorell',
     placeholder: 'Twój adres e-mail',
     button: 'Zapisz mnie',
     consent: 'Zgadzam się otrzymywać wiadomości i oferty Autorell e-mailem.',
@@ -99,6 +108,7 @@ const newsletterCopy = {
     eyebrow: 'Nyheder fra Autorell',
     title: 'Få de vigtigste køretøjsnyheder i din indbakke.',
     text: 'Tilmeld dig markedsopdateringer, guides og udvalgte køretøjer fra Autorell. Kort, relevant og skabt til smartere handler.',
+    formTitle: 'Tilmeld dig Autorells nyhedsbrev',
     placeholder: 'Din e-mailadresse',
     button: 'Tilmeld mig',
     consent: 'Jeg accepterer at modtage nyheder og tilbud fra Autorell via e-mail.',
@@ -110,6 +120,7 @@ const newsletterCopy = {
     eyebrow: 'Autorellin uutiset',
     title: 'Tärkeimmät ajoneuvouutiset suoraan sähköpostiisi.',
     text: 'Tilaa markkinapäivitykset, oppaat ja valitut ajoneuvot Autorelliltä. Lyhyesti, olennaisesti ja fiksumpia ajoneuvokauppoja varten.',
+    formTitle: 'Tilaa Autorellin uutiskirje',
     placeholder: 'Sähköpostiosoitteesi',
     button: 'Tilaa',
     consent: 'Hyväksyn, että Autorell lähettää minulle uutisia ja tarjouksia sähköpostitse.',
@@ -121,13 +132,39 @@ const newsletterCopy = {
 
 type NewsletterLanguage = keyof typeof newsletterCopy
 
+const homeNewsletterImages: Record<MarketplaceCategorySlug, string> = {
+  cars: '/newsletter-categories/cars.webp',
+  vans: '/newsletter-categories/vans.webp',
+  trucks: '/newsletter-categories/trucks.webp',
+  motorcycles: '/newsletter-categories/motorcycles.webp',
+  construction: '/newsletter-categories/construction.webp',
+  motorhomes: '/newsletter-categories/motorhomes.webp',
+  caravans: '/newsletter-categories/caravans.webp',
+  agriculture: '/newsletter-categories/agriculture.webp',
+  'electric-bikes': '/newsletter-categories/electric-bikes.webp',
+}
+
+const homeNewsletterImageLayout: Partial<Record<MarketplaceCategorySlug, { scale: number; x?: number; y?: number }>> = {
+  cars: { scale: 0.94 },
+  vans: { scale: 1.1 },
+  trucks: { scale: 1.18 },
+  motorcycles: { scale: 1.16 },
+  construction: { scale: 1.2 },
+  motorhomes: { scale: 1.08 },
+  caravans: { scale: 0.98 },
+  agriculture: { scale: 1.12 },
+  'electric-bikes': { scale: 1.08 },
+}
+
 export default function NewsletterSignup({
   locale,
   category = 'footer',
+  imageCategory = 'cars',
   variant = 'section',
 }: {
   locale: PublicLocale
   category?: string
+  imageCategory?: MarketplaceCategorySlug
   variant?: 'section' | 'footer' | 'home'
 }) {
   const language = newsletterLanguage(locale)
@@ -137,7 +174,8 @@ export default function NewsletterSignup({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus('loading')
-    const form = new FormData(event.currentTarget)
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
 
     try {
       const response = await fetch('/api/newsletter', {
@@ -154,33 +192,49 @@ export default function NewsletterSignup({
       })
 
       if (!response.ok) throw new Error('Newsletter request failed')
-      event.currentTarget.reset()
+      formElement.reset()
       setStatus('success')
+      return true
     } catch {
       setStatus('error')
+      return false
     }
   }
 
   if (variant === 'home') {
+    const imageSrc = homeNewsletterImages[imageCategory] || homeNewsletterImages.cars
+    const imageLayout = homeNewsletterImageLayout[imageCategory] || { scale: 1 }
+    const imageTransform = `translate(${imageLayout.x || 0}px, ${imageLayout.y || 0}px) scale(${imageLayout.scale})`
+
     return (
-      <div className="relative overflow-hidden rounded-[20px] bg-[#f5f5f5] shadow-[0_18px_48px_rgba(16,24,40,.06)]">
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[34%] bg-[#0866ff] [clip-path:polygon(21%_0,100%_0,100%_100%,0_100%)] lg:block" />
-        <div className="grid min-h-[292px] gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-center lg:p-10">
-          <div className="relative z-10 max-w-[650px]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0866ff]">{copy.eyebrow}</p>
-            <h2 className="mt-3 max-w-[590px] text-[30px] leading-[1.05] tracking-[-0.045em] text-[#101828] sm:text-[38px]">{copy.title}</h2>
-            <p className="mt-4 max-w-[610px] text-sm leading-7 text-[#344054]">{copy.text}</p>
+      <div className="overflow-hidden border-y border-[#cfd8e4] bg-white px-5 py-8 sm:rounded-[8px] sm:border sm:px-7 sm:py-9">
+        <p className="text-[12px] font-semibold uppercase text-[#0866ff]">{copy.eyebrow}</p>
+        <h2 className="mt-2 max-w-[760px] text-[24px] font-semibold leading-tight text-[#101828] sm:text-[28px]">
+          {copy.title}
+        </h2>
 
-            <div className="relative mt-5 h-[150px] overflow-hidden rounded-[14px] bg-[#0866ff] lg:hidden">
-              <div className="absolute inset-y-0 left-0 w-[58%] bg-white [clip-path:polygon(0_0,100%_0,82%_100%,0_100%)]" />
-              <Image src="/autorell-newsletter-car-cutout.png" alt="" fill sizes="340px" className="relative object-contain object-center drop-shadow-[0_14px_18px_rgba(16,24,40,.16)]" />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,.78fr)_minmax(0,1.22fr)] lg:items-stretch">
+          <div className="relative min-h-[286px] overflow-hidden rounded-[8px] bg-[#b8d3ff] px-5 pb-[150px] pt-5 sm:px-6 lg:min-h-[300px]">
+            <p className="relative z-10 max-w-[390px] text-[15px] font-medium leading-6 text-[#1d2939] sm:text-[16px]">
+              {copy.text}
+            </p>
+            <div className="absolute inset-x-0 bottom-0 h-[176px] sm:h-[190px]">
+              <Image
+                src={imageSrc}
+                alt=""
+                fill
+                sizes="(max-width: 1024px) 100vw, 480px"
+                className="object-contain object-bottom drop-shadow-[0_14px_16px_rgba(16,24,40,.16)]"
+                style={{ transform: imageTransform, transformOrigin: 'bottom center' }}
+              />
             </div>
-
-            <NewsletterForm copy={copy} locale={locale} status={status} submit={submit} compact />
           </div>
 
-          <div className="relative z-10 hidden min-h-[230px] lg:block">
-            <Image src="/autorell-newsletter-car-cutout.png" alt="" fill sizes="410px" className="object-contain object-center drop-shadow-[0_18px_24px_rgba(16,24,40,.18)]" />
+          <div className="flex min-w-0 flex-col justify-center py-1 lg:px-5">
+            <h3 className="text-[20px] font-semibold leading-tight text-[#101828] sm:text-[22px]">
+              {copy.formTitle}
+            </h3>
+            <NewsletterForm copy={copy} locale={locale} status={status} submit={submit} compact />
           </div>
         </div>
       </div>
@@ -227,32 +281,53 @@ function NewsletterForm({
   copy: typeof newsletterCopy[NewsletterLanguage]
   locale: PublicLocale
   status: 'idle' | 'loading' | 'success' | 'error'
-  submit: (event: FormEvent<HTMLFormElement>) => Promise<void>
+  submit: (event: FormEvent<HTMLFormElement>) => Promise<boolean>
   compact?: boolean
 }) {
+  const [emailValue, setEmailValue] = useState('')
+
   return (
-    <form onSubmit={submit} className={compact ? 'mt-6' : ''}>
+    <form
+      onSubmit={async (event) => {
+        const succeeded = await submit(event)
+        if (succeeded) setEmailValue('')
+      }}
+      className={compact ? 'mt-6' : ''}
+    >
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
-      <div className={compact ? 'grid gap-3 sm:grid-cols-[minmax(0,340px)_240px]' : 'flex flex-col gap-3 sm:flex-row'}>
+      <div className={compact ? 'grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(160px,210px)]' : 'flex flex-col gap-3 sm:flex-row'}>
         <label className={compact ? 'relative flex min-h-12 items-center' : 'relative flex min-h-14 flex-1 items-center'}>
           <Mail className={`pointer-events-none absolute ${compact ? 'left-4 h-4 w-4' : 'left-4 h-5 w-5'} text-[#718096]`} />
           <span className="sr-only">{copy.placeholder}</span>
+          {!emailValue ? (
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute top-1/2 -translate-y-1/2 truncate font-normal text-[#7a8699] ${
+                compact ? 'left-11 right-4 text-sm' : 'left-12 right-4 text-sm'
+              }`}
+            >
+              {copy.placeholder}
+            </span>
+          ) : null}
           <input
             required
             type="email"
             name="email"
             autoComplete="email"
-            placeholder={copy.placeholder}
+            aria-label={copy.placeholder}
+            placeholder=""
+            value={emailValue}
+            onChange={(event) => setEmailValue(event.target.value)}
             className={compact
-              ? 'h-12 w-full rounded-[8px] border border-[#b8c4d4] bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'
-              : 'h-14 w-full rounded-[14px] border border-[#d7e0ec] bg-white pl-12 pr-4 text-sm outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'}
+              ? 'h-12 w-full rounded-[8px] border border-[#b8c4d4] bg-white pl-11 pr-4 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'
+              : 'h-14 w-full rounded-[14px] border border-[#d7e0ec] bg-white pl-12 pr-4 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10'}
           />
         </label>
         <button
           type="submit"
           disabled={status === 'loading'}
           className={compact
-            ? 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(8,102,255,.18)] transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'
+            ? 'inline-flex min-h-12 items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'
             : 'inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-6 text-sm font-semibold text-white transition hover:bg-[#075bd8] disabled:cursor-wait disabled:opacity-65'}
         >
           {copy.button}

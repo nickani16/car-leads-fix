@@ -83,7 +83,7 @@ test('my pages show email verification separately from phone format checks', () 
   assert.match(profileForm, /verifyEmailButton/)
   assert.match(emailCodeRequestApi, /getEmailVerificationCodeCopy/)
   assert.match(emailCodeRequestApi, /body\.purpose === 'email_verification'/)
-  assert.match(emailCodeRequestApi, /redirect_path: body\.purpose === 'email_verification'/)
+  assert.match(emailCodeRequestApi, /if \(body\.purpose === 'email_verification'\) \{[\s\S]*challengeRow\.redirect_path = 'email_verification'/)
   assert.match(emailVerification, /auth_email_codes/)
   assert.match(emailVerification, /redirect_path/)
   assert.match(emailVerification, /email_verification/)
@@ -99,10 +99,17 @@ test('my pages show email verification separately from phone format checks', () 
 
 test('private account overview uses explicit email-code verification and risk status for the visible verification badge', () => {
   assert.match(accountPage, /privateVerificationComplete/)
-  assert.match(accountPage, /hasVerifiedEmailCode/)
+  assert.match(accountPage, /hasVerifiedAccountEmail/)
   assert.match(accountPage, /emailVerified/)
-  assert.match(accountPage, /profile\.risk_status === 'standard'/)
-  assert.match(accountPage, /copy\.verified : copy\.reviewPending/)
+  assert.match(accountPage, /accountNeedsReview/)
+  assert.match(accountPage, /String\(profile\.identity_status \|\| ''\) === 'rejected'/)
+  assert.doesNotMatch(accountPage, /copy\.verified : copy\.reviewPending/)
+  assert.match(accountPage, /copy\.basicCheckDone/)
+  assert.match(accountPage, /copy\.needsReview/)
+  assert.match(accountPage, /copy\.verifyEmailStatus/)
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(accountPage, new RegExp(`\\b${locale}: \\{[\\s\\S]*basicCheckDone:[\\s\\S]*needsReview:[\\s\\S]*verifyEmailStatus:`))
+  }
 })
 
 test('profile address place names are normalized before storage', () => {

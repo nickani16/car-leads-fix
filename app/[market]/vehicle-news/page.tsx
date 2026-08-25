@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import VehicleNewsPage from '@/app/components/VehicleNewsPage'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import { getVehicleNews, getVehicleNewsFeaturedListings } from '@/lib/content/vehicle-news'
+import { publicUrlForPath } from '@/lib/public-seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ market: s
   return {
     title: `${copy.title} | Autorell`,
     description: copy.description,
-    alternates: { canonical: `https://www.autorell.com/${market}/vehicle-news` },
+    alternates: { canonical: publicUrlForPath(`/${market}/vehicle-news`) },
   }
 }
 

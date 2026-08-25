@@ -25,12 +25,15 @@ export const COMPANY_IMPORT_HEADERS = [
   'mileage_km',
   'registration_reference',
   'description',
+  'branch',
   'image_1',
   'image_2',
   'image_3',
 ] as const
 
 type CompanyImportHeader = (typeof COMPANY_IMPORT_HEADERS)[number]
+
+const COMPANY_IMPORT_REQUIRED_HEADERS: CompanyImportHeader[] = COMPANY_IMPORT_HEADERS.filter((header) => header !== 'branch')
 
 export type CompanyImportError = {
   field: string
@@ -53,6 +56,7 @@ export type CompanyImportPreviewRow = {
     country: string
     city: string
     municipality: string | null
+    branchName: string | null
     title: string
     mileageKm: number | null
     registrationReference: string | null
@@ -66,6 +70,24 @@ export type CompanyImportPreview = {
   validRows: number
   invalidRows: number
   errors: CompanyImportError[]
+}
+
+export type CompanyImportBranch = {
+  id?: string | null
+  name?: string | null
+  country_code?: string | null
+  region?: string | null
+  municipality?: string | null
+  city?: string | null
+  postal_code?: string | null
+  address_line_1?: string | null
+  contact_email?: string | null
+  contact_phone?: string | null
+}
+
+type CompanyImportOptions = {
+  branches?: CompanyImportBranch[]
+  maxRows?: number
 }
 
 const headerAliases: Record<string, CompanyImportHeader> = {
@@ -82,11 +104,16 @@ const headerAliases: Record<string, CompanyImportHeader> = {
   text: 'description',
   image: 'image_1',
   image_url: 'image_1',
+  filial: 'branch',
+  location: 'branch',
+  location_name: 'branch',
+  branch_name: 'branch',
 }
 
-export function parseCompanyListingImportCsv(csv: string): CompanyImportPreview {
+export function parseCompanyListingImportCsv(csv: string, options: CompanyImportOptions = {}): CompanyImportPreview {
   const matrix = parseCsv(csv)
   const errors: CompanyImportError[] = []
+  const maxRows = Number.isFinite(options.maxRows) && options.maxRows ? Math.max(1, Math.floor(options.maxRows)) : COMPANY_IMPORT_MAX_ROWS
   if (matrix.length < 2) {
     return {
       rows: [],
@@ -97,7 +124,7 @@ export function parseCompanyListingImportCsv(csv: string): CompanyImportPreview 
   }
 
   const headers = matrix[0].map(normalizeHeader)
-  const missingHeaders = COMPANY_IMPORT_HEADERS.filter((header) => !headers.includes(header))
+  const missingHeaders = COMPANY_IMPORT_REQUIRED_HEADERS.filter((header) => !headers.includes(header))
   if (missingHeaders.length) {
     errors.push({
       field: 'headers',
@@ -109,10 +136,10 @@ export function parseCompanyListingImportCsv(csv: string): CompanyImportPreview 
   const rows = matrix
     .slice(1)
     .filter((cells) => cells.some((cell) => cell.trim()))
-    .slice(0, COMPANY_IMPORT_MAX_ROWS)
+    .slice(0, maxRows)
     .map((cells, index) => {
       const raw = Object.fromEntries(headers.map((header, cellIndex) => [header, cells[cellIndex] || '']))
-      const row = normalizeCompanyImportRow(raw, index + 2)
+      const row = normalizeCompanyImportRow(raw, index + 2, options.branches || [])
       const refKey = row.data.referenceNumber?.toLowerCase()
       if (refKey) {
         if (seenReferenceNumbers.has(refKey)) {
@@ -124,10 +151,10 @@ export function parseCompanyListingImportCsv(csv: string): CompanyImportPreview 
       return row
     })
 
-  if (matrix.length - 1 > COMPANY_IMPORT_MAX_ROWS) {
+  if (matrix.length - 1 > maxRows) {
     errors.push({
       field: 'file',
-      message: `Only the first ${COMPANY_IMPORT_MAX_ROWS} rows can be imported at once.`,
+      message: `Only the first ${maxRows} rows can be imported at once on this plan.`,
     })
   }
 
@@ -139,9 +166,16 @@ export function parseCompanyListingImportCsv(csv: string): CompanyImportPreview 
   }
 }
 
-function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: number): CompanyImportPreviewRow {
+function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: number, branches: CompanyImportBranch[]): CompanyImportPreviewRow {
   const errors: CompanyImportError[] = []
   const text = (key: CompanyImportHeader) => String(raw[key] || '').trim()
+  const branchName = text('branch') || null
+  const branch = branchName
+    ? branches.find((item) => normalizeBranchKey(item.name) === normalizeBranchKey(branchName))
+    : null
+  if (branchName && branches.length && !branch) {
+    errors.push({ field: 'branch', message: 'Branch was not found for this company.' })
+  }
   const categoryInput = text('category') || 'cars'
   const category = normalizeMarketplaceCategory(categoryInput)
   if (
@@ -170,7 +204,7 @@ function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: numbe
     errors.push({ field: 'price', message: 'Price must be a positive number.' })
   }
 
-  const requestedCountryCode = text('country_code').toUpperCase()
+  const requestedCountryCode = (branch?.country_code || text('country_code')).toUpperCase()
   const countryCode = euCountryCodes.has(requestedCountryCode) ? requestedCountryCode : ''
   if (!countryCode) errors.push({ field: 'country_code', message: 'Country code must be one of Autorells active markets.' })
 
@@ -179,9 +213,10 @@ function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: numbe
     ? requestedCurrency
     : currencyForCountry(countryCode || requestedCountryCode)
 
-  const city = text('city')
-  if (!city) errors.push({ field: 'city', message: 'City is required.' })
+  const city = branch?.city || text('city')
+  if (!city) errors.push({ field: 'city', message: 'City is required, or use a branch that has a city.' })
   const normalizedLocation = inferMarketplaceLocation({ countryCode: countryCode || 'SE', city })
+  const municipality = branch?.municipality || normalizedLocation.municipality || null
 
   const mileageText = text('mileage_km').replace(/\s/g, '').replace(',', '.')
   const mileageKm = mileageText ? Number(mileageText) : null
@@ -212,7 +247,8 @@ function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: numbe
       countryCode: countryCode || requestedCountryCode || 'SE',
       country: countryCode ? getEuCountryName(countryCode, 'en') : '',
       city,
-      municipality: normalizedLocation.municipality || null,
+      municipality,
+      branchName,
       title: [make, model, modelYear].filter(Boolean).join(' '),
       mileageKm: mileageKm === null ? null : Math.round(mileageKm),
       registrationReference: text('registration_reference') || null,
@@ -220,6 +256,10 @@ function normalizeCompanyImportRow(raw: Record<string, string>, rowNumber: numbe
       imageUrls,
     },
   }
+}
+
+function normalizeBranchKey(value: string | null | undefined) {
+  return String(value || '').trim().toLowerCase()
 }
 
 function normalizeHeader(value: string): CompanyImportHeader {

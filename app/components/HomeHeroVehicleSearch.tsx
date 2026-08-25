@@ -1,22 +1,26 @@
 'use client'
 
 import {
-  FormEvent,
+  type ComponentType,
+  type FormEvent,
+  type ReactNode,
+  type SVGProps,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ComponentType,
-  type SVGProps,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
   BusFront,
-  Check,
   ChevronDown,
-  Clock3,
   Construction,
+  LayoutGrid,
+  Loader2,
+  MapPin,
+  RotateCcw,
   Search,
   SlidersHorizontal,
   Tractor,
@@ -30,6 +34,13 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
+import HomeSearchAnimatedPlaceholder from './HomeSearchAnimatedPlaceholder'
+import { useHomeCategory } from './HomeCategoryProvider'
+import {
+  useVehicleSmartSearchSuggestions,
+  VehicleSmartSearchSuggestionPanel,
+  type VehicleSmartSearchSuggestion,
+} from './VehicleSmartSearchSuggestions'
 import {
   localizePublicHref,
   translatePublic,
@@ -37,41 +48,367 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import {
+  currencyForCountry,
   getMarketplaceCategory,
+  isLeasingMarketplaceCategory,
   marketplaceLanguage,
   type MarketplaceCategorySlug,
 } from '@/lib/marketplace'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
-import { getVehicleSearchPlaceholder } from '@/lib/vehicle-search-placeholder'
-import {
-  useVehicleSmartSearchSuggestions,
-  VehicleSmartSearchSuggestionPanel,
-  type VehicleSmartSearchSuggestion,
-} from './VehicleSmartSearchSuggestions'
+import { translateListingVehicleValue } from '@/lib/listing-display'
 
-type Intent = 'sale' | 'leasing'
+type Intent = 'all' | 'sale' | 'leasing'
 
-type LastSearch = {
-  label: string
-  subLabel: string
-  href: string
-}
-
-type AdvancedFilters = {
+type HomeSearchFilters = {
   make: string
   model: string
-  priceMax: string
-  yearMin: string
-  mileageMax: string
+  minYear: string
+  maxPrice: string
+  maxMileage: string
+  maxOperatingHours: string
   fuel: string
   gearbox: string
+  bodyType: string
+  condition: string
+  technical_axleCount: string
+  technical_engineCc: string
+  technical_payloadKg: string
+  technical_cargoVolumeM3: string
+  technical_operatingWeightKg: string
+  technical_totalWeightKg: string
+  technical_batteryCapacityWh: string
+}
+
+type HomeSearchFilterKey = keyof HomeSearchFilters
+type HomeSearchSlot = HomeSearchFilterKey | 'mode' | 'location'
+
+type CategorySearchLayout = {
+  top: [HomeSearchFilterKey, HomeSearchFilterKey, HomeSearchFilterKey, HomeSearchFilterKey]
+  bottom: [HomeSearchSlot, HomeSearchSlot, HomeSearchSlot]
+  advanced: HomeSearchFilterKey[]
+}
+
+type FacetOption = { value: string; count: number }
+
+type HomeSearchFacets = {
+  makes: FacetOption[]
+  models: FacetOption[]
+  municipalities: FacetOption[]
+  fuels: FacetOption[]
+  gearboxes: FacetOption[]
+  bodyTypes: FacetOption[]
+  technical: Record<string, FacetOption[]>
 }
 
 type SelectedSearchSuggestion = VehicleSmartSearchSuggestion & {
   chipId: string
   dedupeKey: string
 }
+
+type CategoryDefinition = {
+  slug: MarketplaceCategorySlug
+  icon: ComponentType<SVGProps<SVGSVGElement>>
+}
+
+const emptyFilters: HomeSearchFilters = {
+  make: '',
+  model: '',
+  minYear: '',
+  maxPrice: '',
+  maxMileage: '',
+  maxOperatingHours: '',
+  fuel: '',
+  gearbox: '',
+  bodyType: '',
+  condition: '',
+  technical_axleCount: '',
+  technical_engineCc: '',
+  technical_payloadKg: '',
+  technical_cargoVolumeM3: '',
+  technical_operatingWeightKg: '',
+  technical_totalWeightKg: '',
+  technical_batteryCapacityWh: '',
+}
+
+const emptyFacets: HomeSearchFacets = {
+  makes: [],
+  models: [],
+  municipalities: [],
+  fuels: [],
+  gearboxes: [],
+  bodyTypes: [],
+  technical: {},
+}
+
+const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
+  cars: '/marketplace/cars',
+  vans: '/marketplace/vans',
+  motorcycles: '/marketplace/motorcycles',
+  motorhomes: '/marketplace/motorhomes',
+  caravans: '/marketplace/caravans',
+  trucks: '/marketplace/trucks',
+  agriculture: '/marketplace/agriculture',
+  construction: '/marketplace/construction',
+  'electric-bikes': '/marketplace/electric-bikes',
+}
+
+const categoryDefinitions: CategoryDefinition[] = [
+  { slug: 'cars', icon: AutorellCarIcon },
+  { slug: 'vans', icon: AutorellVanIcon },
+  { slug: 'trucks', icon: AutorellTruckIcon },
+  { slug: 'motorcycles', icon: AutorellMotorbikeIcon },
+  { slug: 'construction', icon: Construction },
+  { slug: 'motorhomes', icon: BusFront },
+  { slug: 'caravans', icon: AutorellCaravanIcon },
+  { slug: 'agriculture', icon: Tractor },
+  { slug: 'electric-bikes', icon: AutorellBikeIcon },
+]
+
+const primaryCategorySlugs = new Set<MarketplaceCategorySlug>([
+  'cars',
+  'vans',
+  'trucks',
+  'motorcycles',
+  'construction',
+])
+
+const categoryLayouts: Record<MarketplaceCategorySlug, CategorySearchLayout> = {
+  cars: {
+    top: ['make', 'model', 'minYear', 'maxMileage'],
+    bottom: ['mode', 'maxPrice', 'location'],
+    advanced: ['fuel', 'gearbox', 'bodyType', 'condition'],
+  },
+  vans: {
+    top: ['make', 'model', 'minYear', 'bodyType'],
+    bottom: ['mode', 'maxPrice', 'location'],
+    advanced: [
+      'fuel',
+      'gearbox',
+      'maxMileage',
+      'technical_payloadKg',
+      'technical_cargoVolumeM3',
+      'condition',
+    ],
+  },
+  trucks: {
+    top: ['make', 'model', 'minYear', 'technical_axleCount'],
+    bottom: ['mode', 'bodyType', 'location'],
+    advanced: ['maxPrice', 'technical_payloadKg', 'fuel', 'gearbox', 'condition'],
+  },
+  motorcycles: {
+    top: ['make', 'model', 'minYear', 'bodyType'],
+    bottom: ['technical_engineCc', 'maxMileage', 'location'],
+    advanced: ['maxPrice', 'fuel', 'gearbox', 'condition'],
+  },
+  construction: {
+    top: ['bodyType', 'make', 'model', 'minYear'],
+    bottom: ['mode', 'maxOperatingHours', 'location'],
+    advanced: ['maxPrice', 'technical_operatingWeightKg', 'fuel', 'condition'],
+  },
+  motorhomes: {
+    top: ['make', 'model', 'minYear', 'bodyType'],
+    bottom: ['maxPrice', 'maxMileage', 'location'],
+    advanced: ['fuel', 'gearbox', 'technical_totalWeightKg', 'condition'],
+  },
+  caravans: {
+    top: ['make', 'model', 'minYear', 'bodyType'],
+    bottom: ['maxPrice', 'technical_totalWeightKg', 'location'],
+    advanced: ['condition'],
+  },
+  agriculture: {
+    top: ['bodyType', 'make', 'model', 'minYear'],
+    bottom: ['mode', 'maxOperatingHours', 'location'],
+    advanced: ['maxPrice', 'fuel', 'condition'],
+  },
+  'electric-bikes': {
+    top: ['make', 'model', 'bodyType', 'maxPrice'],
+    bottom: ['technical_batteryCapacityWh', 'condition', 'location'],
+    advanced: [],
+  },
+}
+
+const bodyTypeOptions: Record<MarketplaceCategorySlug, string[]> = {
+  cars: ['Halvkombi', 'Sedan', 'SUV', 'Kombi', 'Coupé', 'Cabriolet', 'Pickup'],
+  vans: ['Skåpbil', 'Crew van', 'Box van', 'Kylbil', 'Minibuss', 'Pickup', 'Flak', 'Chassi'],
+  trucks: ['Dragbil', 'Skåp', 'Flak', 'Tipp', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil', 'Lastväxlare', 'Betongbil', 'Buss'],
+  motorcycles: ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross / enduro', 'Naked', 'Adventure', 'Moped', 'ATV'],
+  construction: ['Grävmaskin', 'Minigrävare', 'Hjullastare', 'Dumper', 'Dozer', 'Vält', 'Lift', 'Kran', 'Kompaktor'],
+  motorhomes: ['Helintegrerad', 'Halvintegrerad', 'Alkov', 'Camper van', 'Plåtis'],
+  caravans: ['Enkelaxel', 'Boggie', 'Familjevagn', 'Vintervagn', 'Liten husvagn'],
+  agriculture: ['Traktor', 'Skördetröska', 'Redskap', 'Press', 'Vagn', 'Spruta', 'Lastare'],
+  'electric-bikes': ['City', 'Hybrid', 'Mountainbike', 'Cargo', 'Folding', 'Speedbike', 'Racer', 'Barncykel'],
+}
+
+const marketOptions = ['EU', 'SE', 'DE', 'AT', 'BE', 'DK', 'ES', 'FI', 'FR', 'IT', 'NL', 'PL']
+
+const copyByLocale = {
+  sv: {
+    title: 'Hitta rätt fordon. En enklare sökning.',
+    searchLabel: 'Beskriv fordonet du letar efter',
+    searchButton: 'Sök',
+    categoriesLabel: 'Fordonskategori',
+    moreCategories: 'Visa fler',
+    moreCategoriesTitle: 'Alla fordonskategorier',
+    close: 'Stäng',
+    purchaseType: 'Annonstyp',
+    buy: 'Köp',
+    leasing: 'Leasing',
+    location: 'Plats eller postnummer',
+    reset: 'Återställ',
+    moreFilters: 'Fler filter',
+    moreFiltersTitle: 'Fler sökfilter',
+    applyFilters: 'Visa valda filter',
+    verified: 'Endast verifierade säljare',
+    market: 'Marknad',
+    allEurope: 'Hela Europa',
+    all: 'Alla',
+    showCount: 'Visa {count} fordon',
+    showVehicles: 'Visa fordon',
+    updatingCount: 'Uppdaterar annonsantal',
+    removeSuggestion: 'Ta bort valt sökförslag',
+    fields: {
+      make: 'Märke',
+      model: 'Modell',
+      minYear: 'Modellår från',
+      maxPrice: 'Pris upp till',
+      maxMileage: 'Körsträcka upp till',
+      maxOperatingHours: 'Drifttimmar upp till',
+      fuel: 'Drivmedel',
+      gearbox: 'Växellåda',
+      bodyType: 'Typ',
+      condition: 'Skick',
+      technical_axleCount: 'Antal axlar',
+      technical_engineCc: 'Cylindervolym',
+      technical_payloadKg: 'Lastvikt upp till',
+      technical_cargoVolumeM3: 'Lastutrymme upp till',
+      technical_operatingWeightKg: 'Maskinvikt upp till',
+      technical_totalWeightKg: 'Totalvikt upp till',
+      technical_batteryCapacityWh: 'Batterikapacitet från',
+    },
+    categoryExamples: {
+      cars: ['Volvo XC60 hybrid', 'BMW 320d kombi', 'Elbil med dragkrok'],
+      vans: ['Skåpbil automat', 'Volkswagen Transporter diesel', 'Elektrisk transportbil'],
+      trucks: ['Lastbil med kran', 'Dragbil Euro 6', 'Tippbil med lift'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touringmotorcykel', 'Moped klass 1'],
+      construction: ['Grävmaskin under 500 000 kr', 'Hjullastare diesel', 'Minigrävare med skopa'],
+      motorhomes: ['Husbil automat', 'Plåtis med solcell', 'Familjehusbil'],
+      caravans: ['Husvagn vinterutrustad', 'Familjevagn med förtält', 'Liten husvagn'],
+      agriculture: ['Traktor med frontlastare', 'Skördetröska', 'Lantbruksvagn'],
+      'electric-bikes': ['Elcykel city', 'Lastcykel el', 'Elcykel med lång räckvidd'],
+    },
+  },
+  en: {
+    title: 'Find the right vehicle. One simpler search.',
+    searchLabel: 'Describe the vehicle you are looking for',
+    searchButton: 'Search',
+    categoriesLabel: 'Vehicle category',
+    moreCategories: 'Show more',
+    moreCategoriesTitle: 'All vehicle categories',
+    close: 'Close',
+    purchaseType: 'Listing type',
+    buy: 'Buy',
+    leasing: 'Leasing',
+    location: 'Location or postcode',
+    reset: 'Reset',
+    moreFilters: 'More filters',
+    moreFiltersTitle: 'More search filters',
+    applyFilters: 'Show selected filters',
+    verified: 'Verified sellers only',
+    market: 'Market',
+    allEurope: 'All of Europe',
+    all: 'Any',
+    showCount: 'View {count} vehicles',
+    showVehicles: 'View vehicles',
+    updatingCount: 'Updating listing count',
+    removeSuggestion: 'Remove selected search suggestion',
+    fields: {
+      make: 'Make',
+      model: 'Model',
+      minYear: 'Model year from',
+      maxPrice: 'Price up to',
+      maxMileage: 'Mileage up to',
+      maxOperatingHours: 'Operating hours up to',
+      fuel: 'Fuel',
+      gearbox: 'Gearbox',
+      bodyType: 'Type',
+      condition: 'Condition',
+      technical_axleCount: 'Number of axles',
+      technical_engineCc: 'Engine capacity',
+      technical_payloadKg: 'Payload up to',
+      technical_cargoVolumeM3: 'Cargo space up to',
+      technical_operatingWeightKg: 'Operating weight up to',
+      technical_totalWeightKg: 'Total weight up to',
+      technical_batteryCapacityWh: 'Battery capacity from',
+    },
+    categoryExamples: {
+      cars: ['Volvo XC60 hybrid', 'BMW 320d estate', 'Electric car with tow bar'],
+      vans: ['Automatic panel van', 'Volkswagen Transporter diesel', 'Electric delivery van'],
+      trucks: ['Truck with a crane', 'Euro 6 tractor unit', 'Tipper truck with lift'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touring motorcycle', 'Class 1 moped'],
+      construction: ['Excavator under 50,000 euros', 'Diesel wheel loader', 'Mini excavator with bucket'],
+      motorhomes: ['Automatic motorhome', 'Camper van with solar panel', 'Family motorhome'],
+      caravans: ['Winter-ready caravan', 'Family caravan with awning', 'Small caravan'],
+      agriculture: ['Tractor with front loader', 'Combine harvester', 'Farm trailer'],
+      'electric-bikes': ['City e-bike', 'Electric cargo bike', 'Long-range e-bike'],
+    },
+  },
+  de: {
+    title: 'Das richtige Fahrzeug. Einfacher gesucht.',
+    searchLabel: 'Beschreiben Sie das gesuchte Fahrzeug',
+    searchButton: 'Suchen',
+    categoriesLabel: 'Fahrzeugkategorie',
+    moreCategories: 'Mehr anzeigen',
+    moreCategoriesTitle: 'Alle Fahrzeugkategorien',
+    close: 'Schließen',
+    purchaseType: 'Angebotsart',
+    buy: 'Kaufen',
+    leasing: 'Leasing',
+    location: 'Ort oder Postleitzahl',
+    reset: 'Zurücksetzen',
+    moreFilters: 'Mehr Filter',
+    moreFiltersTitle: 'Weitere Suchfilter',
+    applyFilters: 'Ausgewählte Filter anzeigen',
+    verified: 'Nur verifizierte Verkäufer',
+    market: 'Markt',
+    allEurope: 'Ganz Europa',
+    all: 'Alle',
+    showCount: '{count} Fahrzeuge anzeigen',
+    showVehicles: 'Fahrzeuge anzeigen',
+    updatingCount: 'Anzeigenanzahl wird aktualisiert',
+    removeSuggestion: 'Ausgewählten Suchvorschlag entfernen',
+    fields: {
+      make: 'Marke',
+      model: 'Modell',
+      minYear: 'Modelljahr ab',
+      maxPrice: 'Preis bis',
+      maxMileage: 'Kilometerstand bis',
+      maxOperatingHours: 'Betriebsstunden bis',
+      fuel: 'Kraftstoff',
+      gearbox: 'Getriebe',
+      bodyType: 'Typ',
+      condition: 'Zustand',
+      technical_axleCount: 'Anzahl Achsen',
+      technical_engineCc: 'Hubraum',
+      technical_payloadKg: 'Nutzlast bis',
+      technical_cargoVolumeM3: 'Ladevolumen bis',
+      technical_operatingWeightKg: 'Einsatzgewicht bis',
+      technical_totalWeightKg: 'Gesamtgewicht bis',
+      technical_batteryCapacityWh: 'Batteriekapazität ab',
+    },
+    categoryExamples: {
+      cars: ['Volvo XC60 Hybrid', 'BMW 320d Kombi', 'Elektroauto mit Anhängerkupplung'],
+      vans: ['Kastenwagen Automatik', 'Volkswagen Transporter Diesel', 'Elektrischer Transporter'],
+      trucks: ['Lkw mit Kran', 'Euro-6-Sattelzugmaschine', 'Kipper mit Ladebordwand'],
+      motorcycles: ['Yamaha MT-07 ABS', 'Touring-Motorrad', 'Moped Klasse 1'],
+      construction: ['Bagger unter 50.000 Euro', 'Radlader Diesel', 'Minibagger mit Schaufel'],
+      motorhomes: ['Wohnmobil Automatik', 'Campervan mit Solarpanel', 'Familien-Wohnmobil'],
+      caravans: ['Winterfester Wohnwagen', 'Familienwohnwagen mit Vorzelt', 'Kleiner Wohnwagen'],
+      agriculture: ['Traktor mit Frontlader', 'Mähdrescher', 'Landwirtschaftsanhänger'],
+      'electric-bikes': ['City-E-Bike', 'Elektrisches Lastenrad', 'E-Bike mit großer Reichweite'],
+    },
+  },
+} as const
 
 let selectedSearchSuggestionSequence = 0
 
@@ -96,559 +433,583 @@ function createSelectedSearchSuggestion(
   }
 }
 
-type AdvancedFilterLabels = {
-  make: string
-  model: string
-  priceMax: string
-  yearMin: string
-  mileageMax: string
-  fuel: string
-  gearbox: string
-  all: string
-  petrol: string
-  diesel: string
-  hybrid: string
-  electric: string
-  automatic: string
-  manual: string
-}
-
-const lastSearchStorageKey = 'autorell:last-home-search'
-
-const categoryRoutes: Record<MarketplaceCategorySlug, string> = {
-  cars: '/marketplace/cars',
-  vans: '/marketplace/vans',
-  motorcycles: '/marketplace/motorcycles',
-  motorhomes: '/marketplace/motorhomes',
-  caravans: '/marketplace/caravans',
-  trucks: '/marketplace/trucks',
-  agriculture: '/marketplace/agriculture',
-  construction: '/marketplace/construction',
-  'electric-bikes': '/marketplace/electric-bikes',
-}
-
-const categories = [
-  { slug: 'cars', label: 'Bilar', icon: AutorellCarIcon },
-  { slug: 'vans', label: 'Transportbilar', icon: AutorellVanIcon },
-  { slug: 'motorcycles', label: 'Motorcyklar', icon: AutorellMotorbikeIcon },
-  { slug: 'motorhomes', label: 'Husbilar', icon: BusFront },
-  { slug: 'caravans', label: 'Husvagnar', icon: AutorellCaravanIcon },
-  { slug: 'trucks', label: 'Lastbilar', icon: AutorellTruckIcon },
-  { slug: 'agriculture', label: 'Lantbruksmaskiner', icon: Tractor },
-    { slug: 'construction', label: 'Entreprenadmaskiner', icon: Construction },
-  { slug: 'electric-bikes', label: 'Cyklar', icon: AutorellBikeIcon },
-] satisfies Array<{
-  slug: MarketplaceCategorySlug
-  label: string
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-}>
-
-const marketOptions = [
-  { code: 'AT', sv: 'Österrike', en: 'Austria', de: 'Österreich' },
-  { code: 'BE', sv: 'Belgien', en: 'Belgium', de: 'Belgien' },
-  { code: 'ES', sv: 'Spanien', en: 'Spain', de: 'Spanien' },
-  { code: 'FR', sv: 'Frankrike', en: 'France', de: 'Frankreich' },
-  { code: 'IT', sv: 'Italien', en: 'Italy', de: 'Italien' },
-  { code: 'PL', sv: 'Polen', en: 'Poland', de: 'Polen' },
-  { code: 'NL', sv: 'Nederlander', en: 'Netherlands', de: 'Niederlande' },
-  { code: 'FI', sv: 'Finland', en: 'Finland', de: 'Finnland' },
-  { code: 'SE', sv: 'Sverige', en: 'Sweden', de: 'Schweden' },
-  { code: 'DE', sv: 'Tyskland', en: 'Germany', de: 'Deutschland' },
-  { code: 'DK', sv: 'Danmark', en: 'Denmark', de: 'Dänemark' },
-  { code: 'EU', sv: 'Europa', en: 'Europe', de: 'Europa' },
-]
-
-const allMarketsCode = 'EU'
-
-const copyByLocale = {
-  sv: {
-    title: 'Ett större utbud av fordon till salu',
-    note: 'Autorell samlar annonser från flera europeiska marknader på ett ställe.',
-    searchAgain: 'Sök igen: Bilar',
-    searchAgainSub: 'Fordon till salu',
-    tabs: { sale: 'Fordon till salu', leasing: 'Leasing av fordon' },
-    verified: 'Visa endast verifierade säljare',
-    expandArea: 'Utöka sökområde',
-    markets: 'Marknader',
-    moreCategories: 'Fler fordonskategorier',
-    moreFilters: 'Fler sökfilter',
-    advanced: {
-      make: 'Märke',
-      model: 'Modell',
-      priceMax: 'Maxpris',
-      yearMin: 'Årsmodell från',
-      mileageMax: 'Miltal max',
-      fuel: 'Drivmedel',
-      gearbox: 'Växellåda',
-      all: 'Visa allt',
-      petrol: 'Bensin',
-      diesel: 'Diesel',
-      hybrid: 'Hybrid',
-      electric: 'El',
-      automatic: 'Automat',
-      manual: 'Manuell',
-    },
-    submit: 'Hitta fordon',
-  },
-  en: {
-    title: 'A wider selection of vehicles for sale',
-    note: 'Autorell gathers listings from several European markets in one place.',
-    searchAgain: 'Search again: Cars',
-    searchAgainSub: 'Vehicles for sale',
-    tabs: { sale: 'Vehicles for sale', leasing: 'Vehicle leasing' },
-    verified: 'Show verified sellers only',
-    expandArea: 'Expand search area',
-    markets: 'Markets',
-    moreCategories: 'More vehicle categories',
-    moreFilters: 'More filters',
-    advanced: {
-      make: 'Make',
-      model: 'Model',
-      priceMax: 'Max price',
-      yearMin: 'Year from',
-      mileageMax: 'Mileage max',
-      fuel: 'Fuel',
-      gearbox: 'Gearbox',
-      all: 'Show all',
-      petrol: 'Petrol',
-      diesel: 'Diesel',
-      hybrid: 'Hybrid',
-      electric: 'Electric',
-      automatic: 'Automatic',
-      manual: 'Manual',
-    },
-    submit: 'Find vehicles',
-  },
-  de: {
-    title: 'Eine größere Auswahl an Fahrzeugen',
-    note: 'Autorell bündelt Anzeigen aus mehreren europäischen Märkten an einem Ort.',
-    searchAgain: 'Erneut suchen: Autos',
-    searchAgainSub: 'Fahrzeuge kaufen',
-    tabs: { sale: 'Fahrzeuge kaufen', leasing: 'Fahrzeugleasing' },
-    verified: 'Nur geprüfte Verkäufer anzeigen',
-    expandArea: 'Suchgebiet erweitern',
-    markets: 'Märkte',
-    moreCategories: 'Weitere Fahrzeugkategorien',
-    moreFilters: 'Weitere Filter',
-    advanced: {
-      make: 'Marke',
-      model: 'Modell',
-      priceMax: 'Max. Preis',
-      yearMin: 'Baujahr ab',
-      mileageMax: 'Kilometer max.',
-      fuel: 'Kraftstoff',
-      gearbox: 'Getriebe',
-      all: 'Alle anzeigen',
-      petrol: 'Benzin',
-      diesel: 'Diesel',
-      hybrid: 'Hybrid',
-      electric: 'Elektro',
-      automatic: 'Automatik',
-      manual: 'Manuell',
-    },
-    submit: 'Fahrzeuge finden',
-  },
-} as const
-
-function marketLabel(
-  option: (typeof marketOptions)[number],
-  locale: PublicLocale,
-) {
-  if (option.code !== allMarketsCode) return getEuCountryName(option.code, locale)
-  if (locale === 'sv') return option.sv
-  if (locale === 'de') return option.de
-  return locale === 'en' ? option.en : translatePublic(locale, option.en)
-}
-
-function localizedLabel(
-  locale: PublicLocale,
-  sv: string,
-  de: string,
-  en: string,
-) {
-  if (locale === 'sv') return sv
-  if (locale === 'de') return de
-  return locale === 'en' ? en : translatePublic(locale, en)
-}
-
 function categoryLabel(slug: MarketplaceCategorySlug, locale: PublicLocale) {
   const category = getMarketplaceCategory(slug)
   const language = marketplaceLanguage(locale)
-  const label = category.labels[language]
-  return locale === 'sv' || locale === 'de' || locale === 'en'
-    ? label
-    : translatePublic(locale, category.labels.en)
+  if (locale === 'sv' || locale === 'de' || locale === 'en') {
+    return category.labels[language]
+  }
+  if (locale === 'at') return category.labels.de
+  return translatePublic(locale, category.labels.en)
+}
+
+function publicNumberLocale(locale: PublicLocale) {
+  if (locale === 'sv') return 'sv-SE'
+  if (locale === 'de') return 'de-DE'
+  if (locale === 'at') return 'de-AT'
+  if (locale === 'be') return 'nl-BE'
+  if (locale === 'fr') return 'fr-FR'
+  if (locale === 'es') return 'es-ES'
+  if (locale === 'it') return 'it-IT'
+  if (locale === 'pl') return 'pl-PL'
+  if (locale === 'nl') return 'nl-NL'
+  if (locale === 'fi') return 'fi-FI'
+  if (locale === 'da') return 'da-DK'
+  return 'en-GB'
+}
+
+function localizedCopy(locale: PublicLocale) {
+  if (locale === 'sv') return copyByLocale.sv
+  if (locale === 'de' || locale === 'at') return copyByLocale.de
+  if (locale === 'en') return copyByLocale.en
+  return translatePublicObject(locale, copyByLocale.en)
+}
+
+function isPostalCode(value: string) {
+  return /^[A-Za-z]{0,2}\s*\d[\d\s-]{2,8}$/.test(value.trim())
+}
+
+function setNonEmptyParam(params: URLSearchParams, key: string, value: string) {
+  const cleanValue = value.trim()
+  if (cleanValue) params.set(key, cleanValue)
+}
+
+function buildHomeSearchParams({
+  category,
+  intent,
+  query,
+  selectedSuggestions,
+  filters,
+  location,
+  geoAreaId,
+  market,
+  verifiedOnly,
+}: {
+  category: MarketplaceCategorySlug
+  intent: Intent
+  query: string
+  selectedSuggestions: SelectedSearchSuggestion[]
+  filters: HomeSearchFilters
+  location: string
+  geoAreaId: string
+  market: string
+  verifiedOnly: boolean
+}) {
+  const params = new URLSearchParams()
+  params.set('categories', category)
+  if (intent !== 'all') {
+    params.set('mode', intent)
+    params.set('offerType', intent === 'leasing' ? 'lease' : 'sale')
+  }
+  if (market && market !== 'EU') params.set('markets', market)
+
+  const locationValue = location.trim()
+  const queryValue = [query.trim(), isPostalCode(locationValue) ? locationValue : '']
+    .filter(Boolean)
+    .join(' ')
+  setNonEmptyParam(params, 'q', queryValue)
+  if (selectedSuggestions.length) {
+    params.set('chips', selectedSuggestions.map((suggestion) => suggestion.title).join(','))
+  }
+
+  if (geoAreaId) {
+    params.set('geoAreaId', geoAreaId)
+    params.set('geoFilterMode', 'strict')
+  } else if (locationValue && !isPostalCode(locationValue)) {
+    params.set('municipality', locationValue)
+  }
+
+  Object.entries(filters).forEach(([key, value]) => setNonEmptyParam(params, key, value))
+  if (verifiedOnly) params.set('verifiedOnly', '1')
+  return params
+}
+
+function uniqueOptions(values: string[]) {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))]
+}
+
+function facetValues(values: FacetOption[] | undefined) {
+  return (values || []).map((option) => option.value)
+}
+
+function priceThresholds(currency: string) {
+  if (currency === 'SEK' || currency === 'DKK' || currency === 'NOK') {
+    return ['50000', '100000', '150000', '250000', '400000', '600000', '1000000', '1500000']
+  }
+  if (currency === 'PLN') {
+    return ['25000', '50000', '75000', '100000', '150000', '250000', '400000', '600000']
+  }
+  return ['5000', '10000', '15000', '20000', '30000', '50000', '75000', '100000']
+}
+
+function years() {
+  const currentYear = new Date().getFullYear() + 1
+  return Array.from({ length: currentYear - 1979 }, (_, index) => String(currentYear - index))
+}
+
+function filterOptions(
+  key: HomeSearchFilterKey,
+  category: MarketplaceCategorySlug,
+  facets: HomeSearchFacets,
+  market: string,
+) {
+  if (key === 'make') return facetValues(facets.makes)
+  if (key === 'model') return facetValues(facets.models)
+  if (key === 'minYear') return years()
+  if (key === 'maxPrice') return priceThresholds(currencyForCountry(market === 'EU' ? '' : market))
+  if (key === 'maxMileage') return ['25000', '50000', '75000', '100000', '150000', '200000', '300000']
+  if (key === 'maxOperatingHours') return ['1000', '2500', '5000', '7500', '10000', '20000', '40000']
+  if (key === 'fuel') {
+    return uniqueOptions([...facetValues(facets.fuels), 'Bensin', 'Diesel', 'El', 'Hybrid', 'Annat'])
+  }
+  if (key === 'gearbox') {
+    return uniqueOptions([...facetValues(facets.gearboxes), 'Automat', 'Manuell'])
+  }
+  if (key === 'bodyType') {
+    return uniqueOptions([...facetValues(facets.bodyTypes), ...bodyTypeOptions[category]])
+  }
+  if (key === 'condition') return ['Ny', 'Begagnad', 'Renoverad', 'Projekt']
+  if (key === 'technical_axleCount') {
+    return uniqueOptions([...facetValues(facets.technical.axleCount), '2', '3', '4', '5', '6+'])
+  }
+  if (key === 'technical_engineCc') return ['125', '300', '500', '750', '1000', '1500', '2000']
+  if (key === 'technical_payloadKg') return ['1000', '2500', '5000', '10000', '20000', '40000', '60000']
+  if (key === 'technical_cargoVolumeM3') return ['5', '10', '20', '40', '60', '80']
+  if (key === 'technical_operatingWeightKg') return ['1500', '3500', '7500', '15000', '25000', '50000', '100000']
+  if (key === 'technical_totalWeightKg') return ['1500', '2500', '3500', '5000', '7500', '12000']
+  if (key === 'technical_batteryCapacityWh') return ['250', '400', '500', '625', '750', '1000']
+  return []
+}
+
+function filterOptionLabel({
+  key,
+  value,
+  locale,
+  market,
+}: {
+  key: HomeSearchFilterKey
+  value: string
+  locale: PublicLocale
+  market: string
+}) {
+  const number = Number(value)
+  const formatter = new Intl.NumberFormat(publicNumberLocale(locale), { maximumFractionDigits: 0 })
+  if (key === 'maxPrice') {
+    return new Intl.NumberFormat(publicNumberLocale(locale), {
+      style: 'currency',
+      currency: currencyForCountry(market === 'EU' ? '' : market),
+      maximumFractionDigits: 0,
+    }).format(number)
+  }
+  if (key === 'maxMileage') {
+    return locale === 'sv'
+      ? `${formatter.format(Math.round(number / 10))} mil`
+      : `${formatter.format(number)} km`
+  }
+  if (key === 'maxOperatingHours') return `${formatter.format(number)} h`
+  if (key === 'technical_engineCc') return `${formatter.format(number)} cc`
+  if (
+    key === 'technical_payloadKg' ||
+    key === 'technical_operatingWeightKg' ||
+    key === 'technical_totalWeightKg'
+  ) {
+    return `${formatter.format(number)} kg`
+  }
+  if (key === 'technical_cargoVolumeM3') return `${formatter.format(number)} m³`
+  if (key === 'technical_batteryCapacityWh') return `${formatter.format(number)} Wh`
+  if (key === 'fuel' || key === 'gearbox' || key === 'bodyType' || key === 'condition') {
+    return translateListingVehicleValue(locale, value)
+  }
+  return value
+}
+
+function marketLabel(code: string, locale: PublicLocale, allEuropeLabel: string) {
+  return code === 'EU' ? allEuropeLabel : getEuCountryName(code, locale)
 }
 
 export default function HomeHeroVehicleSearch({
   locale,
   localListingCount,
   europeListingCount,
+  browseByType,
 }: {
   locale: PublicLocale
   localListingCount?: number | null
   europeListingCount?: number | null
+  browseByType?: ReactNode
 }) {
   const router = useRouter()
-  const t =
-    locale === 'de'
-      ? copyByLocale.de
-      : locale === 'en'
-        ? copyByLocale.en
-        : locale === 'sv'
-          ? copyByLocale.sv
-          : translatePublicObject(locale, copyByLocale.en)
-  const searchPlaceholder = getVehicleSearchPlaceholder(locale)
-  const [intent, setIntent] = useState<Intent>('sale')
-  const [selectedCategories, setSelectedCategories] = useState<MarketplaceCategorySlug[]>([])
+  const { activeCategory: category, setActiveCategory } = useHomeCategory()
+  const t = localizedCopy(locale)
+  const localMarket = defaultSearchCountryForLocale(locale) || 'EU'
+  const defaultMarket = 'EU'
+  const [intent, setIntent] = useState<Intent>('all')
   const [query, setQuery] = useState('')
+  const [location, setLocation] = useState('')
+  const [geoAreaId, setGeoAreaId] = useState('')
+  const [market, setMarket] = useState(defaultMarket)
+  const [filters, setFilters] = useState<HomeSearchFilters>(emptyFilters)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
-    make: '',
-    model: '',
-    priceMax: '',
-    yearMin: '',
-    mileageMax: '',
-    fuel: '',
-    gearbox: '',
-  })
-  const [markets, setMarkets] = useState<string[]>(() => [
-    defaultSearchCountryForLocale(locale) || 'EU',
-  ])
-  const [marketsOpen, setMarketsOpen] = useState(false)
-  const [categoryOpen, setCategoryOpen] = useState(false)
-  const [categoryError, setCategoryError] = useState(false)
-  const [moreCategoriesOpen, setMoreCategoriesOpen] = useState(false)
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [moreFiltersOpen, setMoreFiltersOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
-  const [selectedSearchSuggestions, setSelectedSearchSuggestions] = useState<SelectedSearchSuggestion[]>([])
-  const [lastSearch, setLastSearch] = useState<LastSearch | null>(null)
-  const moreFiltersRef = useRef<HTMLDivElement>(null)
-  const marketsPickerRef = useRef<HTMLDivElement>(null)
+  const [selectedSuggestions, setSelectedSuggestions] = useState<SelectedSearchSuggestion[]>([])
+  const [facets, setFacets] = useState<HomeSearchFacets>(emptyFacets)
+  const [listingCount, setListingCount] = useState<number | null>(
+    europeListingCount ?? localListingCount ?? null,
+  )
+  const [countLoading, setCountLoading] = useState(false)
+  const [countError, setCountError] = useState(false)
+  const categoryMenuRef = useRef<HTMLDivElement>(null)
+  const extraCategoryTabRef = useRef<HTMLButtonElement>(null)
+  const moreFiltersTriggerRef = useRef<HTMLButtonElement>(null)
+  const moreFiltersDialogRef = useRef<HTMLElement>(null)
+  const moreFiltersCloseRef = useRef<HTMLButtonElement>(null)
 
-  const selectedRoute = useMemo(() => {
-    if (selectedCategories.length === 1) {
-      return categoryRoutes[selectedCategories[0]] || '/marketplace'
-    }
-    return '/marketplace'
-  }, [selectedCategories])
-  const selectedCategory =
-    categories.find((item) => item.slug === selectedCategories[0]) || categories[0]
-  const SelectedCategoryIcon = selectedCategory.icon
-  const allVehiclesLabel = localizedLabel(
-    locale,
-    'Alla fordon',
-    'Alle Fahrzeuge',
-    'All vehicles',
+  const categoryLayout = categoryLayouts[category]
+  const quickUsageFilter: HomeSearchFilterKey =
+    category === 'construction' || category === 'agriculture'
+      ? 'maxOperatingHours'
+      : category === 'caravans'
+        ? 'technical_totalWeightKg'
+        : 'maxMileage'
+  const moreFilterKeys = useMemo(() => {
+    const quickKeys = new Set<HomeSearchFilterKey>([
+      'make',
+      'model',
+      'minYear',
+      'maxPrice',
+      quickUsageFilter,
+    ])
+    const categoryKeys = [
+      ...categoryLayout.top,
+      ...categoryLayout.bottom.filter(
+        (slot): slot is HomeSearchFilterKey => slot !== 'mode' && slot !== 'location',
+      ),
+      ...categoryLayout.advanced,
+    ]
+    return [...new Set(categoryKeys)].filter((key) => !quickKeys.has(key))
+  }, [categoryLayout, quickUsageFilter])
+  const visibleCategories = categoryDefinitions.filter(({ slug }) =>
+    intent === 'leasing' ? isLeasingMarketplaceCategory(slug) : true,
   )
-  const chooseCategoryLabel = localizedLabel(
-    locale,
-    'Välj kategori',
-    'Kategorie wählen',
-    'Choose category',
-  )
-  const chooseCategoryErrorLabel = localizedLabel(
-    locale,
-    'Välj en kategori för att söka',
-    'Wählen Sie eine Kategorie für die Suche',
-    'Choose a category to search',
-  )
-  const selectedCategoryLabel =
-    selectedCategories.length === 1
-      ? categoryLabel(selectedCategory.slug, locale)
-      : chooseCategoryLabel
+  const primaryCategories = visibleCategories.filter(({ slug }) => primaryCategorySlugs.has(slug))
+  const extraCategories = visibleCategories.filter(({ slug }) => !primaryCategorySlugs.has(slug))
+  const selectedExtraCategory = extraCategories.find((item) => item.slug === category)
+  const MoreCategoryIcon = selectedExtraCategory?.icon || LayoutGrid
+  const categoryExamples =
+    (t.categoryExamples as Record<MarketplaceCategorySlug, readonly string[]>)[category] ||
+    copyByLocale.en.categoryExamples[category]
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const stored = window.localStorage.getItem(lastSearchStorageKey)
-        if (!stored) return
-        const parsed = JSON.parse(stored) as LastSearch
-        if (parsed?.label && parsed?.href) setLastSearch(parsed)
-      } catch {
-        setLastSearch(null)
-      }
-    }, 0)
+    if (!selectedExtraCategory) return
+    extraCategoryTabRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }, [selectedExtraCategory])
 
-    return () => window.clearTimeout(timer)
-  }, [])
+  const countParams = useMemo(
+    () =>
+      buildHomeSearchParams({
+        category,
+        intent,
+        query,
+        selectedSuggestions,
+        filters,
+        location,
+        geoAreaId,
+        market,
+        verifiedOnly,
+      }).toString(),
+    [category, filters, geoAreaId, intent, location, market, query, selectedSuggestions, verifiedOnly],
+  )
+
+  useEffect(() => {
+    if (!categoryMenuOpen) return
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node) || categoryMenuRef.current?.contains(target)) return
+      setCategoryMenuOpen(false)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCategoryMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [categoryMenuOpen])
 
   useEffect(() => {
     if (!moreFiltersOpen) return
+    const triggerElement = moreFiltersTriggerRef.current
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    moreFiltersCloseRef.current?.focus()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMoreFiltersOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
 
-    function closeOnOutsidePointer(event: PointerEvent) {
-      const target = event.target
-      if (!(target instanceof Node)) return
-      if (moreFiltersRef.current?.contains(target)) return
-      setMoreFiltersOpen(false)
+      const dialog = moreFiltersDialogRef.current
+      if (!dialog) return
+      const focusableElements = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]',
+        ),
+      )
+      if (!focusableElements.length) return
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      const activeElement = document.activeElement
+
+      if (event.shiftKey && (activeElement === firstElement || !dialog.contains(activeElement))) {
+        event.preventDefault()
+        lastElement.focus()
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
     }
-
-    document.addEventListener('pointerdown', closeOnOutsidePointer)
-    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+      triggerElement?.focus()
+    }
   }, [moreFiltersOpen])
 
   useEffect(() => {
-    if (!marketsOpen) return
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setCountLoading(true)
+      setCountError(false)
+      const params = new URLSearchParams(countParams)
+      params.set('limit', '1')
+      params.set('page', '1')
+      params.set('locale', locale)
+      params.set('displayMarket', localMarket)
 
-    function closeMarketsOnOutsidePointer(event: PointerEvent) {
-      const target = event.target
-      if (!(target instanceof Node)) return
-      if (marketsPickerRef.current?.contains(target)) return
-      setMarketsOpen(false)
-    }
-
-    document.addEventListener('pointerdown', closeMarketsOnOutsidePointer)
-    return () => document.removeEventListener('pointerdown', closeMarketsOnOutsidePointer)
-  }, [marketsOpen])
-
-  function toggleMarket(code: string) {
-    setMarkets((current) => {
-      if (code === allMarketsCode) return [allMarketsCode]
-      const selectedCountries = current.filter((item) => item !== allMarketsCode)
-      if (current.includes(code)) {
-        const next = selectedCountries.filter((item) => item !== code)
-        return next.length ? next : [allMarketsCode]
+      try {
+        const response = await fetch(`/api/marketplace/search-v2?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        })
+        if (!response.ok) throw new Error('Search count failed')
+        const payload = (await response.json()) as {
+          totalCount?: number
+          facets?: Partial<HomeSearchFacets>
+        }
+        setListingCount(typeof payload.totalCount === 'number' ? payload.totalCount : null)
+        setFacets({
+          ...emptyFacets,
+          ...payload.facets,
+          technical: payload.facets?.technical || {},
+        })
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          setCountError(true)
+          setListingCount(null)
+        }
+      } finally {
+        if (!controller.signal.aborted) setCountLoading(false)
       }
-      return [...selectedCountries, code]
-    })
-  }
+    }, query.trim() || location.trim() ? 420 : 180)
 
-  function toggleCategory(slug: MarketplaceCategorySlug) {
-    setSelectedCategories((current) => (current.includes(slug) ? [] : [slug]))
-    setCategoryError(false)
-    setCategoryOpen(false)
-  }
-
-  function updateAdvancedFilter(
-    key: keyof AdvancedFilters,
-    value: string,
-  ) {
-    setAdvancedFilters((current) => ({ ...current, [key]: value }))
-  }
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (selectedCategories.length !== 1) {
-      setCategoryError(true)
-      setCategoryOpen(true)
-      return
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
     }
-    const params = new URLSearchParams()
-    const trimmedQuery = query.trim()
-    const chipLabels = selectedSearchSuggestions.map((suggestion) => suggestion.title.trim()).filter(Boolean)
-    if (trimmedQuery) params.set('q', trimmedQuery)
-    if (chipLabels.length) params.set('chips', chipLabels.join(','))
-    if (intent === 'leasing') params.set('mode', 'leasing')
-    if (markets.length) params.set('markets', markets.includes(allMarketsCode) ? allMarketsCode : markets.join(','))
-    if (verifiedOnly) params.set('verified', 'true')
-    Object.entries(advancedFilters).forEach(([key, value]) => {
-      const trimmedValue = value.trim()
-      if (trimmedValue) params.set(key, trimmedValue)
-    })
+  }, [countParams, locale, localMarket, location, query])
 
-    const href = localizePublicHref(
-      locale,
-      `${selectedRoute}${params.size ? `?${params}` : ''}`,
-    )
-    const savedSearch = {
-      label: `${localizedLabel(locale, 'Sök igen', 'Erneut suchen', 'Search again')}: ${
-        [...chipLabels, trimmedQuery].filter(Boolean).join(', ') || (selectedCategories.length ? selectedCategoryLabel : allVehiclesLabel)
-      }`,
-      subLabel: t.tabs[intent],
-      href,
-    }
-
-    try {
-      window.localStorage.setItem(lastSearchStorageKey, JSON.stringify(savedSearch))
-    } catch {
-      // localStorage can be unavailable in private modes. Navigation should still work.
-    }
-    setLastSearch(savedSearch)
-    router.push(href)
-  }
-
-  const selectedMarketOptions = marketOptions.filter((option) => markets.includes(option.code))
-  const selectedMarketsLabel = markets.includes(allMarketsCode)
-    ? marketLabel(marketOptions.find((option) => option.code === allMarketsCode) || marketOptions[0], locale)
-    : selectedMarketOptions.length > 2
-      ? `${selectedMarketOptions.length} ${localizedLabel(locale, 'marknader', 'Märkte', 'markets')}`
-      : selectedMarketOptions.map((option) => marketLabel(option, locale)).join(', ')
-  const smartSearchMarketCode =
-    markets.length === 1 && markets[0] !== allMarketsCode ? markets[0] : defaultSearchCountryForLocale(locale) || undefined
   const smartSearch = useVehicleSmartSearchSuggestions({
     query,
     locale,
-    marketCode: smartSearchMarketCode,
+    marketCode: market === 'EU' ? (localMarket === 'EU' ? undefined : localMarket) : market,
+    category,
     active: searchFocused,
   })
 
+  function updateFilter(key: HomeSearchFilterKey, value: string) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === 'make' ? { model: '' } : {}),
+    }))
+  }
+
+  function selectCategory(nextCategory: MarketplaceCategorySlug) {
+    setActiveCategory(nextCategory)
+    setFilters(emptyFilters)
+    setIntent((current) =>
+      current === 'leasing' && !isLeasingMarketplaceCategory(nextCategory) ? 'all' : current,
+    )
+    setSelectedSuggestions([])
+    setCategoryMenuOpen(false)
+  }
+
+  function changeIntent(nextIntent: Intent) {
+    setIntent(nextIntent)
+    if (nextIntent === 'leasing' && !isLeasingMarketplaceCategory(category)) {
+      setActiveCategory('cars')
+      setFilters(emptyFilters)
+      setSelectedSuggestions([])
+    }
+  }
+
+  function resetSearch() {
+    setQuery('')
+    setLocation('')
+    setGeoAreaId('')
+    setIntent('all')
+    setFilters(emptyFilters)
+    setVerifiedOnly(false)
+    setMarket(defaultMarket)
+    setActiveCategory('cars')
+    setSelectedSuggestions([])
+    setMoreFiltersOpen(false)
+  }
+
   function selectSmartSearchSuggestion(suggestion: VehicleSmartSearchSuggestion) {
     if (suggestion.type === 'listing') return true
-
     const nextSuggestion = createSelectedSearchSuggestion(suggestion)
-    setSelectedSearchSuggestions((current) =>
+    setSelectedSuggestions((current) =>
       current.some((item) => item.dedupeKey === nextSuggestion.dedupeKey)
         ? current
         : [...current, nextSuggestion],
     )
+
     try {
       const url = new URL(suggestion.href, window.location.origin)
       const params = url.searchParams
-      const nextMarkets = params.get('markets')
-      const nextCategories = params.get('categories')
-      const nextMake = params.get('make')
-      const nextModel = params.get('model')
-      const nextFuel = params.get('fuel') || params.get('fuelType')
-      const nextMinYear = params.get('minYear')
-
-      if (nextMarkets) setMarkets(nextMarkets.split(',').filter(Boolean))
-      if (nextCategories) setSelectedCategories(nextCategories.split(',').filter(Boolean) as MarketplaceCategorySlug[])
-      setAdvancedFilters((current) => ({
+      const nextCategories = params.get('categories')?.split(',').filter(Boolean) || []
+      const nextCategory = nextCategories[0] as MarketplaceCategorySlug | undefined
+      if (nextCategory && categoryDefinitions.some((item) => item.slug === nextCategory)) {
+        setActiveCategory(nextCategory)
+      }
+      const nextMarket = params.get('markets')?.split(',').filter(Boolean)[0]
+      if (nextMarket) setMarket(nextMarket)
+      const nextGeoAreaId = params.get('geoAreaId') || params.get('geoPlaceCode') || ''
+      if (nextGeoAreaId) {
+        setGeoAreaId(nextGeoAreaId)
+        setLocation(suggestion.title)
+      }
+      setFilters((current) => ({
         ...current,
-        make: nextMake || current.make,
-        model: nextModel || current.model,
-        fuel: nextFuel || current.fuel,
-        yearMin: nextMinYear || current.yearMin,
+        make: params.get('make') || current.make,
+        model: params.get('model') || current.model,
+        fuel: params.get('fuel') || params.get('fuelType') || current.fuel,
+        minYear: params.get('minYear') || current.minYear,
+        bodyType: params.get('bodyType') || current.bodyType,
       }))
     } catch {
-      // Keep the selected chip even if a malformed suggestion URL slips through.
+      // Keep the selected chip if an external suggestion contains a malformed URL.
     }
+
     setQuery('')
     setSearchFocused(true)
-    window.setTimeout(() => setSearchFocused(true), 150)
     return false
   }
 
-  const searchAgain = lastSearch || {
-    label: t.searchAgain,
-    subLabel: t.searchAgainSub,
-    href: localizePublicHref(locale, '/marketplace/cars'),
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const params = buildHomeSearchParams({
+      category,
+      intent,
+      query,
+      selectedSuggestions,
+      filters,
+      location,
+      geoAreaId,
+      market,
+      verifiedOnly,
+    })
+    const href = localizePublicHref(
+      locale,
+      `${categoryRoutes[category]}?${params.toString()}`,
+    )
+    router.push(href)
   }
-  const titleText =
-    locale === 'sv'
-      ? { before: 'Ett större utbud av fordon till ', highlight: 'salu' }
-      : locale === 'en'
-        ? { before: 'A wider selection of vehicles for ', highlight: 'sale' }
-        : null
-  const noteText = t.note.startsWith('Autorell')
-    ? { brand: 'Autorell', rest: t.note.slice('Autorell'.length) }
-    : null
-  const heroCount = Math.max(europeListingCount || 0, localListingCount || 0)
-  const heroCountText = heroCount
-    ? formatHomeListingCount(locale, heroCount)
-    : ''
+
+  const countLabel =
+    !countError && listingCount !== null
+      ? t.showCount.replace(
+          '{count}',
+          new Intl.NumberFormat(publicNumberLocale(locale), { maximumFractionDigits: 0 }).format(listingCount),
+        )
+      : t.showVehicles
+  const titleParts = t.title.split('. ')
+  const titleLead = titleParts.length > 1 ? `${titleParts[0]}.` : t.title
+  const titleRest = titleParts.length > 1 ? titleParts.slice(1).join('. ') : ''
 
   return (
-    <div className="mx-auto grid w-full max-w-[calc(100dvw-16px)] gap-0 min-[390px]:max-w-[374px] min-[430px]:max-w-[410px] lg:max-w-none lg:grid-cols-[minmax(520px,560px)_380px] lg:items-start lg:justify-center lg:gap-10">
-      <div className="contents lg:hidden">
-        <div className="rounded-t-[12px] bg-white px-5 pb-3 pt-5 text-center">
-          <h1 className="mx-auto max-w-[320px] text-[21px] !font-medium leading-[1.17] tracking-[-0.04em] text-[#101828]">
-            {titleText ? (
-              <>
-                {titleText.before}
-                <span className="text-[#0866ff]">
-                  {titleText.highlight}
-                </span>
-              </>
-            ) : (
-              t.title
-            )}
-          </h1>
-          {heroCountText ? (
-            <p className="mx-auto mt-3 max-w-[300px] text-[13px] font-medium leading-5 text-[#475467]">
-              {heroCountText}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      <form
-        onSubmit={submit}
-        className="relative rounded-b-[12px] bg-white p-4 shadow-none lg:rounded-[12px] lg:px-6 lg:pb-6 lg:pt-3 lg:shadow-[0_2px_10px_rgba(15,23,42,.18)]"
-        role="search"
-      >
-        <div className="-mx-4 -mt-4 border-b border-[#d9e2ef] bg-transparent lg:mx-0 lg:mt-0 lg:bg-white lg:border-[#d8d8d8]">
-          <div className="grid grid-cols-2">
-            {(['sale', 'leasing'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setIntent(tab)}
-                className={`relative min-h-[56px] px-2 text-center text-[14px] transition lg:min-h-[46px] ${
-                  intent === tab
-                    ? '!font-medium text-[#101828]'
-                    : '!font-normal text-[#344054] hover:text-[#0866ff]'
-                }`}
-              >
-                {t.tabs[tab]}
-                {intent === tab ? (
-                  <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-[#0866ff] lg:h-[2px]" />
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative mt-4 lg:mt-4">
-          <div className={`group relative flex min-h-[50px] items-center gap-2 rounded-[8px] bg-[#f0f3f7] px-3 py-2 pr-11 ring-1 ring-[#e2e8f0] transition-all duration-200 focus-within:ring-[#0866ff] lg:min-h-[50px] lg:bg-[#f0f0f0] lg:ring-0 lg:focus-within:ring-1 lg:focus-within:ring-[#101828] ${
-            selectedSearchSuggestions.length
-              ? 'flex-wrap lg:justify-start'
-              : 'gap-3 lg:justify-center lg:px-4 lg:focus-within:justify-between'
-          }`}>
-            {selectedSearchSuggestions.map((suggestion) => (
+    <form onSubmit={submit} role="search" className="mx-auto w-full min-w-0 overflow-x-hidden">
+      <section className="mx-auto w-full max-w-none rounded-[16px] border border-[#cfd8e4] bg-white px-3 py-3 sm:max-w-[900px] sm:rounded-[14px] sm:px-7 sm:py-5 lg:px-10">
+        <h1 className="mx-auto max-w-[310px] text-center text-[19px] font-semibold leading-tight text-[#101828] sm:max-w-none sm:text-[26px] lg:text-[28px]">
+          {titleRest ? (
+            <>
+              <span className="block sm:inline">{titleLead}</span>
+              <span className="block sm:ml-1 sm:inline">{titleRest}</span>
+            </>
+          ) : (
+            t.title
+          )}
+        </h1>
+        <div className="relative mt-2.5 sm:mt-3">
+          <div className="relative flex min-h-[46px] items-center gap-2 rounded-[12px] border border-[#98a2b3] bg-white px-3 pl-9 pr-[50px] transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10 sm:min-h-[52px] sm:pl-10 sm:pr-[60px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#667085] sm:left-3.5 sm:h-5 sm:w-5" aria-hidden="true" />
+            {selectedSuggestions.map((suggestion) => (
               <span
                 key={suggestion.chipId}
-                className="inline-flex max-w-[calc(50%-4px)] shrink-0 items-center gap-1 rounded-[5px] bg-white px-2 py-1 text-[12px] font-medium leading-5 text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,.10)] ring-1 ring-[#d0d5dd] sm:max-w-[calc(33.333%-6px)] lg:max-w-[calc(50%-4px)]"
+                className="inline-flex min-w-0 max-w-[180px] items-center gap-1 rounded-[10px] bg-[#eef5ff] px-2 py-1 text-[12px] font-medium text-[#101828]"
               >
                 <span className="truncate">{suggestion.title}</span>
                 <button
                   type="button"
-                  onPointerDown={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                  }}
-                  onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    setSelectedSearchSuggestions((current) =>
+                  onPointerDown={(event) => event.preventDefault()}
+                  onClick={() =>
+                    setSelectedSuggestions((current) =>
                       current.filter((item) => item.chipId !== suggestion.chipId),
                     )
-                  }}
-                  className="-mr-1 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] transition hover:bg-[#eef2f7] hover:text-[#101828]"
-                  aria-label={localizedLabel(locale, 'Ta bort valt sökförslag', 'Ausgewählten Suchvorschlag entfernen', 'Remove selected search suggestion')}
+                  }
+                  className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[#475467] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                  aria-label={t.removeSuggestion}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </span>
             ))}
             <input
               value={query}
-              onChange={(event) => {
-                setQuery(event.target.value)
-              }}
+              onChange={(event) => setQuery(event.target.value)}
               onFocus={() => setSearchFocused(true)}
-              onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
-              placeholder=""
-              aria-label={searchPlaceholder}
-              className={`h-7 min-w-0 basis-full appearance-none rounded-none !bg-transparent text-[15px] font-normal text-[#101828] outline-none [background:transparent] lg:text-left lg:text-[14px] ${
-                selectedSearchSuggestions.length
-                  ? 'lg:min-w-0'
-                  : 'lg:flex-none lg:w-[190px] lg:transition-[width] lg:duration-200 lg:ease-out lg:focus:w-[calc(100%-36px)]'
-              }`}
+              onBlur={() => window.setTimeout(() => setSearchFocused(false), 140)}
+              aria-label={t.searchLabel}
+              autoComplete="off"
+              className="h-8 min-w-[80px] flex-1 bg-transparent text-[14px] font-normal text-[#101828] outline-none sm:h-9 sm:text-[16px]"
             />
-            {query || selectedSearchSuggestions.length ? null : (
+            {!searchFocused && !query && !selectedSuggestions.length ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 max-w-[calc(100%-64px)] -translate-y-1/2 truncate whitespace-nowrap text-[15px] font-normal text-[#767676] transition-all duration-200 lg:left-1/2 lg:max-w-[calc(100%-88px)] lg:-translate-x-1/2 lg:text-[14px] lg:group-focus-within:left-4 lg:group-focus-within:max-w-[calc(100%-64px)] lg:group-focus-within:translate-x-0"
+                className="pointer-events-none absolute left-9 right-[52px] truncate text-[13px] font-normal text-[#7b8493] sm:left-10 sm:right-[64px] sm:text-[15px]"
               >
-                {searchPlaceholder}
+                <HomeSearchAnimatedPlaceholder examples={categoryExamples} />
               </span>
-            )}
-            <Search className={`h-5 w-5 shrink-0 text-[#101828] transition-all duration-200 ${
-              selectedSearchSuggestions.length
-                ? 'absolute right-4 top-1/2 -translate-y-1/2'
-                : 'absolute right-4 top-1/2 -translate-y-1/2'
-            }`} strokeWidth={2.1} />
+            ) : null}
+            <button
+              type="submit"
+              title={t.searchButton}
+              aria-label={t.searchButton}
+              className="absolute right-1.5 grid h-9 w-9 place-items-center rounded-[9px] bg-[#0866ff] text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25 sm:right-2 sm:h-10 sm:w-10 sm:rounded-[10px]"
+            >
+              <ArrowRight className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2.4} aria-hidden="true" />
+            </button>
           </div>
           <VehicleSmartSearchSuggestionPanel
             query={query}
@@ -660,454 +1021,466 @@ export default function HomeHeroVehicleSearch({
             active={searchFocused}
           />
         </div>
+      </section>
 
-        <label className="group mt-5 flex cursor-pointer items-center gap-2 text-sm !font-normal text-[#101828] lg:mt-7 lg:text-[14px] [&_*]:!font-normal">
-          <input
-            type="checkbox"
-            checked={verifiedOnly}
-            onChange={(event) => setVerifiedOnly(event.target.checked)}
-            className="peer sr-only"
-          />
-          <span
-            className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[4px] border transition duration-200 ease-out group-hover:border-[#0866ff] peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 lg:h-[18px] lg:w-[18px]"
-            style={{
-              backgroundColor: verifiedOnly ? '#0866ff' : '#ffffff',
-              borderColor: verifiedOnly ? '#0866ff' : '#8d96a6',
-              transform: verifiedOnly ? 'scale(1.05)' : 'scale(1)',
-            }}
+      <section className="relative mx-auto mt-2 w-full max-w-none overflow-hidden rounded-[14px] border border-[#cfd8e4] bg-white sm:mt-3 sm:max-w-[var(--autorell-page-max)] sm:rounded-[14px]">
+        <div ref={categoryMenuRef} className="relative border-b border-[#d8e0ea]">
+          <div
+            role="tablist"
+            aria-label={t.categoriesLabel}
+            className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <Check
-              className={`h-3.5 w-3.5 text-white transition duration-200 ease-out ${
-                verifiedOnly ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
-              }`}
-              strokeWidth={3}
-            />
-          </span>
-          <span>{t.verified}</span>
-        </label>
-
-        <div ref={marketsPickerRef} className="relative mt-7 hidden lg:block">
-          <div className="mb-2 text-[14px] font-semibold text-[#101828]">
-            {t.expandArea}
-          </div>
-          <button
-            type="button"
-            onClick={() => setMarketsOpen((current) => !current)}
-            className="flex min-h-[48px] w-[247px] items-center justify-between rounded-[8px] border border-[#c9c9c9] bg-white px-3 text-left text-[15px] !font-normal text-[#101828] transition hover:border-[#0866ff] [&_*]:!font-normal"
-          >
-            <span className="truncate !font-normal">{selectedMarketsLabel}</span>
-            <ChevronDown className={`h-5 w-5 shrink-0 transition ${marketsOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
-          </button>
-          {marketsOpen ? (
-            <MarketPicker
-              locale={locale}
-              markets={markets}
-              onToggle={toggleMarket}
-              className="absolute left-0 top-[calc(100%+8px)] z-50 w-[320px]"
-            />
-          ) : null}
-        </div>
-
-        <div className="relative mt-7 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setCategoryOpen((current) => !current)}
-            className="flex min-h-[48px] w-full items-center justify-between rounded-[10px] border border-[#d8e0ec] bg-white px-3 text-left transition hover:border-[#0866ff]"
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              <SelectedCategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
-              <span className="truncate text-sm font-medium text-[#101828]">
-                {selectedCategoryLabel}
-              </span>
-            </span>
-            <ChevronDown className={`h-5 w-5 shrink-0 transition ${categoryOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
-          </button>
-          {categoryOpen ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 grid max-h-[310px] gap-2 overflow-auto rounded-[12px] border border-[#d8e0ec] bg-white p-2 shadow-[0_20px_42px_rgba(15,23,42,.18)]">
-              {categories.map(({ slug, icon: Icon }) => (
-                <button
-                  key={slug}
-                  type="button"
-                  onClick={() => toggleCategory(slug)}
-                  className={`flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-left text-sm font-normal transition ${
-                    selectedCategories.includes(slug)
-                      ? 'bg-[#eef5ff] text-[#0866ff]'
-                      : 'text-[#101828] hover:bg-[#f6f9ff]'
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
-          {categoryError ? (
-            <p className="mt-2 text-sm font-medium text-[#d92d20]">{chooseCategoryErrorLabel}</p>
-          ) : null}
-        </div>
-
-        <div className="mt-8 hidden grid-cols-3 gap-2 lg:grid">
-          {categories.slice(0, 6).map(({ slug, icon: Icon }) => (
-            <button
-              key={slug}
-              type="button"
-              onClick={() => toggleCategory(slug)}
-              aria-pressed={selectedCategories.includes(slug)}
-              className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] font-normal transition ${
-                selectedCategories.includes(slug)
-                  ? 'border-[#0866ff] bg-white text-[#101828]'
-                  : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
-              }`}
-            >
-              <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-              <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
-            </button>
-          ))}
-        </div>
-        {categoryError ? (
-          <p className="mt-3 hidden text-sm font-medium text-[#d92d20] lg:block">{chooseCategoryErrorLabel}</p>
-        ) : null}
-
-        {!moreCategoriesOpen ? (
-          <div className="mt-3 hidden lg:block">
-            <button
-              type="button"
-              onClick={() => setMoreCategoriesOpen(true)}
-              aria-expanded={moreCategoriesOpen}
-              className="group inline-flex items-center gap-2 text-[14px] !font-medium text-[#0866ff] transition hover:text-[#0057e6]"
-            >
-              {t.moreCategories}
-              <ArrowRight
-                className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-1"
-                strokeWidth={2.2}
-              />
-            </button>
-          </div>
-        ) : null}
-
-        {moreCategoriesOpen ? (
-          <div className="mt-3 hidden grid-cols-3 gap-2 lg:grid">
-            {categories.slice(6).map(({ slug, icon: Icon }) => (
+            <div className="grid min-w-[690px] grid-cols-6 lg:min-w-0">
+              {primaryCategories.map(({ slug, icon: Icon }) => {
+                const selected = category === slug
+                return (
+                  <button
+                    key={slug}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => selectCategory(slug)}
+                    className={`relative flex min-h-[47px] flex-col items-center justify-center gap-0.5 px-2 py-1 text-center text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-[54px] sm:py-1.5 sm:text-[13px] lg:min-h-[58px] ${
+                      selected
+                        ? 'bg-[#f5f9ff] text-[#0866ff]'
+                        : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
+                    }`}
+                  >
+                    <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} aria-hidden="true" />
+                    <span className="max-w-full truncate">{categoryLabel(slug, locale)}</span>
+                    {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
+                  </button>
+                )
+              })}
               <button
-                key={slug}
+                ref={extraCategoryTabRef}
                 type="button"
-                onClick={() => toggleCategory(slug)}
-                aria-pressed={selectedCategories.includes(slug)}
-                className={`flex min-h-[45px] items-center gap-2 rounded-[8px] border px-3 text-left text-[14px] font-normal transition ${
-                  selectedCategories.includes(slug)
-                    ? 'border-[#0866ff] bg-white text-[#101828]'
-                    : 'border-[#c9c9c9] bg-white text-[#101828] hover:border-[#0866ff]'
+                role="tab"
+                aria-selected={Boolean(selectedExtraCategory)}
+                aria-expanded={categoryMenuOpen}
+                aria-controls="home-search-category-menu"
+                onClick={() => setCategoryMenuOpen((current) => !current)}
+                className={`relative flex min-h-[47px] flex-col items-center justify-center gap-0.5 px-2 py-1 text-center text-[11px] font-medium transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:min-h-[54px] sm:py-1.5 sm:text-[13px] lg:min-h-[58px] ${
+                  selectedExtraCategory
+                    ? 'bg-[#f5f9ff] text-[#0866ff]'
+                    : 'text-[#475467] hover:bg-[#f8fafc] hover:text-[#101828]'
                 }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 ${selectedCategories.includes(slug) ? 'text-[#0866ff]' : 'text-[#101828]'}`} />
-                <span className={`truncate ${selectedCategories.includes(slug) ? 'font-medium' : 'font-normal'}`}>{categoryLabel(slug, locale)}</span>
+                <MoreCategoryIcon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} aria-hidden="true" />
+                <span className="max-w-full truncate">
+                  {selectedExtraCategory ? categoryLabel(selectedExtraCategory.slug, locale) : t.moreCategories}
+                </span>
+                {selectedExtraCategory ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
               </button>
-            ))}
+            </div>
           </div>
-        ) : null}
 
-        <div ref={moreFiltersRef} className="relative mt-7 lg:mt-6">
-          <button
-            type="button"
-            onClick={() => setMoreFiltersOpen((current) => !current)}
-            className="inline-flex items-center gap-2 text-[15px] font-semibold text-[#101828] lg:text-[16px]"
-          >
-            {t.moreFilters}
-            <ChevronDown className={`h-4 w-4 transition ${moreFiltersOpen ? 'rotate-180 text-[#0866ff]' : ''}`} />
-          </button>
-          {moreFiltersOpen ? (
-            <AdvancedFiltersPanel
-              labels={t.advanced}
-              values={advancedFilters}
-              onChange={updateAdvancedFilter}
-            />
+          {categoryMenuOpen ? (
+            <div
+              id="home-search-category-menu"
+              role="dialog"
+              aria-modal="false"
+              aria-labelledby="home-search-category-title"
+              className="fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[130] border border-[#cfd8e4] bg-white p-4 shadow-[0_20px_50px_rgba(15,23,42,.24)] sm:left-1/2 sm:right-auto sm:w-[540px] sm:-translate-x-1/2 sm:rounded-[8px] lg:absolute lg:bottom-auto lg:left-auto lg:right-3 lg:top-[calc(100%+8px)] lg:w-[520px] lg:translate-x-0"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <h2 id="home-search-category-title" className="text-[17px] font-semibold text-[#101828]">
+                  {t.moreCategoriesTitle}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setCategoryMenuOpen(false)}
+                  className="grid h-11 w-11 place-items-center text-[#475467] hover:text-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                  aria-label={t.close}
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {extraCategories.map(({ slug, icon: Icon }) => {
+                  const selected = category === slug
+                  return (
+                    <button
+                      key={slug}
+                      type="button"
+                      onClick={() => selectCategory(slug)}
+                      className={`flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-[7px] border px-2 py-2 text-center text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] ${
+                        selected
+                          ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
+                          : 'border-[#d8e0ea] text-[#344054] hover:border-[#0866ff]'
+                      }`}
+                    >
+                      <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden="true" />
+                      <span>{categoryLabel(slug, locale)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           ) : null}
         </div>
 
-        <button
-          type="submit"
-          className="mt-6 flex min-h-[50px] w-full items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-[15px] !font-medium text-white shadow-none transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#0057e6] active:translate-y-0 lg:min-h-[48px]"
-        >
-          {t.submit}
-        </button>
+        <div className="px-3 py-2.5 sm:px-5 sm:py-3 lg:px-7 lg:pb-3 lg:pt-5">
+          <div className="grid min-w-0 grid-cols-2 gap-x-2.5 gap-y-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,.95fr)_minmax(220px,.9fr)] lg:items-end lg:gap-x-4">
+            <div className="order-0 col-span-2 grid min-w-0 grid-cols-2 gap-x-2.5 lg:col-start-1 lg:row-start-1 lg:gap-x-4">
+              {(['make', 'model'] as const).map((key) => (
+                <HomeFilterControl
+                  key={key}
+                  filterKey={key}
+                  label={t.fields[key]}
+                  value={filters[key]}
+                  options={filterOptions(key, category, facets, market === 'EU' ? localMarket : market)}
+                  allLabel={t.all}
+                  locale={locale}
+                  market={market === 'EU' ? localMarket : market}
+                  disabled={key === 'model' && !filters.make}
+                  hideLabel
+                  onChange={(value) => updateFilter(key, value)}
+                />
+              ))}
+            </div>
 
-        <p className="mt-4 text-sm leading-6 text-[#101828] lg:hidden">
-          {noteText ? (
-            <>
-              <span className="font-medium text-[#0866ff]">{noteText.brand}</span>
-              {noteText.rest}
-            </>
-          ) : (
-            t.note
-          )}
-        </p>
-      </form>
+            <div className="order-2 col-span-2 lg:order-0 lg:col-span-1 lg:col-start-3 lg:row-start-1">
+              <LocationControl
+                label={t.location}
+                value={location}
+                suggestions={facetValues(facets.municipalities)}
+                hideLabel
+                onChange={(value) => {
+                  setLocation(value)
+                  setGeoAreaId('')
+                }}
+              />
+            </div>
 
-      <button
-        type="button"
-        onClick={() => router.push(searchAgain.href)}
-        className="mt-3 flex min-h-[62px] w-full items-center justify-between rounded-[12px] bg-white px-5 text-left shadow-none transition active:scale-[.99] lg:hidden"
-      >
-        <span>
-          <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
-            <Clock3 className="h-4 w-4" />
-            {searchAgain.label}
-          </span>
-          <span className="mt-1 block text-sm text-[#667085]">
-            {searchAgain.subLabel}
-          </span>
-        </span>
-        <ChevronDown className="-rotate-90 h-5 w-5 text-[#101828]" />
-      </button>
+            <SearchSubmitButton
+              className="order-3 col-span-2 flex w-full lg:order-0 lg:col-span-1 lg:col-start-4 lg:row-start-1"
+              label={countLabel}
+              loading={countLoading}
+              loadingLabel={t.updatingCount}
+            />
+          </div>
 
-      <div className="hidden lg:block">
-        <div className="rounded-[12px] bg-white/95 p-6 shadow-[0_18px_46px_rgba(15,23,42,.20)] backdrop-blur-md">
-          <h1 className="text-[40px] !font-medium leading-[1.28] tracking-[-0.045em] text-[#101828]">
-            {titleText ? (
-              <>
-                {titleText.before}
-                <span className="text-[#0866ff] underline decoration-[#0866ff] decoration-2 underline-offset-[4px]">
-                  {titleText.highlight}
-                </span>
-              </>
-            ) : (
-              t.title
-            )}
-          </h1>
-          <p className="mt-5 text-[15px] leading-6 text-[#101828]">
-            {noteText ? (
-              <>
-                <span className="font-medium text-[#0866ff]">{noteText.brand}</span>
-                {noteText.rest}
-              </>
-            ) : (
-              t.note
-            )}
-          </p>
+          <div className="mt-0.5 flex min-h-7 items-center justify-end gap-4">
+            <button
+              type="button"
+              onClick={resetSearch}
+              className="inline-flex min-h-7 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:gap-2 sm:text-[13px]"
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              {t.reset}
+            </button>
+            <button
+              ref={moreFiltersTriggerRef}
+              type="button"
+              onClick={() => setMoreFiltersOpen(true)}
+              aria-expanded={moreFiltersOpen}
+              aria-controls="home-search-more-filters"
+              className="inline-flex min-h-7 items-center gap-1.5 text-[12px] font-medium text-[#475467] transition hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] sm:gap-2 sm:text-[13px]"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              {t.moreFilters}
+            </button>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => router.push(searchAgain.href)}
-          className="mt-4 flex min-h-[66px] w-full items-center justify-between rounded-[12px] bg-white px-6 text-left shadow-[0_8px_24px_rgba(15,23,42,.16)] transition hover:translate-x-0.5"
+        {browseByType ? (
+          <div className="px-3 pb-4 pt-2 sm:px-5 sm:pb-5 sm:pt-3 lg:px-7">
+            {browseByType}
+          </div>
+        ) : null}
+      </section>
+
+      {moreFiltersOpen ? createPortal(
+        <div
+          id="home-search-more-filters"
+          className="fixed inset-0 z-[260] flex items-end justify-center bg-[#101828]/55 sm:items-center sm:p-6"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setMoreFiltersOpen(false)
+          }}
         >
-          <span>
-            <span className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
-              <Clock3 className="h-4 w-4" />
-              {searchAgain.label}
-            </span>
-            <span className="mt-1 block text-sm text-[#667085]">
-              {searchAgain.subLabel}
-            </span>
-          </span>
-          <ChevronDown className="-rotate-90 h-5 w-5 text-[#101828]" />
-        </button>
-      </div>
-    </div>
+          <section
+            ref={moreFiltersDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-search-more-filters-title"
+            className="flex max-h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-t-[8px] bg-white pt-4 shadow-[0_24px_64px_rgba(15,23,42,.28)] sm:max-h-[88dvh] sm:max-w-[760px] sm:rounded-[8px] sm:pt-5"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-4 px-4 sm:px-6">
+              <h2 id="home-search-more-filters-title" className="text-[20px] font-semibold text-[#101828]">
+                {t.moreFiltersTitle}
+              </h2>
+              <button
+                ref={moreFiltersCloseRef}
+                type="button"
+                onClick={() => setMoreFiltersOpen(false)}
+                className="grid h-11 w-11 place-items-center text-[#475467] hover:text-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                aria-label={t.close}
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 sm:px-6">
+              <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
+                <PurchaseTypeControl
+                  label={t.purchaseType}
+                  allLabel={t.all}
+                  buyLabel={t.buy}
+                  leasingLabel={t.leasing}
+                  value={intent}
+                  onChange={changeIntent}
+                />
+                {moreFilterKeys.map((key) => (
+                  <HomeFilterControl
+                    key={key}
+                    filterKey={key}
+                    label={t.fields[key]}
+                    value={filters[key]}
+                    options={filterOptions(key, category, facets, market === 'EU' ? localMarket : market)}
+                    allLabel={t.all}
+                    locale={locale}
+                    market={market === 'EU' ? localMarket : market}
+                    onChange={(value) => updateFilter(key, value)}
+                  />
+                ))}
+                <HomeSelectControl
+                  id="home-search-market"
+                  label={t.market}
+                  value={market}
+                  options={marketOptions.map((code) => ({
+                    value: code,
+                    label: marketLabel(code, locale, t.allEurope),
+                  }))}
+                  onChange={setMarket}
+                />
+              </div>
+
+              <label className="mt-5 flex min-h-11 cursor-pointer items-center gap-3 text-[14px] font-medium text-[#344054]">
+                <input
+                  type="checkbox"
+                  checked={verifiedOnly}
+                  onChange={(event) => setVerifiedOnly(event.target.checked)}
+                  className="h-5 w-5 rounded-[4px] border-[#98a2b3] accent-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                />
+                {t.verified}
+              </label>
+            </div>
+
+            <div className="shrink-0 border-t border-[#edf1f6] bg-white px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-6">
+              <button
+                type="button"
+                onClick={() => setMoreFiltersOpen(false)}
+                className="min-h-12 w-full rounded-[12px] bg-[#0866ff] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25"
+              >
+                {t.applyFilters}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body,
+      ) : null}
+    </form>
   )
 }
 
-function formatHomeListingCount(locale: PublicLocale, count: number) {
-  void locale
-  void count
-  return ''
-}
-
-function MarketPicker({
+function HomeFilterControl({
+  filterKey,
+  label,
+  value,
+  options,
+  allLabel,
   locale,
-  markets,
-  onToggle,
-  className = '',
+  market,
+  disabled = false,
+  hideLabel = false,
+  onChange,
 }: {
+  filterKey: HomeSearchFilterKey
+  label: string
+  value: string
+  options: string[]
+  allLabel: string
   locale: PublicLocale
-  markets: string[]
-  onToggle: (code: string) => void
-  className?: string
+  market: string
+  disabled?: boolean
+  hideLabel?: boolean
+  onChange: (value: string) => void
 }) {
   return (
-    <div className={`grid grid-cols-2 gap-2 rounded-[12px] bg-white p-2 ${className}`}>
-      {marketOptions.map((option) => {
-        const selected = markets.includes(option.code)
-        return (
+    <HomeSelectControl
+      id={`home-search-${filterKey}`}
+      label={label}
+      value={value}
+      disabled={disabled}
+      hideLabel={hideLabel}
+      options={uniqueOptions([value, ...options]).map((option) => ({
+        value: option,
+        label: filterOptionLabel({ key: filterKey, value: option, locale, market }),
+      }))}
+      placeholder={hideLabel ? label : allLabel}
+      onChange={onChange}
+    />
+  )
+}
+
+function HomeSelectControl({
+  id,
+  label,
+  value,
+  options,
+  placeholder,
+  disabled = false,
+  hideLabel = false,
+  onChange,
+}: {
+  id: string
+  label: string
+  value: string
+  options: Array<{ value: string; label: string }>
+  placeholder?: string
+  disabled?: boolean
+  hideLabel?: boolean
+  onChange: (value: string) => void
+}) {
+  return (
+    <label htmlFor={id} className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
+      <span className={hideLabel ? 'sr-only' : 'flex min-h-5 items-end pb-0.5 sm:min-h-6'}>
+        {label}
+      </span>
+      <span className="relative block">
+        <select
+          id={id}
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          data-placeholder={value ? undefined : 'true'}
+          className="home-hero-filter-select h-10 min-h-10 w-full appearance-none rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] outline-none transition hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 disabled:cursor-not-allowed disabled:border-[#d0d5dd] disabled:bg-[#f2f4f7] disabled:text-[#98a2b3]"
+        >
+          {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
+          aria-hidden="true"
+        />
+      </span>
+    </label>
+  )
+}
+
+function PurchaseTypeControl({
+  label,
+  allLabel,
+  buyLabel,
+  leasingLabel,
+  value,
+  onChange,
+}: {
+  label: string
+  allLabel: string
+  buyLabel: string
+  leasingLabel: string
+  value: Intent
+  onChange: (value: Intent) => void
+}) {
+  return (
+    <fieldset className="min-w-0">
+      <legend className="flex min-h-5 items-end pb-0.5 text-[10px] font-medium leading-4 text-[#344054] sm:min-h-6 sm:text-[11px]">
+        {label}
+      </legend>
+      <div className="grid h-10 grid-cols-3 gap-0.5 rounded-[12px] border border-[#98a2b3] bg-white p-0.5">
+        {([
+          ['all', allLabel],
+          ['sale', buyLabel],
+          ['leasing', leasingLabel],
+        ] as const).map(([option, optionLabel]) => (
           <button
-            key={option.code}
+            key={option}
             type="button"
-            onClick={() => onToggle(option.code)}
-            aria-pressed={selected}
-            className={`flex min-h-[44px] items-center justify-between gap-2 rounded-[10px] border px-3 text-left text-sm !font-normal transition [&_*]:!font-normal ${
-              selected
-                ? 'border-[#0866ff] bg-[#eef5ff] text-[#0866ff]'
-                : 'border-[#d8e0ec] bg-white text-[#101828] hover:border-[#0866ff]'
+            aria-pressed={value === option}
+            onClick={() => onChange(option)}
+            className={`inline-flex h-full min-h-0 items-center justify-center rounded-[9px] px-2 text-[11px] font-medium leading-none transition focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff] sm:text-[12px] ${
+              value === option
+                ? 'bg-[#0866ff] text-white shadow-[0_1px_3px_rgba(8,102,255,.18)]'
+                : 'bg-white text-[#475467] hover:bg-[#f5f9ff] hover:text-[#0866ff]'
             }`}
           >
-            <span className="truncate !font-normal">{marketLabel(option, locale)}</span>
-            {selected ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.4} /> : null}
+            {optionLabel}
           </button>
-        )
-      })}
-    </div>
+        ))}
+      </div>
+    </fieldset>
   )
 }
 
-function AdvancedFiltersPanel({
-  labels,
-  values,
-  onChange,
-}: {
-  labels: AdvancedFilterLabels
-  values: AdvancedFilters
-  onChange: (key: keyof AdvancedFilters, value: string) => void
-}) {
-  return (
-    <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-[80] rounded-[12px] border border-[#d8e0ec] bg-white p-4 shadow-[0_22px_46px_rgba(15,23,42,.20)]">
-      <div className="flex items-center gap-2 text-sm font-semibold text-[#101828]">
-        <SlidersHorizontal className="h-4 w-4 text-[#0866ff]" />
-        {labels.make}, {labels.model}, {labels.priceMax}
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <FilterField
-          label={labels.make}
-          value={values.make}
-          onChange={(value) => onChange('make', value)}
-        />
-        <FilterField
-          label={labels.model}
-          value={values.model}
-          onChange={(value) => onChange('model', value)}
-        />
-        <HomeRangeField
-          className="lg:col-span-2"
-          label={labels.priceMax}
-          value={values.priceMax}
-          min={0}
-          max={1500000}
-          step={10000}
-          suffix="kr"
-          onChange={(value) => onChange('priceMax', value)}
-        />
-        <HomeRangeField
-          className="lg:col-span-2"
-          label={labels.yearMin}
-          value={values.yearMin}
-          min={1980}
-          max={new Date().getFullYear()}
-          step={1}
-          onChange={(value) => onChange('yearMin', value)}
-        />
-        <HomeRangeField
-          className="lg:col-span-2"
-          label={labels.mileageMax}
-          value={values.mileageMax}
-          min={0}
-          max={250000}
-          step={5000}
-          suffix="km"
-          onChange={(value) => onChange('mileageMax', value)}
-        />
-        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
-          {labels.fuel}
-          <select
-            value={values.fuel}
-            onChange={(event) => onChange('fuel', event.target.value)}
-            className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
-          >
-            <option value="">{labels.all}</option>
-            <option value="petrol">{labels.petrol}</option>
-            <option value="diesel">{labels.diesel}</option>
-            <option value="hybrid">{labels.hybrid}</option>
-            <option value="electric">{labels.electric}</option>
-          </select>
-        </label>
-        <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
-          {labels.gearbox}
-          <select
-            value={values.gearbox}
-            onChange={(event) => onChange('gearbox', event.target.value)}
-            className="min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition hover:border-[#0866ff] focus:border-[#0866ff]"
-          >
-            <option value="">{labels.all}</option>
-            <option value="automatic">{labels.automatic}</option>
-            <option value="manual">{labels.manual}</option>
-          </select>
-        </label>
-      </div>
-    </div>
-  )
-}
-
-function HomeRangeField({
+function LocationControl({
   label,
   value,
-  min,
-  max,
-  step,
-  suffix = '',
-  className = '',
+  suggestions,
+  hideLabel = false,
   onChange,
 }: {
   label: string
   value: string
-  min: number
-  max: number
-  step: number
-  suffix?: string
-  className?: string
+  suggestions: string[]
+  hideLabel?: boolean
   onChange: (value: string) => void
 }) {
-  const rangeValue = Number(value || max)
-  const formattedValue = value ? formatHomeFilterNumber(Number(value)) : label
-  const displaySuffix = value && suffix ? ` ${suffix}` : ''
-
   return (
-    <label className={`grid gap-1.5 text-[13px] font-medium text-[#344054] ${className}`}>
-      {label}
-      <div className="rounded-[8px] border border-[#d8e0ec] bg-white px-3 py-2 transition hover:border-[#0866ff] focus-within:border-[#0866ff]">
+    <label htmlFor="home-search-location" className="min-w-0 text-[10px] font-medium leading-4 text-[#344054] sm:text-[11px]">
+      <span className={hideLabel ? 'sr-only' : 'flex min-h-5 items-end pb-0.5 sm:min-h-6'}>{label}</span>
+      <span className="relative block">
         <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={rangeValue}
+          id="home-search-location"
+          list="home-search-location-options"
+          value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="autorell-range h-6 w-full accent-[#0866ff]"
+          autoComplete="address-level2"
+          placeholder={label}
+          className="home-hero-location-input h-10 w-full rounded-[12px] border border-[#98a2b3] bg-white px-3.5 pr-9 text-[13px] font-normal leading-none text-[#101828] tabular-nums outline-none transition placeholder:font-normal placeholder:text-[#667085] hover:border-[#667085] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
         />
-        <div className="mt-1 flex items-center justify-between text-xs font-semibold text-[#667085]">
-          <span>{formatHomeFilterNumber(min)}</span>
-          <span>{formatHomeFilterNumber(max)}{suffix ? ` ${suffix}` : ''}+</span>
-        </div>
-        <div className={`mt-2 text-[14px] font-normal ${value ? 'text-[#101828]' : 'text-[#767676]'}`}>
-          {formattedValue}{displaySuffix}
-        </div>
-      </div>
+        <MapPin
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0866ff]"
+          aria-hidden="true"
+        />
+        <datalist id="home-search-location-options">
+          {uniqueOptions(suggestions).map((suggestion) => (
+            <option key={suggestion} value={suggestion} />
+          ))}
+        </datalist>
+      </span>
     </label>
   )
 }
 
-function FilterField({
+function SearchSubmitButton({
   label,
-  value,
-  inputMode,
-  onChange,
+  loading,
+  loadingLabel,
+  className,
 }: {
   label: string
-  value: string
-  inputMode?: 'numeric'
-  onChange: (value: string) => void
+  loading: boolean
+  loadingLabel: string
+  className: string
 }) {
   return (
-    <label className="grid gap-1.5 text-[13px] font-medium text-[#344054]">
-      {label}
-      <input
-        value={value}
-        inputMode={inputMode}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={label}
-        className="home-filter-text-control min-h-[42px] rounded-[8px] border border-[#d8e0ec] bg-white px-3 text-[14px] font-normal text-[#101828] outline-none transition placeholder:text-[#767676] hover:border-[#0866ff] focus:border-[#0866ff]"
-      />
-    </label>
+    <button
+      type="submit"
+      className={`${className} min-h-10 self-end items-center justify-center gap-2 rounded-full bg-[#0866ff] px-5 text-center text-[13px] font-semibold leading-5 text-white transition hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#0866ff]/25`}
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none" aria-label={loadingLabel} />
+      ) : (
+        <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+      )}
+      <span>{label}</span>
+    </button>
   )
 }
 
-function formatHomeFilterNumber(value: number) {
-  return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(value)
-}

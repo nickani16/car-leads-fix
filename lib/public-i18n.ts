@@ -57,11 +57,24 @@ export function isPublicLanguage(value: string): value is PublicLanguage {
 }
 
 export function translatePublic(locale: PublicLocale, value: string) {
-  if (locale === 'en') return value
-  const manual = manualPublicTranslation(translationLocale(locale), value)
-  if (manual) return manual
+  const cleanValue = repairMojibakeText(value)
+  if (locale === 'en') return cleanValue
+  const manual = manualPublicTranslation(translationLocale(locale), cleanValue) || manualPublicTranslation(translationLocale(locale), value)
+  if (manual) return repairMojibakeText(manual)
   const dictionary = (translations as Record<string, Record<string, string> | undefined>)[translationLocale(locale)]
-  return dictionary?.[value] || value
+  return repairMojibakeText(dictionary?.[cleanValue] || dictionary?.[value] || cleanValue)
+}
+
+export function repairMojibakeText(value: string) {
+  let result = value
+  for (let index = 0; index < 3 && /Ã|Â|â/.test(result); index += 1) {
+    try {
+      result = decodeURIComponent(escape(result))
+    } catch {
+      break
+    }
+  }
+  return result
 }
 
 export function translatePublicObject<T>(
@@ -111,7 +124,7 @@ export function localizePublicHref(locale: PublicLocale, href: string) {
   }
 
   const strippedPath = stripLocalePrefix(normalizedPath)
-  const prefix = localePathPrefix(locale)
+  const prefix = locale === 'sv' || locale === 'de' ? '' : localePathPrefix(locale)
   const localized =
     prefix === ''
       ? strippedPath
@@ -158,27 +171,20 @@ export const publicPagePaths = [
   '/how-it-works',
   '/benefits',
   '/sell-car',
+  '/sell-to-dealer',
   '/sell-van',
   '/about',
   '/faq',
   '/help-center',
+  '/help-center/payment/private-listing-prices',
   '/vehicle-news',
   '/contact',
-  '/sell-vehicle',
-  '/how-selling-works',
   '/pricing',
   '/business',
-  '/dealer-solutions',
+  '/business/pilot',
+  '/business/inventory-import',
+  '/app',
   '/saved-searches',
-  '/compare-vehicles',
-  '/vehicle-history',
-  '/buying-guide',
-  '/careers',
-  '/press',
-  '/partners',
-  '/safety-tips',
-  '/payments',
-  '/shipping-delivery',
   '/privacy',
   '/cookies',
   '/terms',
@@ -193,13 +199,13 @@ export function getPublicAlternates(pathname: string) {
   const domainAlternates: Array<[string, string]> =
     normalized === ''
       ? [
-          ['sv-SE', 'https://www.autorell.com/se'],
-          ['de-DE', 'https://www.autorell.com/de'],
+          ['sv-SE', 'https://www.autorell.se/'],
+          ['de-DE', 'https://www.autorell.de/'],
         ]
       : normalized === '/find-cars'
         ? [
-            ['sv-SE', 'https://www.autorell.com/se/hitta-bilar'],
-            ['de-DE', 'https://www.autorell.com/de/fahrzeuge-finden'],
+            ['sv-SE', 'https://www.autorell.se/hitta-bilar'],
+            ['de-DE', 'https://www.autorell.de/fahrzeuge-finden'],
           ]
         : []
 

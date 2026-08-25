@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -19,12 +18,7 @@ import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
 import BrandLogo from './BrandLogo'
-
-const appStoreHref =
-  process.env.NEXT_PUBLIC_APP_STORE_URL || 'https://apps.apple.com/search?term=autorell'
-const playStoreHref =
-  process.env.NEXT_PUBLIC_PLAY_STORE_URL ||
-  'https://play.google.com/store/search?q=autorell&c=apps'
+import InstallAutorellButton from './InstallAutorellButton'
 
 const footerCopy = {
   sv: {
@@ -32,9 +26,8 @@ const footerCopy = {
       'Autorell är en europeisk marknadsplats för fordonsannonser. Köpare kan hitta annonser och säljare kan nå rätt kunder på ett tryggt och tydligt sätt.',
     columns: [
       {
-        title: 'Marketplace',
+        title: 'Marknadsplats',
         links: [
-          ['Alla fordon', '/marketplace'],
           ['Bilar', '/marketplace/cars'],
           ['Transportbilar', '/marketplace/vans'],
           ['Lastbilar', '/marketplace/trucks'],
@@ -46,53 +39,35 @@ const footerCopy = {
       {
         title: 'Sälj',
         links: [
-          ['Sälj ditt fordon', '/sell-vehicle'],
-          ['Så fungerar det', '/how-selling-works'],
-          ['Priser', '/pricing'],
-          ['För företag', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Sälj bil', '/sell-car'],
+          ['Sälj transportbil', '/sell-van'],
+          ['Sälj maskin', '/sell-construction'],
+          ['Priser', '/help-center/payment/private-listing-prices'],
+          ['Återförsäljarlösningar', '/business'],
         ],
       },
       {
         title: 'Köp',
         links: [
           ['Sök fordon', '/marketplace'],
+          ['Sparade annonser', '/saved'],
           ['Sparade sökningar', '/saved-searches'],
-          ['Jämför fordon', '/compare-vehicles'],
-          ['Fordonshistorik', '/vehicle-history'],
-          ['Köpguide', '/buying-guide'],
-        ],
-      },
-      {
-        title: 'Företag',
-        links: [
-          ['Om Autorell', '/about'],
-          ['Karriär', '/careers'],
-          ['Press', '/press'],
-          ['Partners', '/partners'],
-          ['Kontakta oss', '/contact'],
+          ['Fordonsnyheter', '/vehicle-news'],
         ],
       },
       {
         title: 'Support',
         links: [
           ['Hjälpcenter', '/help-center'],
-          ['Säkerhetstips', '/safety-tips'],
-          ['Betalningar', '/payments'],
-          ['Frakt & leverans', '/shipping-delivery'],
           ['Rapportera problem', '/report'],
+          ['Om Autorell', '/about'],
+          ['Kontakta oss', '/contact'],
         ],
       },
     ],
     newsletterTitle: 'Håll dig uppdaterad',
     newsletterText:
       'Få de senaste fordonen, marknadstrenderna och tipsen direkt till din inkorg.',
-    appDownloadTitle: 'Ladda ner Autorell',
-    appDownloadText: 'Ha sökningar, sparade fordon och nya annonser nära till hands.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Ladda ner i',
-    getItOn: 'Hämta på',
     emailPlaceholder: 'Ange din e-post',
     subscribe: 'Prenumerera',
     trust: [
@@ -117,8 +92,10 @@ const footerCopy = {
     terms: 'Användarvillkor',
     purchaseTerms: 'Köpvillkor',
     refundPolicy: 'Återbetalningspolicy',
+    withdrawal: 'Utöva ångerrätt',
     privacy: 'Integritetspolicy',
     cookies: 'Cookiepolicy',
+    cookieSettings: 'Cookieinställningar',
     legalNotice:
       'Autorell \u00e4r en europeisk marknadsplats f\u00f6r fordonsannonser. Inneh\u00e5ll, fordonsdata, bilder och annonsinformation f\u00e5r inte kopieras, skrapas eller \u00e5teranv\u00e4ndas utan tillst\u00e5nd fr\u00e5n Autorell.',
   },
@@ -127,9 +104,8 @@ const footerCopy = {
       'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
     columns: [
       {
-        title: 'Marketplace',
+        title: 'Marktplatz',
         links: [
-          ['Alle Fahrzeuge', '/marketplace'],
           ['Autos', '/marketplace/cars'],
           ['Transporter', '/marketplace/vans'],
           ['Lkw', '/marketplace/trucks'],
@@ -141,53 +117,35 @@ const footerCopy = {
       {
         title: 'Verkaufen',
         links: [
-          ['Fahrzeug verkaufen', '/sell-vehicle'],
-          ['So funktioniert es', '/how-selling-works'],
-          ['Preise', '/pricing'],
-          ['Für Unternehmen', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Auto verkaufen', '/sell-car'],
+          ['Transporter verkaufen', '/sell-van'],
+          ['Baumaschine verkaufen', '/sell-construction'],
+          ['Preise', '/help-center/payment/private-listing-prices'],
+          ['Händlerlösungen', '/business'],
         ],
       },
       {
         title: 'Kaufen',
         links: [
           ['Fahrzeuge suchen', '/marketplace'],
+          ['Gespeicherte Anzeigen', '/saved'],
           ['Gespeicherte Suchen', '/saved-searches'],
-          ['Fahrzeuge vergleichen', '/compare-vehicles'],
-          ['Fahrzeughistorie', '/vehicle-history'],
-          ['Kaufberatung', '/buying-guide'],
-        ],
-      },
-      {
-        title: 'Unternehmen',
-        links: [
-          ['Über Autorell', '/about'],
-          ['Karriere', '/careers'],
-          ['Presse', '/press'],
-          ['Partner', '/partners'],
-          ['Kontakt', '/contact'],
+          ['Auto-News', '/vehicle-news'],
         ],
       },
       {
         title: 'Support',
         links: [
           ['Hilfe', '/help-center'],
-          ['Sicherheitstipps', '/safety-tips'],
-          ['Zahlungen', '/payments'],
-          ['Versand & Lieferung', '/shipping-delivery'],
           ['Problem melden', '/report'],
+          ['Über Autorell', '/about'],
+          ['Kontakt', '/contact'],
         ],
       },
     ],
     newsletterTitle: 'Auf dem Laufenden bleiben',
     newsletterText:
       'Erhalten Sie neue Fahrzeuge, Markttrends und Tipps direkt in Ihr Postfach.',
-    appDownloadTitle: 'Autorell herunterladen',
-    appDownloadText: 'Suchen, gespeicherte Fahrzeuge und neue Anzeigen immer griffbereit.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Laden im',
-    getItOn: 'Jetzt bei',
     emailPlaceholder: 'E-Mail-Adresse eingeben',
     subscribe: 'Abonnieren',
     trust: [
@@ -212,8 +170,10 @@ const footerCopy = {
     terms: 'Nutzungsbedingungen',
     purchaseTerms: 'Kaufbedingungen',
     refundPolicy: 'Erstattungsrichtlinie',
+    withdrawal: 'Widerruf erklären',
     privacy: 'Datenschutz',
     cookies: 'Cookie-Richtlinie',
+    cookieSettings: 'Cookie-Einstellungen',
     legalNotice:
       'Autorell ist ein europ\u00e4ischer Marktplatz f\u00fcr Fahrzeuganzeigen. Inhalte, Fahrzeugdaten, Bilder und Anzeigeninformationen d\u00fcrfen ohne Genehmigung von Autorell nicht kopiert, ausgelesen oder wiederverwendet werden.',
   },
@@ -224,7 +184,6 @@ const footerCopy = {
       {
         title: 'Marketplace',
         links: [
-          ['All vehicles', '/marketplace'],
           ['Cars', '/marketplace/cars'],
           ['Vans', '/marketplace/vans'],
           ['Trucks', '/marketplace/trucks'],
@@ -236,53 +195,35 @@ const footerCopy = {
       {
         title: 'Sell',
         links: [
-          ['Sell your vehicle', '/sell-vehicle'],
-          ['How it works', '/how-selling-works'],
-          ['Pricing', '/pricing'],
-          ['For businesses', '/business'],
-          ['Dealer solutions', '/dealer-solutions'],
+          ['Sell a car', '/sell-car'],
+          ['Sell a van', '/sell-van'],
+          ['Sell machinery', '/sell-construction'],
+          ['Pricing', '/help-center/payment/private-listing-prices'],
+          ['Dealer solutions', '/business'],
         ],
       },
       {
         title: 'Buy',
         links: [
           ['Search vehicles', '/marketplace'],
+          ['Saved listings', '/saved'],
           ['Saved searches', '/saved-searches'],
-          ['Compare vehicles', '/compare-vehicles'],
-          ['Vehicle history', '/vehicle-history'],
-          ['Buying guide', '/buying-guide'],
-        ],
-      },
-      {
-        title: 'Company',
-        links: [
-          ['About Autorell', '/about'],
-          ['Careers', '/careers'],
-          ['Press', '/press'],
-          ['Partners', '/partners'],
-          ['Contact us', '/contact'],
+          ['Vehicle news', '/vehicle-news'],
         ],
       },
       {
         title: 'Support',
         links: [
           ['Help center', '/help-center'],
-          ['Safety tips', '/safety-tips'],
-          ['Payments', '/payments'],
-          ['Shipping & delivery', '/shipping-delivery'],
           ['Report a problem', '/report'],
+          ['About Autorell', '/about'],
+          ['Contact us', '/contact'],
         ],
       },
     ],
     newsletterTitle: 'Stay up to date',
     newsletterText:
       'Get the latest vehicles, market trends and tips straight to your inbox.',
-    appDownloadTitle: 'Download Autorell',
-    appDownloadText: 'Keep searches, saved vehicles and new listings close at hand.',
-    appStore: 'App Store',
-    playStore: 'Google Play',
-    downloadOn: 'Download on the',
-    getItOn: 'Get it on',
     emailPlaceholder: 'Enter your email',
     subscribe: 'Subscribe',
     trust: [
@@ -307,26 +248,58 @@ const footerCopy = {
     terms: 'Terms of Service',
     purchaseTerms: 'Purchase terms',
     refundPolicy: 'Refund policy',
+    withdrawal: 'Exercise withdrawal right',
     privacy: 'Privacy Policy',
     cookies: 'Cookie Policy',
+    cookieSettings: 'Cookie settings',
     legalNotice:
       'Autorell is a European marketplace for vehicle listings. Content, vehicle data, images and listing information may not be copied, scraped or reused without permission from Autorell.',
   },
 } as const
 
-const footerDescriptions: Record<PublicLocale, string> = {
-  sv: 'Autorell är en europeisk marknadsplats för fordonsannonser. Köpare kan hitta annonser och säljare kan nå rätt kunder på ett tryggt och tydligt sätt.',
-  de: 'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
-  en: 'Autorell is a European marketplace for vehicle listings. Buyers can find listings and sellers can reach the right customers in a safe and clear way.',
-  at: 'Autorell ist ein europäischer Marktplatz für Fahrzeuganzeigen. Käufer finden Anzeigen und Verkäufer erreichen die richtigen Kunden auf sichere und klare Weise.',
-  be: 'Autorell is een Europese marktplaats voor voertuigadvertenties. Kopers kunnen advertenties vinden en verkopers kunnen de juiste klanten op een veilige en duidelijke manier bereiken.',
-  fr: 'Autorell est une place de marché européenne pour les annonces de véhicules. Les acheteurs peuvent trouver des annonces et les vendeurs peuvent atteindre les bons clients de manière sûre et claire.',
-  es: 'Autorell es un mercado europeo de anuncios de vehículos. Los compradores pueden encontrar anuncios y los vendedores pueden llegar a los clientes adecuados de forma segura y clara.',
-  it: 'Autorell è un marketplace europeo per annunci di veicoli. Gli acquirenti possono trovare annunci e i venditori possono raggiungere i clienti giusti in modo sicuro e chiaro.',
-  pl: 'Autorell to europejska platforma ogłoszeń pojazdów. Kupujący mogą znaleźć ogłoszenia, a sprzedający mogą dotrzeć do właściwych klientów w bezpieczny i przejrzysty sposób.',
-  nl: 'Autorell is een Europese marktplaats voor voertuigadvertenties. Kopers kunnen advertenties vinden en verkopers kunnen de juiste klanten op een veilige en duidelijke manier bereiken.',
-  fi: 'Autorell on eurooppalainen ajoneuvoilmoitusten markkinapaikka. Ostajat voivat löytää ilmoituksia ja myyjät tavoittaa oikeat asiakkaat turvallisella ja selkeällä tavalla.',
-  da: 'Autorell er en europæisk markedsplads for køretøjsannoncer. Købere kan finde annoncer, og sælgere kan nå de rette kunder på en sikker og tydelig måde.',
+const footerCopyright: Record<PublicLocale, string> = {
+  sv: 'Alla rättigheter förbehållna.',
+  de: 'Alle Rechte vorbehalten.',
+  en: 'All rights reserved.',
+  at: 'Alle Rechte vorbehalten.',
+  be: 'Alle rechten voorbehouden.',
+  fr: 'Tous droits réservés.',
+  es: 'Todos los derechos reservados.',
+  it: 'Tutti i diritti riservati.',
+  pl: 'Wszelkie prawa zastrzeżone.',
+  nl: 'Alle rechten voorbehouden.',
+  fi: 'Kaikki oikeudet pidätetään.',
+  da: 'Alle rettigheder forbeholdes.',
+}
+
+const footerLanguageNames: Record<PublicLocale, string> = {
+  sv: 'Svenska',
+  en: 'English',
+  de: 'Deutsch',
+  at: 'Deutsch',
+  be: 'Nederlands',
+  fr: 'Français',
+  es: 'Español',
+  it: 'Italiano',
+  pl: 'Polski',
+  nl: 'Nederlands',
+  fi: 'Suomi',
+  da: 'Dansk',
+}
+
+const footerCurrencyLabels: Record<PublicLocale, string> = {
+  sv: 'Valuta',
+  en: 'Currency',
+  de: 'Währung',
+  at: 'Währung',
+  be: 'Valuta',
+  fr: 'Devise',
+  es: 'Moneda',
+  it: 'Valuta',
+  pl: 'Waluta',
+  nl: 'Valuta',
+  fi: 'Valuutta',
+  da: 'Valuta',
 }
 
 const allMarkets = [
@@ -352,13 +325,6 @@ export default function PublicFooter({
 }) {
   const pathname = usePathname()
   const locale = providedLocale || localeFromPathname(pathname)
-  const activePathMarket = pathname.split('/').filter(Boolean)[0]
-  const footerMarket = getFooterMarket(activePathMarket, locale)
-  const [isMarketOpen, setIsMarketOpen] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.location.hash === '#market-selector',
-  )
   const t =
     locale === 'sv'
       ? footerCopy.sv
@@ -370,6 +336,7 @@ export default function PublicFooter({
   const termsHref = localizePublicHref(locale, '/terms')
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
+  const withdrawalHref = localizePublicHref(locale, '/withdrawal')
   const homeHref = localizePublicHref(locale, '/')
 
   function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
@@ -378,9 +345,28 @@ export default function PublicFooter({
   }
 
   return (
-    <footer className="border-t border-[#dfe5ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-16">
-      <div className="mx-auto max-w-[390px] bg-white px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-12">
+    <footer className="border-t border-[#dbe3ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-14">
+      <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-[1.25fr_repeat(4,minmax(0,1fr))] lg:gap-x-12">
+          <div className="col-span-2 flex max-w-[360px] flex-col items-start sm:col-span-3 lg:col-span-1">
+            <Link
+              href={homeHref}
+              aria-label="Autorell"
+              onClick={handleHomeLogoClick}
+              className="inline-flex w-[128px] sm:w-[138px]"
+            >
+              <BrandLogo underline={false} />
+            </Link>
+            <p className="mt-5 text-[14px] text-[#344f7a]">
+              © 2026 Autorell. {footerCopyright[locale]}
+            </p>
+            <div className="mt-5">
+              <SocialLinks />
+            </div>
+            <div className="mt-4">
+              <InstallAutorellButton locale={locale} />
+            </div>
+          </div>
           {t.columns.map((column) => (
             <FooterColumn
               key={column.title}
@@ -393,156 +379,100 @@ export default function PublicFooter({
           ))}
         </div>
 
-        <div className="my-9 h-px bg-[#dfe5ee]" />
+        <div className="my-9 h-px bg-[#d8e0eb]" />
 
-        <div className="flex flex-col gap-7">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex max-w-[430px] flex-col gap-5">
-              <div className="inline-flex w-[108px] flex-col items-start sm:w-[112px] lg:w-[122px]">
-                <Link href={homeHref} aria-label="Autorell" onClick={handleHomeLogoClick}>
-                  <BrandLogo underline={false} />
-                </Link>
-              </div>
-              <AppDownloadBadges
-                title={t.appDownloadTitle}
-                downloadOn={t.downloadOn}
-                getItOn={t.getItOn}
-                appStore={t.appStore}
-                playStore={t.playStore}
-              />
-            </div>
-            <SocialLinks />
-          </div>
-          <div className="max-w-[820px] text-[14px] leading-7 text-[#101828]">
-            <p>{footerDescriptions[locale]}</p>
-            <p className="mt-5 text-[13px] text-[#344054]">{t.legalNotice}</p>
-          </div>
-        </div>
-
-        <div className="my-7 h-px bg-[#dfe5ee]" />
-
-        <div className="flex flex-col gap-4 bg-white pb-7 text-[13px] text-[#475467]">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-medium lg:justify-end">
+        <div className="grid gap-5 pb-[calc(var(--autorell-mobile-footer-reserve,4.75rem)+env(safe-area-inset-bottom))] text-[13px] text-[#475467] min-[1120px]:pb-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
+            <Link href={termsHref} className="transition hover:text-[#075fff]">
+              {t.terms}
+            </Link>
+            <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
+              {t.purchaseTerms}
+            </Link>
+            <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
+              {t.refundPolicy}
+            </Link>
+            <Link href={withdrawalHref} className="transition hover:text-[#075fff]">
+              {t.withdrawal}
+            </Link>
+            <Link href={privacyHref} className="transition hover:text-[#075fff]">
+              {t.privacy}
+            </Link>
+            <Link
+              href={localizePublicHref(locale, '/cookies')}
+              className="transition hover:text-[#075fff]"
+            >
+              {t.cookies}
+            </Link>
             <button
               type="button"
-              onClick={() => setIsMarketOpen(true)}
-              className="inline-flex min-h-8 items-center justify-between gap-2 rounded-[12px] px-0 py-1 text-left font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:px-2"
+              onClick={() => window.dispatchEvent(new CustomEvent('autorell-open-cookie-settings'))}
+              className="text-left transition hover:text-[#075fff]"
             >
-              <span className="inline-flex items-center gap-2">
-                <FlagIcon code={footerMarket.flagCode} size="sm" />
-                {footerMarket.label}
-              </span>
-              <ChevronDown className="h-4 w-4" />
+              {t.cookieSettings}
             </button>
-            <FooterSelect
-              ariaLabel="Currency"
-              defaultValue={footerMarket.currency}
-              options={[
-                ['eur', 'EUR'],
-                ['sek', 'SEK'],
-                ['dkk', 'DKK'],
-                ['pln', 'PLN'],
-                ['czk', 'CZK'],
-                ['huf', 'HUF'],
-                ['ron', 'RON'],
-                ['bgn', 'BGN'],
-                ['nok', 'NOK'],
-                ['chf', 'CHF'],
-                ['gbp', 'GBP'],
-                ['usd', 'USD'],
-              ]}
-            />
-          </div>
+          </nav>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <p className="order-2 shrink-0 lg:order-1">© 2026 Autorell. All rights reserved.</p>
-
-            <nav className="order-1 flex flex-wrap gap-x-5 gap-y-2 font-medium lg:order-2 lg:justify-end">
-              <Link href={termsHref} className="transition hover:text-[#075fff]">
-                {t.terms}
-              </Link>
-              <Link href={purchaseTermsHref} className="transition hover:text-[#075fff]">
-                {t.purchaseTerms}
-              </Link>
-              <Link href={refundPolicyHref} className="transition hover:text-[#075fff]">
-                {t.refundPolicy}
-              </Link>
-              <Link href={privacyHref} className="transition hover:text-[#075fff]">
-                {t.privacy}
-              </Link>
-              <Link
-                href={localizePublicHref(locale, '/cookies')}
-                className="transition hover:text-[#075fff]"
-              >
-                {t.cookies}
-              </Link>
-            </nav>
-          </div>
+          <FooterMarketCurrencyControls locale={locale} className="lg:justify-end" />
         </div>
+      </div>
+    </footer>
+  )
+}
+
+export function FooterMarketCurrencyControls({
+  locale,
+  className = '',
+}: {
+  locale: PublicLocale
+  className?: string
+}) {
+  const pathname = usePathname()
+  const activePathMarket = pathname.split('/').filter(Boolean)[0]
+  const footerMarket = getFooterMarket(activePathMarket, locale)
+  const [isMarketOpen, setIsMarketOpen] = useState(
+    () => typeof window !== 'undefined' && window.location.hash === '#market-selector',
+  )
+
+  return (
+    <>
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] font-medium ${className}`}>
+        <button
+          type="button"
+          onClick={() => setIsMarketOpen(true)}
+          className="inline-flex min-h-8 items-center justify-between gap-2 px-0 py-1 text-left text-[13px] font-medium text-[#344054] transition hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+        >
+          <span className="inline-flex items-center gap-2">
+            <FlagIcon code={footerMarket.flagCode} size="sm" />
+            {footerLanguageNames[locale]}
+          </span>
+          <ChevronDown className="h-4 w-4" />
+        </button>
+        <FooterSelect
+          ariaLabel={footerCurrencyLabels[locale]}
+          defaultValue={footerMarket.currency}
+          options={[
+            ['eur', 'EUR'],
+            ['sek', 'SEK'],
+            ['dkk', 'DKK'],
+            ['pln', 'PLN'],
+            ['czk', 'CZK'],
+            ['huf', 'HUF'],
+            ['ron', 'RON'],
+            ['bgn', 'BGN'],
+            ['nok', 'NOK'],
+            ['chf', 'CHF'],
+            ['gbp', 'GBP'],
+            ['usd', 'USD'],
+          ]}
+        />
       </div>
       <MarketSelectorModal
         isOpen={isMarketOpen}
         onClose={() => setIsMarketOpen(false)}
         locale={locale}
       />
-    </footer>
-  )
-}
-
-function AppDownloadBadges({
-  title,
-  downloadOn,
-  getItOn,
-  appStore,
-  playStore,
-}: {
-  title: string
-  downloadOn: string
-  getItOn: string
-  appStore: string
-  playStore: string
-}) {
-  return (
-    <div className="flex flex-col items-start gap-2.5">
-      <p className="text-[13px] font-semibold text-[#344054]">{title}</p>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <StoreBadge
-          href={appStoreHref}
-          imageSrc="/app-store-badge.svg"
-          alt={`${downloadOn} ${appStore}`}
-          width={96}
-        />
-        <StoreBadge
-          href={playStoreHref}
-          imageSrc="/google-play-badge.svg"
-          alt={`${getItOn} ${playStore}`}
-          width={108}
-        />
-      </div>
-    </div>
-  )
-}
-
-function StoreBadge({
-  href,
-  imageSrc,
-  alt,
-  width,
-}: {
-  href: string
-  imageSrc: string
-  alt: string
-  width: number
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex h-8 shrink-0 rounded-[5px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff] sm:h-9"
-    >
-      <Image src={imageSrc} alt={alt} width={width} height={32} className="h-full w-auto" />
-    </a>
+    </>
   )
 }
 
@@ -583,10 +513,10 @@ function getFooterMarket(pathMarket: string, locale: PublicLocale) {
     }
   }
 
-  if (pathMarket === 'se' || (!pathMarket && locale === 'sv')) {
+  if (pathMarket === 'se' || locale === 'sv') {
     return { flagCode: 'SE', label: 'Sverige', currency: 'sek' }
   }
-  if (pathMarket === 'de' || (!pathMarket && locale === 'de')) {
+  if (pathMarket === 'de' || locale === 'de') {
     return { flagCode: 'DE', label: 'Deutschland', currency: 'eur' }
   }
 
@@ -596,6 +526,15 @@ function getFooterMarket(pathMarket: string, locale: PublicLocale) {
       flagCode: market.code.toUpperCase(),
       label: market.countryLocal,
       currency: currencyByMarketCode(market.code),
+    }
+  }
+
+  const localeMarket = euBuyerMarkets.find((item) => item.language === locale)
+  if (localeMarket) {
+    return {
+      flagCode: localeMarket.code.toUpperCase(),
+      label: localeMarket.countryLocal,
+      currency: currencyByMarketCode(localeMarket.code),
     }
   }
 
@@ -641,8 +580,8 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-[15px] font-semibold text-[#101828]">{title}</h3>
-      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#101828]">
+      <h3 className="text-[16px] font-semibold text-[#253858]">{title}</h3>
+      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#344f7a]">
         {links.map(([label, href]) => (
           <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
             {label}
@@ -719,22 +658,22 @@ function SocialLinks() {
     [
       'Facebook',
       'https://www.facebook.com/autorell',
-      'M14 8.5h3V5h-3c-3.4 0-5.5 2.1-5.5 5.7V13H6v3.5h2.5V23h4v-6.5h3.2l.6-3.5h-3.8v-2c0-1.7.5-2.5 1.5-2.5Z',
+      'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.762 0 2.077.149 2.612.298v3.325a15.39 15.39 0 0 0-1.55-.075c-1.969 0-2.731.745-2.731 2.683v1.327h3.922l-.674 3.667H13.29v7.98H9.101Z',
     ],
     [
       'Instagram',
-      'https://www.instagram.com/autorellgroup/',
-      'M12 7.8A4.2 4.2 0 1 0 12 16.2 4.2 4.2 0 0 0 12 7.8Zm0 6.9a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Zm5.4-7.1a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM20.2 8c-.1-1.5-.4-2.7-1.5-3.7S16.5 2.9 15 2.8c-1.5-.1-6.5-.1-8 0-1.5.1-2.7.4-3.7 1.5S1.9 6.5 1.8 8c-.1 1.5-.1 6.5 0 8 .1 1.5.4 2.7 1.5 3.7s2.2 1.4 3.7 1.5c1.5.1 6.5.1 8 0 1.5-.1 2.7-.4 3.7-1.5s1.4-2.2 1.5-3.7c.1-1.5.1-6.5 0-8Zm-1.9 9.6c-.3.8-.9 1.4-1.7 1.7-1.2.5-4 .4-4.6.4s-3.4.1-4.6-.4a3 3 0 0 1-1.7-1.7c-.5-1.2-.4-4-.4-4.6s-.1-3.4.4-4.6A3 3 0 0 1 7.4 6.7c1.2-.5 4-.4 4.6-.4s3.4-.1 4.6.4a3 3 0 0 1 1.7 1.7c.5 1.2.4 4 .4 4.6s.1 3.4-.4 4.6Z',
+      'https://www.instagram.com/autorell',
+      'M7.8 2h8.4A5.806 5.806 0 0 1 22 7.8v8.4a5.806 5.806 0 0 1-5.8 5.8H7.8A5.806 5.806 0 0 1 2 16.2V7.8A5.806 5.806 0 0 1 7.8 2Zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8A3.6 3.6 0 0 0 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6A3.6 3.6 0 0 0 16.4 4H7.6Zm9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM12 7.25A4.75 4.75 0 1 1 12 16.75 4.75 4.75 0 0 1 12 7.25Zm0 2A2.75 2.75 0 1 0 12 14.75 2.75 2.75 0 0 0 12 9.25Z',
     ],
     [
       'LinkedIn',
       'https://www.linkedin.com/company/autorell',
-      'M5.3 7.6A2.3 2.3 0 1 0 5.3 3a2.3 2.3 0 0 0 0 4.6ZM3.4 9.3h3.8V21H3.4V9.3Zm6.1 0h3.6v1.6h.1c.5-1 1.8-2 3.6-2 3.9 0 4.6 2.5 4.6 5.9V21h-3.8v-5.5c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V21H9.5V9.3Z',
+      'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.554V9h3.565v11.452ZM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003Z',
     ],
   ] as const
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-2.5">
       {links.map(([label, href, path]) => (
         <a
           key={label}
@@ -742,12 +681,12 @@ function SocialLinks() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="grid h-8 w-8 place-items-center text-[#101828] transition hover:-translate-y-0.5 hover:text-[#075fff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
+          className="grid h-9 w-9 place-items-center rounded-full border border-[#d6e5fb] bg-[#f4f8ff] text-[#075fff] transition hover:-translate-y-0.5 hover:border-[#075fff] hover:bg-[#075fff] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#075fff]"
         >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="h-[22px] w-[22px] fill-current"
+            className="h-4 w-4 fill-current"
           >
             <path d={path} />
           </svg>
@@ -781,12 +720,12 @@ export function MarketSelectorModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#f8fbff] text-[#101828]">
+    <div className="fixed inset-0 z-[500] overflow-y-auto bg-[#f8fbff] text-[#101828]">
       <button
         type="button"
         onClick={onClose}
         aria-label={copy.close}
-        className="fixed right-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[250] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6 md:top-6"
+        className="fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[510] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6"
       >
         <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       </button>
@@ -893,8 +832,10 @@ function MarketCard({
 
 function marketHref(countryCode: string) {
   const normalizedCode = countryCode.toUpperCase()
-  if (normalizedCode === 'EU') return '/?market=en'
-  return `/${normalizedCode.toLowerCase()}`
+  if (normalizedCode === 'EU') return 'https://www.autorell.com/?market=en'
+  if (normalizedCode === 'SE') return 'https://www.autorell.se/'
+  if (normalizedCode === 'DE') return 'https://www.autorell.de/'
+  return `https://www.autorell.com/${normalizedCode.toLowerCase()}`
 }
 
 function isActiveMarket(
@@ -918,7 +859,7 @@ export function FlagIcon({
 }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-[#d7e2f2] ${
+      className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ${
         size === 'xs' ? 'h-4 w-4' : size === 'sm' ? 'h-5 w-5' : 'h-10 w-10'
       }`}
       aria-label={`${code} flagga`}

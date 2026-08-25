@@ -1,0 +1,167 @@
+{
+  "businessSection": {
+    "eyebrow": "Autorell-pilotprogramma",
+    "title": "Word een van de eerste partnerdealers van Autorell",
+    "body": [
+      "We selecteren een beperkt aantal voertuigdealers die hun bestaande voorraad tijdens de pilotperiode kosteloos aan Autorell kunnen koppelen.",
+      "Autorell importeert uw voorraad, houdt prijzen en voorraadstatus automatisch actueel en geeft statistieken over bereik, klikken en klantaanvragen.",
+      "Zodra de samenwerking aantoonbare commerciële waarde oplevert, stellen we samen een aparte overeenkomst op voor verdere samenwerking."
+    ],
+    "benefits": [
+      "Gratis voorraadkoppeling",
+      "Geen integratiekosten",
+      "Automatische voorraadupdates",
+      "Geen verplichting tijdens de pilotperiode",
+      "Statistieken over verkeer en leads",
+      "Persoonlijke onboarding",
+      "Meerdere vestigingen kunnen worden gekoppeld",
+      "Pas een aparte commerciële overeenkomst nadat waarde is gecreëerd"
+    ],
+    "primaryCta": "Aanmelden voor het pilotprogramma",
+    "secondaryCta": "Lees over voorraadkoppeling",
+    "availabilityNote": "Voor de eerste pilotronde wordt een beperkt aantal bedrijven toegelaten."
+  },
+  "pilotPage": {
+    "metaTitle": "Gratis voorraadpilot voor dealers | Autorell",
+    "metaDescription": "Meld uw bedrijf aan om de voertuigvoorraad aan Autorell te koppelen met gratis onboarding, automatische synchronisatie en zonder automatisch betaald abonnement.",
+    "heroEyebrow": "Pilotprogramma voor voertuigdealers",
+    "heroTitle": "Koppel uw voertuigvoorraad kosteloos",
+    "heroIntro": "Autorell zoekt geselecteerde voertuigdealers voor een gratis pilotprogramma. We koppelen uw bestaande voorraad, houden advertenties automatisch actueel en meten samen met u de resultaten.",
+    "primaryCta": "Aanmelden voor het pilotprogramma",
+    "secondaryCta": "Zo werkt voorraadimport",
+    "includedTitle": "Dit is inbegrepen",
+    "includedIntro": "De eerste koppeling is praktisch, meetbaar en zonder automatische commerciële verplichtingen.",
+    "included": [
+      "Gratis onboarding",
+      "Gratis technische koppeling",
+      "Import van uw bestaande voertuigvoorraad",
+      "Automatische synchronisatie van nieuwe, gewijzigde en verwijderde voertuigen",
+      "Bedrijfsprofiel op Autorell",
+      "Statistieken over advertentieweergaven",
+      "Statistieken over klikken en leads",
+      "Ondersteuning tijdens de pilotperiode",
+      "Geen verplichting tijdens de pilotperiode"
+    ],
+    "stepsTitle": "Zo werkt het",
+    "steps": [
+      {
+        "title": "Stuur uw aanmelding",
+        "text": "Uw bedrijf stuurt een korte aanmelding met informatie over de voorraad en de gewenste koppelmethode."
+      },
+      {
+        "title": "Autorell beoordeelt het bedrijf",
+        "text": "We beoordelen het bedrijf, de voorraad en de technische bron voordat iets wordt gekoppeld."
+      },
+      {
+        "title": "Accepteer de pilotvoorwaarden",
+        "text": "Het bedrijf accepteert de pilotvoorwaarden en bevestigt zijn rechten op voertuiggegevens en afbeeldingen."
+      },
+      {
+        "title": "We koppelen de bron",
+        "text": "Autorell koppelt de geverifieerde website en maakt een importvoorbeeld. Aanvragen voor XML, CSV, API en DMS doorlopen een afzonderlijke technische onboarding."
+      },
+      {
+        "title": "De voorraad wordt gepubliceerd en actueel gehouden",
+        "text": "Goedgekeurde advertenties worden gepubliceerd en nieuwe, gewijzigde of verkochte voertuigen worden veilig gesynchroniseerd."
+      }
+    ],
+    "afterTitle": "Na de pilotperiode",
+    "afterLead": "Het pilotprogramma gaat niet automatisch over in een betaald abonnement.",
+    "afterBody": "Als Autorell relevant verkeer, leads of andere commerciële waarde kan aantonen, kunnen de partijen een aparte commerciële overeenkomst bespreken.",
+    "afterNote": "Geen betaling, factuur of abonnement kan starten zonder een nieuwe, uitdrukkelijke goedkeuring van het bedrijf.",
+    "faqTitle": "Vragen over het pilotprogramma",
+    "faqs": [
+      {
+        "question": "Kost het pilotprogramma iets?",
+        "answer": "Nee. De technische koppeling, onboarding, voorraadimport en automatische synchronisatie zijn gratis tijdens de afgesproken pilotperiode."
+      },
+      {
+        "question": "Moeten we advertenties handmatig publiceren?",
+        "answer": "Nee. Zodra de bron en het voorbeeld zijn goedgekeurd, kan Autorell advertenties vanuit de gekoppelde voorraad maken en bijwerken."
+      },
+      {
+        "question": "Welke soorten voorraad kunnen worden gekoppeld?",
+        "answer": "Personenauto's, bestelwagens en andere ondersteunde voertuigcategorieën kunnen worden beoordeeld. De exacte omvang wordt tijdens de technische beoordeling bevestigd."
+      },
+      {
+        "question": "Hoe vaak wordt de voorraad bijgewerkt?",
+        "answer": "De frequentie hangt af van de bron en de pilotopzet. Dagelijkse synchronisatie is het gebruikelijke startpunt, met frequentere synchronisatie waar afgesproken en technisch mogelijk."
+      },
+      {
+        "question": "Wat gebeurt er wanneer een voertuig is verkocht?",
+        "answer": "Een verkocht of verwijderd voertuig wordt eerst bevestigd via een geslaagde synchronisatie en daarna gepauzeerd of als verkocht gemarkeerd. Een tijdelijke bronstoring verwijdert nooit de hele voorraad."
+      },
+      {
+        "question": "Kunnen meerdere vestigingen worden gekoppeld?",
+        "answer": "Ja. Meerdere vestigingen kunnen worden gekoppeld wanneer ze in de brongegevens herkenbaar zijn of tijdens de onboarding worden toegewezen."
+      },
+      {
+        "question": "Wat gebeurt er na de pilotperiode?",
+        "answer": "We bekijken samen de gedocumenteerde resultaten. Verdere samenwerking vereist een aparte overeenkomst die beide partijen accepteren."
+      },
+      {
+        "question": "Worden we automatisch een betalende klant?",
+        "answer": "Nee. Na de pilot is er geen automatische omzetting, betaling of abonnement."
+      },
+      {
+        "question": "Wie is eigenaar van de advertenties, afbeeldingen en voertuiggegevens?",
+        "answer": "Het bedrijf behoudt zijn rechten op het materiaal en bevestigt dat het dit voor publicatie mag aanleveren. Autorell krijgt alleen de rechten die nodig zijn om het volgens de pilotvoorwaarden te importeren, op te slaan, te tonen en te synchroniseren."
+      },
+      {
+        "question": "Kunnen we het pilotproject beëindigen?",
+        "answer": "Ja. De pilot kan zonder abonnementsverplichting worden beëindigd. Het geïmporteerde materiaal wordt in overleg met het bedrijf gecontroleerd verwijderd."
+      }
+    ]
+  },
+  "form": {
+    "eyebrow": "Aanmelding voor de pilot",
+    "title": "Vertel ons over uw voorraad",
+    "intro": "De aanmelding start geen integratie en maakt geen betaald abonnement aan. Autorell beoordeelt de aanvraag en neemt eerst contact op met de opgegeven persoon.",
+    "companySection": "Bedrijf",
+    "contactSection": "Contactpersoon",
+    "inventorySection": "Voorraad en koppeling",
+    "consentSection": "Toestemmingen",
+    "companyName": "Bedrijfsnaam",
+    "registrationNumber": "Ondernemingsnummer",
+    "country": "Land",
+    "website": "Website",
+    "contactName": "Contactpersoon",
+    "contactRole": "Functie",
+    "email": "E-mail",
+    "phone": "Telefoonnummer",
+    "inventorySize": "Geschat aantal actieve voertuigen",
+    "locationCount": "Aantal vestigingen",
+    "currentSystem": "Huidig voorraadsysteem",
+    "integrationMethod": "Gewenste integratiemethode",
+    "message": "Aanvullende informatie",
+    "selectOption": "Selecteer een optie",
+    "inventorySizes": [
+      { "value": "1_25", "label": "1-25" },
+      { "value": "26_100", "label": "26-100" },
+      { "value": "101_500", "label": "101-500" },
+      { "value": "501_2000", "label": "501-2.000" },
+      { "value": "2000_plus", "label": "Meer dan 2.000" }
+    ],
+    "integrationMethods": [
+      { "value": "website", "label": "Importeren vanaf website (beschikbaar in pilot)" },
+      { "value": "xml", "label": "XML-feed (technische onboarding)" },
+      { "value": "csv", "label": "CSV-bestand (technische onboarding)" },
+      { "value": "api", "label": "API (technische onboarding)" },
+      { "value": "dms", "label": "DMS-systeem (administratieve onboarding)" },
+      { "value": "unknown", "label": "Nog niet zeker" }
+    ],
+    "privacyConsent": "Ik heb het privacybeleid van Autorell gelezen en ga ermee akkoord.",
+    "contactConsent": "Ik ga ermee akkoord dat Autorell contact met het bedrijf opneemt over het pilotprogramma.",
+    "privacyLink": "Lees het privacybeleid",
+    "submit": "Aanmelding versturen",
+    "submitting": "Aanmelding wordt verstuurd",
+    "requiredNote": "Velden met * zijn verplicht.",
+    "successTitle": "Bedankt voor uw aanmelding",
+    "successBody": "Autorell beoordeelt het bedrijf en neemt contact op met de opgegeven persoon. Er start geen integratie of publicatie voordat het bedrijf is goedgekeurd en de pilotvoorwaarden zijn geaccepteerd.",
+    "successReference": "Aanmeldingsreferentie",
+    "sendAnother": "Nog een aanmelding versturen",
+    "genericError": "De aanmelding kon niet worden verstuurd. Controleer de velden en probeer het opnieuw.",
+    "rateLimitError": "Vanaf deze verbinding zijn te veel aanmeldingen verstuurd. Probeer het later opnieuw.",
+    "duplicateError": "Voor dit e-mailadres is onlangs een aanmelding verstuurd. Autorell neemt na de beoordeling contact op."
+  }
+}

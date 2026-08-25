@@ -15,6 +15,7 @@ const listingCardCarouselSource = await readFile('app/components/ListingCardImag
 const businessHomeSource = await readFile('app/components/BusinessMarketplaceHome.tsx', 'utf8')
 const publicCompanySource = await readFile('lib/public-company-page.tsx', 'utf8')
 const accountListingsSource = await readFile('app/konto/annonser/page.tsx', 'utf8')
+const vehicleSearchExperienceSource = await readFile('app/components/VehicleSearchExperience.tsx', 'utf8')
 const nextConfigSource = await readFile('next.config.ts', 'utf8')
 const require = createRequire(import.meta.url)
 
@@ -160,9 +161,9 @@ test('public listing images use safe framing and modern formats by viewport', ()
   assert.match(listingCardCarouselSource, /object-cover/)
   assert.doesNotMatch(listingCardCarouselSource, /overflow-hidden bg-black/)
   assert.match(businessHomeSource, /w-\[76vw\] max-w-\[280px\]/)
-  assert.match(businessHomeSource, /aspect-\[16\/10\][^"]*sm:aspect-\[4\/3\]/)
+  assert.match(businessHomeSource, /aspect-\[16\/10\][^"]*sm:aspect-\[16\/10\]/)
   assert.match(businessHomeSource, /\(max-width: 640px\) 76vw/)
-  assert.match(listingGallerySource, /aspect-\[16\/9\]/)
+  assert.match(listingGallerySource, /aspect-\[4\/3\][^"]*sm:aspect-\[16\/9\]/)
   assert.doesNotMatch(listingGallerySource, /aspect-\[16\/9\][^"]*bg-black/)
   assert.match(listingGallerySource, /object-cover/)
   assert.doesNotMatch(listingGallerySource, /object-contain/)
@@ -174,6 +175,27 @@ test('public listing images use safe framing and modern formats by viewport', ()
   assert.match(accountListingsSource, /quality=\{78\} className="object-cover"/)
   assert.match(listingFormSource, /object-cover/)
   assert.doesNotMatch(listingFormSource, /object-contain/)
+})
+
+test('listing card carousel arrows stay white without hover backgrounds', () => {
+  assert.match(listingCardCarouselSource, /rounded-full bg-transparent text-white shadow-none backdrop-blur-0 transition hover:bg-transparent hover:text-white/)
+  assert.match(listingCardCarouselSource, /active:bg-transparent active:text-white/)
+  assert.doesNotMatch(listingCardCarouselSource, /hover:bg-white hover:text-\[#0866ff\]/)
+  assert.match(listingCardCarouselSource, /drop-shadow-\[0_1px_3px_rgba\(16,24,40,\.55\)\]/)
+  assert.doesNotMatch(listingCardCarouselSource, /bg-white\/92 text-\[#101828\] shadow-\[0_8px_22px_rgba\(16,24,40,\.18\)\] backdrop-blur/)
+})
+
+test('marketplace result cards only show seller trust when verified', () => {
+  assert.match(vehicleSearchExperienceSource, /listing\.sellerTrust === 'verified' \? \(/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Unverified company/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /Overifierat företag/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /sellerTrustClass/)
+})
+
+test('marketplace equipment chips are translated for the active locale', () => {
+  assert.match(vehicleSearchExperienceSource, /translateListingEquipmentValue\(locale, item\) \|\| item/)
+  assert.match(vehicleSearchExperienceSource, /listingEquipmentChips\(listing\.equipment, locale\)/)
+  assert.doesNotMatch(vehicleSearchExperienceSource, /equipmentChips=\{listingEquipmentChips\(listing\.equipment\)\}/)
 })
 
 function loadImageProcessingModule() {

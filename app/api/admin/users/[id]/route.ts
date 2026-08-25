@@ -92,6 +92,8 @@ export async function PATCH(
   if (action === 'activate') {
     patch.risk_status = 'standard'
     patch.suspended = false
+    patch.deleted_at = null
+    patch.removed_by_admin = false
   }
   if (action === 'suspend') {
     patch.risk_status = 'restricted'

@@ -95,20 +95,24 @@ const pages: Record<PageKey, {
   terms: {
     title: 'Marketplace terms',
     heading: 'Terms of use',
-    intro: 'Rules for accounts, listings, communication and use of the Autorell marketplace.',
+    intro: 'Rules for accounts, listings, communication, payments and use of the Autorell marketplace.',
     sections: [
       { title: 'Marketplace role', text: 'Autorell provides a digital marketplace and is not the buyer, seller, owner or exporter of listed vehicles.' },
       { title: 'Listing responsibility', text: 'Sellers are responsible for accurate descriptions, lawful ownership, prices, images and disclosed defects.' },
       { title: 'Transactions', text: 'Buyers and sellers are responsible for due diligence, contracts, payment, taxes, registration, transport and ownership transfer.' },
+      { title: 'Consumer and private purchases', text: 'Mandatory consumer law applies when a business sells to a consumer. Private-to-private purchases are normally governed by the parties’ agreement and the Swedish Sale of Goods Act.' },
+      { title: 'Digital listing services', text: 'Consumers normally have a 14-day withdrawal right for distance-purchased listing services. Immediate performance requires an express request and the legally required acknowledgement.' },
+      { title: 'Invoices and credit', text: 'Eligible business invoices are due in 14 days. Autorell is not a vehicle lender unless a separate offer expressly states otherwise.' },
     ],
   },
   cookies: {
     title: 'Cookie policy',
     heading: 'Cookie policy',
-    intro: 'Information about essential cookies and optional technologies used by Autorell.',
+    intro: 'Information about necessary cookies and consent-based analytics, performance measurement and advertising used by Autorell.',
     sections: [
       { title: 'Essential cookies', text: 'Required cookies support security, authentication, sessions and requested marketplace functionality.' },
-      { title: 'Your choices', text: 'Optional technologies are used according to your consent settings and applicable law.' },
+      { title: 'Optional technologies', text: 'Vercel Analytics, Vercel Speed Insights and Google AdSense load only after active consent.' },
+      { title: 'Your choices', text: 'You can accept only necessary cookies, accept all optional technologies or withdraw consent at any time through Cookie settings.' },
     ],
   },
 }
