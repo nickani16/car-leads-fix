@@ -12,9 +12,9 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
+  geoModelsForSitemapMarket,
   marketFromSitemapName,
   popularGeoMakes,
-  popularGeoModels,
   sitemapHostForMarket,
   sitemapMarketsForRequest,
   type SitemapMarketCode,
@@ -145,11 +145,12 @@ function geoModelSitemapUrls(market: SitemapMarketCode, page: number) {
   const carCategorySlug = config?.categories.find((entry) => entry.category === 'cars' && !entry.leasing)?.slug
   if (!config || !carCategorySlug) return []
   const areas = getSeoSitemapAreas(config.countryCode)
-  const urlsPerArea = popularGeoModels.length
+  const geoModels = geoModelsForSitemapMarket(market)
+  const urlsPerArea = geoModels.length
   const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
   const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
   return pageAreas.flatMap((area) =>
-    popularGeoModels
+    geoModels
       .filter(({ make, model }) => shouldIncludeInSitemap({ category: 'cars', make, model, place: area }))
       .map(({ make, model }) => sitemapUrl(buildSeoMarketplacePath({ market, categorySlug: carCategorySlug, make, model, placeSlug: area.slug }), undefined, 'weekly', '0.75')),
   )

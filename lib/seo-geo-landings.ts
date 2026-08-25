@@ -516,11 +516,11 @@ export function getSeoSitemapMakes(category: MarketplaceCategorySlug) {
   return (sitemapMakesByCategory[category] || []).filter((make) => allowed.has(make))
 }
 
-export function getSeoSitemapModels(category: MarketplaceCategorySlug) {
+export function getSeoSitemapModels(category: MarketplaceCategorySlug, modelsPerMake = 2) {
   if (category !== 'cars') return []
   return Object.entries(seoModelsByMake)
     .filter(([make]) => getSeoSitemapMakes('cars').includes(make))
-    .flatMap(([make, models]) => models.slice(0, 2).map((model) => ({ make, model })))
+    .flatMap(([make, models]) => models.slice(0, modelsPerMake).map((model) => ({ make, model })))
 }
 
 export function shouldIncludeInSitemap({

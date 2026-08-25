@@ -19,6 +19,9 @@ const largeMarketRows = JSON.parse(
 const swedenSitemapRows = JSON.parse(
   readFileSync(new URL('../scripts/data/geonames-sweden-sitemap-places-2026.json', import.meta.url), 'utf8'),
 )
+const expandedSitemapRows = JSON.parse(
+  readFileSync(new URL('../scripts/data/geonames-seo-sitemap-places-2026.json', import.meta.url), 'utf8'),
+)
 
 test('geo directory creates public read tables with indexed bounded search', () => {
   assert.match(migration, /create table if not exists public\.geo_regions/)
@@ -98,8 +101,24 @@ test('Swedish SEO sitemaps use a dedicated nationwide locality dataset', () => {
   assert.ok(swedenSitemapRows.some((row) => row.municipalityName === 'Göteborg'))
   assert.ok(swedenSitemapRows.some((row) => row.municipalityName === 'Malmö'))
   assert.match(seoSitemapPlaces, /geonames-sweden-sitemap-places-2026/)
-  assert.match(seoSitemapPlaces, /country !== 'SE'/)
-  assert.match(seoSitemapPlaces, /\[\.\.\.baseAreas, \.\.\.swedenSitemapPlaces\]/)
+  assert.match(seoSitemapPlaces, /country === 'SE'/)
+  assert.match(seoSitemapPlaces, /\[\.\.\.baseAreas, \.\.\.expandedAreas\]/)
+})
+
+test('SEO sitemap locality expansion covers every market below 500k', () => {
+  const expectedCounts = { AT: 10_000, BE: 10_000, DK: 5_856, ES: 10_000, FI: 10_000, NL: 7_025, PL: 10_000 }
+  for (const [country, expectedCount] of Object.entries(expectedCounts)) {
+    const rows = expandedSitemapRows[country]
+    assert.equal(rows.length, expectedCount, `${country} sitemap place count`)
+    assert.equal(new Set(rows.map((row) => marketplaceSlug(row[1]))).size, expectedCount, `${country} unique slugs`)
+    assert.ok(rows.every((row) => row.length === 4 && row.every(Boolean)), `${country} compact rows`)
+  }
+
+  assert.match(seoSitemapPlaces, /geonames-seo-sitemap-places-2026/)
+  assert.match(sitemapUtils, /market === 'dk' \|\| market === 'nl'/)
+  assert.match(sitemapUtils, /getSeoSitemapModels\('cars', 6\)/)
+  assert.match(sitemapIndex, /geoModelsForSitemapMarket\(market\)/)
+  assert.match(sitemapRoute, /const geoModels = geoModelsForSitemapMarket\(market\)/)
 })
 
 test('Finland seed is complete and region scoped', () => {
@@ -275,4 +294,13 @@ function slug(value) {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, '-')
+}
+
+function marketplaceSlug(value) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }

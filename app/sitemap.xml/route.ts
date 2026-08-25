@@ -6,8 +6,8 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
+  geoModelsForSitemapMarket,
   popularGeoMakes,
-  popularGeoModels,
   sitemapHostForRequest,
   sitemapMarketsForRequest,
   sitemapMarketCountries,
@@ -140,7 +140,7 @@ async function getGeoModelSitemapNames(markets: readonly (typeof allSitemapMarke
       const config = getGeoSitemapMarketConfig(market)
       if (!config) return
       const areaCount = getGeoSitemapAreaCount(config.countryCode)
-      const urlsPerArea = popularGeoModels.length
+      const urlsPerArea = geoModelsForSitemapMarket(market).length
       const areasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
       const pages = Math.max(1, Math.ceil(areaCount / areasPerPage))
       for (let page = 1; page <= pages; page += 1) {

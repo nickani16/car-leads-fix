@@ -58,6 +58,12 @@ export function marketFromSitemapName(name: string): SitemapMarketCode | null {
 export const popularGeoMakes = getSeoSitemapMakes('cars')
 export const popularGeoModels = getSeoSitemapModels('cars')
 
+export function geoModelsForSitemapMarket(market: SitemapMarketCode) {
+  return market === 'dk' || market === 'nl'
+    ? getSeoSitemapModels('cars', 6)
+    : popularGeoModels
+}
+
 export function xmlResponse(body: string, cacheControl?: string) {
   return new Response(body, {
     headers: {
