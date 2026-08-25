@@ -8,6 +8,8 @@ import {
   Building2,
   CarFront,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CircleHelp,
   CircleUserRound,
   CreditCard,
@@ -70,6 +72,8 @@ import {
   SAVED_SEARCHES_EVENT,
 } from '@/lib/saved-searches'
 import { createClient } from '@/lib/supabase/client'
+import { translateListingVehicleValue } from '@/lib/listing-display'
+import { marketplaceBodyTypeOptions } from '@/lib/marketplace-body-types'
 import AuthModal from './AuthModal'
 import HeaderNotificationCenter from './HeaderNotificationCenter'
 
@@ -105,6 +109,9 @@ type DesktopSearchMenuCopy = {
   personal: string
   work: string
   viewAll: string
+  back: string
+  browseTypes: string
+  viewCategory: string
 }
 
 const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
@@ -114,6 +121,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Person & fritid',
     work: 'Transport & arbete',
     viewAll: 'Visa alla fordon',
+    back: 'Tillbaka',
+    browseTypes: 'Utforska efter typ',
+    viewCategory: 'Visa alla i kategorin',
   },
   en: {
     title: 'Find vehicles',
@@ -121,6 +131,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Cars & leisure',
     work: 'Transport & work',
     viewAll: 'View all vehicles',
+    back: 'Back',
+    browseTypes: 'Browse by type',
+    viewCategory: 'View all in this category',
   },
   de: {
     title: 'Fahrzeuge finden',
@@ -128,6 +141,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Pkw & Freizeit',
     work: 'Transport & Gewerbe',
     viewAll: 'Alle Fahrzeuge anzeigen',
+    back: 'Zurück',
+    browseTypes: 'Nach Typ durchsuchen',
+    viewCategory: 'Alle in dieser Kategorie anzeigen',
   },
   at: {
     title: 'Fahrzeuge finden',
@@ -135,6 +151,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Pkw & Freizeit',
     work: 'Transport & Gewerbe',
     viewAll: 'Alle Fahrzeuge anzeigen',
+    back: 'Zurück',
+    browseTypes: 'Nach Typ durchsuchen',
+    viewCategory: 'Alle in dieser Kategorie anzeigen',
   },
   fr: {
     title: 'Trouver un véhicule',
@@ -142,6 +161,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Auto & loisirs',
     work: 'Transport & activité',
     viewAll: 'Voir tous les véhicules',
+    back: 'Retour',
+    browseTypes: 'Parcourir par type',
+    viewCategory: 'Voir tous les véhicules de cette catégorie',
   },
   es: {
     title: 'Encontrar vehículos',
@@ -149,6 +171,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Coches y ocio',
     work: 'Transporte y trabajo',
     viewAll: 'Ver todos los vehículos',
+    back: 'Volver',
+    browseTypes: 'Explorar por tipo',
+    viewCategory: 'Ver todos los vehículos de esta categoría',
   },
   it: {
     title: 'Trova veicoli',
@@ -156,6 +181,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Auto e tempo libero',
     work: 'Trasporto e lavoro',
     viewAll: 'Vedi tutti i veicoli',
+    back: 'Indietro',
+    browseTypes: 'Sfoglia per tipo',
+    viewCategory: 'Vedi tutti i veicoli della categoria',
   },
   nl: {
     title: 'Voertuigen vinden',
@@ -163,6 +191,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Auto & vrije tijd',
     work: 'Transport & werk',
     viewAll: 'Alle voertuigen bekijken',
+    back: 'Terug',
+    browseTypes: 'Bekijk per type',
+    viewCategory: 'Bekijk alle voertuigen in deze categorie',
   },
   be: {
     title: 'Voertuigen vinden',
@@ -170,6 +201,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Auto & vrije tijd',
     work: 'Transport & werk',
     viewAll: 'Alle voertuigen bekijken',
+    back: 'Terug',
+    browseTypes: 'Bekijk per type',
+    viewCategory: 'Bekijk alle voertuigen in deze categorie',
   },
   pl: {
     title: 'Znajdź pojazd',
@@ -177,6 +211,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Samochody i rekreacja',
     work: 'Transport i praca',
     viewAll: 'Zobacz wszystkie pojazdy',
+    back: 'Wróć',
+    browseTypes: 'Przeglądaj według typu',
+    viewCategory: 'Zobacz wszystkie pojazdy w tej kategorii',
   },
   da: {
     title: 'Find køretøjer',
@@ -184,6 +221,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Bil & fritid',
     work: 'Transport & arbejde',
     viewAll: 'Se alle køretøjer',
+    back: 'Tilbage',
+    browseTypes: 'Se efter type',
+    viewCategory: 'Se alle køretøjer i kategorien',
   },
   fi: {
     title: 'Löydä ajoneuvo',
@@ -191,6 +231,9 @@ const desktopSearchMenuCopy: Record<PublicLocale, DesktopSearchMenuCopy> = {
     personal: 'Autot ja vapaa-aika',
     work: 'Kuljetus ja työ',
     viewAll: 'Näytä kaikki ajoneuvot',
+    back: 'Takaisin',
+    browseTypes: 'Selaa tyypin mukaan',
+    viewCategory: 'Näytä kaikki kategorian ajoneuvot',
   },
 }
 
@@ -705,6 +748,7 @@ export default function PublicHeader({
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [searchMenuOpen, setSearchMenuOpen] = useState(false)
+  const [desktopSearchCategory, setDesktopSearchCategory] = useState<MarketplaceCategorySlug | null>(null)
   const [searchMenuIntent, setSearchMenuIntent] = useState<MarketplaceSearchMode>(marketplaceMode)
   const [sellMenuOpen, setSellMenuOpen] = useState(false)
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false)
@@ -1047,6 +1091,18 @@ export default function PublicHeader({
       .map((slug) => desktopSearchItemsBySlug.get(slug))
       .filter((item): item is MenuItem => Boolean(item)),
   }))
+  const desktopSearchCategoryItem = desktopSearchCategory
+    ? desktopSearchItemsBySlug.get(desktopSearchCategory)
+    : undefined
+  const desktopSearchBodyTypes = desktopSearchCategory
+    ? marketplaceBodyTypeOptions[desktopSearchCategory]
+    : []
+  const desktopSearchTypeHref = (categoryHref: string, bodyType: string) => {
+    const [categoryPathname, categorySearch = ''] = categoryHref.split('?')
+    const params = new URLSearchParams(categorySearch)
+    params.set('bodyType', bodyType)
+    return `${categoryPathname}?${params.toString()}`
+  }
   const searchCategoryHref = (href: string) => {
     const [pathname, search = ''] = href.split('?')
     const params = new URLSearchParams(search)
@@ -1412,6 +1468,7 @@ export default function PublicHeader({
   }
 
   function toggleDesktopMenu(menu: 'search' | 'sell' | 'business' | 'help' | 'profile') {
+    setDesktopSearchCategory(null)
     setSearchMenuOpen((current) => (menu === 'search' ? !current : false))
     setSellMenuOpen((current) => (menu === 'sell' ? !current : false))
     setBusinessMenuOpen((current) => (menu === 'business' ? !current : false))
@@ -1629,42 +1686,89 @@ export default function PublicHeader({
                             : 'pointer-events-none -translate-y-1 opacity-0'
                         }`}
                       >
-                        <div className="border-b border-[#e4e7ec] px-6 py-5">
-                          <p className="text-[17px] font-semibold leading-6 text-[#101828]">
-                            {desktopSearchCopy.title}
-                          </p>
-                          <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
-                            {desktopSearchCopy.intro}
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
-                          {desktopSearchGroups.map((group) => (
-                            <div key={group.key} className="px-6 py-5">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">
-                                {group.label}
+                        {desktopSearchCategoryItem && desktopSearchCategory ? (
+                          <div key={desktopSearchCategory}>
+                            <div className="border-b border-[#e4e7ec] px-6 py-5">
+                              <button
+                                type="button"
+                                onClick={() => setDesktopSearchCategory(null)}
+                                className="-ml-1 inline-flex items-center gap-1 rounded-[6px] px-1 py-1 text-[12px] font-medium text-[#667085] transition hover:bg-[#f5f7fa] hover:text-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
+                              >
+                                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                                {desktopSearchCopy.back}
+                              </button>
+                              <p className="mt-2 text-[17px] font-semibold leading-6 text-[#101828]">
+                                {desktopSearchCategoryItem.label}
                               </p>
-                              <div className="mt-2">
-                                {group.items.map(({ href: categoryHref, label: categoryLabel }) => (
-                                  <Link
-                                    key={categoryHref}
-                                    href={categoryHref}
-                                    onClick={(event) => handleInternalNavigation(event, categoryHref)}
-                                    className="block rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 text-[#101828] transition hover:bg-[#f5f7fa] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
-                                  >
-                                    {categoryLabel}
-                                  </Link>
-                                ))}
-                              </div>
+                              <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
+                                {desktopSearchCopy.browseTypes}
+                              </p>
                             </div>
-                          ))}
-                        </div>
-                        <Link
-                          href={href}
-                          onClick={(event) => handleInternalNavigation(event, href)}
-                          className="block border-t border-[#e4e7ec] bg-[#f8fafc] px-6 py-4 text-[14px] font-semibold text-[#0866ff] transition hover:bg-[#f1f5f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
-                        >
-                          {desktopSearchCopy.viewAll}
-                        </Link>
+                            <div className="grid grid-cols-2 gap-x-3 px-6 py-4">
+                              {desktopSearchBodyTypes.map((bodyType) => {
+                                const typeHref = desktopSearchTypeHref(desktopSearchCategoryItem.href, bodyType)
+                                return (
+                                  <Link
+                                    key={bodyType}
+                                    href={typeHref}
+                                    onClick={(event) => handleInternalNavigation(event, typeHref)}
+                                    className="rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 text-[#101828] transition hover:bg-[#f5f7fa] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                                  >
+                                    {translateListingVehicleValue(locale, bodyType)}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                            <Link
+                              href={desktopSearchCategoryItem.href}
+                              onClick={(event) => handleInternalNavigation(event, desktopSearchCategoryItem.href)}
+                              className="block border-t border-[#e4e7ec] bg-[#f8fafc] px-6 py-4 text-[14px] font-semibold text-[#0866ff] transition hover:bg-[#f1f5f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
+                            >
+                              {desktopSearchCopy.viewCategory}
+                            </Link>
+                          </div>
+                        ) : (
+                          <div key="categories">
+                            <div className="border-b border-[#e4e7ec] px-6 py-5">
+                              <p className="text-[17px] font-semibold leading-6 text-[#101828]">
+                                {desktopSearchCopy.title}
+                              </p>
+                              <p className="mt-1 text-[13px] font-normal leading-5 text-[#667085]">
+                                {desktopSearchCopy.intro}
+                              </p>
+                            </div>
+                            <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
+                              {desktopSearchGroups.map((group) => (
+                                <div key={group.key} className="px-6 py-5">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">
+                                    {group.label}
+                                  </p>
+                                  <div className="mt-2">
+                                    {group.items.map(({ label: categoryLabel, slug: categorySlug }) => (
+                                      <button
+                                        key={categorySlug}
+                                        type="button"
+                                        aria-label={`${categoryLabel}: ${desktopSearchCopy.browseTypes}`}
+                                        onClick={() => setDesktopSearchCategory(categorySlug || null)}
+                                        className="group flex w-full items-center justify-between rounded-[6px] px-2 py-2.5 text-left text-[14px] font-medium leading-5 text-[#101828] transition hover:bg-[#f5f7fa] hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
+                                      >
+                                        <span>{categoryLabel}</span>
+                                        <ChevronRight className="h-4 w-4 text-[#98a2b3] transition group-hover:translate-x-0.5 group-hover:text-[#0866ff]" aria-hidden="true" />
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <Link
+                              href={href}
+                              onClick={(event) => handleInternalNavigation(event, href)}
+                              className="block border-t border-[#e4e7ec] bg-[#f8fafc] px-6 py-4 text-[14px] font-semibold text-[#0866ff] transition hover:bg-[#f1f5f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
+                            >
+                              {desktopSearchCopy.viewAll}
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )

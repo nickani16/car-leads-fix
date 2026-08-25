@@ -57,6 +57,7 @@ import {
 import { getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { translateListingVehicleValue } from '@/lib/listing-display'
+import { marketplaceBodyTypeOptions } from '@/lib/marketplace-body-types'
 
 type Intent = 'all' | 'sale' | 'leasing'
 
@@ -226,18 +227,6 @@ const categoryLayouts: Record<MarketplaceCategorySlug, CategorySearchLayout> = {
     bottom: ['technical_batteryCapacityWh', 'condition', 'location'],
     advanced: [],
   },
-}
-
-const bodyTypeOptions: Record<MarketplaceCategorySlug, string[]> = {
-  cars: ['Halvkombi', 'Sedan', 'SUV', 'Kombi', 'Coupé', 'Cabriolet', 'Pickup'],
-  vans: ['Skåpbil', 'Crew van', 'Box van', 'Kylbil', 'Minibuss', 'Pickup', 'Flak', 'Chassi'],
-  trucks: ['Dragbil', 'Skåp', 'Flak', 'Tipp', 'Kranbil', 'Kylbil', 'Chassi', 'Tankbil', 'Lastväxlare', 'Betongbil', 'Buss'],
-  motorcycles: ['Sport', 'Touring', 'Custom', 'Scooter', 'Cross / enduro', 'Naked', 'Adventure', 'Moped', 'ATV'],
-  construction: ['Grävmaskin', 'Minigrävare', 'Hjullastare', 'Dumper', 'Dozer', 'Vält', 'Lift', 'Kran', 'Kompaktor'],
-  motorhomes: ['Helintegrerad', 'Halvintegrerad', 'Alkov', 'Camper van', 'Plåtis'],
-  caravans: ['Enkelaxel', 'Boggie', 'Familjevagn', 'Vintervagn', 'Liten husvagn'],
-  agriculture: ['Traktor', 'Skördetröska', 'Redskap', 'Press', 'Vagn', 'Spruta', 'Lastare'],
-  'electric-bikes': ['City', 'Hybrid', 'Mountainbike', 'Cargo', 'Folding', 'Speedbike', 'Racer', 'Barncykel'],
 }
 
 const marketOptions = ['EU', 'SE', 'DE', 'AT', 'BE', 'DK', 'ES', 'FI', 'FR', 'IT', 'NL', 'PL']
@@ -566,7 +555,7 @@ function filterOptions(
     return uniqueOptions([...facetValues(facets.gearboxes), 'Automat', 'Manuell'])
   }
   if (key === 'bodyType') {
-    return uniqueOptions([...facetValues(facets.bodyTypes), ...bodyTypeOptions[category]])
+    return uniqueOptions([...facetValues(facets.bodyTypes), ...marketplaceBodyTypeOptions[category]])
   }
   if (key === 'condition') return ['Ny', 'Begagnad', 'Renoverad', 'Projekt']
   if (key === 'technical_axleCount') {
