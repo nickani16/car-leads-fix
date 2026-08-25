@@ -22,8 +22,11 @@ test('location sharing remains mobile-only and registration hides the mobile bot
   assert.match(header, /hideMobileBottomNav \|\| authModalOpen \? 'hidden' : ''/)
 })
 
-test('desktop create listing CTA is only rendered for signed-out visitors', () => {
-  assert.match(header, /headerAccountResolved && !headerAccount\.authenticated \? \([\s\S]*href=\{createListingHref\}[\s\S]*accountMenuCopy\.create[\s\S]*\) : null/)
+test('create listing is absent from desktop and opened mobile navigation', () => {
+  assert.doesNotMatch(header, /createListingHref/)
+  assert.doesNotMatch(header, /accountMenuCopy\.create/)
+  assert.doesNotMatch(header, /baseSellMenuLinks\[0\]/)
+  assert.match(header, /const sellMenuLinks = \[[\s\S]*sell-to-dealer[\s\S]*\.\.\.baseSellMenuLinks\.slice\(1\)/)
 })
 
 test('mobile menus keep category links without create-listing or offer-type controls', () => {
@@ -40,6 +43,10 @@ test('notification center is localized and links existing reminders and messages
   assert.match(notificationCenter, /registration\.showNotification\('Autorell'/)
   assert.match(notificationCenter, /href=\{messagesHref\}/)
   assert.match(notificationCenter, /href=\{savedSearchesHref\}/)
+  assert.match(notificationCenter, /\/api\/account\/notifications/)
+  assert.match(notificationCenter, /markAllRead/)
+  assert.match(notificationCenter, /removeAll/)
+  assert.doesNotMatch(notificationCenter, /const badgeCount = unreadMessages \+ savedSearchCount/)
   assert.match(header, /<HeaderNotificationCenter/)
 })
 

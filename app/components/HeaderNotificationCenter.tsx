@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Bell, BellRing, Bookmark, ChevronRight, MessageSquareText, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PublicLocale } from '@/lib/public-i18n'
 
 type NotificationCopy = {
@@ -38,6 +38,31 @@ const copyByLocale: Record<PublicLocale, NotificationCopy> = {
   da: { label: 'Notifikationer', title: 'Notifikationer og påmindelser', messages: 'Ulæste beskeder', messagesEmpty: 'Ingen ulæste beskeder', searches: 'Gemte søgninger', searchesEmpty: 'Ingen gemte søgninger', searchesText: 'Administrer alarmer og påmindelser', browser: 'Browsernotifikationer', browserText: 'Tillad notifikationer fra Autorell på denne enhed.', enabled: 'Aktiveret', enable: 'Aktivér', unsupported: 'Administrer notifikationer i browserens indstillinger.', signIn: 'Log ind for notifikationer', signInText: 'Saml beskeder, alarmer og påmindelser ét sted.', close: 'Luk notifikationer' },
 }
 
+const actionCopyByLocale: Record<PublicLocale, { markAll: string; removeAll: string; empty: string; loadError: string; confirmRemove: string }> = {
+  sv: { markAll: 'Läs alla', removeAll: 'Ta bort alla', empty: 'Du har inga nya notiser.', loadError: 'Notiserna kunde inte hämtas.', confirmRemove: 'Vill du ta bort alla notiser?' },
+  en: { markAll: 'Mark all as read', removeAll: 'Remove all', empty: 'You have no new notifications.', loadError: 'Notifications could not be loaded.', confirmRemove: 'Remove all notifications?' },
+  de: { markAll: 'Alle als gelesen markieren', removeAll: 'Alle entfernen', empty: 'Keine neuen Benachrichtigungen.', loadError: 'Benachrichtigungen konnten nicht geladen werden.', confirmRemove: 'Alle Benachrichtigungen entfernen?' },
+  at: { markAll: 'Alle als gelesen markieren', removeAll: 'Alle entfernen', empty: 'Keine neuen Benachrichtigungen.', loadError: 'Benachrichtigungen konnten nicht geladen werden.', confirmRemove: 'Alle Benachrichtigungen entfernen?' },
+  be: { markAll: 'Alles als gelezen markeren', removeAll: 'Alles verwijderen', empty: 'Je hebt geen nieuwe meldingen.', loadError: 'Meldingen konden niet worden geladen.', confirmRemove: 'Alle meldingen verwijderen?' },
+  fr: { markAll: 'Tout marquer comme lu', removeAll: 'Tout supprimer', empty: 'Vous n’avez aucune nouvelle notification.', loadError: 'Impossible de charger les notifications.', confirmRemove: 'Supprimer toutes les notifications ?' },
+  es: { markAll: 'Marcar todo como leído', removeAll: 'Eliminar todo', empty: 'No tienes notificaciones nuevas.', loadError: 'No se pudieron cargar las notificaciones.', confirmRemove: '¿Eliminar todas las notificaciones?' },
+  it: { markAll: 'Segna tutte come lette', removeAll: 'Rimuovi tutte', empty: 'Non hai nuove notifiche.', loadError: 'Impossibile caricare le notifiche.', confirmRemove: 'Rimuovere tutte le notifiche?' },
+  pl: { markAll: 'Oznacz wszystkie jako przeczytane', removeAll: 'Usuń wszystkie', empty: 'Brak nowych powiadomień.', loadError: 'Nie udało się załadować powiadomień.', confirmRemove: 'Usunąć wszystkie powiadomienia?' },
+  nl: { markAll: 'Alles als gelezen markeren', removeAll: 'Alles verwijderen', empty: 'Je hebt geen nieuwe meldingen.', loadError: 'Meldingen konden niet worden geladen.', confirmRemove: 'Alle meldingen verwijderen?' },
+  fi: { markAll: 'Merkitse kaikki luetuiksi', removeAll: 'Poista kaikki', empty: 'Ei uusia ilmoituksia.', loadError: 'Ilmoituksia ei voitu ladata.', confirmRemove: 'Poistetaanko kaikki ilmoitukset?' },
+  da: { markAll: 'Markér alle som læst', removeAll: 'Fjern alle', empty: 'Du har ingen nye notifikationer.', loadError: 'Notifikationerne kunne ikke indlæses.', confirmRemove: 'Fjern alle notifikationer?' },
+}
+
+type AccountNotification = {
+  id: string
+  title: string
+  body: string
+  event_type: string
+  read_at: string | null
+  created_at: string
+  action_url: string | null
+}
+
 export default function HeaderNotificationCenter({
   locale,
   authenticated,
@@ -56,11 +81,29 @@ export default function HeaderNotificationCenter({
   onRequireAuth: () => void
 }) {
   const copy = copyByLocale[locale] || copyByLocale.en
+  const actionCopy = actionCopyByLocale[locale] || actionCopyByLocale.en
   const [open, setOpen] = useState(false)
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported')
+  const [notifications, setNotifications] = useState<AccountNotification[]>([])
+  const [loadError, setLoadError] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
-  const badgeCount = unreadMessages + savedSearchCount
+  const unreadNotifications = notifications.filter((notification) => !notification.read_at).length
+  const badgeCount = unreadMessages + unreadNotifications
   const badge = badgeCount > 99 ? '99+' : badgeCount ? String(badgeCount) : ''
+
+  const loadNotifications = useCallback(async () => {
+    if (!authenticated) return
+    try {
+      const response = await fetch('/api/account/notifications', { cache: 'no-store' })
+      if (!response.ok) throw new Error('request failed')
+      const payload = await response.json() as { notifications?: AccountNotification[] }
+      setNotifications(payload.notifications || [])
+      setLoadError(false)
+    } catch {
+      setLoadError(true)
+    }
+  }, [authenticated])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -68,6 +111,11 @@ export default function HeaderNotificationCenter({
     }, 0)
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadNotifications(), 0)
+    return () => window.clearTimeout(timer)
+  }, [loadNotifications])
 
   useEffect(() => {
     if (!open) return
@@ -110,6 +158,33 @@ export default function HeaderNotificationCenter({
     setOpen(false)
   }
 
+  async function markAllRead() {
+    if (!unreadNotifications || updating) return
+    setUpdating(true)
+    const response = await fetch('/api/account/notifications', { method: 'PATCH' }).catch(() => null)
+    if (response?.ok) {
+      const readAt = new Date().toISOString()
+      setNotifications((current) => current.map((notification) => ({ ...notification, read_at: notification.read_at || readAt })))
+      setLoadError(false)
+    } else {
+      setLoadError(true)
+    }
+    setUpdating(false)
+  }
+
+  async function removeAll() {
+    if (!notifications.length || updating || !window.confirm(actionCopy.confirmRemove)) return
+    setUpdating(true)
+    const response = await fetch('/api/account/notifications', { method: 'DELETE' }).catch(() => null)
+    if (response?.ok) {
+      setNotifications([])
+      setLoadError(false)
+    } else {
+      setLoadError(true)
+    }
+    setUpdating(false)
+  }
+
   return (
     <div ref={rootRef} className="relative flex h-full items-center">
       <button
@@ -137,6 +212,29 @@ export default function HeaderNotificationCenter({
 
         {authenticated ? (
           <div className="mt-3 grid gap-2">
+            <div className="flex min-h-8 items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-[#667085]">{copy.label}</span>
+              {notifications.length ? (
+                <span className="flex items-center gap-3">
+                  {unreadNotifications ? <button type="button" disabled={updating} onClick={() => void markAllRead()} className="text-xs font-semibold text-[#0866ff] disabled:opacity-50">{actionCopy.markAll}</button> : null}
+                  <button type="button" disabled={updating} onClick={() => void removeAll()} className="text-xs font-semibold text-[#b42318] disabled:opacity-50">{actionCopy.removeAll}</button>
+                </span>
+              ) : null}
+            </div>
+            {loadError ? <p role="status" className="rounded-[9px] bg-[#fff4ed] px-3 py-2 text-xs text-[#b54708]">{actionCopy.loadError}</p> : null}
+            {notifications.length ? (
+              <div className="max-h-64 overflow-y-auto rounded-[9px] border border-[#edf1f6]">
+                {notifications.map((notification) => {
+                  const href = notification.action_url?.startsWith('/') ? notification.action_url : messagesHref
+                  return (
+                    <Link key={notification.id} href={href} onClick={closePanel} className={`flex gap-3 border-b border-[#edf1f6] px-3 py-3 last:border-b-0 hover:bg-[#f7f9fc] ${notification.read_at ? 'bg-white' : 'bg-[#eef5ff]'}`}>
+                      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-[#0866ff]"><BellRing className="h-4 w-4" /></span>
+                      <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">{notification.title}</strong><span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-[#667085]">{notification.body}</span><time className="mt-1 block text-[11px] text-[#98a2b3]">{new Intl.DateTimeFormat(locale === 'at' ? 'de-AT' : locale === 'be' ? 'nl-BE' : locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notification.created_at))}</time></span>
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : !loadError ? <p className="rounded-[9px] bg-[#f7f9fc] px-3 py-3 text-sm text-[#667085]">{actionCopy.empty}</p> : null}
             <Link href={messagesHref} onClick={closePanel} className="flex min-h-14 items-center gap-3 rounded-[9px] bg-[#f7f9fc] px-3 transition hover:bg-[#eef5ff]">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[9px] bg-white text-[#0866ff]"><MessageSquareText className="h-[18px] w-[18px]" /></span>
               <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">{unreadMessages ? `${unreadMessages} ${copy.messages.toLocaleLowerCase()}` : copy.messagesEmpty}</strong><span className="mt-0.5 block text-xs text-[#667085]">{copy.messages}</span></span>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { localizedAccountUrl, resolveEmailLocale, type EmailLocale } from '@/lib/email/localization'
 import { publicSellerName } from '@/lib/public-seller'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       senderUserId: user.id,
       senderEmail: user.email || '',
       message,
+      messageId: insertedMessage.id,
       messageCreatedAt: insertedMessage?.created_at || new Date().toISOString(),
     })
   }
@@ -71,6 +73,7 @@ async function sendMessageNotification({
   senderUserId,
   senderEmail,
   message,
+  messageId,
   messageCreatedAt,
 }: {
   admin: AdminClient
@@ -78,11 +81,9 @@ async function sendMessageNotification({
   senderUserId: string
   senderEmail: string
   message: string
+  messageId: string
   messageCreatedAt: string
 }) {
-  const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return
-
   const recipientUserId =
     conversation.buyer_user_id === senderUserId
       ? conversation.seller_user_id
@@ -92,7 +93,7 @@ async function sendMessageNotification({
     const [{ data: profileData }, { data: listing }] = await Promise.all([
       admin
         .from('marketplace_profiles')
-        .select('user_id,email,display_name,first_name,last_name,company_name,account_type')
+        .select('user_id,email,display_name,first_name,last_name,company_name,account_type,country_code')
         .in('user_id', [senderUserId, recipientUserId]),
       conversation.listing_id
         ? admin
@@ -111,13 +112,32 @@ async function sendMessageNotification({
       (await admin.auth.admin.getUserById(recipientUserId)).data.user?.email ||
       ''
 
-    if (!recipientEmail || recipientEmail === senderEmail) return
-
     const senderName = displayProfileName(senderProfile) || senderEmail || 'A user'
     const listingTitle = listing?.title || 'a listing'
-    const messageUrl = `https://www.autorell.com/account/messages?conversation=${encodeURIComponent(conversation.id)}`
+    const locale = resolveEmailLocale({ countryCode: recipientProfile?.country_code })
+    const messageCopy = messageNotificationCopy[locale]
+    const messagePath = `/account/messages?conversation=${encodeURIComponent(conversation.id)}`
+    const messageUrl = localizedAccountUrl(messagePath, locale)
     const preview = truncateMessage(message, 420)
-    const subject = `New message about ${listingTitle}`
+    const subject = messageCopy.subject.replace('{listing}', listingTitle)
+
+    const { error: notificationError } = await admin.from('notifications').insert({
+      recipient_user_id: recipientUserId,
+      recipient_email: recipientEmail || null,
+      audience: recipientProfile?.account_type === 'business' ? 'dealer' : 'seller',
+      event_type: 'marketplace_message',
+      title: subject,
+      body: messageCopy.body.replace('{sender}', senderName),
+      channels: ['in_app'],
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      action_url: messagePath,
+      dedupe_key: `marketplace-message-${messageId}`,
+    })
+    if (notificationError) console.error('In-app message notification failed', notificationError)
+
+    const resendKey = process.env.RESEND_API_KEY
+    if (!resendKey || !recipientEmail || recipientEmail === senderEmail) return
     const resend = new Resend(resendKey)
 
     const { error: sendError } = await resend.emails.send({
@@ -146,7 +166,7 @@ async function sendMessageNotification({
         messageUrl,
         messageCreatedAt,
       }),
-    })
+    }, { idempotencyKey: `marketplace-message-${messageId}` })
 
     if (sendError) {
       console.error('Message notification email failed', sendError)
@@ -154,6 +174,19 @@ async function sendMessageNotification({
   } catch (error) {
     console.error('Message notification email failed', error)
   }
+}
+
+const messageNotificationCopy: Record<EmailLocale, { subject: string; body: string }> = {
+  sv: { subject: 'Nytt meddelande om {listing}', body: '{sender} har skickat ett nytt meddelande till dig.' },
+  en: { subject: 'New message about {listing}', body: '{sender} sent you a new message.' },
+  de: { subject: 'Neue Nachricht zu {listing}', body: '{sender} hat Ihnen eine neue Nachricht gesendet.' },
+  fr: { subject: 'Nouveau message concernant {listing}', body: '{sender} vous a envoyé un nouveau message.' },
+  es: { subject: 'Nuevo mensaje sobre {listing}', body: '{sender} te ha enviado un nuevo mensaje.' },
+  it: { subject: 'Nuovo messaggio su {listing}', body: '{sender} ti ha inviato un nuovo messaggio.' },
+  pl: { subject: 'Nowa wiadomość dotycząca {listing}', body: '{sender} wysłał Ci nową wiadomość.' },
+  nl: { subject: 'Nieuw bericht over {listing}', body: '{sender} heeft je een nieuw bericht gestuurd.' },
+  fi: { subject: 'Uusi viesti kohteesta {listing}', body: '{sender} lähetti sinulle uuden viestin.' },
+  da: { subject: 'Ny besked om {listing}', body: '{sender} har sendt dig en ny besked.' },
 }
 
 function displayProfileName(profile?: {

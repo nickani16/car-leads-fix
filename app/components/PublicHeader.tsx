@@ -698,7 +698,6 @@ export default function PublicHeader({
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [authBusinessRegistration, setAuthBusinessRegistration] = useState(false)
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
-  const [headerAccountResolved, setHeaderAccountResolved] = useState(false)
   const [activePathname, setActivePathname] = useState('')
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [savedSearchCount, setSavedSearchCount] = useState(0)
@@ -891,8 +890,6 @@ export default function PublicHeader({
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: fallback }),
       )
-    } finally {
-      setHeaderAccountResolved(true)
     }
   }, [])
 
@@ -1190,16 +1187,6 @@ export default function PublicHeader({
     : 'min-[1120px]:h-[62px]'
   const isBusinessAccount = headerAccount.accountType === 'business'
   const isAdminAccount = Boolean(headerAccount.isAdmin)
-  const privateListingHref = localizePublicHref(locale, '/account/listings/new')
-  const incompletePrivateListingHref = localizePublicHref(
-    locale,
-    `/account/profile?reason=listing&next=${encodeURIComponent(privateListingHref)}`,
-  )
-  const createListingHref = isBusinessAccount
-    ? `${marketPathPrefix}/account/company/listings/create`
-    : headerAccount.authenticated && headerAccount.profileComplete === false
-      ? incompletePrivateListingHref
-      : privateListingHref
   const baseSellMenuLinks = sellerItems[language].map((item) => {
     const translatedItem =
       locale === 'sv' || locale === 'de' || locale === 'en'
@@ -1208,12 +1195,11 @@ export default function PublicHeader({
     return {
       ...translatedItem,
       requiresLogin: item.requiresLogin,
-      href: item.href === '/account/listings/new' ? createListingHref : localizePublicHref(locale, item.href),
+      href: localizePublicHref(locale, item.href),
     }
   })
   const localizedDealerSell = sellToDealerMenuCopy[locale]
   const sellMenuLinks = [
-    baseSellMenuLinks[0],
     {
       href: localizePublicHref(locale, '/sell-to-dealer'),
       label: localizedDealerSell.label,
@@ -1316,7 +1302,7 @@ export default function PublicHeader({
       icon: Search,
     },
     {
-      href: sellMenuLinks[0]?.href || createListingHref,
+      href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-to-dealer'),
       label: publicLabel(t.sell, 'Sälja', t.sell),
       icon: Plus,
       children: sellMenuLinks,
@@ -1342,7 +1328,7 @@ export default function PublicHeader({
     : `${marketPathPrefix}/account/listings`
   const desktopNavLinks = [
     { kind: 'search' as const, href: localizePublicHref(locale, '/marketplace'), label: publicLabel('Search vehicles', 'Sök fordon', 'Fahrzeuge suchen') },
-    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || createListingHref, label: publicLabel(t.sell, 'Sälja', t.sell) },
+    { kind: 'sell' as const, href: sellMenuLinks[0]?.href || localizePublicHref(locale, '/sell-to-dealer'), label: publicLabel(t.sell, 'Sälja', t.sell) },
     { kind: 'business' as const, href: localizePublicHref(locale, '/business'), label: t.business },
     { kind: 'help' as const, href: localizePublicHref(locale, '/help-center'), label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe') },
   ]
@@ -1386,14 +1372,12 @@ export default function PublicHeader({
     ? [
         { href: `${marketPathPrefix}/account/company`, label: publicLabel('Company portal', 'Företagsportal', 'Unternehmensportal'), icon: Building2 },
         { href: accountProfileHref, label: accountMenuCopy.pages, icon: UserRound },
-        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
         { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
         { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
         { href: `${marketPathPrefix}/account/company/subscription`, label: publicLabel('Plan', 'Plan', 'Tarif'), icon: CreditCard },
       ]
     : [
         { href: accountHref, label: accountMenuCopy.pages, icon: UserRound },
-        { href: createListingHref, label: accountMenuCopy.create, icon: FilePlus2 },
         { href: accountListingsHref, label: accountMenuCopy.listings, icon: CarFront },
         { href: accountSettingsHref, label: accountMenuCopy.settings, icon: Settings },
       ]
@@ -1911,16 +1895,6 @@ export default function PublicHeader({
             </nav>
 
             <div className="ml-auto hidden h-full shrink-0 items-center gap-3 min-[1120px]:flex xl:gap-4">
-              {headerAccountResolved && !headerAccount.authenticated ? (
-                <Link
-                  href={createListingHref}
-                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[14px] font-medium text-[#0866ff] transition-colors duration-150 hover:bg-[#eef5ff] active:bg-[#e1edff]"
-                >
-                  <Plus className="h-[17px] w-[17px]" strokeWidth={1.8} />
-                  <span>{accountMenuCopy.create}</span>
-                </Link>
-              ) : null}
               {headerAccount.authenticated ? (
                 <>
                   {desktopAccountLinks.map(({ href, label, icon: Icon }) => (
@@ -2426,19 +2400,6 @@ export default function PublicHeader({
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
             <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
-            {headerAccountResolved && !headerAccount.authenticated ? (
-              <>
-                <Link
-                  href={createListingHref}
-                  onClick={(event) => handleInternalNavigation(event, createListingHref)}
-                  className="mb-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#0866ff] bg-white px-4 text-[15px] font-medium text-[#0866ff] transition-colors active:bg-[#eaf2ff]"
-                >
-                  <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" />
-                  <span>{accountMenuCopy.create}</span>
-                </Link>
-                <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 mb-4 h-px bg-[#e4e7ec]" />
-              </>
-            ) : null}
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <div>
