@@ -48,8 +48,8 @@ export async function GET(request: Request) {
       name,
       lastModified: generatedSitemapLastModified,
     })),
-    ...vehicleNewsSitemapNames.map((name) => ({ name })),
-    ...listingSitemapNames.map((name) => ({ name })),
+    ...vehicleNewsSitemapNames.map((name) => ({ name, lastModified: undefined })),
+    ...listingSitemapNames.map((name) => ({ name, lastModified: undefined })),
   ]
 
   const body = [
