@@ -120,6 +120,12 @@ body {
   opacity: 1 !important;
 }
 
+.autorell-account-input[name='nationalId']::placeholder {
+  color: #7b8494 !important;
+  -webkit-text-fill-color: #7b8494 !important;
+  opacity: 1 !important;
+}
+
 .autorell-range {
   appearance: none;
   background: transparent;

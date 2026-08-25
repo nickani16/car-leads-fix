@@ -81,10 +81,12 @@ test('password signup clearly instructs users to click the confirmation link', (
 
 test('identity labels and placeholders are localized for every Autorell market', () => {
   const identityCopy = read('lib/national-id-profile-i18n.ts')
+  const globalCss = read('app/globals.css')
 
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(identityCopy, new RegExp(`\\n  ${locale}: \\{`))
   }
+  assert.match(globalCss, /\.autorell-account-input\[name='nationalId'\]::placeholder[\s\S]*-webkit-text-fill-color: #7b8494 !important/)
   assert.match(identityCopy, /Personnummer/)
   assert.match(identityCopy, /Rijksregisternummer/)
   assert.match(identityCopy, /Numéro de sécurité sociale/)
