@@ -48,6 +48,17 @@ const getCachedVehicleNewsRows = unstable_cache(
   ['sitemap-vehicle-news-v1'],
   { revalidate: 21_600 },
 )
+const getResilientVehicleNewsRows = unstable_cache(
+  async (market: string, language: string) => {
+    try {
+      return await getCachedVehicleNewsRows(market, language)
+    } catch {
+      return []
+    }
+  },
+  ['sitemap-vehicle-news-fallback-v1'],
+  { revalidate: 300 },
+)
 const getCachedListingRows = unstable_cache(
   async (country: string, page: number) => {
     const offset = (page - 1) * maxUrlsPerSitemap
@@ -67,6 +78,17 @@ const getCachedListingRows = unstable_cache(
   },
   ['sitemap-marketplace-listings-v1'],
   { revalidate: 3_600 },
+)
+const getResilientListingRows = unstable_cache(
+  async (country: string, page: number) => {
+    try {
+      return await getCachedListingRows(country, page)
+    } catch {
+      return []
+    }
+  },
+  ['sitemap-marketplace-listings-fallback-v1'],
+  { revalidate: 300 },
 )
 export const dynamic = 'force-dynamic'
 const listingSitemapCountries: Record<string, string> = {
@@ -149,12 +171,8 @@ export async function GET(
 async function vehicleNewsUrls(market: string) {
   const language = market === 'se' ? 'sv' : market
   const base = [sitemapUrl(`/${market}/vehicle-news`, undefined, 'daily', '0.8')]
-  try {
-    const data = await getCachedVehicleNewsRows(market, language)
-    return [...base, ...data.map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
-  } catch {
-    return base
-  }
+  const data = await getResilientVehicleNewsRows(market, language)
+  return [...base, ...data.map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
 }
 
 function geoSitemapUrls(market: string, page: number) {
@@ -301,7 +319,11 @@ function staticPublicUrls(market: SitemapMarketCode) {
 }
 
 async function listingUrls(country: string, page: number) {
-  const data = await getCachedListingRows(country, page)
+  const data = await getResilientListingRows(country, page)
+  const market = marketFromCountry(country)
+  if (!data.length) {
+    return market ? [sitemapUrl(`/${market}/marketplace`, undefined, 'daily', '0.8')] : []
+  }
 
   return data.map((listing) => sitemapUrl(
     buildListingPath(listing),
