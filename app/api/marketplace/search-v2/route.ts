@@ -25,6 +25,7 @@ const marketplaceSearchCache =
 
 const SEARCH_CACHE_TTL_MS = 5_000
 const SEARCH_CACHE_MAX_ENTRIES = 1_000
+const SEARCH_TIMEOUT_MS = 1_800
 
 export async function GET(request: NextRequest) {
   const startedAt = Date.now()
@@ -61,11 +62,16 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const result = await withTimeout(
-      searchMarketplaceListings(input),
-      15_000,
-      'Marketplace search timed out.',
-    )
+    const searchController = new AbortController()
+    const searchTimeout = setTimeout(() => searchController.abort(), SEARCH_TIMEOUT_MS)
+    let result: Awaited<ReturnType<typeof searchMarketplaceListings>>
+    try {
+      result = await searchMarketplaceListings(input, {
+        signal: searchController.signal,
+      })
+    } finally {
+      clearTimeout(searchTimeout)
+    }
     const locale = normalizeLocale(request.nextUrl.searchParams.get('locale'))
     const displayCurrency = displayCurrencyForMarket(
       request.nextUrl.searchParams.get('displayMarket'),
@@ -104,16 +110,6 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    if (input.geoFilterMode === 'strict' && input.geoAreaId) {
-      const body = JSON.stringify(emptyStrictGeoSearchResult(Number(input.limit) || 48))
-      return new Response(body, {
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'no-store',
-          'X-Autorell-Search-Cache': 'geo-empty-fallback',
-        },
-      })
-    }
     console.error(JSON.stringify({
       level: 'error',
       route: '/api/marketplace/search-v2',
@@ -121,10 +117,15 @@ export async function GET(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error),
       ms: Date.now() - startedAt,
     }))
-    return Response.json(
-      { error: 'Marketplace search is not available yet.' },
-      { status: 503, headers: { 'Cache-Control': 'no-store' } },
-    )
+    const body = JSON.stringify(emptySearchResult(Number(input.limit) || 48))
+    return new Response(body, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Autorell-Search-Fallback':
+          input.geoFilterMode === 'strict' && input.geoAreaId ? 'geo-empty' : 'unavailable',
+      },
+    })
   }
 }
 
@@ -171,16 +172,7 @@ async function formatSearchResultPrice(
   })
 }
 
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => {
-      setTimeout(() => reject(new Error(message)), timeoutMs)
-    }),
-  ])
-}
-
-function emptyStrictGeoSearchResult(limit: number) {
+function emptySearchResult(limit: number) {
   return {
     items: [],
     facets: {

@@ -1564,8 +1564,7 @@ export default function PublicHeader({
     closeMobile()
   }
 
-  function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
-    event.preventDefault()
+  function handleHomeLogoClick() {
     setProfileMenuOpen(false)
     setSearchMenuOpen(false)
     setSellMenuOpen(false)
@@ -1575,7 +1574,6 @@ export default function PublicHeader({
     setMobileBusinessMenuOpen(false)
     setMobileHelpMenuOpen(false)
     closeMobile()
-    window.location.assign(homeHref)
   }
 
   function handleCategoryNavigation(

@@ -339,11 +339,6 @@ export default function PublicFooter({
   const withdrawalHref = localizePublicHref(locale, '/withdrawal')
   const homeHref = localizePublicHref(locale, '/')
 
-  function handleHomeLogoClick(event: ReactMouseEvent<HTMLAnchorElement>) {
-    event.preventDefault()
-    window.location.assign(homeHref)
-  }
-
   return (
     <footer className="border-t border-[#dbe3ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-14">
       <div className="mx-auto max-w-[390px] px-5 min-[430px]:max-w-[430px] sm:max-w-[var(--autorell-page-max)] sm:px-8">
@@ -352,7 +347,6 @@ export default function PublicFooter({
             <Link
               href={homeHref}
               aria-label="Autorell"
-              onClick={handleHomeLogoClick}
               className="inline-flex w-[128px] sm:w-[138px]"
             >
               <BrandLogo underline={false} />

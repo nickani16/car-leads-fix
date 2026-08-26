@@ -127,8 +127,11 @@ type MarketplaceSearchRow = Record<string, unknown> & {
   seller_type?: string | null
 }
 
-export async function searchMarketplaceListings(input: MarketplaceSearchInput): Promise<MarketplaceSearchResult> {
-  const admin = createAdminClient()
+export async function searchMarketplaceListings(
+  input: MarketplaceSearchInput,
+  options: { signal?: AbortSignal; timeoutMs?: number } = {},
+): Promise<MarketplaceSearchResult> {
+  const admin = createAdminClient(options)
   const filters = normalizeMarketplaceSearchInput(input)
 
   if (filters.preferredMarket && !filters.cursor) {

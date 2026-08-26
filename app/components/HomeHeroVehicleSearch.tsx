@@ -654,6 +654,7 @@ export default function HomeHeroVehicleSearch({
   const moreFiltersTriggerRef = useRef<HTMLButtonElement>(null)
   const moreFiltersDialogRef = useRef<HTMLElement>(null)
   const moreFiltersCloseRef = useRef<HTMLButtonElement>(null)
+  const countRequestInitialized = useRef(false)
 
   const categoryLayout = categoryLayouts[category]
   const quickUsageFilter: HomeSearchFilterKey =
@@ -775,7 +776,14 @@ export default function HomeHeroVehicleSearch({
   }, [moreFiltersOpen])
 
   useEffect(() => {
+    if (!countRequestInitialized.current) {
+      countRequestInitialized.current = true
+      return
+    }
+
     const controller = new AbortController()
+    let active = true
+    let requestTimeout: number | undefined
     const timer = window.setTimeout(async () => {
       setCountLoading(true)
       setCountError(false)
@@ -784,6 +792,7 @@ export default function HomeHeroVehicleSearch({
       params.set('page', '1')
       params.set('locale', locale)
       params.set('displayMarket', localMarket)
+      requestTimeout = window.setTimeout(() => controller.abort(), 2_500)
 
       try {
         const response = await fetch(`/api/marketplace/search-v2?${params.toString()}`, {
@@ -801,18 +810,21 @@ export default function HomeHeroVehicleSearch({
           ...payload.facets,
           technical: payload.facets?.technical || {},
         })
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
+      } catch {
+        if (active) {
           setCountError(true)
           setListingCount(null)
         }
       } finally {
-        if (!controller.signal.aborted) setCountLoading(false)
+        if (requestTimeout) window.clearTimeout(requestTimeout)
+        if (active) setCountLoading(false)
       }
     }, query.trim() || location.trim() ? 420 : 180)
 
     return () => {
+      active = false
       window.clearTimeout(timer)
+      if (requestTimeout) window.clearTimeout(requestTimeout)
       controller.abort()
     }
   }, [countParams, locale, localMarket, location, query])

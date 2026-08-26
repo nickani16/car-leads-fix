@@ -104,7 +104,7 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
     const normalizedCountry = (countryCode || '').toUpperCase()
     const now = new Date().toISOString()
     const buildQuery = (marketScope: 'local' | 'other' | 'all') => {
-      let query = createAdminClient()
+      let query = createAdminClient({ timeoutMs: 900 })
         .from('marketplace_listings')
         .select(marketplacePublicSelect)
         .eq('status', 'published')
@@ -365,8 +365,8 @@ function imageOrderKey(value: unknown) {
 
 export const getPublishedMarketplaceListingCount = unstable_cache(
   async (countryCode: string | null) => {
-    return withCountTimeout(async () => {
-      let query = createAdminClient()
+    try {
+      let query = createAdminClient({ timeoutMs: 900 })
         .from('marketplace_listings')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published')
@@ -379,24 +379,16 @@ export const getPublishedMarketplaceListingCount = unstable_cache(
         query = query.eq('country_code', normalizedCountry)
       }
 
-      const { count } = await query
+      const { count, error } = await query
+      if (error) return null
       return count ?? null
-    })
+    } catch {
+      return null
+    }
   },
   ['published-marketplace-listing-count'],
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
-
-async function withCountTimeout(run: () => Promise<number | null>) {
-  try {
-    return await Promise.race([
-      run(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3_000)),
-    ])
-  } catch {
-    return null
-  }
-}
 
 export const getPublicSearchListings = unstable_cache(
   async (limit = 250) => {

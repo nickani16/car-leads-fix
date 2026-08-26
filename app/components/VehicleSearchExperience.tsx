@@ -1707,6 +1707,8 @@ export default function VehicleSearchExperience({
     if (!searchStateReady) return
     if (isSeoLanding && AUTOMATED_CRAWLER_PATTERN.test(window.navigator.userAgent)) return
     const controller = new AbortController()
+    let active = true
+    let requestTimeout: number | undefined
     const timer = window.setTimeout(async () => {
       setSearchLoading(true)
       setSearchError(false)
@@ -1715,6 +1717,7 @@ export default function VehicleSearchExperience({
       params.set('limit', desktopMarketplaceView === 'list' ? '24' : '48')
       params.set('locale', locale)
       params.set('displayMarket', safeAutomaticCountry || safeInitialCountry || 'EU')
+      requestTimeout = window.setTimeout(() => controller.abort(), 2_500)
 
       try {
         const response = await fetch(`/api/marketplace/search-v2?${params.toString()}`, {
@@ -1728,18 +1731,25 @@ export default function VehicleSearchExperience({
         setSearchTotalCount(payload.totalCount ?? nextListings.length)
         setSearchTotalPages(payload.totalPages ?? 1)
         setSearchFacets(payload.facets || {})
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
+      } catch {
+        if (active) {
           setSearchError(true)
+          setSearchListings([])
+          setSearchTotalCount(0)
+          setSearchTotalPages(1)
+          setSearchFacets({})
         }
       } finally {
-        if (!controller.signal.aborted) setSearchLoading(false)
+        if (requestTimeout) window.clearTimeout(requestTimeout)
+        if (active) setSearchLoading(false)
       }
     }, debouncedSearchInput.trim() || equipmentQuery.trim() ? 420 : 120)
 
     return () => {
+      active = false
       controller.abort()
       window.clearTimeout(timer)
+      if (requestTimeout) window.clearTimeout(requestTimeout)
     }
   }, [debouncedSearchInput, desktopMarketplaceView, equipmentQuery, isSeoLanding, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories

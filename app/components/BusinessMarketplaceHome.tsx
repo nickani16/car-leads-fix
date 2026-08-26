@@ -548,7 +548,7 @@ type HomeListingSectionData = {
 async function withHomeDataFallback<T>(
   promise: Promise<T>,
   fallback: T,
-  timeoutMs = 2_000,
+  timeoutMs = 900,
 ): Promise<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined
   try {
@@ -599,8 +599,8 @@ export default async function BusinessMarketplaceHome({
       ),
       homeListingCategories.map((category) => ({ category, listings: [] })),
     ),
-    getPublishedMarketplaceListingCount(localMarketCode),
-    getPublishedMarketplaceListingCount('EU'),
+    withHomeDataFallback(getPublishedMarketplaceListingCount(localMarketCode), null),
+    withHomeDataFallback(getPublishedMarketplaceListingCount('EU'), null),
     withHomeDataFallback(
       getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
       { articles: [], categories: [], count: 0, unavailable: true },
