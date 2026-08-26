@@ -13,7 +13,6 @@ import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-int
 import {
   accountIntentFromCookieAndUser,
   ensureMarketplaceProfile,
-  reactivateSelfDeletedPrivateProfile,
 } from '@/lib/account-profile-bootstrap'
 import RegisterForm from './RegisterForm'
 
@@ -58,8 +57,7 @@ export default async function RegisterPage({
       profile.risk_status === 'restricted',
   )
   if (canReactivate && profile?.account_type === 'private') {
-    await reactivateSelfDeletedPrivateProfile(user.id)
-    redirect(localizePublicHref(locale, '/account'))
+    redirect(localizePublicHref(locale, '/account/reactivate'))
   }
   if (profile && !canReactivate) redirect(localizePublicHref(locale, '/account'))
 

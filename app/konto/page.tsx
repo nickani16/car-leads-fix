@@ -36,7 +36,6 @@ import {
   accountIntentFromCookieAndUser,
   ensureMarketplaceProfile,
   isMarketplaceProfileComplete,
-  reactivateSelfDeletedPrivateProfile,
 } from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('profile')
@@ -148,8 +147,7 @@ export default async function AccountPage() {
     profile.risk_status === 'restricted'
   ) {
     if (profile.account_type === 'private') {
-      await reactivateSelfDeletedPrivateProfile(user.id)
-      redirect(localizePublicHref(locale, '/account'))
+      redirect(localizePublicHref(locale, '/account/reactivate'))
     }
     redirect(localizePublicHref(locale, '/register?reactivate=1'))
   }
