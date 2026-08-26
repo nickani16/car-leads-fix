@@ -294,9 +294,12 @@ async function renderMarketplaceCategoryPage({
         requestedCategory === 'vehicles' ? 360 : 240,
       )
   const data = preferMarketplaceCountry(fetchedData || [], automaticCountry)
-  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
+  const sellerProfileRequest = getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
+  const sellerProfiles = seoLanding
+    ? await withPageDataFallback(sellerProfileRequest, new Map(), 5_000)
+    : await sellerProfileRequest
   const exchangeRates = (data || []).some((listing) => listing.currency !== displayCurrency)
     ? await getMarketplaceExchangeRates()
     : undefined
@@ -429,20 +432,45 @@ async function renderMarketplaceCategoryPage({
 
 async function getSeoLandingListings(landing: GeoLandingRoute) {
   try {
-    const result = await searchMarketplaceListings({
-      categories: landing.category,
-      markets: landing.countryCode,
-      make: landing.make,
-      model: landing.model,
-      geoAreaId: landing.place?.id,
-      geoFilterMode: landing.place ? 'strict' : 'legacy',
-      mode: landing.leasing ? 'leasing' : 'sale',
-      offerType: landing.leasing ? 'lease' : 'sale',
-      limit: 48,
-    })
+    const result = await withPageDataFallback(
+      searchMarketplaceListings({
+        categories: landing.category,
+        markets: landing.countryCode,
+        make: landing.make,
+        model: landing.model,
+        geoAreaId: landing.place?.id,
+        geoFilterMode: landing.place ? 'strict' : 'legacy',
+        mode: landing.leasing ? 'leasing' : 'sale',
+        offerType: landing.leasing ? 'lease' : 'sale',
+        limit: 48,
+      }),
+      null,
+      8_000,
+    )
+    if (!result) return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
     return result.items as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
   } catch {
     return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
+  }
+}
+
+async function withPageDataFallback<T>(
+  promise: Promise<T>,
+  fallback: T,
+  timeoutMs: number,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeout = setTimeout(() => resolve(fallback), timeoutMs)
+      }),
+    ])
+  } catch {
+    return fallback
+  } finally {
+    if (timeout) clearTimeout(timeout)
   }
 }
 
