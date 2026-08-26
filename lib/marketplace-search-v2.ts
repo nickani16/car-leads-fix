@@ -166,7 +166,7 @@ export async function searchMarketplaceListings(
   query = applyCursor(query, filters.cursor)
   query = applySort(query, filters.sort).range(from, to)
 
-  const { data, error, count } = await query
+  const { data, error, count } = await query.retry(false)
   if (error) {
     throw new Error(error.message)
   }
@@ -207,7 +207,7 @@ async function searchSortedWithPreferredMarket(
       ? query.eq('country_code', filters.preferredMarket)
       : query.neq('country_code', filters.preferredMarket)
     if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
-    const { count, error } = await query
+    const { count, error } = await query.retry(false)
     if (error) throw new Error(error.message)
     return count || 0
   }
@@ -236,7 +236,7 @@ async function searchSortedWithPreferredMarket(
       if (filters.sort === 'price-asc' || filters.sort === 'price-desc') query = query.not('price', 'is', null)
       if (filters.sort === 'year-desc') query = query.not('model_year', 'is', null)
       if (filters.sort === 'mileage-asc') query = query.not('mileage_km', 'is', null)
-      const { data, error } = await applySort(query, filters.sort).range(slice.from, slice.to)
+      const { data, error } = await applySort(query, filters.sort).range(slice.from, slice.to).retry(false)
       if (error) throw new Error(error.message)
       return (data || []) as MarketplaceSearchRow[]
     })())
@@ -270,7 +270,7 @@ async function searchPublishedWithPreferredMarket(
       ? applyActiveTopPlacementFilter(query, now)
       : applyNotActiveTopPlacementFilter(query, now)
     if (verifiedSellerIds) query = query.in('seller_user_id', verifiedSellerIds)
-    const { count, error } = await query
+    const { count, error } = await query.retry(false)
     if (error) throw new Error(error.message)
     return count || 0
   }))
@@ -303,7 +303,7 @@ async function searchPublishedWithPreferredMarket(
             .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
             .order('published_at', { ascending: false })
             .order('id', { ascending: false })
-      const { data, error } = await ordered.range(slice.from, slice.to)
+      const { data, error } = await ordered.range(slice.from, slice.to).retry(false)
       if (error) throw new Error(error.message)
       return (data || []) as MarketplaceSearchRow[]
     })())
@@ -376,7 +376,7 @@ async function searchPublishedWithSponsoredBlock(
   normalCountQuery = applyNotActiveTopPlacementFilter(normalCountQuery, now)
 
   const [{ count: sponsoredCount, error: sponsoredCountError }, { count: normalCount, error: normalCountError }] =
-    await Promise.all([sponsoredCountQuery, normalCountQuery])
+    await Promise.all([sponsoredCountQuery.retry(false), normalCountQuery.retry(false)])
   if (sponsoredCountError) throw new Error(sponsoredCountError.message)
   if (normalCountError) throw new Error(normalCountError.message)
 
@@ -440,6 +440,7 @@ async function fetchSponsoredRows(
     .order('published_at', { ascending: false })
     .order('id', { ascending: false })
     .range(from, to)
+    .retry(false)
   if (error) throw new Error(error.message)
   return (data || []) as MarketplaceSearchRow[]
 }
@@ -459,6 +460,7 @@ async function fetchNormalRows(
     .order('published_at', { ascending: false })
     .order('id', { ascending: false })
     .range(from, to)
+    .retry(false)
   if (error) throw new Error(error.message)
   return (data || []) as MarketplaceSearchRow[]
 }
@@ -558,6 +560,7 @@ async function getVerifiedMarketplaceSellerIds() {
     .from('marketplace_profiles')
     .select('user_id,account_type,identity_status,business_verification_status')
     .limit(10_000)
+    .retry(false)
 
   return (data || [])
     .filter((profile) => {
@@ -990,7 +993,7 @@ async function getDynamicMarketplaceFacets(
     .from('marketplace_listings')
     .select('category,make,model,municipality,city,fuel_type,gearbox,body_type,structured_data,offer_type')
   query = applyMarketplaceListingFilters(query, filters)
-  const { data, error } = await query.limit(10_000)
+  const { data, error } = await query.limit(10_000).retry(false)
   if (error) throw new Error(error.message)
 
   const rows = (data || []) as Array<Record<string, unknown>>

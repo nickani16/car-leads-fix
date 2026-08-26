@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
 import { buildListingPath, listingMarketPath } from '@/lib/listing-url'
 import { helpCenterArticles, helpCenterCategories } from '@/lib/help-center'
 import {
@@ -28,6 +29,45 @@ import {
 
 const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
+const getCachedVehicleNewsRows = unstable_cache(
+  async (market: string, language: string) => {
+    const { data, error } = await createAdminClient({ timeoutMs: 5_000 })
+      .from('content_posts')
+      .select('slug,updated_at,published_at')
+      .eq('post_type', 'news')
+      .eq('status', 'published')
+      .eq('market', market.toUpperCase())
+      .eq('language', language)
+      .lte('published_at', new Date().toISOString())
+      .order('published_at', { ascending: false })
+      .limit(maxUrlsPerSitemap - 1)
+      .retry(false)
+    if (error) throw error
+    return data || []
+  },
+  ['sitemap-vehicle-news-v1'],
+  { revalidate: 21_600 },
+)
+const getCachedListingRows = unstable_cache(
+  async (country: string, page: number) => {
+    const offset = (page - 1) * maxUrlsPerSitemap
+    const { data, error } = await createAdminClient({ timeoutMs: 5_000 })
+      .from('marketplace_listings')
+      .select('id,title,make,model,model_year,city,country_code,updated_at,published_at,created_at')
+      .eq('status', 'published')
+      .eq('country_code', country)
+      .not('published_at', 'is', null)
+      .is('sold_at', null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+      .order('published_at', { ascending: false })
+      .range(offset, offset + maxUrlsPerSitemap - 1)
+      .retry(false)
+    if (error) throw error
+    return data || []
+  },
+  ['sitemap-marketplace-listings-v1'],
+  { revalidate: 3_600 },
+)
 export const dynamic = 'force-dynamic'
 const listingSitemapCountries: Record<string, string> = {
   se: 'SE',
@@ -110,18 +150,8 @@ async function vehicleNewsUrls(market: string) {
   const language = market === 'se' ? 'sv' : market
   const base = [sitemapUrl(`/${market}/vehicle-news`, undefined, 'daily', '0.8')]
   try {
-    const { data, error } = await createAdminClient()
-      .from('content_posts')
-      .select('slug,updated_at,published_at')
-      .eq('post_type', 'news')
-      .eq('status', 'published')
-      .eq('market', market.toUpperCase())
-      .eq('language', language)
-      .lte('published_at', new Date().toISOString())
-      .order('published_at', { ascending: false })
-      .limit(maxUrlsPerSitemap - 1)
-    if (error) return base
-    return [...base, ...(data || []).map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
+    const data = await getCachedVehicleNewsRows(market, language)
+    return [...base, ...data.map((article) => sitemapUrl(`/${market}/vehicle-news/${article.slug}`, article.updated_at || article.published_at, 'weekly', '0.7'))]
   } catch {
     return base
   }
@@ -271,19 +301,9 @@ function staticPublicUrls(market: SitemapMarketCode) {
 }
 
 async function listingUrls(country: string, page: number) {
-  const offset = (page - 1) * maxUrlsPerSitemap
-  const { data } = await createAdminClient()
-    .from('marketplace_listings')
-    .select('id,title,make,model,model_year,city,country_code,updated_at,published_at,created_at')
-    .eq('status', 'published')
-    .eq('country_code', country)
-    .not('published_at', 'is', null)
-    .is('sold_at', null)
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .order('published_at', { ascending: false })
-    .range(offset, offset + maxUrlsPerSitemap - 1)
+  const data = await getCachedListingRows(country, page)
 
-  return (data || []).map((listing) => sitemapUrl(
+  return data.map((listing) => sitemapUrl(
     buildListingPath(listing),
     listing.updated_at || listing.published_at || listing.created_at,
     'daily',
