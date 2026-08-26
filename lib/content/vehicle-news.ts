@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createHash } from 'node:crypto'
+import { unstable_cache } from 'next/cache'
 import { buildListingPath } from '@/lib/listing-url'
 import { getFeaturedMarketplaceHomeListings } from '@/lib/marketplace-public-data'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -1036,7 +1037,7 @@ function mapArticle(row: Record<string, unknown>, media: Record<string, unknown>
 
 const publicSelect = 'id,slug,title,excerpt,body,language,market,author_name,published_at,updated_at,reading_time_minutes,tags,seo_title,meta_description,canonical_url,view_count,related_post_ids,hero_media_id,content_categories(id,category_key,translations)'
 
-export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
+async function getVehicleNewsUncached(market: string, page = 1, pageSize = 12) {
   const language = languageForMarket(market)
   const admin = createContentAdmin()
   if (!admin) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
@@ -1051,12 +1052,13 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false })
     .range(from, from + pageSize - 1)
+    .retry(false)
 
   if (error) return { articles: fallbackNewsPage(language, page, pageSize), categories: localizedFallbackCategories(language), count: fallbackArticles.length, unavailable: false }
   const rows = (data || []) as unknown as Record<string, unknown>[]
   const mediaIds = rows.map((row) => String(row.hero_media_id || '')).filter(Boolean)
   const { data: mediaRows } = mediaIds.length
-    ? await admin.from('media_assets').select('id,public_url,variants,alt_text,caption').in('id', mediaIds)
+    ? await admin.from('media_assets').select('id,public_url,variants,alt_text,caption').in('id', mediaIds).retry(false)
     : { data: [] }
   const mediaById = new Map((mediaRows || []).map((item) => [String(item.id), item as Record<string, unknown>]))
   const { data: categoryRows } = await admin
@@ -1064,6 +1066,7 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     .select('id,category_key,translations')
     .eq('is_active', true)
     .order('sort_order')
+    .retry(false)
 
   return {
     articles: rows.length ? rows.map((row) => mapArticle(row, mediaById.get(String(row.hero_media_id)) || null)) : fallbackNewsPage(language, page, pageSize),
@@ -1076,6 +1079,12 @@ export async function getVehicleNews(market: string, page = 1, pageSize = 12) {
     unavailable: false,
   }
 }
+
+export const getVehicleNews = unstable_cache(
+  getVehicleNewsUncached,
+  ['public-vehicle-news-v1'],
+  { revalidate: 300 },
+)
 
 export async function getVehicleNewsFeaturedListings(market: string, limit = 3): Promise<PublicNewsListing[]> {
   try {

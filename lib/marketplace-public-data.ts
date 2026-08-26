@@ -87,6 +87,7 @@ export const getPublishedMarketplaceListings = unstable_cache(
       .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
+      .retry(false)
 
     return (data || []).map(sanitizePublicListingSellerName)
   },
@@ -110,7 +111,8 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
         .eq('status', 'published')
         .not('published_at', 'is', null)
         .is('sold_at', null)
-        .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
+        .retry(false) as unknown as MarketplaceQuery
       if (normalizedCountry && normalizedCountry !== 'EU' && marketScope !== 'all') {
         query = marketScope === 'local'
           ? query.eq('country_code', normalizedCountry)
@@ -165,7 +167,7 @@ export const getPublishedMarketplaceCategoryListings = unstable_cache(
       query = query.eq('category', category)
     }
 
-    const { data } = await query
+    const { data } = await query.retry(false)
 
     return (data || []).map(sanitizePublicListingSellerName)
   },
@@ -184,6 +186,7 @@ export const getPublishedMarketplaceListingById = unstable_cache(
       .is('sold_at', null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .maybeSingle()
+      .retry(false)
 
     return data ? sanitizePublicListingSellerName(data) : null
   },
@@ -207,7 +210,8 @@ export const getFeaturedMarketplaceHomeListings = unstable_cache(
       .gt('featured_expires_at', now)
       .not('published_at', 'is', null)
       .is('sold_at', null)
-      .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
+      .retry(false) as unknown as MarketplaceQuery
 
     const normalizedCountry = (countryCode || '').toUpperCase()
     if (normalizedCountry && normalizedCountry !== 'EU') {
@@ -238,7 +242,8 @@ export const getFeaturedMarketplaceCategoryListings = unstable_cache(
       .gt('featured_expires_at', now)
       .not('published_at', 'is', null)
       .is('sold_at', null)
-      .or(`expires_at.is.null,expires_at.gt.${now}`) as unknown as MarketplaceQuery
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
+      .retry(false) as unknown as MarketplaceQuery
 
     if (category !== 'vehicles') {
       query = query.eq('category', category)
@@ -379,7 +384,7 @@ export const getPublishedMarketplaceListingCount = unstable_cache(
         query = query.eq('country_code', normalizedCountry)
       }
 
-      const { count, error } = await query
+      const { count, error } = await query.retry(false)
       if (error) return null
       return count ?? null
     } catch {
@@ -403,6 +408,7 @@ export const getPublicSearchListings = unstable_cache(
       .order('sort_refreshed_at', { ascending: false, nullsFirst: false })
       .order('published_at', { ascending: false })
       .limit(limit)
+      .retry(false)
 
     return data || []
   },

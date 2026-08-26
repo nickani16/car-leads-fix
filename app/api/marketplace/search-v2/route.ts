@@ -29,6 +29,7 @@ const SEARCH_TIMEOUT_MS = 1_800
 
 export async function GET(request: NextRequest) {
   const startedAt = Date.now()
+  const cacheKey = marketplaceSearchCacheKey(request)
   const rate = checkRateLimit({
     key: `marketplace-search-v2:${getClientIp(request)}`,
     limit: 180,
@@ -50,7 +51,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const cacheKey = marketplaceSearchCacheKey(request)
     const cached = marketplaceSearchCache.get(cacheKey)
     if (cached && cached.expiresAt > Date.now()) {
       return new Response(cached.body, {
@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
       ms: Date.now() - startedAt,
     }))
     const body = JSON.stringify(emptySearchResult(Number(input.limit) || 48))
+    setMarketplaceSearchCache(cacheKey, body)
     return new Response(body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
