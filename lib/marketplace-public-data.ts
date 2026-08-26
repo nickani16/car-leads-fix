@@ -149,6 +149,35 @@ export const getPublishedMarketplaceHomeListings = unstable_cache(
   { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
 )
 
+export const getPublishedMarketplaceHomeListingGroups = unstable_cache(
+  async (
+    countryCode: string | null,
+    categories: MarketplaceCategorySlug[],
+    limit = 17,
+  ) => {
+    const { data } = await createAdminClient({ timeoutMs: 1_200 })
+      .rpc('get_marketplace_home_listings', {
+        p_country_code: (countryCode || '').toUpperCase() || null,
+        p_categories: categories,
+        p_limit_per_category: limit,
+      })
+      .retry(false)
+    const rows = (data || []).map(sanitizePublicListingSellerName)
+    const rowsByCategory = new Map<MarketplaceCategorySlug, typeof rows>()
+    for (const category of categories) rowsByCategory.set(category, [])
+    for (const row of rows) {
+      const category = row.category as MarketplaceCategorySlug
+      rowsByCategory.get(category)?.push(row)
+    }
+    return categories.map((category) => ({
+      category,
+      listings: rowsByCategory.get(category) || [],
+    }))
+  },
+  ['published-marketplace-home-listing-groups-v1'],
+  { revalidate: publicListingTtl, tags: ['marketplace-listings'] },
+)
+
 export const getPublishedMarketplaceCategoryListings = unstable_cache(
   async (category: MarketplaceCategorySlug | 'vehicles', limit = 120) => {
     let query = createAdminClient()

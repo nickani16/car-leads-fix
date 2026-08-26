@@ -24,8 +24,8 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import {
   getMarketplaceSellerPublicProfiles,
+  getPublishedMarketplaceHomeListingGroups,
   getPublishedMarketplaceListingCount,
-  getPublishedMarketplaceHomeListings,
 } from '@/lib/marketplace-public-data'
 import { getVehicleNews, type PublicNewsArticle } from '@/lib/content/vehicle-news'
 import {
@@ -591,12 +591,7 @@ export default async function BusinessMarketplaceHome({
     vehicleNews,
   ] = await Promise.all([
     withHomeDataFallback(
-      Promise.all(
-        homeListingCategories.map(async (category) => {
-          const listings = await getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category)
-          return { category, listings }
-        }),
-      ),
+      getPublishedMarketplaceHomeListingGroups(localMarketCode, homeListingCategories, 17),
       homeListingCategories.map((category) => ({ category, listings: [] })),
     ),
     withHomeDataFallback(getPublishedMarketplaceListingCount(localMarketCode), null),

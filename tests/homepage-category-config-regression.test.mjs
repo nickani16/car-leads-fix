@@ -131,7 +131,7 @@ test('discovery, brands, and selling render before listing feeds', () => {
 })
 
 test('homepage has one localized popular-searches listing feed', () => {
-  assert.match(homeSource, /getPublishedMarketplaceHomeListings\(localMarketCode, 'latest', 17, category\)/)
+  assert.match(homeSource, /getPublishedMarketplaceHomeListingGroups\(localMarketCode, homeListingCategories, 17\)/)
   assert.doesNotMatch(homeSource, /getPublishedMarketplaceHomeListings\(localMarketCode, 'top'/)
   assert.match(configSource, /sv: \{ latest: 'Populära sökningar'/)
   assert.match(configSource, /en: \{ latest: 'Popular searches'/)
