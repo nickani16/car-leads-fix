@@ -1,7 +1,7 @@
-import { sitemapHostForRequest } from '@/lib/sitemap-utils'
+import { sitemapIndexUrlsForRequest } from '@/lib/sitemap-utils'
 
 export function GET(request: Request) {
-  const canonicalSitemap = `${sitemapHostForRequest(request)}/sitemap.xml`
+  const sitemapIndexes = sitemapIndexUrlsForRequest(request)
   const body = [
     'User-Agent: *',
     'Allow: /',
@@ -27,7 +27,7 @@ export function GET(request: Request) {
     'Disallow: /*?*gclid=',
     'Disallow: /*?*fbclid=',
     '',
-    `Sitemap: ${canonicalSitemap}`,
+    ...sitemapIndexes.map((sitemap) => `Sitemap: ${sitemap}`),
     '',
   ].join('\n')
 

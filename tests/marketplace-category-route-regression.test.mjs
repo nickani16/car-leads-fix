@@ -101,6 +101,7 @@ test('marketplace SEO provides sale, leasing and neutral copy for every active l
   assert.match(searchSeoSource, /kaufen oder leasen/)
   assert.match(searchSeoSource, /myyntiin tai leasingiin/)
   assert.match(searchSeoSource, /fitSeoTitle\(copy\.title\)/)
+  assert.match(searchSeoSource, /replace\(\/\\s\+\(\?:a\|de\|en\|for/)
   assert.match(searchSeoSource, /cleanSeoText\(copy\.description, 150\)/)
   assert.match(searchSeoSource, /locale === 'at' \? 'de'/)
   assert.match(searchSeoSource, /locale === 'be' \? 'nl'/)

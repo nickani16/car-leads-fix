@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test tests",
-    "verify:seo-sitemaps": "node scripts/verify-seo-sitemap-metadata.mjs"
+    "verify:seo-sitemaps": "node scripts/verify-seo-sitemap-metadata.mjs",
+    "audit:live-sitemaps": "node scripts/audit-live-sitemaps.mjs",
+    "audit:live-seo-pages": "node scripts/audit-live-seo-pages.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

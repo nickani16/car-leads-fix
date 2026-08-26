@@ -8,7 +8,9 @@ import {
   allSitemapMarkets,
   generatedSitemapLastModified,
   geoModelsForSitemapMarket,
+  localizedComSitemapMarketForRequest,
   popularGeoMakes,
+  sitemapHostForMarket,
   sitemapHostForRequest,
   sitemapMarketsForRequest,
   sitemapMarketCountries,
@@ -21,8 +23,13 @@ const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const host = sitemapHostForRequest(request)
-  const sitemapMarkets = sitemapMarketsForRequest(request)
+  const localizedMarket = localizedComSitemapMarketForRequest(request)
+  const localizedSitemapPath = /^\/[a-z]{2}\/sitemap\.xml$/i.test(new URL(request.url).pathname)
+  if (localizedSitemapPath && !localizedMarket) return new Response('Not Found', { status: 404 })
+  const sitemapMarkets = localizedMarket ? [localizedMarket] : sitemapMarketsForRequest(request)
+  const host = sitemapMarkets.length === 1
+    ? sitemapHostForMarket(sitemapMarkets[0])
+    : sitemapHostForRequest(request)
   const staticSitemapNames = sitemapMarkets.map((market) => `static-${market}`)
   const seoSitemapNames = sitemapMarkets.flatMap((market) => [
     `categories-${market}`,

@@ -106,7 +106,10 @@ function fitSeoTitle(value: string) {
   const title = wordBoundary >= Math.max(24, available - 18)
     ? candidate.slice(0, wordBoundary)
     : candidate
-  return `${title.replace(/[\s,;:.-]+$/g, '')}${suffix}`
+  const withoutDanglingConnector = title
+    .replace(/[\s,;:.-]+$/g, '')
+    .replace(/\s+(?:a|de|en|for|i|in|of|oder|eller|o|or|ou|til|w)$/i, '')
+  return `${withoutDanglingConnector}${suffix}`
 }
 
 function localizedSeoCopy(

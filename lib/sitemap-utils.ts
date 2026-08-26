@@ -4,6 +4,10 @@ export const allSitemapMarkets = ['se', 'de', 'es', 'fr', 'it', 'nl', 'be', 'pl'
 
 export type SitemapMarketCode = (typeof allSitemapMarkets)[number]
 
+export const comSitemapMarkets = allSitemapMarkets.filter(
+  (market): market is Exclude<SitemapMarketCode, 'se' | 'de'> => market !== 'se' && market !== 'de',
+)
+
 const sitemapHostByMarket: Partial<Record<SitemapMarketCode, string>> = {
   se: 'https://www.autorell.se',
   de: 'https://www.autorell.de',
@@ -24,9 +28,31 @@ export function sitemapMarketsForRequest(request: Request): readonly SitemapMark
   if (hostname === 'www.autorell.se' || hostname === 'autorell.se') return ['se']
   if (hostname === 'www.autorell.de' || hostname === 'autorell.de') return ['de']
   if (hostname === 'www.autorell.com' || hostname === 'autorell.com') {
-    return allSitemapMarkets.filter((market) => market !== 'se' && market !== 'de')
+    return comSitemapMarkets
   }
   return allSitemapMarkets
+}
+
+export function isComSitemapRequest(request: Request) {
+  const hostname = sitemapHostname(request)
+  return hostname === 'www.autorell.com' || hostname === 'autorell.com'
+}
+
+export function localizedComSitemapMarketForRequest(request: Request): SitemapMarketCode | null {
+  if (!isComSitemapRequest(request)) return null
+  const market = new URL(request.url).pathname.match(/^\/([a-z]{2})\/sitemap\.xml$/i)?.[1]?.toLowerCase()
+  return market && (comSitemapMarkets as readonly string[]).includes(market)
+    ? market as SitemapMarketCode
+    : null
+}
+
+export function sitemapIndexUrlsForRequest(request: Request) {
+  const host = sitemapHostForRequest(request)
+  if (!isComSitemapRequest(request)) return [`${host}/sitemap.xml`]
+  return [
+    `${host}/sitemap.xml`,
+    ...comSitemapMarkets.map((market) => `${host}/${market}/sitemap.xml`),
+  ]
 }
 
 export function sitemapHostForRequest(request: Request) {
@@ -60,7 +86,7 @@ export const popularGeoModels = getSeoSitemapModels('cars')
 
 // Bump this only when the generated SEO sitemap datasets or URL rules change.
 // Google uses it to decide when existing sitemap shards need to be fetched again.
-export const generatedSitemapLastModified = '2026-08-25'
+export const generatedSitemapLastModified = '2026-08-26'
 
 export function geoModelsForSitemapMarket(market: SitemapMarketCode) {
   return market === 'dk' || market === 'nl'

@@ -550,6 +550,8 @@ export function shouldIncludeInSitemap({
 }: Pick<GeoLandingRoute, 'category' | 'make' | 'model' | 'place'>) {
   if (make && !resolveCategoryMake(category, slugify(make))) return false
   if (model && (!make || !resolveMakeModel(category, make, slugify(model)))) return false
+  if (place?.slug && !make && resolveCategoryMake(category, place.slug)) return false
+  if (place?.slug && make && !model && resolveMakeModel(category, make, place.slug)) return false
   return !place || Boolean(place.slug && place.countryCode)
 }
 

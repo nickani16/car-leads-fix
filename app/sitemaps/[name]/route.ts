@@ -217,7 +217,6 @@ function staticPublicUrls(market: SitemapMarketCode) {
   const paths = [
     ...publicPaths.map((path) => `/${market}${path}`),
     ...helpCenterPaths.map((path) => `/${market}${path}`),
-    `/${market}/marketplace`,
   ]
 
   return [...new Set(paths)].map((path) => sitemapUrl(path, undefined, 'weekly', '0.8'))

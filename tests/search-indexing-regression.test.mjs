@@ -9,6 +9,7 @@ const germanHome = readFileSync(new URL('../app/de/page.tsx', import.meta.url), 
 const marketplace = readFileSync(new URL('../app/marketplace/[category]/page.tsx', import.meta.url), 'utf8')
 const robots = readFileSync(new URL('../app/robots.txt/route.ts', import.meta.url), 'utf8')
 const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.meta.url), 'utf8')
+const localizedSitemapIndex = readFileSync(new URL('../app/[market]/sitemap.xml/route.ts', import.meta.url), 'utf8')
 const sitemapRoute = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
 const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
 const privacyRoute = readFileSync(new URL('../app/privacy/page.tsx', import.meta.url), 'utf8')
@@ -16,9 +17,20 @@ const reportRoute = readFileSync(new URL('../app/report/page.tsx', import.meta.u
 const localizedReportRoute = readFileSync(new URL('../app/rapportera/page.tsx', import.meta.url), 'utf8')
 
 test('robots advertises the canonical XML sitemap for the request host', () => {
-  assert.match(robots, /sitemapHostForRequest\(request\)/)
+  assert.match(robots, /sitemapIndexUrlsForRequest\(request\)/)
+  assert.match(robots, /sitemapIndexes\.map\(\(sitemap\) => `Sitemap: \$\{sitemap\}`\)/)
   assert.match(robots, /Vary: 'Host, X-Forwarded-Host'/)
   assert.doesNotMatch(robots, /getPublicMarketConfig/)
+})
+
+test('autorell.com exposes one aggregate and nine market-specific sitemap indexes', () => {
+  assert.match(sitemapUtils, /comSitemapMarkets = allSitemapMarkets\.filter/)
+  assert.match(sitemapUtils, /`\$\{host\}\/\$\{market\}\/sitemap\.xml`/)
+  assert.match(sitemapUtils, /localizedComSitemapMarketForRequest/)
+  assert.match(sitemapIndex, /localizedComSitemapMarketForRequest\(request\)/)
+  assert.match(sitemapIndex, /localizedMarket \? \[localizedMarket\] : sitemapMarketsForRequest\(request\)/)
+  assert.match(localizedSitemapIndex, /GET as getSitemapIndex/)
+  assert.match(localizedSitemapIndex, /return getSitemapIndex\(request\)/)
 })
 
 test('static sitemaps cover every active country market without removing specialist sitemaps', () => {
@@ -32,6 +44,7 @@ test('static sitemaps cover every active country market without removing special
   assert.match(sitemapRoute, /marketFromPrefixedSitemapName\(normalizedName, 'static'\)/)
   assert.match(sitemapRoute, /function staticPublicUrls\(market: SitemapMarketCode\)/)
   assert.match(sitemapRoute, /marketplaceSearchUrls/)
+  assert.doesNotMatch(sitemapRoute, /helpCenterPaths\.map[\s\S]{0,160}`\/\$\{market\}\/marketplace`/)
   assert.doesNotMatch(sitemapRoute, /'\/benefits'/)
 })
 
@@ -46,6 +59,7 @@ test('generated sitemap shards advertise freshness without week-old CDN response
   assert.match(sitemapUtils, /generatedSitemapLastModified = '\d{4}-\d{2}-\d{2}'/)
   assert.match(sitemapUtils, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)
   assert.doesNotMatch(sitemapUtils, /stale-while-revalidate=604800/)
+  assert.doesNotMatch(sitemapUtils, /generatedSitemapLastModified\s*=\s*new Date/)
 })
 
 test('localized pages expose document language and reciprocal language alternates', () => {
