@@ -553,8 +553,17 @@ export function shouldIncludeInSitemap({
 }: Pick<GeoLandingRoute, 'category' | 'make' | 'model' | 'place'>) {
   if (make && !resolveCategoryMake(category, slugify(make))) return false
   if (model && (!make || !resolveMakeModel(category, make, slugify(model)))) return false
-  if (place?.slug && !make && resolveCategoryMake(category, place.slug)) return false
-  if (place?.slug && make && !model && resolveMakeModel(category, make, place.slug)) return false
+  const collidingMake = place?.slug && !make
+    ? resolveCategoryMake(category, place.slug)
+    : null
+  if (collidingMake && getSeoSitemapMakes(category).includes(collidingMake)) return false
+
+  const collidingModel = place?.slug && make && !model
+    ? resolveMakeModel(category, make, place.slug)
+    : null
+  if (collidingModel && getSeoSitemapModels(category).some(
+    (entry) => entry.make === make && entry.model === collidingModel,
+  )) return false
   return !place || Boolean(place.slug && place.countryCode)
 }
 
