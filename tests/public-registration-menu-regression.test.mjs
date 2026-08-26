@@ -102,12 +102,15 @@ test('registration retries safely and translates identity conflicts for every ma
   }
 })
 
-test('self-deleted accounts can reactivate only with the retained identity', () => {
+test('self-deleted private accounts return directly to the account while businesses retain identity recovery', () => {
   assert.match(deleteRoute, /deleted_at: now/)
   assert.match(deleteRoute, /removed_by_admin: false/)
   assert.match(deleteRoute, /suspended: true/)
   assert.match(registerPage, /const canReactivate = Boolean/)
-  assert.match(accountPage, /\/register\?reactivate=1/)
+  assert.match(registerPage, /reactivateSelfDeletedPrivateProfile\(user\.id\)/)
+  assert.match(accountPage, /profile\.account_type === 'private'/)
+  assert.match(accountPage, /reactivateSelfDeletedPrivateProfile\(user\.id\)/)
+  assert.match(accountPage, /profile\.account_type === 'private'[\s\S]*\/account'[\s\S]*\/register\?reactivate=1/)
   assert.match(registerRoute, /const selfDeleted = Boolean/)
   assert.match(registerRoute, /existingProfile\.national_id_hash === nationalIdHash/)
   assert.match(registerRoute, /existingProfile\.birth_date === birthDate/)

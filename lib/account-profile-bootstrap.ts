@@ -143,6 +143,62 @@ export async function ensureMarketplaceProfile({
   return { accountType, created: true, profileComplete: false }
 }
 
+export async function reactivateSelfDeletedPrivateProfile(userId: string) {
+  const admin = createAdminClient()
+  const { data: profile, error: profileError } = await admin
+    .from('marketplace_profiles')
+    .select('account_type,risk_status,deleted_at,removed_by_admin,phone_risk_flags')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (profileError) throw profileError
+
+  const selfDeletedPrivateProfile = Boolean(
+    profile?.account_type === 'private' &&
+      profile.deleted_at &&
+      !profile.removed_by_admin &&
+      profile.risk_status === 'restricted',
+  )
+  if (!selfDeletedPrivateProfile || !profile?.deleted_at) return false
+
+  const restoredAt = new Date().toISOString()
+  const retainedPhoneRiskFlags = Array.isArray(profile.phone_risk_flags)
+    ? profile.phone_risk_flags
+    : []
+  const { data: restoredProfile, error: restoreError } = await admin
+    .from('marketplace_profiles')
+    .update({
+      risk_status: retainedPhoneRiskFlags.length ? 'review' : 'standard',
+      suspended: false,
+      deleted_at: null,
+      removed_by_admin: false,
+      updated_at: restoredAt,
+    })
+    .eq('user_id', userId)
+    .eq('account_type', 'private')
+    .eq('risk_status', 'restricted')
+    .eq('removed_by_admin', false)
+    .eq('deleted_at', profile.deleted_at)
+    .select('user_id')
+    .maybeSingle()
+  if (restoreError) throw restoreError
+  if (!restoredProfile) return false
+
+  const { error: reportCloseError } = await admin
+    .from('marketplace_reports')
+    .update({ status: 'closed' })
+    .eq('reporter_user_id', userId)
+    .ilike('details', '%[account_deletion_request]%')
+    .in('status', ['new', 'reviewing', 'actioned'])
+  if (reportCloseError) {
+    console.error('Private account reactivation report close failed', {
+      error: reportCloseError,
+      userId,
+    })
+  }
+
+  return true
+}
+
 export function isMarketplaceProfileComplete(profile: Record<string, unknown> | null | undefined) {
   if (!profile) return false
   const commonComplete = Boolean(

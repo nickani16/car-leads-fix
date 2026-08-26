@@ -25,7 +25,7 @@ test('private listing creation is blocked until the profile is complete', () => 
   assert.match(profilePage, /query\.reason === 'listing'/)
   assert.match(profilePage, /listingBlockedTitle/)
   assert.match(header, /headerAccount\.profileComplete === false/)
-  assert.match(header, /incompletePrivateListingHref/)
+  assert.match(header, /completeProfileHref/)
 })
 
 test('profile completeness uses the same private requirements everywhere', () => {

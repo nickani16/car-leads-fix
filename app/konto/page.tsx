@@ -36,6 +36,7 @@ import {
   accountIntentFromCookieAndUser,
   ensureMarketplaceProfile,
   isMarketplaceProfileComplete,
+  reactivateSelfDeletedPrivateProfile,
 } from '@/lib/account-profile-bootstrap'
 
 export const generateMetadata = generateAccountMetadata('profile')
@@ -92,7 +93,7 @@ export default async function AccountPage() {
   const adminContext = await getAdminContext().catch(() => null)
   if (adminContext) redirect('/admin')
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('marketplace_profiles')
     .select(`
       account_type,
@@ -127,6 +128,7 @@ export default async function AccountPage() {
     `)
     .eq('user_id', user.id)
     .maybeSingle<ProfileRow>()
+  if (profileError) throw profileError
 
   if (!profile) {
     const cookieStore = await cookies()
@@ -145,6 +147,10 @@ export default async function AccountPage() {
     !profile.removed_by_admin &&
     profile.risk_status === 'restricted'
   ) {
+    if (profile.account_type === 'private') {
+      await reactivateSelfDeletedPrivateProfile(user.id)
+      redirect(localizePublicHref(locale, '/account'))
+    }
     redirect(localizePublicHref(locale, '/register?reactivate=1'))
   }
   if (profile.account_type === 'business') {

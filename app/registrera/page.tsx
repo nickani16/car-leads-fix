@@ -13,6 +13,7 @@ import { ACCOUNT_INTENT_COOKIE, normalizeAccountIntent } from '@/lib/account-int
 import {
   accountIntentFromCookieAndUser,
   ensureMarketplaceProfile,
+  reactivateSelfDeletedPrivateProfile,
 } from '@/lib/account-profile-bootstrap'
 import RegisterForm from './RegisterForm'
 
@@ -44,17 +45,22 @@ export default async function RegisterPage({
     redirect(localizePublicHref(locale, `/?${params.toString()}`))
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('marketplace_profiles')
-    .select('user_id,risk_status,deleted_at,removed_by_admin')
+    .select('user_id,account_type,risk_status,deleted_at,removed_by_admin')
     .eq('user_id', user.id)
     .maybeSingle()
+  if (profileError) throw profileError
 
   const canReactivate = Boolean(
     profile?.deleted_at &&
       !profile.removed_by_admin &&
       profile.risk_status === 'restricted',
   )
+  if (canReactivate && profile?.account_type === 'private') {
+    await reactivateSelfDeletedPrivateProfile(user.id)
+    redirect(localizePublicHref(locale, '/account'))
+  }
   if (profile && !canReactivate) redirect(localizePublicHref(locale, '/account'))
 
   const accountIntent = accountIntentFromCookieAndUser(accountIntentValue, user)
