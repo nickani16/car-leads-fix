@@ -92,6 +92,20 @@ export function isSeoVehiclePath(market: string, segments: string[]) {
   return Boolean(geoMarketplaceCategorySegmentsByMarket[market]?.has(categorySegment))
 }
 
+const englishSeoCategorySegments = new Set([
+  'cars',
+  'vans',
+  'motorcycles',
+  'motorhomes',
+  'caravans',
+  'trucks',
+  'agricultural-machinery',
+])
+
+export function isEnglishSeoVehiclePath(segments: string[]) {
+  return segments.length >= 2 && englishSeoCategorySegments.has(segments[0] || '')
+}
+
 const geoMarketplaceCategorySegmentsByMarket: Record<string, Set<string>> = {
   se: new Set([
     'bilar',

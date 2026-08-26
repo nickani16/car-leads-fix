@@ -23,12 +23,13 @@ test('robots advertises the canonical XML sitemap for the request host', () => {
   assert.doesNotMatch(robots, /getPublicMarketConfig/)
 })
 
-test('autorell.com exposes one aggregate and nine market-specific sitemap indexes', () => {
+test('autorell.com exposes one aggregate, one English and nine market-specific sitemap indexes', () => {
   assert.match(sitemapUtils, /comSitemapMarkets = allSitemapMarkets\.filter/)
   assert.match(sitemapUtils, /`\$\{host\}\/\$\{market\}\/sitemap\.xml`/)
+  assert.match(sitemapUtils, /`\$\{host\}\/\$\{englishSitemapMarket\}\/sitemap\.xml`/)
   assert.match(sitemapUtils, /localizedComSitemapMarketForRequest/)
   assert.match(sitemapIndex, /localizedComSitemapMarketForRequest\(request\)/)
-  assert.match(sitemapIndex, /localizedMarket \? \[localizedMarket\] : sitemapMarketsForRequest\(request\)/)
+  assert.match(sitemapIndex, /englishOnly[\s\S]*?localizedMarket[\s\S]*?sitemapMarketsForRequest\(request\)/)
   assert.match(localizedSitemapIndex, /GET as getSitemapIndex/)
   assert.match(localizedSitemapIndex, /return getSitemapIndex\(request\)/)
 })

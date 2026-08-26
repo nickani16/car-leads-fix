@@ -1,4 +1,6 @@
 import {
+  englishSeoSitemapCategories,
+  getEnglishSeoSitemapAreaCount,
   getGeoSitemapMarketCodes,
   getGeoSitemapMarketConfig,
   getSeoSitemapAreas,
@@ -6,9 +8,11 @@ import {
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
+  englishSitemapMarket,
   generatedSitemapLastModified,
   geoModelsForSitemapMarket,
   localizedComSitemapMarketForRequest,
+  isComSitemapRequest,
   popularGeoMakes,
   sitemapHostForMarket,
   sitemapHostForRequest,
@@ -26,8 +30,16 @@ export async function GET(request: Request) {
   const localizedMarket = localizedComSitemapMarketForRequest(request)
   const localizedSitemapPath = /^\/[a-z]{2}\/sitemap\.xml$/i.test(new URL(request.url).pathname)
   if (localizedSitemapPath && !localizedMarket) return new Response('Not Found', { status: 404 })
-  const sitemapMarkets = localizedMarket ? [localizedMarket] : sitemapMarketsForRequest(request)
-  const host = sitemapMarkets.length === 1
+  const englishOnly = localizedMarket === englishSitemapMarket
+  const includeEnglish = englishOnly || (!localizedMarket && isComSitemapRequest(request))
+  const sitemapMarkets = englishOnly
+    ? []
+    : localizedMarket
+      ? [localizedMarket]
+      : sitemapMarketsForRequest(request)
+  const host = englishOnly
+    ? 'https://www.autorell.com'
+    : sitemapMarkets.length === 1
     ? sitemapHostForMarket(sitemapMarkets[0])
     : sitemapHostForRequest(request)
   const staticSitemapNames = sitemapMarkets.map((market) => `static-${market}`)
@@ -42,6 +54,9 @@ export async function GET(request: Request) {
   const geoMakeSitemapNames = await getGeoMakeSitemapNames(sitemapMarkets)
   const geoModelSitemapNames = await getGeoModelSitemapNames(sitemapMarkets)
   const vehicleNewsSitemapNames = sitemapMarkets.map((market) => `vehicle-news-${market}`)
+  const englishSitemapNames = includeEnglish
+    ? ['english-countries', ...getEnglishGeoSitemapNames()]
+    : []
   const generatedSitemapNames = [
     ...staticSitemapNames,
     ...seoSitemapNames,
@@ -49,6 +64,7 @@ export async function GET(request: Request) {
     ...geoSitemapNames,
     ...geoMakeSitemapNames,
     ...geoModelSitemapNames,
+    ...englishSitemapNames,
   ]
   const sitemapEntries = [
     ...generatedSitemapNames.map((name) => ({
@@ -78,6 +94,14 @@ export async function GET(request: Request) {
       ? 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600'
       : undefined,
   )
+}
+
+function getEnglishGeoSitemapNames() {
+  const areaCount = getEnglishSeoSitemapAreaCount()
+  const urlsPerArea = englishSeoSitemapCategories.length
+  const areasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
+  const pages = Math.max(1, Math.ceil(areaCount / areasPerPage))
+  return Array.from({ length: pages }, (_, index) => `english-geo-${index + 1}`)
 }
 
 async function getListingSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {

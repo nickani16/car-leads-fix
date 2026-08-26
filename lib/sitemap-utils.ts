@@ -7,6 +7,7 @@ export type SitemapMarketCode = (typeof allSitemapMarkets)[number]
 export const comSitemapMarkets = allSitemapMarkets.filter(
   (market): market is Exclude<SitemapMarketCode, 'se' | 'de'> => market !== 'se' && market !== 'de',
 )
+export const englishSitemapMarket = 'en' as const
 
 const sitemapHostByMarket: Partial<Record<SitemapMarketCode, string>> = {
   se: 'https://www.autorell.se',
@@ -38,9 +39,10 @@ export function isComSitemapRequest(request: Request) {
   return hostname === 'www.autorell.com' || hostname === 'autorell.com'
 }
 
-export function localizedComSitemapMarketForRequest(request: Request): SitemapMarketCode | null {
+export function localizedComSitemapMarketForRequest(request: Request): SitemapMarketCode | typeof englishSitemapMarket | null {
   if (!isComSitemapRequest(request)) return null
   const market = new URL(request.url).pathname.match(/^\/([a-z]{2})\/sitemap\.xml$/i)?.[1]?.toLowerCase()
+  if (market === englishSitemapMarket) return englishSitemapMarket
   return market && (comSitemapMarkets as readonly string[]).includes(market)
     ? market as SitemapMarketCode
     : null
@@ -51,6 +53,7 @@ export function sitemapIndexUrlsForRequest(request: Request) {
   if (!isComSitemapRequest(request)) return [`${host}/sitemap.xml`]
   return [
     `${host}/sitemap.xml`,
+    `${host}/${englishSitemapMarket}/sitemap.xml`,
     ...comSitemapMarkets.map((market) => `${host}/${market}/sitemap.xml`),
   ]
 }

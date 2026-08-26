@@ -5,7 +5,7 @@ import {
   isPublicLanguage,
   type PublicLanguage,
 } from '@/lib/public-i18n'
-import { isSeoVehiclePath } from '@/lib/seo-routes'
+import { isEnglishSeoVehiclePath, isSeoVehiclePath } from '@/lib/seo-routes'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
@@ -927,6 +927,7 @@ export async function proxy(request: NextRequest) {
   if (
     methodCanRedirect &&
     hostname === MARKET_HOSTS.en &&
+    pathname !== '/en/sitemap.xml' &&
     (pathname === '/en' || pathname.startsWith('/en/'))
   ) {
     const url = request.nextUrl.clone()
@@ -1130,6 +1131,24 @@ export async function proxy(request: NextRequest) {
         localeContext.market,
       )
     }
+  }
+
+  if (
+    (hostname === MARKET_HOSTS.en || hostname === 'localhost' || hostname === '127.0.0.1') &&
+    isEnglishSeoVehiclePath(pathname.split('/').filter(Boolean))
+  ) {
+    const englishSeoSegments = pathname.split('/').filter(Boolean)
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-autorell-language', 'en')
+    requestHeaders.set('x-autorell-market', 'EU')
+    requestHeaders.set('x-autorell-pathname', pathname)
+    requestHeaders.set('x-autorell-internal-seo', '1')
+    const seoUrl = request.nextUrl.clone()
+    seoUrl.pathname = `/seo/en/${englishSeoSegments.join('/')}`
+    return withLanguageCookie(
+      NextResponse.rewrite(seoUrl, { request: { headers: requestHeaders } }),
+      'en',
+    )
   }
 
   if (methodCanRedirect && isPublicLanguage(selectedLanguage || '')) {
@@ -1583,6 +1602,7 @@ function isBotProtectedPath(pathname: string) {
   const segments = pathname.split('/').filter(Boolean)
   if (!segments[0]) return false
   if (segments[1] === 'marketplace') return true
+  if (isEnglishSeoVehiclePath(segments)) return true
   return segments.length >= 3 && isSeoVehiclePath(segments[0], segments.slice(1))
 }
 

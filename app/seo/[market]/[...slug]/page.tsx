@@ -48,7 +48,9 @@ export default async function SeoLandingPage({ params }: SeoPageProps) {
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
-    const requestedPath = `/${market}/${slug.join('/')}`
+    const requestedPath = market === 'en'
+      ? `/${slug.join('/')}`
+      : `/${market}/${slug.join('/')}`
     if (requestedPath !== landing.canonicalPath) permanentRedirect(landing.canonicalPath)
     const structuredData = buildStructuredData(landing)
     return (

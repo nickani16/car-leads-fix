@@ -2,7 +2,11 @@ import { notFound } from 'next/navigation'
 import { buildListingPath, listingMarketPath } from '@/lib/listing-url'
 import { helpCenterArticles, helpCenterCategories } from '@/lib/help-center'
 import {
+  buildEnglishSeoMarketplacePath,
   buildSeoMarketplacePath,
+  englishSeoCountries,
+  englishSeoSitemapCategories,
+  getEnglishSeoSitemapAreas,
   getGeoSitemapMarketConfig,
   getSeoSitemapAreas,
   getSeoSitemapMakes,
@@ -13,6 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
   geoModelsForSitemapMarket,
+  isComSitemapRequest,
   marketFromSitemapName,
   popularGeoMakes,
   sitemapHostForMarket,
@@ -52,11 +57,22 @@ export async function GET(
   const geoModelSitemap = geoModelSitemapFromName(normalizedName)
   const marketplaceSearchMarket = marketFromPrefixedSitemapName(normalizedName, 'marketplace')
   const vehicleNewsMarket = marketFromPrefixedSitemapName(normalizedName, 'vehicle-news')
-  if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !geoModelSitemap && !marketplaceSearchMarket && !vehicleNewsMarket) notFound()
+  const englishCountriesSitemap = normalizedName === 'english-countries'
+  const englishGeoPage = pageFromEnglishGeoSitemapName(normalizedName)
+  const englishSitemap = englishCountriesSitemap || englishGeoPage !== null
+  if (!market && !staticMarket && !listingCountry && !geoSitemap && !geoMakeSitemap && !geoModelSitemap && !marketplaceSearchMarket && !vehicleNewsMarket && !englishSitemap) notFound()
   const requestedMarket = market || staticMarket || geoSitemap?.market || geoMakeSitemap?.market || geoModelSitemap?.market || marketplaceSearchMarket || vehicleNewsMarket || marketFromCountry(listingCountry)
-  if (!requestedMarket || !isSitemapMarket(requestedMarket) || !sitemapMarketsForRequest(request).includes(requestedMarket)) notFound()
+  if (englishSitemap) {
+    if (!isComSitemapRequest(request)) notFound()
+  } else if (!requestedMarket || !isSitemapMarket(requestedMarket) || !sitemapMarketsForRequest(request).includes(requestedMarket)) {
+    notFound()
+  }
 
-  const urls = staticMarket
+  const urls = englishCountriesSitemap
+    ? englishCountryUrls()
+    : englishGeoPage !== null
+    ? englishGeoUrls(englishGeoPage)
+    : staticMarket
     ? staticPublicUrls(staticMarket)
     : vehicleNewsMarket
     ? await vehicleNewsUrls(vehicleNewsMarket)
@@ -122,6 +138,38 @@ function geoSitemapUrls(market: string, page: number) {
     config.categories
       .filter((entry) => shouldIncludeInSitemap({ category: entry.category, make: null, model: null, place: area }))
       .map((entry) => sitemapUrl(`/${config.market}/${entry.slug}/${area.slug}`, undefined, 'daily', '0.8')),
+  )
+}
+
+function englishCountryUrls() {
+  return englishSeoCountries.flatMap((country) =>
+    englishSeoSitemapCategories.map((entry) =>
+      sitemapUrl(buildEnglishSeoMarketplacePath({
+        categorySlug: entry.slug,
+        countrySlug: country.slug,
+      }), undefined, 'daily', '0.85'),
+    ),
+  )
+}
+
+function englishGeoUrls(page: number) {
+  const areas = getEnglishSeoSitemapAreas()
+  const urlsPerArea = englishSeoSitemapCategories.length
+  const maxAreasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
+  const pageAreas = areas.slice((page - 1) * maxAreasPerPage, page * maxAreasPerPage)
+  return pageAreas.flatMap(({ country, area }) =>
+    englishSeoSitemapCategories
+      .filter((entry) => shouldIncludeInSitemap({
+        category: entry.category,
+        make: null,
+        model: null,
+        place: area,
+      }))
+      .map((entry) => sitemapUrl(buildEnglishSeoMarketplacePath({
+        categorySlug: entry.slug,
+        countrySlug: country.slug,
+        placeSlug: area.slug,
+      }), undefined, 'daily', '0.8')),
   )
 }
 
@@ -271,6 +319,13 @@ function geoModelSitemapFromName(name: string) {
   const market = match[1].toLowerCase()
   const page = Number(match[2])
   return isSitemapMarket(market) && Number.isFinite(page) && page > 0 ? { market, page } : null
+}
+
+function pageFromEnglishGeoSitemapName(name: string) {
+  const match = name.match(/^english-geo-(\d+)$/i)
+  if (!match) return null
+  const page = Number(match[1])
+  return Number.isFinite(page) && page > 0 ? page : null
 }
 
 function marketFromPrefixedSitemapName(name: string, prefix: string) {

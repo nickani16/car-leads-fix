@@ -251,6 +251,42 @@ const marketRouteConfigs: Record<string, GeoMarketRouteConfig> = {
   },
 }
 
+const englishMarketRouteConfig = {
+  locale: 'en' as const,
+  categories: {
+    cars: category('cars', 'cars'),
+    vans: category('vans', 'vans'),
+    motorcycles: category('motorcycles', 'motorcycles'),
+    motorhomes: category('motorhomes', 'motorhomes'),
+    caravans: category('caravans', 'caravans'),
+    trucks: category('trucks', 'trucks'),
+    'agricultural-machinery': category('agriculture', 'agricultural machinery'),
+  },
+}
+
+export const englishSeoCountries = [
+  { slug: 'austria', countryCode: 'AT', name: 'Austria' },
+  { slug: 'belgium', countryCode: 'BE', name: 'Belgium' },
+  { slug: 'denmark', countryCode: 'DK', name: 'Denmark' },
+  { slug: 'finland', countryCode: 'FI', name: 'Finland' },
+  { slug: 'france', countryCode: 'FR', name: 'France' },
+  { slug: 'germany', countryCode: 'DE', name: 'Germany' },
+  { slug: 'italy', countryCode: 'IT', name: 'Italy' },
+  { slug: 'netherlands', countryCode: 'NL', name: 'the Netherlands' },
+  { slug: 'poland', countryCode: 'PL', name: 'Poland' },
+  { slug: 'spain', countryCode: 'ES', name: 'Spain' },
+  { slug: 'sweden', countryCode: 'SE', name: 'Sweden' },
+] as const
+
+export const englishSeoSitemapCategories = Object.entries(englishMarketRouteConfig.categories).map(
+  ([slug, route]) => ({ slug, category: route.category }),
+)
+
+let cachedEnglishSeoSitemapAreas: Array<{
+  country: (typeof englishSeoCountries)[number]
+  area: MarketplaceGeoArea
+}> | null = null
+
 const marketCountryNames: Record<string, string> = {
   se: 'Sverige',
   de: 'Deutschland',
@@ -303,6 +339,9 @@ export async function resolveGeoLandingRoute(
   segments: string[] | undefined,
 ): Promise<GeoLandingRoute | null> {
   const normalizedMarket = normalizeSegment(market)
+  if (normalizedMarket === 'en') {
+    return resolveEnglishGeoLandingRoute(categorySlug, segments)
+  }
   const config = marketRouteConfigs[normalizedMarket]
   if (!config || !categorySlug) return null
 
@@ -477,7 +516,8 @@ export function buildGeoMarketplaceHref(landing: GeoLandingRoute) {
   }
   if (landing.make) params.set('make', landing.make)
   if (landing.model) params.set('model', landing.model)
-  return `/${landing.market}/marketplace/${landing.category}?${params.toString()}`
+  const marketPrefix = landing.market === 'en' ? '' : `/${landing.market}`
+  return `${marketPrefix}/marketplace/${landing.category}?${params.toString()}`
 }
 
 export function buildSeoMarketplaceSearchParams(landing: GeoLandingRoute) {
@@ -571,6 +611,43 @@ export function getGeoSitemapMarketCodes() {
   return Object.keys(marketRouteConfigs).sort()
 }
 
+export function getEnglishSeoSitemapAreas() {
+  if (cachedEnglishSeoSitemapAreas) return cachedEnglishSeoSitemapAreas
+  cachedEnglishSeoSitemapAreas = englishSeoCountries.flatMap((country) =>
+    getSeoSitemapAreas(country.countryCode).map((area) => ({ country, area })),
+  )
+  return cachedEnglishSeoSitemapAreas
+}
+
+export function getEnglishSeoSitemapAreaCount() {
+  return englishSeoCountries.reduce(
+    (total, country) => total + getSeoSitemapAreas(country.countryCode).length,
+    0,
+  )
+}
+
+export function buildEnglishSeoMarketplacePath({
+  categorySlug,
+  countrySlug,
+  make,
+  model,
+  placeSlug,
+}: {
+  categorySlug: string
+  countrySlug: string
+  make?: string | null
+  model?: string | null
+  placeSlug?: string | null
+}) {
+  return `/${[
+    normalizeSegment(categorySlug),
+    normalizeSegment(countrySlug),
+    make ? slugify(make) : '',
+    model ? slugify(model) : '',
+    placeSlug ? slugify(placeSlug) : '',
+  ].filter(Boolean).join('/')}`
+}
+
 export function getGeoSitemapMarketConfig(market: string): GeoSitemapMarketConfig | null {
   const normalizedMarket = normalizeSegment(market)
   const config = marketRouteConfigs[normalizedMarket]
@@ -584,6 +661,124 @@ export function getGeoSitemapMarketConfig(market: string): GeoSitemapMarketConfi
       category: route.category,
       leasing: Boolean(route.leasing),
     })),
+  }
+}
+
+async function resolveEnglishGeoLandingRoute(
+  categorySlug: string | undefined,
+  segments: string[] | undefined,
+): Promise<GeoLandingRoute | null> {
+  const normalizedCategorySlug = normalizeSegment(categorySlug || '')
+  const categoryRoute = englishMarketRouteConfig.categories[
+    normalizedCategorySlug as keyof typeof englishMarketRouteConfig.categories
+  ]
+  const normalizedSegments = (segments || []).map((segment) => normalizeSegment(segment)).filter(Boolean)
+  if (!categoryRoute || normalizedSegments.length < 1 || normalizedSegments.length > 4) return null
+
+  const country = englishSeoCountries.find((entry) => entry.slug === normalizedSegments[0])
+  if (!country) return null
+
+  const routeSegments = normalizedSegments.slice(1)
+  let make: string | null = null
+  let model: string | null = null
+  let place: MarketplaceGeoArea | null = null
+
+  if (routeSegments.length === 1) {
+    make = resolveCategoryMake(categoryRoute.category, routeSegments[0])
+    if (!make) place = await resolveGeoLandingPlace(country.countryCode, routeSegments[0])
+    if (!make && !place) return null
+  }
+
+  if (routeSegments.length >= 2) {
+    make = resolveCategoryMake(categoryRoute.category, routeSegments[0])
+    if (!make) return null
+    model = resolveMakeModel(categoryRoute.category, make, routeSegments[1])
+    if (!model) place = await resolveGeoLandingPlace(country.countryCode, routeSegments[1])
+    if (!model && !place) return null
+  }
+
+  if (routeSegments.length === 3) {
+    if (!make || !model) return null
+    place = await resolveGeoLandingPlace(country.countryCode, routeSegments[2])
+    if (!place) return null
+  }
+
+  const categoryLabel = capitalize(categoryRoute.plural)
+  const subject = model ? `${make} ${model}` : make || categoryLabel
+  const scope = place?.name || country.name
+  const copy = buildLocalizedSeoCopy('en', subject, scope, !place)
+  const canonicalPath = buildEnglishSeoMarketplacePath({
+    categorySlug: normalizedCategorySlug,
+    countrySlug: country.slug,
+    make,
+    model,
+    placeSlug: place?.slug,
+  })
+  const countryPath = buildEnglishSeoMarketplacePath({
+    categorySlug: normalizedCategorySlug,
+    countrySlug: country.slug,
+  })
+  const breadcrumbs: SeoLandingLink[] = [
+    { label: 'Europe', href: '/' },
+    { label: `${categoryLabel} in ${country.name}`, href: countryPath },
+  ]
+  if (make) {
+    breadcrumbs.push({
+      label: make,
+      href: buildEnglishSeoMarketplacePath({
+        categorySlug: normalizedCategorySlug,
+        countrySlug: country.slug,
+        make,
+      }),
+    })
+  }
+  if (model) {
+    breadcrumbs.push({
+      label: `${make} ${model}`,
+      href: buildEnglishSeoMarketplacePath({
+        categorySlug: normalizedCategorySlug,
+        countrySlug: country.slug,
+        make,
+        model,
+      }),
+    })
+  }
+  if (place) breadcrumbs.push({ label: place.name, href: canonicalPath })
+
+  const relatedLinks = getSeoSitemapMakes(categoryRoute.category)
+    .filter((relatedMake) => relatedMake !== make)
+    .slice(0, 8)
+    .map((relatedMake) => ({
+      label: `${relatedMake} for sale in ${place?.name || country.name}`,
+      href: buildEnglishSeoMarketplacePath({
+        categorySlug: normalizedCategorySlug,
+        countrySlug: country.slug,
+        make: relatedMake,
+        placeSlug: place?.slug,
+      }),
+    }))
+
+  return {
+    market: 'en',
+    locale: 'en',
+    countryCode: country.countryCode,
+    category: categoryRoute.category,
+    categorySlug: normalizedCategorySlug,
+    categoryLabel,
+    leasing: false,
+    place,
+    makeSlug: make ? slugify(make) : null,
+    make,
+    modelSlug: model ? slugify(model) : null,
+    model,
+    routeKind: getRouteKind({ make, model, place }),
+    canonicalPath,
+    h1: copy.h1,
+    title: fitSeoTitle(`${copy.h1} | Autorell`),
+    description: fitSeoDescription(copy.description),
+    zeroResultsText: copy.zeroResults,
+    breadcrumbs: dedupeLinks(breadcrumbs),
+    relatedLinks: dedupeLinks(relatedLinks).filter((link) => link.href !== canonicalPath),
   }
 }
 
