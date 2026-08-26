@@ -5,7 +5,6 @@ import {
   getGeoSitemapMarketConfig,
   getSeoSitemapAreas,
 } from '@/lib/seo-geo-landings'
-import { createAdminClient } from '@/lib/supabase/admin'
 import {
   allSitemapMarkets,
   englishSitemapMarket,
@@ -17,12 +16,10 @@ import {
   sitemapHostForMarket,
   sitemapHostForRequest,
   sitemapMarketsForRequest,
-  sitemapMarketCountries,
   type SitemapMarketCode,
   xmlResponse,
 } from '@/lib/sitemap-utils'
 
-const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +46,7 @@ export async function GET(request: Request) {
     `models-${market}`,
   ])
   const marketplaceSitemapNames = sitemapMarkets.map((market) => `marketplace-${market}`)
-  const { names: listingSitemapNames, hadError: listingCountHadError } = await getListingSitemapNames(sitemapMarkets)
+  const listingSitemapNames = sitemapMarkets.map((market) => `listings-${market}-1`)
   const geoSitemapNames = await getGeoSitemapNames(sitemapMarkets)
   const geoMakeSitemapNames = await getGeoMakeSitemapNames(sitemapMarkets)
   const geoModelSitemapNames = await getGeoModelSitemapNames(sitemapMarkets)
@@ -88,12 +85,7 @@ export async function GET(request: Request) {
     '',
   ].join('\n')
 
-  return xmlResponse(
-    body,
-    listingCountHadError
-      ? 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600'
-      : undefined,
-  )
+  return xmlResponse(body)
 }
 
 function getEnglishGeoSitemapNames() {
@@ -102,57 +94,6 @@ function getEnglishGeoSitemapNames() {
   const areasPerPage = Math.max(1, Math.floor(maxGeoUrlsPerSitemap / urlsPerArea))
   const pages = Math.max(1, Math.ceil(areaCount / areasPerPage))
   return Array.from({ length: pages }, (_, index) => `english-geo-${index + 1}`)
-}
-
-async function getListingSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
-  const names: string[] = []
-  let hadError = false
-  await Promise.all(
-    markets.map(async (market) => {
-      try {
-        const result = await withTimeout(
-          createAdminClient()
-            .from('marketplace_listings')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'published')
-            .eq('country_code', sitemapMarketCountries[market])
-            .not('published_at', 'is', null)
-            .is('sold_at', null)
-            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
-          5_000,
-        )
-
-        if (!result || result.error) {
-          hadError = true
-          names.push(`listings-${market}-1`)
-          return
-        }
-
-        const pages = Math.ceil((result.count || 0) / maxUrlsPerSitemap)
-        for (let page = 1; page <= pages; page += 1) {
-          names.push(`listings-${market}-${page}`)
-        }
-      } catch {
-        hadError = true
-        names.push(`listings-${market}-1`)
-      }
-    }),
-  )
-  return { names: names.sort(), hadError }
-}
-
-async function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number): Promise<T | null> {
-  let timeout: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      Promise.resolve(promise),
-      new Promise<null>((resolve) => {
-        timeout = setTimeout(() => resolve(null), timeoutMs)
-      }),
-    ])
-  } finally {
-    if (timeout) clearTimeout(timeout)
-  }
 }
 
 async function getGeoSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {

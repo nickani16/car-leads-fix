@@ -1069,6 +1069,7 @@ function sortOptionLabel(value: string, fallback: string, locale: PublicLocale) 
 }
 
 const SAVED_SEARCHES_STORAGE_KEY = 'autorell-saved-vehicle-searches'
+const AUTOMATED_CRAWLER_PATTERN = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|google-inspectiontool/i
 
 const sortOptions = [
   { value: 'relevant', label: 'Mest relevanta' },
@@ -1173,6 +1174,7 @@ export default function VehicleSearchExperience({
   syncCategoryRoute?: boolean
 }) {
   const router = useRouter()
+  const isSeoLanding = Boolean(seoLanding)
   const safeInitialCategory = categories.some((item) => item.key === initialCategory && item.key !== 'all') ? initialCategory : 'cars'
   const normalizedInitialCategories = initialCategories.length ? normalizeSavedCategories(initialCategories) : []
   const baseInitialCategories = normalizedInitialCategories.length ? normalizedInitialCategories : [safeInitialCategory]
@@ -1703,6 +1705,7 @@ export default function VehicleSearchExperience({
 
   useEffect(() => {
     if (!searchStateReady) return
+    if (isSeoLanding && AUTOMATED_CRAWLER_PATTERN.test(window.navigator.userAgent)) return
     const controller = new AbortController()
     const timer = window.setTimeout(async () => {
       setSearchLoading(true)
@@ -1738,7 +1741,7 @@ export default function VehicleSearchExperience({
       controller.abort()
       window.clearTimeout(timer)
     }
-  }, [debouncedSearchInput, desktopMarketplaceView, equipmentQuery, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
+  }, [debouncedSearchInput, desktopMarketplaceView, equipmentQuery, isSeoLanding, locale, marketplaceSearchParams, safeAutomaticCountry, safeInitialCountry, searchPage, searchStateReady])
   const selectedCategoryItems = selectedCategories
     .map((key) => categories.find((item) => item.key === key))
     .filter((item): item is (typeof categories)[number] => Boolean(item))

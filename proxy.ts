@@ -924,6 +924,10 @@ export async function proxy(request: NextRequest) {
     return redirectToHost(request, CANONICAL_HOSTS[hostname], 308)
   }
 
+  if (pathname === '/seo' || pathname.startsWith('/seo/')) {
+    return new NextResponse('Not Found', { status: 404 })
+  }
+
   if (
     methodCanRedirect &&
     hostname === MARKET_HOSTS.en &&
@@ -1071,15 +1075,9 @@ export async function proxy(request: NextRequest) {
         const seoUrl = request.nextUrl.clone()
         seoUrl.pathname = `/seo/${pathMarket}/${segments.slice(1).join('/')}`
         requestHeaders.set('x-autorell-internal-seo', '1')
-        return withMarketCookie(
-          withLanguageCookie(
-            NextResponse.rewrite(seoUrl, {
-              request: { headers: requestHeaders },
-            }),
-            localeContext.language,
-          ),
-          localeContext.market,
-        )
+        return NextResponse.rewrite(seoUrl, {
+          request: { headers: requestHeaders },
+        })
       }
 
       if (segments.length === 1) {
@@ -1145,10 +1143,7 @@ export async function proxy(request: NextRequest) {
     requestHeaders.set('x-autorell-internal-seo', '1')
     const seoUrl = request.nextUrl.clone()
     seoUrl.pathname = `/seo/en/${englishSeoSegments.join('/')}`
-    return withLanguageCookie(
-      NextResponse.rewrite(seoUrl, { request: { headers: requestHeaders } }),
-      'en',
-    )
+    return NextResponse.rewrite(seoUrl, { request: { headers: requestHeaders } })
   }
 
   if (methodCanRedirect && isPublicLanguage(selectedLanguage || '')) {

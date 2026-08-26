@@ -23,7 +23,6 @@ import {
   getMarketplaceSellerPublicProfiles,
   getPublishedMarketplaceCategoryListings,
 } from '@/lib/marketplace-public-data'
-import { searchMarketplaceListings } from '@/lib/marketplace-search-v2'
 import {
   isPublicLanguage,
   localizePublicHref,
@@ -213,9 +212,9 @@ async function renderMarketplaceCategoryPage({
   const category = requestedCategory === 'vehicles'
     ? getAggregateMarketplaceCategory()
     : getMarketplaceCategory(requestedCategory)
-  const requestHeaders = await headers()
-  const requestedLanguage = requestHeaders.get('x-autorell-language')
-  const marketCode = seoLanding?.countryCode || requestHeaders.get('x-autorell-market') || undefined
+  const requestHeaders = seoLanding ? null : await headers()
+  const requestedLanguage = requestHeaders?.get('x-autorell-language')
+  const marketCode = seoLanding?.countryCode || requestHeaders?.get('x-autorell-market') || undefined
   const requestedCountry = getSearchParam(resolvedSearchParams, 'country').toUpperCase()
   const requestedMarkets = getSearchParamList(resolvedSearchParams, 'markets')
     .map((value) => value.toUpperCase())
@@ -288,18 +287,15 @@ async function renderMarketplaceCategoryPage({
     (parsedInitialSearch.maxPrice ? String(parsedInitialSearch.maxPrice) : '')
 
   const fetchedData = seoLanding
-    ? await getSeoLandingListings(seoLanding)
+    ? [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
     : await getPublishedMarketplaceCategoryListings(
         requestedCategory === 'vehicles' ? 'vehicles' : normalizeMarketplaceCategory(requestedCategory),
         requestedCategory === 'vehicles' ? 360 : 240,
       )
   const data = preferMarketplaceCountry(fetchedData || [], automaticCountry)
-  const sellerProfileRequest = getMarketplaceSellerPublicProfiles(
+  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
     (data || []).map((listing) => listing.seller_user_id).filter(Boolean),
   )
-  const sellerProfiles = seoLanding
-    ? await withPageDataFallback(sellerProfileRequest, new Map(), 5_000)
-    : await sellerProfileRequest
   const exchangeRates = (data || []).some((listing) => listing.currency !== displayCurrency)
     ? await getMarketplaceExchangeRates()
     : undefined
@@ -428,50 +424,6 @@ async function renderMarketplaceCategoryPage({
       />
     </>
   )
-}
-
-async function getSeoLandingListings(landing: GeoLandingRoute) {
-  try {
-    const result = await withPageDataFallback(
-      searchMarketplaceListings({
-        categories: landing.category,
-        markets: landing.countryCode,
-        make: landing.make,
-        model: landing.model,
-        geoAreaId: landing.place?.id,
-        geoFilterMode: landing.place ? 'strict' : 'legacy',
-        mode: landing.leasing ? 'leasing' : 'sale',
-        offerType: landing.leasing ? 'lease' : 'sale',
-        limit: 48,
-      }),
-      null,
-      8_000,
-    )
-    if (!result) return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
-    return result.items as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
-  } catch {
-    return [] as Awaited<ReturnType<typeof getPublishedMarketplaceCategoryListings>>
-  }
-}
-
-async function withPageDataFallback<T>(
-  promise: Promise<T>,
-  fallback: T,
-  timeoutMs: number,
-): Promise<T> {
-  let timeout: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((resolve) => {
-        timeout = setTimeout(() => resolve(fallback), timeoutMs)
-      }),
-    ])
-  } catch {
-    return fallback
-  } finally {
-    if (timeout) clearTimeout(timeout)
-  }
 }
 
 function getSearchParam(

@@ -94,7 +94,7 @@ export default function AdminShell({
   const navigation = navigationForPermissions(permissions)
   const active = navigation
     .flatMap((group) => group.items)
-    .find((item) => isActive(pathname, item.href))
+    .find((item) => isActive(pathname || '', item.href))
 
   const primaryRole = roles[0]
   const mfaReady = assuranceLevel === 'aal2'

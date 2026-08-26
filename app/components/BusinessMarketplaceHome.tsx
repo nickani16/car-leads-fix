@@ -548,7 +548,7 @@ type HomeListingSectionData = {
 async function withHomeDataFallback<T>(
   promise: Promise<T>,
   fallback: T,
-  timeoutMs = 10_000,
+  timeoutMs = 2_000,
 ): Promise<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined
   try {

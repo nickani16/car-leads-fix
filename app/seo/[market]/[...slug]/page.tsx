@@ -1,9 +1,7 @@
-import { headers } from 'next/headers'
 import { notFound, permanentRedirect, redirect } from 'next/navigation'
-import MarketplaceCategoryPage from '@/app/marketplace/MarketplaceCategoryPage'
+import SeoMarketplaceLanding from '@/app/components/SeoMarketplaceLanding'
 import {
   buildGeoMarketplaceHref,
-  buildSeoMarketplaceSearchParams,
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
 import { isSeoMarketCode, parseSeoRoute } from '@/lib/seo-routes'
@@ -13,9 +11,10 @@ type SeoPageProps = {
   params: Promise<{ market: string; slug: string[] }>
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: SeoPageProps) {
   const { market, slug } = await params
-  await assertInternalSeoRequest()
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
@@ -44,7 +43,6 @@ export async function generateMetadata({ params }: SeoPageProps) {
 
 export default async function SeoLandingPage({ params }: SeoPageProps) {
   const { market, slug } = await params
-  await assertInternalSeoRequest()
   const [categorySlug, ...segments] = slug
   const landing = await resolveGeoLandingRoute(market, categorySlug, segments)
   if (landing) {
@@ -59,11 +57,7 @@ export default async function SeoLandingPage({ params }: SeoPageProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
         />
-        <MarketplaceCategoryPage
-          params={Promise.resolve({ category: landing.category })}
-          searchParams={Promise.resolve(buildSeoMarketplaceSearchParams(landing))}
-          seoLanding={landing}
-        />
+        <SeoMarketplaceLanding landing={landing} />
       </>
     )
   }
@@ -80,13 +74,6 @@ async function resolveMarketplaceDestination(market: string, slug: string[]) {
   if (!isSeoMarketCode(market)) return null
   const route = parseSeoRoute(market, slug)
   return route ? marketplaceHref(route) : null
-}
-
-async function assertInternalSeoRequest() {
-  const requestHeaders = await headers()
-  if (requestHeaders.get('x-autorell-internal-seo') !== '1') {
-    notFound()
-  }
 }
 
 function marketplaceHref(route: NonNullable<ReturnType<typeof parseSeoRoute>>) {

@@ -37,6 +37,10 @@ const marketplaceCategoryPageSource = readFileSync(
   new URL('../app/marketplace/[category]/page.tsx', import.meta.url),
   'utf8',
 )
+const seoMarketplaceSource = readFileSync(
+  new URL('../app/components/SeoMarketplaceLanding.tsx', import.meta.url),
+  'utf8',
+)
 const searchRouteSource = readFileSync(new URL('../app/api/marketplace/search-v2/route.ts', import.meta.url), 'utf8')
 const geoContractRepairMigration = readFileSync(
   new URL('../supabase/migrations/20260816171048_marketplace_listing_geo_contract_repair.sql', import.meta.url),
@@ -232,9 +236,9 @@ test('geo SEO landings are market-wide, localized and backed by the geo director
   assert.doesNotMatch(geoLandingSource, /buildGeoLandingMetadata/)
   assert.match(marketCatchAllSource, /redirect\(buildGeoMarketplaceHref\(geoLanding\)\)/)
   assert.match(swedishCarRouteSource, /redirect\(buildGeoMarketplaceHref\(landing\)\)/)
-  assert.match(internalSeoRouteSource, /import MarketplaceCategoryPage/)
-  assert.match(internalSeoRouteSource, /buildSeoMarketplaceSearchParams/)
-  assert.match(internalSeoRouteSource, /seoLanding=\{landing\}/)
+  assert.match(internalSeoRouteSource, /import SeoMarketplaceLanding/)
+  assert.match(internalSeoRouteSource, /<SeoMarketplaceLanding landing=\{landing\}/)
+  assert.match(seoMarketplaceSource, /initialMarkets=\{\[landing\.countryCode\]\}/)
   assert.match(internalSeoRouteSource, /robots: \{ index: true, follow: true \}/)
   assert.match(internalSeoRouteSource, /CollectionPage/)
   assert.match(internalSeoRouteSource, /BreadcrumbList/)
