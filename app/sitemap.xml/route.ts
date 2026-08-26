@@ -110,30 +110,49 @@ async function getListingSitemapNames(markets: readonly (typeof allSitemapMarket
   await Promise.all(
     markets.map(async (market) => {
       try {
-        const { count, error } = await createAdminClient()
-          .from('marketplace_listings')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'published')
-          .eq('country_code', sitemapMarketCountries[market])
-          .not('published_at', 'is', null)
-          .is('sold_at', null)
-          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        const result = await withTimeout(
+          createAdminClient()
+            .from('marketplace_listings')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'published')
+            .eq('country_code', sitemapMarketCountries[market])
+            .not('published_at', 'is', null)
+            .is('sold_at', null)
+            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
+          5_000,
+        )
 
-        if (error) {
+        if (!result || result.error) {
           hadError = true
+          names.push(`listings-${market}-1`)
           return
         }
 
-        const pages = Math.ceil((count || 0) / maxUrlsPerSitemap)
+        const pages = Math.ceil((result.count || 0) / maxUrlsPerSitemap)
         for (let page = 1; page <= pages; page += 1) {
           names.push(`listings-${market}-${page}`)
         }
       } catch {
         hadError = true
+        names.push(`listings-${market}-1`)
       }
     }),
   )
   return { names: names.sort(), hadError }
+}
+
+async function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number): Promise<T | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise<null>((resolve) => {
+        timeout = setTimeout(() => resolve(null), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
 }
 
 async function getGeoSitemapNames(markets: readonly (typeof allSitemapMarkets)[number][]) {
