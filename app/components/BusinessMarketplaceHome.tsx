@@ -545,6 +545,26 @@ type HomeListingSectionData = {
   marketLabel: string
 }
 
+async function withHomeDataFallback<T>(
+  promise: Promise<T>,
+  fallback: T,
+  timeoutMs = 10_000,
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeout = setTimeout(() => resolve(fallback), timeoutMs)
+      }),
+    ])
+  } catch {
+    return fallback
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
+}
+
 export default async function BusinessMarketplaceHome({
   locale = 'sv',
   marketCode,
@@ -570,22 +590,31 @@ export default async function BusinessMarketplaceHome({
     europeListingCount,
     vehicleNews,
   ] = await Promise.all([
-    Promise.all(
-      homeListingCategories.map(async (category) => {
-        const listings = await getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category)
-        return { category, listings }
-      }),
+    withHomeDataFallback(
+      Promise.all(
+        homeListingCategories.map(async (category) => {
+          const listings = await getPublishedMarketplaceHomeListings(localMarketCode, 'latest', 17, category)
+          return { category, listings }
+        }),
+      ),
+      homeListingCategories.map((category) => ({ category, listings: [] })),
     ),
     getPublishedMarketplaceListingCount(localMarketCode),
     getPublishedMarketplaceListingCount('EU'),
-    getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
+    withHomeDataFallback(
+      getVehicleNews((localMarketCode || 'SE').toLowerCase(), 1, 3),
+      { articles: [], categories: [], count: 0, unavailable: true },
+    ),
   ])
   const newsCards = vehicleNews.articles.slice(0, 3)
   const allHomeListings = categoryListingGroups.flatMap(({ listings }) => listings)
-  const sellerProfiles = await getMarketplaceSellerPublicProfiles(
-    allHomeListings
-      .map((listing) => listing.seller_user_id)
-      .filter((id): id is string => typeof id === 'string' && Boolean(id)),
+  const sellerProfiles = await withHomeDataFallback(
+    getMarketplaceSellerPublicProfiles(
+      allHomeListings
+        .map((listing) => listing.seller_user_id)
+        .filter((id): id is string => typeof id === 'string' && Boolean(id)),
+    ),
+    new Map(),
   )
   const toHomeCard = (listing: HomeListingSource) =>
     mapHomeListingCard(listing, locale, displayCurrency, sellerProfiles.get(listing.seller_user_id || '')?.trust || 'unverified', localMarketCode)

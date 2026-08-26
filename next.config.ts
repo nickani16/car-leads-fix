@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
     viewTransition: true,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 200,
   },
   serverExternalPackages: ['sharp'],
   turbopack: {
