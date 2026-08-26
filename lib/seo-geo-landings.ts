@@ -437,7 +437,10 @@ function fitSeoTitle(value: string) {
   const shortened = wordBoundary >= Math.max(24, available - 18)
     ? candidate.slice(0, wordBoundary)
     : candidate
-  return `${shortened.replace(/[\s,;:.-]+$/g, '')}${suffix}`
+  const withoutDanglingConnector = shortened
+    .replace(/[\s,;:.-]+$/g, '')
+    .replace(/\s+(?:a|de|en|for|i|in|of|oder|eller|o|or|ou|til|w)$/i, '')
+  return `${withoutDanglingConnector}${suffix}`
 }
 
 function fitSeoDescription(value: string) {

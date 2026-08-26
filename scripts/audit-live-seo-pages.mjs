@@ -65,7 +65,7 @@ async function auditPage(sample) {
   if (!description) errors.push('missing description')
   if (title.length > 65) errors.push(`title too long: ${title.length}`)
   if (description.length < 50 || description.length > 160) errors.push(`description length: ${description.length}`)
-  if (/\b(?:a|de|en|for|i|in|of|oder|eller|o|or|ou|til|w) \| Autorell$/i.test(title)) {
+  if (/\s(?:a|de|en|for|i|in|of|oder|eller|o|or|ou|til|w) \| Autorell$/i.test(title)) {
     errors.push('title ends with a dangling connector')
   }
   if (/noindex/.test(robots) || /noindex/.test(googlebot)) errors.push('noindex')

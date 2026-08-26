@@ -28,6 +28,7 @@ test('SEO route state is centralized for all eleven active markets', () => {
   assert.match(geoLandingSource, /localizeSeoPlace/)
   assert.match(geoLandingSource, /title: fitSeoTitle\(`\$\{copy\.h1\} \| Autorell`\)/)
   assert.match(geoLandingSource, /if \(cleaned\.length <= 60\) return cleaned/)
+  assert.match(geoLandingSource, /withoutDanglingConnector/)
   assert.doesNotMatch(geoLandingSource, /cleanSeoText\(`\$\{copy\.h1\} \| Autorell`, 60\)/)
   assert.match(geoLandingSource, /fitSeoDescription/)
   assert.match(geoLandingSource, /place\.name === '\\u00c5land'/)
