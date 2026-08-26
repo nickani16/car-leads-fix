@@ -5290,8 +5290,8 @@ function VehicleSearchFooter({ locale }: { locale: PublicLocale }) {
       <div className="grid grid-cols-2 gap-x-6 gap-y-7 min-[560px]:grid-cols-3">
         {columns.map((column) => (
           <div key={column.title}>
-            <p className="text-[15px] font-semibold">{column.title}</p>
-            <nav className="mt-3 grid gap-2.5 text-[13px] font-medium text-[#475467]">
+            <p className="text-[15px] font-semibold text-[#2a2a37]">{column.title}</p>
+            <nav className="mt-3 grid gap-2.5 text-[13px] font-medium text-[#2a2a37]">
               {column.links.map(([label, href]) => (
                 <Link key={href} href={localizePublicHref(locale, href)} className="transition hover:text-[#0866ff]">
                   {label}

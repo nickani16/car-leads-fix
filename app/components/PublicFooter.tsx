@@ -580,8 +580,8 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-[16px] font-semibold text-[#253858]">{title}</h3>
-      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#344f7a]">
+      <h3 className="text-[16px] font-semibold text-[#2a2a37]">{title}</h3>
+      <nav className="mt-4 flex flex-col items-start gap-3 text-[14px] leading-5 text-[#2a2a37]">
         {links.map(([label, href]) => (
           <Link key={`${label}-${href}`} href={href} className="transition hover:text-[#075fff]">
             {label}

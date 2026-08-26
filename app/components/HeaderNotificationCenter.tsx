@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, BellRing, Bookmark, ChevronRight, MessageSquareText, X } from 'lucide-react'
+import { Bell, BellRing, Bookmark, ChevronRight, CircleAlert, MessageSquareText, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PublicLocale } from '@/lib/public-i18n'
+import type { IncompleteProfilePromptCopy } from './IncompleteProfilePrompt'
 
 type NotificationCopy = {
   label: string
@@ -70,6 +71,7 @@ export default function HeaderNotificationCenter({
   savedSearchCount,
   messagesHref,
   savedSearchesHref,
+  profileReminder,
   onRequireAuth,
 }: {
   locale: PublicLocale
@@ -78,6 +80,7 @@ export default function HeaderNotificationCenter({
   savedSearchCount: number
   messagesHref: string
   savedSearchesHref: string
+  profileReminder?: (IncompleteProfilePromptCopy & { href: string }) | null
   onRequireAuth: () => void
 }) {
   const copy = copyByLocale[locale] || copyByLocale.en
@@ -89,7 +92,7 @@ export default function HeaderNotificationCenter({
   const [updating, setUpdating] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const unreadNotifications = notifications.filter((notification) => !notification.read_at).length
-  const badgeCount = unreadMessages + unreadNotifications
+  const badgeCount = unreadMessages + unreadNotifications + (profileReminder ? 1 : 0)
   const badge = badgeCount > 99 ? '99+' : badgeCount ? String(badgeCount) : ''
 
   const loadNotifications = useCallback(async () => {
@@ -222,6 +225,13 @@ export default function HeaderNotificationCenter({
               ) : null}
             </div>
             {loadError ? <p role="status" className="rounded-[9px] bg-[#fff4ed] px-3 py-2 text-xs text-[#b54708]">{actionCopy.loadError}</p> : null}
+            {profileReminder ? (
+              <Link href={profileReminder.href} onClick={closePanel} className="flex gap-3 rounded-[9px] border border-[#cfe0ff] bg-[#eef5ff] px-3 py-3 transition hover:bg-[#e5efff]">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-[#0866ff]"><CircleAlert className="h-4 w-4" /></span>
+                <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">{profileReminder.title}</strong><span className="mt-0.5 block text-xs leading-5 text-[#667085]">{profileReminder.description}</span><span className="mt-1.5 block text-xs font-semibold text-[#0866ff]">{profileReminder.action}</span></span>
+                <ChevronRight className="mt-2 h-4 w-4 shrink-0 text-[#0866ff]" />
+              </Link>
+            ) : null}
             {notifications.length ? (
               <div className="max-h-64 overflow-y-auto rounded-[9px] border border-[#edf1f6]">
                 {notifications.map((notification) => {
@@ -234,7 +244,7 @@ export default function HeaderNotificationCenter({
                   )
                 })}
               </div>
-            ) : !loadError ? <p className="rounded-[9px] bg-[#f7f9fc] px-3 py-3 text-sm text-[#667085]">{actionCopy.empty}</p> : null}
+            ) : !profileReminder && !loadError ? <p className="rounded-[9px] bg-[#f7f9fc] px-3 py-3 text-sm text-[#667085]">{actionCopy.empty}</p> : null}
             <Link href={messagesHref} onClick={closePanel} className="flex min-h-14 items-center gap-3 rounded-[9px] bg-[#f7f9fc] px-3 transition hover:bg-[#eef5ff]">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[9px] bg-white text-[#0866ff]"><MessageSquareText className="h-[18px] w-[18px]" /></span>
               <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">{unreadMessages ? `${unreadMessages} ${copy.messages.toLocaleLowerCase()}` : copy.messagesEmpty}</strong><span className="mt-0.5 block text-xs text-[#667085]">{copy.messages}</span></span>

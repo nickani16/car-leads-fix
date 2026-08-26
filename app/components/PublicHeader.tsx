@@ -76,6 +76,7 @@ import { translateListingVehicleValue } from '@/lib/listing-display'
 import { marketplaceBodyTypeOptions } from '@/lib/marketplace-body-types'
 import AuthModal from './AuthModal'
 import HeaderNotificationCenter from './HeaderNotificationCenter'
+import IncompleteProfilePrompt from './IncompleteProfilePrompt'
 
 type AuthView = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -741,6 +742,7 @@ export default function PublicHeader({
   const [authDestination, setAuthDestination] = useState<string | undefined>()
   const [authBusinessRegistration, setAuthBusinessRegistration] = useState(false)
   const [headerAccount, setHeaderAccount] = useState<HeaderAccount>(emptyHeaderAccount)
+  const [headerAccountResolved, setHeaderAccountResolved] = useState(false)
   const [activePathname, setActivePathname] = useState('')
   const [savedListingCount, setSavedListingCount] = useState(0)
   const [savedSearchCount, setSavedSearchCount] = useState(0)
@@ -914,6 +916,7 @@ export default function PublicHeader({
   }, [marketplaceMode])
 
   const refreshHeaderAccount = useCallback(async () => {
+    setHeaderAccountResolved(false)
     try {
       const response = await fetch('/api/account/header', {
         credentials: 'same-origin',
@@ -935,6 +938,8 @@ export default function PublicHeader({
       window.dispatchEvent(
         new CustomEvent('autorell:header-account', { detail: fallback }),
       )
+    } finally {
+      setHeaderAccountResolved(true)
     }
   }, [])
 
@@ -1416,6 +1421,17 @@ export default function PublicHeader({
     locale,
     headerAccount.accountType === 'business' ? '/account/company/profile' : '/account/profile',
   )
+  const incompletePrivateProfile =
+    headerAccountResolved &&
+    headerAccount.authenticated &&
+    headerAccount.accountType === 'private' &&
+    headerAccount.profileComplete === false
+  const profileReminder = incompletePrivateProfile
+    ? { ...incompleteProfileCopy, href: completeProfileHref }
+    : null
+  const isPrivateProfilePage =
+    unprefixedPathname === '/account/profile' ||
+    unprefixedPathname === '/konto/profil'
   const accountProfileHref = isBusinessAccount ? `${marketPathPrefix}/account/company/profile` : `${marketPathPrefix}/account/profile`
   const accountSettingsHref = isBusinessAccount ? `${marketPathPrefix}/account/company/settings` : `${marketPathPrefix}/account/settings`
   const profileMenuLinks = isAdminAccount
@@ -2022,6 +2038,7 @@ export default function PublicHeader({
                     savedSearchCount={savedSearchCount}
                     messagesHref={accountMessagesHref}
                     savedSearchesHref={savedSearchesHref}
+                    profileReminder={profileReminder}
                     onRequireAuth={() => openAuthModal('login')}
                   />
                   <div ref={profileMenuRef} className="relative flex h-full items-center">
@@ -2837,6 +2854,13 @@ export default function PublicHeader({
         isOpen={marketSelectorOpen}
         onClose={() => setMarketSelectorOpen(false)}
         locale={locale}
+      />
+      <IncompleteProfilePrompt
+        key={incompletePrivateProfile ? `${headerAccount.displayName || 'private'}:incomplete` : 'complete'}
+        open={incompletePrivateProfile && !isPrivateProfilePage}
+        href={completeProfileHref}
+        copy={incompleteProfileCopy}
+        closeLabel={t.closeMenu}
       />
       {authModalOpen ? (
         <AuthModal

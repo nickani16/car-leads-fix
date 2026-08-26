@@ -26,6 +26,26 @@ test('private listing creation is blocked until the profile is complete', () => 
   assert.match(profilePage, /listingBlockedTitle/)
   assert.match(header, /headerAccount\.profileComplete === false/)
   assert.match(header, /completeProfileHref/)
+  assert.match(header, /headerAccount\.accountType === 'private'/)
+  assert.match(header, /<IncompleteProfilePrompt/)
+  assert.match(header, /profileReminder=\{profileReminder\}/)
+})
+
+test('incomplete private profiles get a localized page prompt and notification reminder', () => {
+  const header = read('app/components/PublicHeader.tsx')
+  const prompt = read('app/components/IncompleteProfilePrompt.tsx')
+  const notifications = read('app/components/HeaderNotificationCenter.tsx')
+
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(header, new RegExp(`\\n    ${locale}: \\{ title:`))
+  }
+  assert.match(prompt, /role="dialog"/)
+  assert.match(prompt, /aria-modal="true"/)
+  assert.match(prompt, /copy\.title/)
+  assert.match(prompt, /copy\.description/)
+  assert.match(notifications, /profileReminder \? 1 : 0/)
+  assert.match(notifications, /profileReminder\.title/)
+  assert.match(notifications, /profileReminder\.description/)
 })
 
 test('profile completeness uses the same private requirements everywhere', () => {
