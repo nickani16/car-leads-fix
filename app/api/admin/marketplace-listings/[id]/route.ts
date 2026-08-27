@@ -93,30 +93,16 @@ export async function PATCH(
     listingPatch.review_status = 'rejected'
   }
   if (action === 'delete') {
-    listingPatch.status = 'rejected'
+    listingPatch.status = 'removed'
     listingPatch.review_status = 'rejected'
-    listingPatch.archived = true
-    listingPatch.removed_by_admin = true
-    listingPatch.deleted_at = new Date().toISOString()
   }
 
   let listingError = null
   if (Object.keys(listingPatch).length > 1) {
-    let { error } = await adminClient
+    const { error } = await adminClient
       .from('marketplace_listings')
       .update(listingPatch)
       .eq('id', id)
-    if (error && 'message' in error && String(error.message).includes('column')) {
-      const fallbackPatch = { ...listingPatch }
-      delete fallbackPatch.archived
-      delete fallbackPatch.removed_by_admin
-      delete fallbackPatch.deleted_at
-      const fallback = await adminClient
-        .from('marketplace_listings')
-        .update(fallbackPatch)
-        .eq('id', id)
-      error = fallback.error
-    }
     listingError = error
   }
   if (listingError) {

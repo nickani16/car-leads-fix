@@ -1512,7 +1512,7 @@ async function getListingPublicLifecycleState(id: string) {
 
   const url = new URL('/rest/v1/marketplace_listings', supabaseUrl)
   url.searchParams.set('id', `eq.${id}`)
-  url.searchParams.set('select', 'status,published_at,sold_at,deleted_at,removed_by_admin')
+  url.searchParams.set('select', 'status,published_at,sold_at')
   url.searchParams.set('limit', '1')
 
   try {
@@ -1529,16 +1529,11 @@ async function getListingPublicLifecycleState(id: string) {
       status?: string | null
       published_at?: string | null
       sold_at?: string | null
-      deleted_at?: string | null
-      removed_by_admin?: boolean | null
     }>
     const row = rows[0]
     if (!row) return null
     const wasPublic = Boolean(row.published_at || row.sold_at)
-    const permanentlyRemoved =
-      row.status === 'deleted' ||
-      Boolean(row.deleted_at) ||
-      row.removed_by_admin === true
+    const permanentlyRemoved = row.status === 'deleted' || row.status === 'removed'
     return { gone: wasPublic && permanentlyRemoved }
   } catch {
     return null
