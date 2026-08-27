@@ -7,6 +7,7 @@ const breadcrumbs = readFileSync(new URL('../app/components/ListingBreadcrumbs.t
 const factsRail = readFileSync(new URL('../app/components/ListingQuickFactsRail.tsx', import.meta.url), 'utf8')
 const contact = readFileSync(new URL('../app/components/ListingContactFormButton.tsx', import.meta.url), 'utf8')
 const contactApi = readFileSync(new URL('../app/api/listing-contact/route.ts', import.meta.url), 'utf8')
+const backToTop = readFileSync(new URL('../app/components/ListingBackToTopButton.tsx', import.meta.url), 'utf8')
 
 test('listing breadcrumbs are visible, data-driven and link category, make and model filters', () => {
   assert.match(detail, /<ListingBreadcrumbs items=\{breadcrumbItems\}/)
@@ -22,6 +23,9 @@ test('desktop listing has a request-information rail and a non-scrollable sticky
   assert.match(factsRail, /children: ReactNode/)
   assert.match(detail, /<ListingQuickFactsRail facts=\{quickFacts\}>[\s\S]*<ListingContactFormButton/)
   assert.match(factsRail, /scrollBy\(\{ left: direction \* 320/)
+  assert.match(factsRail, /quickFactIcons/)
+  assert.match(factsRail, /<FactIcon aria-hidden="true"/)
+  assert.match(detail, /buttonFontWeight=\{600\}/)
   assert.match(detail, /lg:sticky lg:top-\[82px\]/)
   assert.doesNotMatch(detail, /listing-contact-card-desktop[^\n]+overflow-y-auto/)
 })
@@ -36,7 +40,19 @@ test('contact form distinguishes professional and private buyers with calm place
   assert.match(contact, /name="callingCode"/)
   assert.match(contact, /<CountryFlag code=\{selected\.code\}/)
   assert.match(contact, /style=\{\{ fontWeight: 400 \}\}/)
+  assert.doesNotMatch(contact, /CompactOfferField/)
+  assert.doesNotMatch(contact, /name="offer"/)
   assert.match(detail, /initialCount=\{favoriteCount\}/)
   assert.match(contactApi, /Buyer type: Professional/)
   assert.match(contactApi, /Company: \$\{company\}/)
+})
+
+test('listing detail has an accessible localized back-to-top action', () => {
+  assert.match(detail, /<ListingBackToTopButton locale=\{locale\}/)
+  assert.match(backToTop, /window\.scrollY > 520/)
+  assert.match(backToTop, /window\.scrollTo\(\{ top: 0/)
+  assert.match(backToTop, /sm:hover:w-\[172px\]/)
+  for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
+    assert.match(backToTop, new RegExp(`\\b${locale}:`))
+  }
 })

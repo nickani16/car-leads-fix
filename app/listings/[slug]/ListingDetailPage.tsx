@@ -28,6 +28,7 @@ import ListingQuickFactsRail from '@/app/components/ListingQuickFactsRail'
 import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import ListingStickyContactBar from '@/app/components/ListingStickyContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
+import ListingBackToTopButton from '@/app/components/ListingBackToTopButton'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
 import ListingReportButton from '@/app/components/ListingReportButton'
@@ -359,51 +360,60 @@ export default async function ListingDetailPage({
       label: localizedLabel(locale, 'Modellår', 'Model year', 'Baujahr'),
       value: listing.model_year ? String(listing.model_year) : '',
       icon: CalendarDays,
+      railIcon: 'calendar' as const,
     },
     {
       label: localizedLabel(locale, 'Miltal', 'Mileage', 'Kilometerstand'),
       value: formatMileageAsMil(listing.mileage_km, locale),
       icon: Gauge,
+      railIcon: 'gauge' as const,
     },
     {
       label: localizedLabel(locale, 'Växellåda', 'Gearbox', 'Getriebe'),
       value: translateListingVehicleValue(locale, listing.gearbox),
       icon: Settings2,
+      railIcon: 'settings' as const,
     },
     {
       label: localizedLabel(locale, 'Drivmedel', 'Fuel', 'Kraftstoff'),
       value: translateListingVehicleValue(locale, listing.fuel_type),
       icon: Fuel,
+      railIcon: 'fuel' as const,
     },
     {
       label: electricListing ? <WltpRangeLabel locale={locale} /> : localizedLabel(locale, 'Räckvidd', 'Range', 'Reichweite'),
       value: formatTechnicalValue(electricRange, 'km') || (electricListing ? missingTechnicalLabel(locale) : null),
       icon: Gauge,
+      railIcon: 'gauge' as const,
     },
     {
       label: localizedLabel(locale, 'Effekt', 'Power', 'Leistung'),
       value: formatTechnicalValue(technicalData.powerHp, 'HK'),
       icon: Gauge,
+      railIcon: 'gauge' as const,
     },
     {
       label: localizedLabel(locale, 'Drivhjul', 'Driven wheels', 'Antriebsräder'),
       value: translateListingVehicleValue(locale, formatTechnicalValue(technicalData.drivetrain, '')),
       icon: Settings2,
+      railIcon: 'settings' as const,
     },
     {
       label: localizedLabel(locale, 'Land', 'Country', 'Land'),
       value: countryName || listing.country_code,
       icon: MapPin,
+      railIcon: 'location' as const,
     },
     {
       label: localizedLabel(locale, 'Tid kvar', 'Time left', 'Restzeit'),
       value: formatDaysLeft(daysLeft, locale),
       icon: CalendarDays,
+      railIcon: 'calendar' as const,
     },
   ].filter((fact) => Boolean(fact.value))
   const quickFacts = headlineFacts
     .flatMap((fact) => typeof fact.label === 'string' && fact.value
-      ? [{ label: fact.label, value: String(fact.value) }]
+      ? [{ label: fact.label, value: String(fact.value), icon: fact.railIcon }]
       : [])
     .slice(0, 8)
   const copy = getListingDetailCopy(locale)
@@ -516,11 +526,11 @@ export default async function ListingDetailPage({
                 listingId={listing.id}
                 listingTitle={listing.title}
                 locale={locale}
-                defaultCurrency={displayCurrency}
                 defaultPhoneCountry={listing.country_code || marketCode}
                 buttonLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
-                buttonClassName="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#aebbcf] bg-white px-3.5 text-[13px] font-normal text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                buttonClassName="inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#aebbcf] bg-white px-4 text-[13px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
                 iconClassName="h-3.5 w-3.5 text-[#0866ff]"
+                buttonFontWeight={600}
               />
             </ListingQuickFactsRail>
             <ListingImageGallery
@@ -702,7 +712,6 @@ export default async function ListingDetailPage({
                       listingId={listing.id}
                       listingTitle={listing.title}
                       locale={locale}
-                      defaultCurrency={displayCurrency}
                       defaultPhoneCountry={listing.country_code || marketCode}
                     />
                   </>
@@ -938,7 +947,6 @@ export default async function ListingDetailPage({
                     listingId={listing.id}
                     listingTitle={listing.title}
                     locale={locale}
-                    defaultCurrency={displayCurrency}
                     defaultPhoneCountry={listing.country_code || marketCode}
                     presentation="inline"
                   />
@@ -1082,9 +1090,9 @@ export default async function ListingDetailPage({
           listingId={listing.id}
           listingTitle={listing.title}
           locale={locale}
-          defaultCurrency={displayCurrency}
         />
       ) : null}
+      <ListingBackToTopButton locale={locale} />
       <PublicFooter locale={locale} />
       <script
         type="application/ld+json"

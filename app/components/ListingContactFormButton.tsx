@@ -11,10 +11,10 @@ type ListingContactFormButtonProps = {
   listingId: string
   listingTitle: string
   locale: PublicLocale
-  defaultCurrency?: string
   buttonLabel?: string
   buttonClassName?: string
   iconClassName?: string
+  buttonFontWeight?: 400 | 600
   presentation?: 'button' | 'inline'
   defaultPhoneCountry?: string
 }
@@ -26,7 +26,6 @@ type ContactCopy = {
   name: string
   phone: string
   email: string
-  offer: string
   message: string
   privacy: string
   submit: string
@@ -44,7 +43,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Namn',
     phone: 'Telefonnummer',
     email: 'E-post',
-    offer: 'Hur mycket vill du erbjuda?',
     message: 'Meddelande',
     privacy: 'Jag godkänner att Autorell skickar mina kontaktuppgifter till säljaren för den här annonsen.',
     submit: 'Skicka förfrågan',
@@ -60,7 +58,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Name',
     phone: 'Phone number',
     email: 'Email',
-    offer: 'How much would you like to offer?',
     message: 'Message',
     privacy: 'I agree that Autorell sends my contact details to the seller for this listing.',
     submit: 'Send enquiry',
@@ -76,7 +73,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Name',
     phone: 'Telefonnummer',
     email: 'E-Mail',
-    offer: 'Wie viel möchten Sie anbieten?',
     message: 'Nachricht',
     privacy: 'Ich stimme zu, dass Autorell meine Kontaktdaten für diese Anzeige an den Verkäufer sendet.',
     submit: 'Anfrage senden',
@@ -92,7 +88,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Nom',
     phone: 'Numéro de téléphone',
     email: 'E-mail',
-    offer: 'Quel montant souhaitez-vous proposer ?',
     message: 'Message',
     privacy: 'J’accepte qu’Autorell transmette mes coordonnées au vendeur pour cette annonce.',
     submit: 'Envoyer la demande',
@@ -108,7 +103,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Nombre',
     phone: 'Número de teléfono',
     email: 'Correo electrónico',
-    offer: '¿Cuánto quieres ofrecer?',
     message: 'Mensaje',
     privacy: 'Acepto que Autorell envíe mis datos de contacto al vendedor para este anuncio.',
     submit: 'Enviar consulta',
@@ -124,7 +118,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Nome',
     phone: 'Numero di telefono',
     email: 'E-mail',
-    offer: 'Quanto vuoi offrire?',
     message: 'Messaggio',
     privacy: 'Accetto che Autorell invii i miei dati di contatto al venditore per questo annuncio.',
     submit: 'Invia richiesta',
@@ -140,7 +133,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Imię i nazwisko',
     phone: 'Numer telefonu',
     email: 'E-mail',
-    offer: 'Ile chcesz zaoferować?',
     message: 'Wiadomość',
     privacy: 'Zgadzam się, aby Autorell przekazał moje dane kontaktowe sprzedawcy w sprawie tego ogłoszenia.',
     submit: 'Wyślij zapytanie',
@@ -156,7 +148,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Naam',
     phone: 'Telefoonnummer',
     email: 'E-mail',
-    offer: 'Hoeveel wil je bieden?',
     message: 'Bericht',
     privacy: 'Ik ga ermee akkoord dat Autorell mijn contactgegevens naar de verkoper stuurt voor deze advertentie.',
     submit: 'Aanvraag verzenden',
@@ -172,7 +163,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Nimi',
     phone: 'Puhelinnumero',
     email: 'Sähköposti',
-    offer: 'Kuinka paljon haluat tarjota?',
     message: 'Viesti',
     privacy: 'Hyväksyn, että Autorell lähettää yhteystietoni myyjälle tätä ilmoitusta varten.',
     submit: 'Lähetä kysely',
@@ -188,7 +178,6 @@ const copy: Record<string, ContactCopy> = {
     name: 'Navn',
     phone: 'Telefonnummer',
     email: 'E-mail',
-    offer: 'Hvor meget vil du tilbyde?',
     message: 'Besked',
     privacy: 'Jeg accepterer, at Autorell sender mine kontaktoplysninger til sælgeren for denne annonce.',
     submit: 'Send forespørgsel',
@@ -203,10 +192,10 @@ export default function ListingContactFormButton({
   listingId,
   listingTitle,
   locale,
-  defaultCurrency = 'EUR',
   buttonLabel,
   buttonClassName,
   iconClassName,
+  buttonFontWeight = 400,
   presentation = 'button',
   defaultPhoneCountry,
 }: ListingContactFormButtonProps) {
@@ -266,8 +255,6 @@ export default function ListingContactFormButton({
       professional: formData.get('professional') === 'on',
       phone: rawPhone.startsWith('+') ? rawPhone : `${callingCode} ${rawPhone}`.trim(),
       email: String(formData.get('email') || ''),
-      offer: String(formData.get('offer') || ''),
-      offerCurrency: String(formData.get('offerCurrency') || defaultCurrency),
       message: String(formData.get('message') || ''),
       privacy: formData.get('privacy') === 'on',
       locale,
@@ -316,7 +303,6 @@ export default function ListingContactFormButton({
           </div>
           <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} />
           <CompactFormField label={text.email} name="email" type="email" required />
-          <CompactOfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
           <label>
             <span className="sr-only">{text.message}</span>
             <textarea
@@ -395,7 +381,6 @@ export default function ListingContactFormButton({
               </div>
               <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} />
               <CompactFormField label={text.email} name="email" type="email" required />
-              <CompactOfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
               <label>
                 <span className="sr-only">{text.message}</span>
                 <textarea
@@ -460,7 +445,7 @@ export default function ListingContactFormButton({
     <>
       <button
         type="button"
-        style={{ fontWeight: 400 }}
+        style={{ fontWeight: buttonFontWeight }}
         onClick={() => {
           setOpen(true)
           setStatus('idle')
@@ -536,21 +521,6 @@ function getContactFieldCopy(locale: PublicLocale) {
   return labels[locale] || labels.en
 }
 
-const currencyOptions = [
-  'SEK',
-  'EUR',
-  'DKK',
-  'PLN',
-  'CZK',
-  'HUF',
-  'RON',
-  'BGN',
-  'NOK',
-  'CHF',
-  'GBP',
-  'USD',
-] as const
-
 const phoneCountries = [
   { code: 'SE', callingCode: '+46' },
   { code: 'DE', callingCode: '+49' },
@@ -572,13 +542,6 @@ const phoneCountries = [
 
 const localePhoneCountry: Partial<Record<PublicLocale, string>> = {
   sv: 'SE', de: 'DE', at: 'AT', fi: 'FI', da: 'DK', pl: 'PL', nl: 'NL', be: 'BE', fr: 'FR', es: 'ES', it: 'IT', en: 'GB',
-}
-
-function normalizeCurrency(value?: string) {
-  const normalized = (value || '').toUpperCase()
-  return currencyOptions.includes(normalized as (typeof currencyOptions)[number])
-    ? normalized
-    : 'EUR'
 }
 
 function PhoneField({ label, locale, defaultCountry }: { label: string; locale: PublicLocale; defaultCountry?: string }) {
@@ -640,20 +603,6 @@ function PhoneField({ label, locale, defaultCountry }: { label: string; locale: 
         />
       </div>
     </div>
-  )
-}
-
-function CompactOfferField({ label, currency }: { label: string; currency: string }) {
-  return (
-    <label>
-      <span className="sr-only">{label}</span>
-      <div className="grid grid-cols-[minmax(0,1fr)_92px] overflow-hidden rounded-[8px] border border-[#c7d0dd] bg-white transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10">
-        <input name="offer" inputMode="decimal" placeholder={label} className="h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]" />
-        <select name="offerCurrency" defaultValue={currency} aria-label="Currency" className="h-11 border-0 border-l border-[#dfe6f2] bg-[#f8fafc] px-2 text-xs font-semibold text-[#344054] outline-none">
-          {currencyOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-        </select>
-      </div>
-    </label>
   )
 }
 

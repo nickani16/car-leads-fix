@@ -9,7 +9,6 @@ type ListingMobileContactBarProps = {
   listingId: string
   listingTitle: string
   locale: PublicLocale
-  defaultCurrency?: string
 }
 
 const phoneCopy = {
@@ -46,7 +45,6 @@ export default function ListingMobileContactBar({
   listingId,
   listingTitle,
   locale,
-  defaultCurrency = 'EUR',
 }: ListingMobileContactBarProps) {
   const [phone, setPhone] = useState('')
   const [loadingPhone, setLoadingPhone] = useState(false)
@@ -172,7 +170,6 @@ export default function ListingMobileContactBar({
             listingId={listingId}
             listingTitle={listingTitle}
             locale={locale}
-            defaultCurrency={defaultCurrency}
             buttonLabel={emailLabel}
             buttonClassName="inline-flex min-h-[36px] w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#0866ff] bg-white px-3 text-[14px] font-semibold leading-none text-[#0866ff] transition hover:bg-[#f3f8ff]"
             iconClassName="h-4 w-4 text-[#0866ff]"
