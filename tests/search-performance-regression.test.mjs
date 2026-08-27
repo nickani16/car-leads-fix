@@ -86,7 +86,14 @@ test('marketplace outage handling aborts quickly and settles the public UI', () 
   assert.doesNotMatch(marketplaceSearchApi, /Promise\.race/)
   assert.match(homeSearch, /countRequestInitialized/)
   assert.match(homeSearch, /setTimeout\(\(\) => controller\.abort\(\), 2_500\)/)
-  assert.match(vehicleSearchExperience, /setSearchTotalCount\(0\)/)
+  assert.match(vehicleSearchExperience, /response\.headers\.get\('X-Autorell-Search-Fallback'\)/)
+  assert.doesNotMatch(
+    vehicleSearchExperience.slice(
+      vehicleSearchExperience.indexOf('const response = await fetch(`/api/marketplace/search-v2?'),
+      vehicleSearchExperience.indexOf('const selectedCategoryItems'),
+    ),
+    /setSearchListings\(\[\]\)/,
+  )
   assert.match(vehicleSearchExperience, /setSearchLoading\(false\)/)
   assert.match(marketplaceHome, /timeoutMs = 900/)
   assert.match(publicMarketplaceData, /createAdminClient\(\{ timeoutMs: 900 \}\)/)

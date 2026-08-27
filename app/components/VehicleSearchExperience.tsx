@@ -1725,6 +1725,9 @@ export default function VehicleSearchExperience({
           signal: controller.signal,
         })
         if (!response.ok) throw new Error('Search failed')
+        if (response.headers.get('X-Autorell-Search-Fallback')) {
+          throw new Error('Search temporarily unavailable')
+        }
         const payload = (await response.json()) as MarketplaceSearchApiResponse
         const nextListings = payload.items.map((item) => mapApiListingToVehicleSearchListing(item, locale))
         setSearchListings((current) => searchPage > 1 && desktopMarketplaceView !== 'list' ? [...current, ...nextListings] : nextListings)
@@ -1734,10 +1737,6 @@ export default function VehicleSearchExperience({
       } catch {
         if (active) {
           setSearchError(true)
-          setSearchListings([])
-          setSearchTotalCount(0)
-          setSearchTotalPages(1)
-          setSearchFacets({})
         }
       } finally {
         if (requestTimeout) window.clearTimeout(requestTimeout)

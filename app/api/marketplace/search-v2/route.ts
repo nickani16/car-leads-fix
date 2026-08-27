@@ -118,7 +118,6 @@ export async function GET(request: NextRequest) {
       ms: Date.now() - startedAt,
     }))
     const body = JSON.stringify(emptySearchResult(Number(input.limit) || 48))
-    setMarketplaceSearchCache(cacheKey, body)
     return new Response(body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
