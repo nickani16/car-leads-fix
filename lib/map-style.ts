@@ -1,28 +1,6 @@
 import type { StyleSpecification } from 'maplibre-gl'
 
-export const fallbackMapStyle: StyleSpecification = {
-  version: 8,
-  sources: {
-    carto: {
-      type: 'raster',
-      tiles: ['https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: 'OpenStreetMap contributors, CARTO',
-    },
-  },
-  layers: [
-    {
-      id: 'carto',
-      type: 'raster',
-      source: 'carto',
-      paint: {
-        'raster-opacity': 1,
-        'raster-saturation': 0.58,
-        'raster-contrast': 0.03,
-      },
-    },
-  ],
-}
+export const fallbackMapStyle = 'https://tiles.openfreemap.org/styles/liberty'
 
 export const fallbackSatelliteMapStyle: StyleSpecification = {
   version: 8,
@@ -56,8 +34,4 @@ export function getMapStyle(layer: AutorellMapLayer = 'standard') {
   }
 
   return process.env.NEXT_PUBLIC_MAP_STYLE_URL || fallbackMapStyle
-}
-
-export function getStandardFallbackTileUrl(zoom: number, x: number, y: number) {
-  return `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`
 }

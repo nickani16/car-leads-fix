@@ -4,7 +4,7 @@ import type { Map as MapLibreMap, Marker as MapLibreMarker } from 'maplibre-gl'
 import { Layers, MapPin } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createCategoryMapMarker } from './MapCategoryMarker'
-import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
+import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
 import { translatePublic, type PublicLocale } from '@/lib/public-i18n'
 
 type ListingLocationMapProps = {
@@ -368,16 +368,14 @@ function getFallbackTileUrls(
   zoom = 12,
   layer: AutorellMapLayer = 'standard',
 ) {
+  if (layer === 'standard') return []
+
   const tile = getTileCoordinate(latitude, longitude, zoom)
   const tiles: string[] = []
 
   for (let y = tile.y - 1; y <= tile.y + 1; y += 1) {
     for (let x = tile.x - 1; x <= tile.x + 1; x += 1) {
-      tiles.push(
-        layer === 'satellite'
-          ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : getStandardFallbackTileUrl(zoom, x, y),
-      )
+      tiles.push(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`)
     }
   }
 

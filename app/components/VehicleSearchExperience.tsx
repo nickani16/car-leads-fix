@@ -51,7 +51,7 @@ import {
   AutorellTruckIcon,
   AutorellVanIcon,
 } from './AutorellCategoryIcons'
-import { getMapStyle, getStandardFallbackTileUrl, type AutorellMapLayer } from '@/lib/map-style'
+import { getMapStyle, type AutorellMapLayer } from '@/lib/map-style'
 import { getEuCountryName } from '@/lib/eu-countries'
 import { buildListingPath } from '@/lib/listing-url'
 import { formatMileageAsMil, translateListingVehicleValue } from '@/lib/listing-display'
@@ -6317,16 +6317,14 @@ function MapLayerPicker({
 }
 
 function getFallbackTileUrls(latitude: number, longitude: number, zoom = 11, layer: AutorellMapLayer = 'standard') {
+  if (layer === 'standard') return []
+
   const tile = getTileCoordinate(latitude, longitude, zoom)
   const tiles: string[] = []
 
   for (let y = tile.y - 1; y <= tile.y + 1; y += 1) {
     for (let x = tile.x - 1; x <= tile.x + 1; x += 1) {
-      tiles.push(
-        layer === 'satellite'
-          ? `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : getStandardFallbackTileUrl(zoom, x, y),
-      )
+      tiles.push(`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`)
     }
   }
 
