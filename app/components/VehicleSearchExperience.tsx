@@ -5809,6 +5809,8 @@ function VehicleSearchMap({
   const [mapReady, setMapReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
+  const mapLayerRef = useRef<AutorellMapLayer>(mapLayer)
+  mapLayerRef.current = mapLayer
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
   const [selectedListingGroup, setSelectedListingGroup] = useState<VehicleSearchListing[]>([])
   const [selectedListingIndex, setSelectedListingIndex] = useState(0)
@@ -5834,7 +5836,7 @@ function VehicleSearchMap({
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
-          style: getMapStyle(mapLayer),
+          style: getMapStyle(mapLayerRef.current),
           center,
           zoom: country === 'SE' ? 4.6 : 4.2,
           attributionControl: { compact: true },
@@ -5862,7 +5864,13 @@ function VehicleSearchMap({
       setMapReady(false)
       setMapFailed(false)
     }
-  }, [country, mapLayer])
+  }, [country])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    map.setStyle(getMapStyle(mapLayer))
+  }, [mapLayer])
 
   useEffect(() => {
     let cancelled = false
@@ -5889,11 +5897,13 @@ function VehicleSearchMap({
       })
       if (geoBounds) {
         const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
-        map.fitBounds(bounds, { padding: 70, maxZoom: 10.5, duration: 500 })
+        map.fitBounds(bounds, { padding: 70, maxZoom: 12, duration: 500 })
+      } else if (mapListings.length === 1) {
+        map.flyTo({ center: mapListings[0].coordinates, zoom: 11.5, duration: 500 })
       } else if (mapListings.length) {
         const bounds = new maplibregl.LngLatBounds()
         mapListings.forEach(({ coordinates }) => bounds.extend(coordinates))
-        map.fitBounds(bounds, { padding: 70, maxZoom: 8.8, duration: 500 })
+        map.fitBounds(bounds, { padding: 70, maxZoom: 11.5, duration: 500 })
       } else {
         map.flyTo({ center: countryCenters[country] || countryCenters.SE, zoom: country === 'SE' ? 4.6 : 4.2, duration: 400 })
       }
