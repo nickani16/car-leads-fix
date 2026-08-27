@@ -5,6 +5,7 @@ import PricingPage from '@/app/components/PricingPage'
 import AppDownloadPage, { generateAppDownloadMetadata } from '@/app/components/AppDownloadPage'
 import PublicFooter from '@/app/components/PublicFooter'
 import PublicHeader from '@/app/components/PublicHeader'
+import PublicInfoPage, { generatePublicInfoMetadata } from '@/app/components/PublicInfoPage'
 import FaqPageClient from '@/app/vanliga-fragor/FaqPageClient'
 import BusinessPage from '@/app/foretag/page'
 import BusinessPilotPage, { generateMetadata as generateBusinessPilotMetadata } from '@/app/business/pilot/page'
@@ -46,7 +47,6 @@ import { getHelpCenterArticle, getHelpCenterCategory } from '@/lib/help-center'
 
 const removedPublicPages = new Set([
   'sell-vehicle',
-  'safety-tips',
   'partners',
   'careers',
   'press',
@@ -100,6 +100,9 @@ export async function generateMetadata({
   if (slug.join('/') === 'business/inventory-import') {
     return generateInventoryImportMetadata()
   }
+  if (slug.join('/') === 'safety-tips') {
+    return generatePublicInfoMetadata('safety-tips')()
+  }
   const listingParams = localizedListingParams({ market, slug })
   if (listingParams) {
     return generateListingMetadata({ params: listingParams })
@@ -133,6 +136,10 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'app') {
     return <AppDownloadPage locale={locale} marketCode={normalizedMarket.toUpperCase()} />
+  }
+
+  if (slugPath === 'safety-tips') {
+    return <PublicInfoPage page="safety-tips" />
   }
 
   const helpCenterRoute = resolveHelpCenterRoute(slug)

@@ -14,6 +14,7 @@ type ListingContactFormButtonProps = {
   buttonLabel?: string
   buttonClassName?: string
   iconClassName?: string
+  presentation?: 'button' | 'inline'
 }
 
 type ContactCopy = {
@@ -204,6 +205,7 @@ export default function ListingContactFormButton({
   buttonLabel,
   buttonClassName,
   iconClassName,
+  presentation = 'button',
 }: ListingContactFormButtonProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -275,6 +277,54 @@ export default function ListingContactFormButton({
     } finally {
       setLoading(false)
     }
+  }
+
+  if (presentation === 'inline') {
+    return (
+      <div className="overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-[#f8fafc]">
+        <div className="border-b border-[#e4eaf3] bg-white px-5 py-4">
+          <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#101828]">{text.title}</h2>
+          <p className="mt-1.5 text-sm leading-5 text-[#667085]">{text.intro}</p>
+        </div>
+        <form onSubmit={submit} className="grid gap-3 p-4">
+          <FormField label={text.name} name="name" required />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <FormField label={text.phone} name="phone" type="tel" required />
+            <FormField label={text.email} name="email" type="email" required />
+          </div>
+          <OfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
+          <label className="grid gap-1.5 text-sm font-semibold text-[#101828]">
+            {text.message}
+            <textarea
+              name="message"
+              required
+              maxLength={3000}
+              rows={4}
+              defaultValue={getDefaultMessage(locale, listingTitle)}
+              className="autorell-contact-placeholder min-h-[110px] w-full resize-y rounded-[12px] border border-[#cfd8e6] bg-white px-3.5 py-3 text-sm font-medium leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+            />
+          </label>
+          <label className="group flex cursor-pointer items-start gap-2.5 rounded-[12px] bg-white px-3 py-2.5 text-xs font-medium leading-5 text-[#475467]">
+            <input name="privacy" type="checkbox" required className="peer sr-only" />
+            <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[6px] border border-[#b8c4d4] bg-white text-white transition peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 peer-checked:border-[#0866ff] peer-checked:bg-[#0866ff] peer-checked:[&>svg]:opacity-100">
+              <Check className="h-3.5 w-3.5 opacity-0 transition" strokeWidth={3} />
+            </span>
+            <span>
+              {text.privacy}{' '}
+              <Link href={localizePublicHref(locale, '/privacy')} target="_blank" className="font-semibold text-[#0866ff] underline underline-offset-2">
+                {getPrivacyPolicyLabel(locale)}
+              </Link>
+            </span>
+          </label>
+          {status === 'success' ? <p className="rounded-[10px] bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700">{text.success}</p> : null}
+          {status === 'error' ? <p className="rounded-[10px] bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700">{text.error}</p> : null}
+          <button type="submit" disabled={loading} className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]">
+            <Send className="h-4 w-4" />
+            {loading ? text.sending : text.submit}
+          </button>
+        </form>
+      </div>
+    )
   }
 
   const modal =
@@ -395,6 +445,23 @@ function getContactCopy(locale: PublicLocale) {
   if (locale === 'at') return copy.de
   if (locale === 'be') return copy.nl
   return copy[locale] || copy.en
+}
+
+function getDefaultMessage(locale: PublicLocale, listingTitle: string) {
+  const messages: Partial<Record<PublicLocale, string>> = {
+    sv: `Hej, jag är intresserad av annonsen ”${listingTitle}”. Finns fordonet kvar?`,
+    de: `Hallo, ich interessiere mich für die Anzeige „${listingTitle}“. Ist das Fahrzeug noch verfügbar?`,
+    at: `Hallo, ich interessiere mich für die Anzeige „${listingTitle}“. Ist das Fahrzeug noch verfügbar?`,
+    fr: `Bonjour, je suis intéressé par l’annonce « ${listingTitle} ». Le véhicule est-il toujours disponible ?`,
+    es: `Hola, me interesa el anuncio «${listingTitle}». ¿Sigue disponible el vehículo?`,
+    it: `Salve, sono interessato all’annuncio “${listingTitle}”. Il veicolo è ancora disponibile?`,
+    pl: `Dzień dobry, interesuje mnie ogłoszenie „${listingTitle}”. Czy pojazd jest nadal dostępny?`,
+    nl: `Hallo, ik ben geïnteresseerd in de advertentie ‘${listingTitle}’. Is het voertuig nog beschikbaar?`,
+    be: `Hallo, ik ben geïnteresseerd in de advertentie ‘${listingTitle}’. Is het voertuig nog beschikbaar?`,
+    fi: `Hei, olen kiinnostunut ilmoituksesta ”${listingTitle}”. Onko ajoneuvo vielä saatavilla?`,
+    da: `Hej, jeg er interesseret i annoncen “${listingTitle}”. Er køretøjet stadig tilgængeligt?`,
+  }
+  return messages[locale] || `Hello, I’m interested in the listing “${listingTitle}”. Is the vehicle still available?`
 }
 
 function getPrivacyPolicyLabel(locale: PublicLocale) {

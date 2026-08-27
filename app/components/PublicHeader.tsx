@@ -1323,7 +1323,7 @@ export default function PublicHeader({
   const contactMenuItem = contactMenuCopy[locale] || contactMenuCopy.en
   const helpMenuLinks = [
     {
-      href: localizePublicHref(locale, '/help-center'),
+      href: localizePublicHref(locale, '/safety-tips'),
       label: publicLabel('Help center', 'Hjälpcenter', 'Hilfe'),
       description: publicLabel('Answers, account help and marketplace support.', 'Svar, kontohjälp och support för marknadsplatsen.', 'Antworten, Kontohilfe und Marktplatz-Support.'),
       icon: CircleHelp,

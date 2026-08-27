@@ -19,10 +19,12 @@ const insightsSource = readFileSync(
   'utf8',
 )
 
-test('footer market controls keep compact typography and modal controls above the fixed header', () => {
+test('footer market controls keep compact typography and a clean accessible modal above the fixed header', () => {
   assert.match(footerSource, /gap-y-2 text-\[13px\] font-medium/)
   assert.match(footerSource, /fixed inset-0 z-\[500\]/)
-  assert.match(footerSource, /top-\[calc\(env\(safe-area-inset-top\)\+1rem\)\] z-\[510\]/)
+  assert.match(footerSource, /role="dialog" aria-modal="true"/)
+  assert.match(footerSource, /max-w-\[980px\]/)
+  assert.match(footerSource, /getMarketDialogCopy\(locale\)/)
   assert.doesNotMatch(footerSource, /safe-area-inset-top\)\+4\.75rem/)
 })
 

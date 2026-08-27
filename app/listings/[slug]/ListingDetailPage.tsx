@@ -24,6 +24,7 @@ import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
 import ListingBackButton from '@/app/components/ListingBackButton'
 import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
+import ListingStickyContactBar from '@/app/components/ListingStickyContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
 import CountryFlag from '@/app/components/CountryFlag'
 import ListingEquipmentSection from '@/app/components/ListingEquipmentSection'
@@ -458,7 +459,15 @@ export default async function ListingDetailPage({
         hideOnMobile
         hideMobileBottomNav
       />
-      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[var(--autorell-page-max)] sm:px-8 sm:py-3 lg:py-4">
+      {!isSold ? (
+        <ListingStickyContactBar
+          image={galleryImages[0]}
+          title={listing.title}
+          price={price.original}
+          contactLabel={localizedLabel(locale, 'Kontakta säljaren', 'Contact the seller', 'Verkäufer kontaktieren')}
+        />
+      ) : null}
+      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1260px] sm:px-8 sm:py-3 lg:py-4">
         <div className="hidden items-center justify-between gap-3 sm:flex">
           <ListingBackButton href={fallbackBackHref} label={copy.backToListings} className="shrink-0 whitespace-nowrap" />
           <div className="hidden min-w-0 items-center gap-4 sm:flex">
@@ -485,7 +494,7 @@ export default async function ListingDetailPage({
         </div>
 
         <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
-          <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start xl:grid-cols-[minmax(0,1fr)_370px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
             <ListingImageGallery
               images={galleryImages}
@@ -537,7 +546,7 @@ export default async function ListingDetailPage({
                   <span className={`mb-3 inline-flex w-max max-w-full items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:text-sm ${offerBadge.className}`}>
                     {offerBadge.label}
                   </span>
-                  <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-[-0.03em] sm:text-5xl sm:tracking-[-0.04em]">
+                  <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-[-0.03em] sm:text-[38px] sm:tracking-[-0.04em]">
                     {listing.title}
                   </h1>
                   {headlineSubtitle ? (
@@ -610,13 +619,13 @@ export default async function ListingDetailPage({
               <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
                 {localizedLabel(locale, 'Specifikationer', 'Specifications', 'Spezifikationen')}
               </h2>
-              <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-2.5 xl:grid-cols-3">
+              <div className="mt-3 grid overflow-hidden rounded-[12px] border border-[#e4eaf3] sm:mt-4 sm:grid-cols-2">
                 {specs.map((spec) => (
-                  <div key={spec.label} className="rounded-[9px] border border-[#e4eaf3] bg-[#f8fbff] px-3 py-2.5 sm:rounded-[10px] sm:px-3 sm:py-2.5">
-                    <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[#667085] sm:text-[9px] sm:tracking-[0.12em]">
+                  <div key={spec.label} className="grid min-h-12 grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center gap-3 border-b border-[#e4eaf3] bg-white px-3.5 py-2.5 sm:odd:border-r">
+                    <p className="text-xs font-medium leading-4 text-[#667085]">
                       {spec.labelNode || spec.label}
                     </p>
-                    <p className="mt-1 break-words text-[13px] font-semibold leading-4 text-[#101828] sm:mt-1 sm:text-[13px] sm:leading-4">
+                    <p className="break-words text-right text-[13px] font-semibold leading-4 text-[#101828]">
                       {spec.value}
                     </p>
                   </div>
@@ -680,6 +689,14 @@ export default async function ListingDetailPage({
                   />
                 </div>
               </div>
+
+              <Link
+                href={localizePublicHref(locale, '/safety-tips')}
+                className="inline-flex min-h-12 items-center justify-between rounded-[14px] border border-[#b9d5ff] bg-[#f5f9ff] px-4 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#edf5ff]"
+              >
+                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" />{localizedLabel(locale, 'Säkerhetsråd', 'Safety advice', 'Sicherheitshinweise')}</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
 
               <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4">
                 {listing.seller_type === 'private' ? (
@@ -874,12 +891,6 @@ export default async function ListingDetailPage({
                   <>
                     <RevealPhoneButton listingId={listing.id} locale={locale} />
                     <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
-                    <ListingContactFormButton
-                      listingId={listing.id}
-                      listingTitle={listing.title}
-                      locale={locale}
-                      defaultCurrency={displayCurrency}
-                    />
                   </>
                 )}
                 <div className="flex justify-start pt-0.5">
@@ -892,6 +903,24 @@ export default async function ListingDetailPage({
                   />
                 </div>
               </div>
+
+              {!isSold ? (
+                <ListingContactFormButton
+                  listingId={listing.id}
+                  listingTitle={listing.title}
+                  locale={locale}
+                  defaultCurrency={displayCurrency}
+                  presentation="inline"
+                />
+              ) : null}
+
+              <Link
+                href={localizePublicHref(locale, '/safety-tips')}
+                className="inline-flex min-h-12 items-center justify-between rounded-[14px] border border-[#b9d5ff] bg-[#f5f9ff] px-4 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#edf5ff]"
+              >
+                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" />{localizedLabel(locale, 'Säkerhetsråd', 'Safety advice', 'Sicherheitshinweise')}</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
 
               <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 {listing.seller_type === 'private' ? (

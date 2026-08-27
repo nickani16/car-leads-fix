@@ -231,7 +231,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showPrevious}
-              className="absolute left-3 top-1/2 hidden h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/82 text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur transition hover:bg-white/94 sm:left-4 sm:grid sm:h-9 sm:w-9 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#101828] shadow-[0_2px_12px_rgba(16,24,40,.18)] backdrop-blur transition hover:bg-white sm:left-4 sm:h-10 sm:w-10"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-[17px] w-[17px]" strokeWidth={1.8} />
@@ -239,7 +239,7 @@ export default function ListingImageGallery({
             <button
               type="button"
               onClick={showNext}
-              className="absolute right-3 top-1/2 hidden h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/82 text-[#101828] shadow-[0_2px_10px_rgba(16,24,40,.13)] backdrop-blur transition hover:bg-white/94 sm:right-4 sm:grid sm:h-9 sm:w-9 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#101828] shadow-[0_2px_12px_rgba(16,24,40,.18)] backdrop-blur transition hover:bg-white sm:right-4 sm:h-10 sm:w-10"
               aria-label="Next photo"
             >
               <ChevronRight className="h-[17px] w-[17px]" strokeWidth={1.8} />

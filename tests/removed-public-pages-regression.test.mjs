@@ -5,9 +5,7 @@ import test from 'node:test'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const removedPages = [
-  'app',
   'sell-vehicle',
-  'safety-tips',
   'partners',
   'careers',
   'press',
@@ -86,5 +84,11 @@ test('header keeps menu entries while routing them to live destinations', () => 
   assert.match(publicHeader, /requiresLogin: true/)
   assert.match(publicHeader, /openAuthModal\('login', sellHref\)/)
   assert.match(publicHeader, /Safety tips', 'Säkerhetstips', 'Sicherheitstipps'/)
-  assert.match(publicHeader, /href: localizePublicHref\(locale, '\/help-center'\)[\s\S]*label: publicLabel\('Safety tips'/)
+  assert.match(publicHeader, /href: localizePublicHref\(locale, '\/safety-tips'\)[\s\S]*label: publicLabel\('Safety tips'/)
+})
+
+test('localized safety advice is routed as a live public page', () => {
+  const removedSet = localizedCatchAll.match(/removedPublicPages = new Set\(\[([\s\S]*?)\]\)/)?.[1] || ''
+  assert.doesNotMatch(removedSet, /'safety-tips'/)
+  assert.match(localizedCatchAll, /slugPath === 'safety-tips'[\s\S]*<PublicInfoPage page="safety-tips"/)
 })

@@ -293,6 +293,7 @@ function staticPublicUrls(market: SitemapMarketCode) {
     '/sell-to-dealer',
     '/sell-van',
     '/about',
+    '/safety-tips',
     '/help-center',
     '/contact',
     '/pricing',

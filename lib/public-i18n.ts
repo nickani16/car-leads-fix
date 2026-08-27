@@ -176,6 +176,7 @@ export const publicPagePaths = [
   '/about',
   '/faq',
   '/help-center',
+  '/safety-tips',
   '/help-center/payment/private-listing-prices',
   '/vehicle-news',
   '/contact',

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import { useEffect, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Check,
   ChevronDown,
   Globe2,
+  Search,
   X,
 } from 'lucide-react'
 import {
@@ -700,13 +701,34 @@ export function MarketSelectorModal({
   locale?: PublicLocale
 }) {
   const pathname = usePathname()
-  if (!isOpen) return null
+  const [query, setQuery] = useState('')
   const copy =
     locale === 'sv'
       ? footerCopy.sv
       : locale === 'de'
         ? footerCopy.de
         : translatePublicObject(locale, footerCopy.en)
+  const dialogCopy = getMarketDialogCopy(locale)
+  const markets = allMarkets.filter(([code]) => code === 'EU' || activeMarketCountryCodes.has(code))
+  const filteredMarkets = markets.filter(([code, market, language]) =>
+    `${code} ${market} ${language}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+  )
+
+  useEffect(() => {
+    if (!isOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      window.removeEventListener('keydown', closeOnEscape)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen, onClose])
+
+  if (!isOpen) return null
 
   function handleMarketNavigate(href: string) {
     onClose()
@@ -714,36 +736,32 @@ export function MarketSelectorModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[500] overflow-y-auto bg-[#f8fbff] text-[#101828]">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label={copy.close}
-        className="fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[510] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d9e1ec] bg-white text-[#101828] shadow-[0_14px_34px_rgba(16,24,40,0.14)] transition hover:border-[#b7cdfb] hover:bg-[#f5f9ff] hover:text-[#075fff] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#075fff] focus-visible:ring-offset-2 sm:right-6"
-      >
-        <X className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
-      </button>
-
-      <div className="mx-auto max-w-[var(--autorell-page-max)] px-5 pb-16 pt-20 sm:px-8 sm:py-16 lg:py-[72px]">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.25fr] lg:items-start">
+    <div
+      className="fixed inset-0 z-[500] flex items-start justify-center overflow-y-auto bg-[#101828]/45 px-3 py-4 text-[#101828] backdrop-blur-[2px] sm:px-6 sm:py-8"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
+      <section role="dialog" aria-modal="true" aria-labelledby="market-selector-title" className="my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-[980px] flex-col overflow-hidden rounded-[20px] border border-[#dfe6f2] bg-white shadow-[0_28px_80px_rgba(16,24,40,.28)] sm:max-h-[calc(100dvh-4rem)] sm:rounded-[24px]">
+        <header className="flex items-start justify-between gap-5 border-b border-[#e7ecf3] px-5 py-5 sm:px-7 sm:py-6">
           <div>
-            <h2 className="max-w-[560px] text-[34px] font-semibold leading-[1.05] tracking-[-0.04em] text-[#101828] sm:text-[56px]">
-              {copy.marketTitle}
-            </h2>
-            <p className="mt-6 max-w-[430px] text-[16px] leading-8 text-[#344054]">
-              {copy.marketText}
-            </p>
+            <h2 id="market-selector-title" className="text-2xl font-semibold tracking-[-0.035em] sm:text-[30px]">{copy.marketTitle}</h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[#667085]">{copy.marketText}</p>
           </div>
+          <button type="button" onClick={onClose} aria-label={copy.close} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d9e1ec] bg-white text-[#344054] transition hover:border-[#98a2b3] hover:bg-[#f8fafc]">
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </header>
 
-          <WorldMapGraphic />
-        </div>
+        <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
+          <label className="relative block max-w-[520px]">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98a2b3]" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={dialogCopy.search} className="h-11 w-full rounded-[10px] border border-[#cfd8e6] bg-white pl-10 pr-4 text-sm font-medium outline-none transition placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10" autoFocus />
+          </label>
 
-        <section className="mt-10">
-          <h3 className="text-base font-semibold">{copy.allMarkets}</h3>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {allMarkets
-              .filter(([code]) => code === 'EU' || activeMarketCountryCodes.has(code))
-              .map(([code, market, language], index) => (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#667085]">{dialogCopy.available}</h3>
+            {filteredMarkets.length ? (
+              <div className="mt-3 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredMarkets.map(([code, market, language], index) => (
                 <MarketCard
                   key={`${code}-${market}-${index}`}
                   countryCode={code}
@@ -753,26 +771,45 @@ export function MarketSelectorModal({
                   selected={isActiveMarket(code, pathname, locale)}
                   onNavigate={handleMarketNavigate}
                 />
-              ))}
+                ))}
+              </div>
+            ) : <p className="mt-4 rounded-[12px] bg-[#f8fafc] px-4 py-5 text-sm text-[#667085]">{dialogCopy.empty}</p>}
           </div>
-        </section>
 
-        <div className="mx-auto mt-10 flex max-w-[560px] items-center gap-4 rounded-[18px] border border-[#d9e7ff] bg-[#edf5ff] p-5 text-[#18315f]">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#075fff]">
+          <div className="mt-6 flex items-center gap-3 border-t border-[#edf1f6] pt-5 text-[#475467]">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf5ff] text-[#075fff]">
             <Globe2 className="h-5 w-5" />
           </span>
           <span>
-            <strong className="block text-sm font-semibold">
+            <strong className="block text-sm font-semibold text-[#101828]">
               {copy.missingMarketTitle}
             </strong>
-            <span className="mt-1 block text-sm leading-6">
+            <span className="mt-0.5 block text-xs leading-5 sm:text-sm">
               {copy.missingMarketText}
             </span>
           </span>
         </div>
-      </div>
+        </div>
+      </section>
     </div>
   )
+}
+
+function getMarketDialogCopy(locale: PublicLocale) {
+  const labels: Partial<Record<PublicLocale, { search: string; available: string; empty: string }>> = {
+    sv: { search: 'Sök land eller språk', available: 'Tillgängliga marknader', empty: 'Ingen marknad matchar din sökning.' },
+    de: { search: 'Land oder Sprache suchen', available: 'Verfügbare Märkte', empty: 'Kein Markt entspricht Ihrer Suche.' },
+    at: { search: 'Land oder Sprache suchen', available: 'Verfügbare Märkte', empty: 'Kein Markt entspricht Ihrer Suche.' },
+    fr: { search: 'Rechercher un pays ou une langue', available: 'Marchés disponibles', empty: 'Aucun marché ne correspond à votre recherche.' },
+    es: { search: 'Buscar país o idioma', available: 'Mercados disponibles', empty: 'Ningún mercado coincide con tu búsqueda.' },
+    it: { search: 'Cerca paese o lingua', available: 'Mercati disponibili', empty: 'Nessun mercato corrisponde alla ricerca.' },
+    pl: { search: 'Szukaj kraju lub języka', available: 'Dostępne rynki', empty: 'Brak rynku pasującego do wyszukiwania.' },
+    nl: { search: 'Zoek land of taal', available: 'Beschikbare markten', empty: 'Geen markt komt overeen met je zoekopdracht.' },
+    be: { search: 'Zoek land of taal', available: 'Beschikbare markten', empty: 'Geen markt komt overeen met je zoekopdracht.' },
+    fi: { search: 'Hae maata tai kieltä', available: 'Saatavilla olevat markkinat', empty: 'Hakua vastaavaa markkinaa ei löytynyt.' },
+    da: { search: 'Søg efter land eller sprog', available: 'Tilgængelige markeder', empty: 'Ingen markeder matcher din søgning.' },
+  }
+  return labels[locale] || { search: 'Search country or language', available: 'Available markets', empty: 'No market matches your search.' }
 }
 
 function MarketCard({
@@ -800,13 +837,13 @@ function MarketCard({
     <Link
       href={href}
       onClick={handleClick}
-      className={`flex min-h-[78px] items-center gap-4 rounded-[14px] border bg-white px-5 text-left shadow-[0_12px_34px_rgba(16,24,40,0.045)] transition hover:-translate-y-0.5 hover:border-[#075fff] ${
-        selected ? 'border-[#075fff] ring-2 ring-[#075fff]/10' : 'border-[#dfe5ee]'
+      className={`flex min-h-[62px] items-center gap-3 rounded-[10px] border px-3.5 text-left transition hover:border-[#a9c8ff] hover:bg-[#f8fbff] ${
+        selected ? 'border-[#8bb7ff] bg-[#f3f8ff] ring-1 ring-[#0866ff]/10' : 'border-transparent bg-white'
       }`}
     >
       <FlagIcon code={countryCode} />
       <span className="min-w-0 flex-1">
-        <strong className="block truncate text-[15px] font-semibold text-[#101828]">
+        <strong className="block truncate text-sm font-semibold text-[#101828]">
           {market}
         </strong>
         <span className="mt-0.5 block truncate text-[13px] text-[#667085]">
