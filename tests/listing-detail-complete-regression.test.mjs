@@ -1,0 +1,37 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+
+const detail = readFileSync(new URL('../app/listings/[slug]/ListingDetailPage.tsx', import.meta.url), 'utf8')
+const breadcrumbs = readFileSync(new URL('../app/components/ListingBreadcrumbs.tsx', import.meta.url), 'utf8')
+const factsRail = readFileSync(new URL('../app/components/ListingQuickFactsRail.tsx', import.meta.url), 'utf8')
+const contact = readFileSync(new URL('../app/components/ListingContactFormButton.tsx', import.meta.url), 'utf8')
+const contactApi = readFileSync(new URL('../app/api/listing-contact/route.ts', import.meta.url), 'utf8')
+
+test('listing breadcrumbs are visible, data-driven and link category, make and model filters', () => {
+  assert.match(detail, /<ListingBreadcrumbs items=\{breadcrumbItems\}/)
+  assert.match(detail, /new URLSearchParams\(\{ bodyType:/)
+  assert.match(detail, /new URLSearchParams\(\{ make \}\)/)
+  assert.match(detail, /modelParams\.set\('model', model\)/)
+  assert.match(breadcrumbs, /<House/)
+  assert.match(breadcrumbs, /aria-current="page"/)
+})
+
+test('desktop listing has a request-information rail and a non-scrollable sticky contact form', () => {
+  assert.match(detail, /<ListingQuickFactsRail/)
+  assert.match(factsRail, /href="#listing-contact-card-desktop"/)
+  assert.match(factsRail, /scrollBy\(\{ left: direction \* 320/)
+  assert.match(detail, /lg:sticky lg:top-\[82px\]/)
+  assert.doesNotMatch(detail, /listing-contact-card-desktop[^\n]+overflow-y-auto/)
+})
+
+test('contact form distinguishes professional and private buyers with calm placeholders', () => {
+  assert.match(contact, /setIsProfessional/)
+  assert.match(contact, /name="professional"/)
+  assert.match(contact, /name="company"/)
+  assert.match(contact, /name="firstName"/)
+  assert.match(contact, /name="lastName"/)
+  assert.match(contact, /placeholder:font-normal placeholder:text-\[#98a2b3\]/)
+  assert.match(contactApi, /Buyer type: Professional/)
+  assert.match(contactApi, /Company: \$\{company\}/)
+})

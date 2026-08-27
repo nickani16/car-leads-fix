@@ -23,6 +23,8 @@ import {
 import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
 import ListingBackButton from '@/app/components/ListingBackButton'
+import ListingBreadcrumbs from '@/app/components/ListingBreadcrumbs'
+import ListingQuickFactsRail from '@/app/components/ListingQuickFactsRail'
 import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import ListingStickyContactBar from '@/app/components/ListingStickyContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
@@ -399,6 +401,11 @@ export default async function ListingDetailPage({
       icon: CalendarDays,
     },
   ].filter((fact) => Boolean(fact.value))
+  const quickFacts = headlineFacts
+    .flatMap((fact) => typeof fact.label === 'string' && fact.value
+      ? [{ label: fact.label, value: String(fact.value) }]
+      : [])
+    .slice(0, 8)
   const copy = getListingDetailCopy(locale)
   const offerBadge = listingDetailOfferBadge(locale, listing.offer_type)
   const listingIdentity =
@@ -468,7 +475,8 @@ export default async function ListingDetailPage({
         />
       ) : null}
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1260px] sm:px-8 sm:py-3 lg:py-4">
-        <div className="hidden items-center justify-between gap-3 sm:flex">
+        <ListingBreadcrumbs items={breadcrumbItems} currentLabel={listing.title} ariaLabel={copy.breadcrumbLabel} />
+        <div className="mt-4 hidden items-center justify-between gap-3 sm:flex">
           <ListingBackButton href={fallbackBackHref} label={copy.backToListings} className="shrink-0 whitespace-nowrap" />
           <div className="hidden min-w-0 items-center gap-4 sm:flex">
             <ShareListingButton
@@ -496,6 +504,10 @@ export default async function ListingDetailPage({
         <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
           <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start xl:grid-cols-[minmax(0,1fr)_370px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
+            <ListingQuickFactsRail
+              facts={quickFacts}
+              requestLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
+            />
             <ListingImageGallery
               images={galleryImages}
               fullscreenImages={fullscreenImages}
@@ -835,9 +847,9 @@ export default async function ListingDetailPage({
             </div>
             </div>
 
-              <section className="hidden scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:sticky lg:top-3 lg:block lg:max-h-[calc(100dvh-1.5rem)] lg:self-start xl:top-4 xl:max-h-[calc(100dvh-2rem)]">
-            <div id="listing-contact-card-desktop" className="grid gap-3 lg:max-h-[calc(100dvh-1.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 lg:[scrollbar-color:#c5cfdd_transparent] lg:[scrollbar-width:thin] xl:max-h-[calc(100dvh-2rem)]">
-              <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
+              <section className="hidden h-full scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:block lg:self-stretch">
+            <div id="listing-contact-card-desktop" className="grid h-full content-start gap-3">
+              <div className="order-3 rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
                 </p>
@@ -871,7 +883,7 @@ export default async function ListingDetailPage({
               ) : null}
               </div>
 
-              <div className="grid gap-2.5 rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
+              <div className="order-2 -mt-3 grid gap-2.5 rounded-b-[18px] border border-t-0 border-[#dfe6f2] bg-white p-4 pt-1 sm:p-5 sm:pt-1">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
@@ -904,25 +916,27 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              {!isSold ? (
-                <ListingContactFormButton
-                  listingId={listing.id}
-                  listingTitle={listing.title}
-                  locale={locale}
-                  defaultCurrency={displayCurrency}
-                  presentation="inline"
-                />
-              ) : null}
+              <div className="order-4 grid gap-3 self-start lg:sticky lg:top-[82px]">
+                {!isSold ? (
+                  <ListingContactFormButton
+                    listingId={listing.id}
+                    listingTitle={listing.title}
+                    locale={locale}
+                    defaultCurrency={displayCurrency}
+                    presentation="inline"
+                  />
+                ) : null}
 
-              <Link
-                href={localizePublicHref(locale, '/safety-tips')}
-                className="inline-flex min-h-12 items-center justify-between rounded-[14px] border border-[#b9d5ff] bg-[#f5f9ff] px-4 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#edf5ff]"
-              >
-                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" />{localizedLabel(locale, 'Säkerhetsråd', 'Safety advice', 'Sicherheitshinweise')}</span>
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+                <Link
+                  href={localizePublicHref(locale, '/safety-tips')}
+                  className="inline-flex min-h-12 items-center justify-between rounded-[14px] border border-[#b9d5ff] bg-[#f5f9ff] px-4 text-sm font-semibold text-[#0866ff] transition hover:border-[#0866ff] hover:bg-[#edf5ff]"
+                >
+                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" />{localizedLabel(locale, 'Säkerhetsråd', 'Safety advice', 'Sicherheitshinweise')}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
 
-              <div className="rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
+              <div className="order-1 rounded-t-[18px] border border-[#dfe6f2] bg-white p-4 pb-3 sm:p-5 sm:pb-3">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -2053,11 +2067,9 @@ function buildDesktopBreadcrumbItems({
   categoryLabel: string
 }) {
   const copy = getListingBreadcrumbCopy(locale)
-  const marketplaceHref = localizePublicHref(locale, '/marketplace')
   const categoryHref = localizePublicHref(locale, `/marketplace/${listing.category}`)
   const items: Array<{ label: string; href: string; icon?: 'home' }> = [
     { label: copy.home, href: localizePublicHref(locale, '/'), icon: 'home' },
-    { label: copy.vehiclesForSale, href: marketplaceHref },
     { label: categoryLabel, href: categoryHref },
   ]
   const bodyTypeLabel = translateSpecValue(locale, listing.body_type)?.trim()
@@ -2066,10 +2078,27 @@ function buildDesktopBreadcrumbItems({
     bodyTypeLabel &&
     bodyTypeLabel.toLocaleLowerCase() !== categoryLabel.toLocaleLowerCase()
   ) {
-    const params = new URLSearchParams({ body: listing.body_type!.trim() })
+    const params = new URLSearchParams({ bodyType: listing.body_type!.trim() })
     items.push({
       label: bodyTypeLabel,
       href: `${categoryHref}?${params.toString()}`,
+    })
+  }
+
+  const make = listing.make?.trim()
+  if (make) {
+    const makeParams = new URLSearchParams({ make })
+    items.push({ label: make, href: `${categoryHref}?${makeParams.toString()}` })
+  }
+
+  const model = listing.model?.trim()
+  if (model) {
+    const modelParams = new URLSearchParams()
+    if (make) modelParams.set('make', make)
+    modelParams.set('model', model)
+    items.push({
+      label: [make, model].filter(Boolean).join(' '),
+      href: `${categoryHref}?${modelParams.toString()}`,
     })
   }
 

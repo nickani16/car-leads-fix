@@ -210,6 +210,7 @@ export default function ListingContactFormButton({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [isProfessional, setIsProfessional] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const text = getContactCopy(locale)
@@ -251,9 +252,13 @@ export default function ListingContactFormButton({
 
     const form = event.currentTarget
     const formData = new FormData(form)
+    const firstName = String(formData.get('firstName') || '').trim()
+    const lastName = String(formData.get('lastName') || '').trim()
     const payload = {
       listingId,
-      name: String(formData.get('name') || ''),
+      name: [firstName, lastName].filter(Boolean).join(' ') || String(formData.get('name') || ''),
+      company: String(formData.get('company') || ''),
+      professional: formData.get('professional') === 'on',
       phone: String(formData.get('phone') || ''),
       email: String(formData.get('email') || ''),
       offer: String(formData.get('offer') || ''),
@@ -280,28 +285,43 @@ export default function ListingContactFormButton({
   }
 
   if (presentation === 'inline') {
+    const fields = getContactFieldCopy(locale)
     return (
-      <div className="overflow-hidden rounded-[18px] border border-[#dfe6f2] bg-[#f8fafc]">
-        <div className="border-b border-[#e4eaf3] bg-white px-5 py-4">
+      <div className="overflow-hidden rounded-[14px] border border-[#d7dee9] bg-[#f7f8fa] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
+        <div className="border-b border-[#e1e6ee] bg-white px-5 py-4">
           <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#101828]">{text.title}</h2>
-          <p className="mt-1.5 text-sm leading-5 text-[#667085]">{text.intro}</p>
+          <label className="mt-3 inline-flex cursor-pointer items-center gap-2.5 text-sm font-normal text-[#344054]">
+            <input
+              name="professional"
+              form="listing-inline-contact-form"
+              type="checkbox"
+              checked={isProfessional}
+              onChange={(event) => setIsProfessional(event.target.checked)}
+              className="peer sr-only"
+            />
+            <span className="relative h-5 w-9 rounded-full bg-[#cfd6e1] transition peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 peer-checked:bg-[#0866ff] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:after:translate-x-4" />
+            {fields.professional}
+          </label>
         </div>
-        <form onSubmit={submit} className="grid gap-3 p-4">
-          <FormField label={text.name} name="name" required />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <FormField label={text.phone} name="phone" type="tel" required />
-            <FormField label={text.email} name="email" type="email" required />
+        <form id="listing-inline-contact-form" onSubmit={submit} className="grid gap-3 p-4">
+          {isProfessional ? <CompactFormField label={fields.company} name="company" required /> : null}
+          <div className="grid grid-cols-2 gap-3">
+            <CompactFormField label={fields.firstName} name="firstName" required />
+            <CompactFormField label={fields.lastName} name="lastName" required />
           </div>
-          <OfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
-          <label className="grid gap-1.5 text-sm font-semibold text-[#101828]">
-            {text.message}
+          <CompactFormField label={text.phone} name="phone" type="tel" required />
+          <CompactFormField label={text.email} name="email" type="email" required />
+          <CompactOfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
+          <label>
+            <span className="sr-only">{text.message}</span>
             <textarea
               name="message"
               required
               maxLength={3000}
               rows={4}
               defaultValue={getDefaultMessage(locale, listingTitle)}
-              className="autorell-contact-placeholder min-h-[110px] w-full resize-y rounded-[12px] border border-[#cfd8e6] bg-white px-3.5 py-3 text-sm font-medium leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+              placeholder={text.message}
+              className="min-h-[112px] w-full resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
             />
           </label>
           <label className="group flex cursor-pointer items-start gap-2.5 rounded-[12px] bg-white px-3 py-2.5 text-xs font-medium leading-5 text-[#475467]">
@@ -318,7 +338,7 @@ export default function ListingContactFormButton({
           </label>
           {status === 'success' ? <p className="rounded-[10px] bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700">{text.success}</p> : null}
           {status === 'error' ? <p className="rounded-[10px] bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700">{text.error}</p> : null}
-          <button type="submit" disabled={loading} className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]">
+          <button type="submit" disabled={loading} className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]">
             <Send className="h-4 w-4" />
             {loading ? text.sending : text.submit}
           </button>
@@ -483,6 +503,24 @@ function getPrivacyPolicyLabel(locale: PublicLocale) {
   return labels[locale] || labels.en || 'Read the privacy policy'
 }
 
+function getContactFieldCopy(locale: PublicLocale) {
+  const labels: Record<PublicLocale, { professional: string; company: string; firstName: string; lastName: string }> = {
+    sv: { professional: 'Jag är professionell köpare', company: 'Företag', firstName: 'Förnamn', lastName: 'Efternamn' },
+    en: { professional: 'I am a professional', company: 'Company', firstName: 'First name', lastName: 'Last name' },
+    de: { professional: 'Ich bin gewerblicher Käufer', company: 'Unternehmen', firstName: 'Vorname', lastName: 'Nachname' },
+    at: { professional: 'Ich bin gewerblicher Käufer', company: 'Unternehmen', firstName: 'Vorname', lastName: 'Nachname' },
+    fr: { professional: 'Je suis un professionnel', company: 'Entreprise', firstName: 'Prénom', lastName: 'Nom' },
+    es: { professional: 'Soy profesional', company: 'Empresa', firstName: 'Nombre', lastName: 'Apellidos' },
+    it: { professional: 'Sono un professionista', company: 'Azienda', firstName: 'Nome', lastName: 'Cognome' },
+    pl: { professional: 'Jestem profesjonalnym kupującym', company: 'Firma', firstName: 'Imię', lastName: 'Nazwisko' },
+    nl: { professional: 'Ik ben een professional', company: 'Bedrijf', firstName: 'Voornaam', lastName: 'Achternaam' },
+    be: { professional: 'Ik ben een professional', company: 'Bedrijf', firstName: 'Voornaam', lastName: 'Achternaam' },
+    fi: { professional: 'Olen ammattiostaja', company: 'Yritys', firstName: 'Etunimi', lastName: 'Sukunimi' },
+    da: { professional: 'Jeg er professionel køber', company: 'Virksomhed', firstName: 'Fornavn', lastName: 'Efternavn' },
+  }
+  return labels[locale] || labels.en
+}
+
 const currencyOptions = [
   'SEK',
   'EUR',
@@ -528,6 +566,44 @@ function OfferField({ label, currency }: { label: string; currency: string }) {
           ))}
         </select>
       </div>
+    </label>
+  )
+}
+
+function CompactOfferField({ label, currency }: { label: string; currency: string }) {
+  return (
+    <label>
+      <span className="sr-only">{label}</span>
+      <div className="grid grid-cols-[minmax(0,1fr)_92px] overflow-hidden rounded-[8px] border border-[#c7d0dd] bg-white transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10">
+        <input name="offer" inputMode="decimal" placeholder={label} className="h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]" />
+        <select name="offerCurrency" defaultValue={currency} aria-label="Currency" className="h-11 border-0 border-l border-[#dfe6f2] bg-[#f8fafc] px-2 text-xs font-semibold text-[#344054] outline-none">
+          {currencyOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
+      </div>
+    </label>
+  )
+}
+
+function CompactFormField({ label, name, type = 'text', required = false }: { label: string; name: string; type?: string; required?: boolean }) {
+  const autoComplete = {
+    company: 'organization',
+    firstName: 'given-name',
+    lastName: 'family-name',
+    phone: 'tel',
+    email: 'email',
+  }[name]
+
+  return (
+    <label>
+      <span className="sr-only">{label}</span>
+      <input
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        required={required}
+        placeholder={`${label}${required ? '*' : ''}`}
+        className="h-11 w-full min-w-0 rounded-[8px] border border-[#c7d0dd] bg-white px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+      />
     </label>
   )
 }

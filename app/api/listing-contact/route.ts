@@ -6,6 +6,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 type ContactPayload = {
   listingId?: string
   name?: string
+  company?: string
+  professional?: boolean
   phone?: string
   email?: string
   offer?: string
@@ -59,6 +61,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as ContactPayload | null
   const listingId = clean(body?.listingId, 80)
   const name = clean(body?.name, 120)
+  const company = clean(body?.company, 160)
+  const professional = Boolean(body?.professional)
   const phone = clean(body?.phone, 80)
   const email = clean(body?.email, 160).toLowerCase()
   const offer = clean(body?.offer, 120)
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
   const offerDisplay = offer ? [offer, offerCurrency].filter(Boolean).join(' ') : ''
   const message = cleanMultiline(body?.message, 3000)
 
-  if (!listingId || !name || !phone || !email || !message || !body?.privacy) {
+  if (!listingId || !name || !phone || !email || !message || !body?.privacy || (professional && !company)) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
@@ -129,6 +133,8 @@ export async function POST(request: Request) {
       `Listing URL: ${url}`,
       '',
       `Name: ${name}`,
+      professional ? 'Buyer type: Professional' : 'Buyer type: Private',
+      company ? `Company: ${company}` : '',
       `Email: ${email}`,
       `Phone: ${phone}`,
       offerDisplay ? `Offer: ${offerDisplay}` : '',
@@ -145,6 +151,8 @@ export async function POST(request: Request) {
       location: [listing.city, listing.country_code].filter(Boolean).join(', '),
       listingUrl: url,
       name,
+      company,
+      professional,
       email,
       phone,
       offer: offerDisplay,
@@ -198,6 +206,8 @@ function buildListingContactHtml({
   location,
   listingUrl,
   name,
+  company,
+  professional,
   email,
   phone,
   offer,
@@ -209,6 +219,8 @@ function buildListingContactHtml({
   location: string
   listingUrl: string
   name: string
+  company: string
+  professional: boolean
   email: string
   phone: string
   offer: string
@@ -242,6 +254,8 @@ function buildListingContactHtml({
                 ${location ? `<p style="margin:8px 0 0;color:#667085;font-size:13px;line-height:1.6;">${escapeHtml(location)}</p>` : ''}
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:24px;border:1px solid #dce5f4;border-radius:18px;background:#f8fbff;">
                   ${detailRow('Name', name)}
+                  ${detailRow('Buyer type', professional ? 'Professional' : 'Private')}
+                  ${company ? detailRow('Company', company) : ''}
                   ${detailRow('Email', email)}
                   ${detailRow('Phone', phone)}
                   ${offer ? detailRow('Offer', offer) : ''}
