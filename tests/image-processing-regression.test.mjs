@@ -16,6 +16,7 @@ const businessHomeSource = await readFile('app/components/BusinessMarketplaceHom
 const publicCompanySource = await readFile('lib/public-company-page.tsx', 'utf8')
 const accountListingsSource = await readFile('app/konto/annonser/page.tsx', 'utf8')
 const vehicleSearchExperienceSource = await readFile('app/components/VehicleSearchExperience.tsx', 'utf8')
+const marketplaceDesktopListingRowSource = await readFile('app/components/MarketplaceDesktopListingRow.tsx', 'utf8')
 const nextConfigSource = await readFile('next.config.ts', 'utf8')
 const require = createRequire(import.meta.url)
 
@@ -185,8 +186,9 @@ test('listing card carousel arrows stay white without hover backgrounds', () => 
   assert.doesNotMatch(listingCardCarouselSource, /bg-white\/92 text-\[#101828\] shadow-\[0_8px_22px_rgba\(16,24,40,\.18\)\] backdrop-blur/)
 })
 
-test('marketplace result cards only show seller trust when verified', () => {
-  assert.match(vehicleSearchExperienceSource, /listing\.sellerTrust === 'verified' \? \(/)
+test('marketplace result cards do not flash seller trust from server-only enrichment', () => {
+  assert.doesNotMatch(vehicleSearchExperienceSource, /listing\.sellerTrust === 'verified' \? \(/)
+  assert.doesNotMatch(marketplaceDesktopListingRowSource, /listing\.sellerTrust === 'verified' \? \(/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /Unverified company/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /Overifierat företag/)
   assert.doesNotMatch(vehicleSearchExperienceSource, /sellerTrustClass/)

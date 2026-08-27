@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Camera, ChevronDown, MapPin, Scale, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Camera, ChevronDown, MapPin, Scale } from 'lucide-react'
 import {
   AutorellAgricultureIcon,
   AutorellBikeIcon,
@@ -196,12 +196,6 @@ export default function MarketplaceDesktopListingRow({
           <span className={`inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
             {offerBadge.label}
           </span>
-          {listing.sellerTrust === 'verified' ? (
-            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-[#eef5ff] px-2 text-[10px] font-semibold text-[#0866ff] ring-1 ring-[#c7dbff]">
-              <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-              {copy.verified}
-            </span>
-          ) : null}
           {insuranceLabel ? (
             <span className="min-w-0 truncate text-[10px] font-medium text-[#667085]">{insuranceLabel}</span>
           ) : null}

@@ -5533,7 +5533,6 @@ function VehicleResultCard({
     listing.gearbox,
   ].filter(Boolean)
   const visibleMeta = meta
-  const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
   const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
@@ -5567,11 +5566,6 @@ function VehicleResultCard({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          {listing.sellerTrust === 'verified' ? (
-            <span className="absolute left-2 top-2 rounded-[6px] bg-[#0866ff] px-2 py-1 text-[10px] font-semibold text-white">
-              {sellerTrustLabel}
-            </span>
-          ) : null}
           <div className="pointer-events-auto absolute right-2 top-2 z-30 scale-[.86] origin-top-right">
             <SavedListingButton listingId={listing.id} />
           </div>
@@ -5655,11 +5649,6 @@ function VehicleResultCard({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          {listing.sellerTrust === 'verified' ? (
-            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
-              {sellerTrustLabel}
-            </span>
-          ) : null}
           <div className="pointer-events-auto absolute right-3 top-3 z-30 scale-[.91] origin-top-right">
             <SavedListingButton listingId={listing.id} />
           </div>
@@ -6124,7 +6113,6 @@ function MapListingPreview({
     listing.fuelType,
     listing.gearbox,
   ].filter(Boolean)
-  const sellerTrustLabel = uiText(locale, 'Verified', 'Verifierad', 'Verifiziert')
   const offerBadge = listingOfferBadge(locale, listing)
   const insuranceLabel = listingInsuranceOfferLabel(locale, listing.insuranceOffers, listing.country)
 
@@ -6183,11 +6171,6 @@ function MapListingPreview({
               <AutorellCarIcon className="h-12 w-12" />
             </div>
           )}
-          {listing.sellerTrust === 'verified' ? (
-            <span className="absolute left-3 top-3 rounded-[8px] bg-[#0866ff] px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
-              {sellerTrustLabel}
-            </span>
-          ) : null}
         </div>
         <div className="min-w-0 pb-1 sm:py-1">
           <div className="flex items-start justify-between gap-3">
