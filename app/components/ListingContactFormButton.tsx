@@ -3,8 +3,9 @@
 import { FormEvent, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { Check, Mail, Send, X } from 'lucide-react'
+import { Check, ChevronDown, Mail, Send, X } from 'lucide-react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import CountryFlag from '@/app/components/CountryFlag'
 
 type ListingContactFormButtonProps = {
   listingId: string
@@ -15,6 +16,7 @@ type ListingContactFormButtonProps = {
   buttonClassName?: string
   iconClassName?: string
   presentation?: 'button' | 'inline'
+  defaultPhoneCountry?: string
 }
 
 type ContactCopy = {
@@ -206,6 +208,7 @@ export default function ListingContactFormButton({
   buttonClassName,
   iconClassName,
   presentation = 'button',
+  defaultPhoneCountry,
 }: ListingContactFormButtonProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -254,12 +257,14 @@ export default function ListingContactFormButton({
     const formData = new FormData(form)
     const firstName = String(formData.get('firstName') || '').trim()
     const lastName = String(formData.get('lastName') || '').trim()
+    const rawPhone = String(formData.get('phone') || '').trim()
+    const callingCode = String(formData.get('callingCode') || '').trim()
     const payload = {
       listingId,
       name: [firstName, lastName].filter(Boolean).join(' ') || String(formData.get('name') || ''),
       company: String(formData.get('company') || ''),
       professional: formData.get('professional') === 'on',
-      phone: String(formData.get('phone') || ''),
+      phone: rawPhone.startsWith('+') ? rawPhone : `${callingCode} ${rawPhone}`.trim(),
       email: String(formData.get('email') || ''),
       offer: String(formData.get('offer') || ''),
       offerCurrency: String(formData.get('offerCurrency') || defaultCurrency),
@@ -290,7 +295,7 @@ export default function ListingContactFormButton({
       <div className="overflow-hidden rounded-[14px] border border-[#d7dee9] bg-[#f7f8fa] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
         <div className="border-b border-[#e1e6ee] bg-white px-5 py-4">
           <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#101828]">{text.title}</h2>
-          <label className="mt-3 inline-flex cursor-pointer items-center gap-2.5 text-sm font-normal text-[#344054]">
+          <label style={{ fontWeight: 400 }} className="mt-3 inline-flex cursor-pointer items-center gap-2.5 text-sm font-normal text-[#344054]">
             <input
               name="professional"
               form="listing-inline-contact-form"
@@ -309,7 +314,7 @@ export default function ListingContactFormButton({
             <CompactFormField label={fields.firstName} name="firstName" required />
             <CompactFormField label={fields.lastName} name="lastName" required />
           </div>
-          <CompactFormField label={text.phone} name="phone" type="tel" required />
+          <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} />
           <CompactFormField label={text.email} name="email" type="email" required />
           <CompactOfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
           <label>
@@ -356,16 +361,16 @@ export default function ListingContactFormButton({
             if (event.target === event.currentTarget) setOpen(false)
           }}
         >
-          <div ref={panelRef} className="relative grid max-h-[calc(100svh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] w-full max-w-[620px] overflow-y-auto overscroll-contain rounded-[18px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[22px]">
-            <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] bg-white px-5 py-4 sm:px-6 sm:py-5">
+          <div ref={panelRef} className="relative grid max-h-[calc(100svh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] w-full max-w-[540px] overflow-y-auto overscroll-contain rounded-[16px] border border-[#dfe6f2] bg-white shadow-[0_24px_70px_rgba(16,24,40,.22)] sm:max-h-[calc(100dvh-3rem)]">
+            <div className="flex items-start justify-between gap-4 border-b border-[#edf1f6] bg-white px-5 py-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0866ff]">
+                <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-[#0866ff]">
                   {listingTitle}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#101828]">
+                <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[#101828]">
                   {text.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">{text.intro}</p>
+                <p className="mt-1.5 text-[13px] font-normal leading-5 text-[#667085]">{text.intro}</p>
               </div>
               <button
                 type="button"
@@ -377,24 +382,33 @@ export default function ListingContactFormButton({
               </button>
             </div>
 
-            <form ref={formRef} onSubmit={submit} className="grid gap-4 px-5 py-5 sm:px-6">
-              <div className="grid gap-4 sm:grid-cols-2 sm:[&>label]:min-w-0">
-                <FormField label={text.name} name="name" required />
-                <FormField label={text.phone} name="phone" type="tel" required />
+            <form ref={formRef} onSubmit={submit} className="grid gap-3 px-5 py-4">
+              <label style={{ fontWeight: 400 }} className="inline-flex cursor-pointer items-center gap-2.5 text-[13px] font-normal text-[#344054]">
+                <input name="professional" type="checkbox" checked={isProfessional} onChange={(event) => setIsProfessional(event.target.checked)} className="peer sr-only" />
+                <span className="relative h-5 w-9 rounded-full bg-[#cfd6e1] transition peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 peer-checked:bg-[#0866ff] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:after:translate-x-4" />
+                {getContactFieldCopy(locale).professional}
+              </label>
+              {isProfessional ? <CompactFormField label={getContactFieldCopy(locale).company} name="company" required /> : null}
+              <div className="grid grid-cols-2 gap-3">
+                <CompactFormField label={getContactFieldCopy(locale).firstName} name="firstName" required />
+                <CompactFormField label={getContactFieldCopy(locale).lastName} name="lastName" required />
               </div>
-              <FormField label={text.email} name="email" type="email" required />
-              <OfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
-              <label className="grid gap-2 text-sm font-semibold text-[#101828]">
-                {text.message}
+              <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} />
+              <CompactFormField label={text.email} name="email" type="email" required />
+              <CompactOfferField label={text.offer} currency={normalizeCurrency(defaultCurrency)} />
+              <label>
+                <span className="sr-only">{text.message}</span>
                 <textarea
                   name="message"
                   required
                   maxLength={3000}
-                  rows={5}
-                  className="autorell-contact-placeholder min-h-[132px] w-full min-w-0 resize-y rounded-[14px] border border-[#cfd8e6] bg-white px-4 py-3 text-base font-medium leading-7 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
+                  rows={4}
+                  defaultValue={getDefaultMessage(locale, listingTitle)}
+                  placeholder={text.message}
+                  className="min-h-[108px] w-full min-w-0 resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                 />
               </label>
-              <label className="group flex cursor-pointer items-start gap-3 rounded-[14px] bg-[#f8fbff] px-4 py-3 text-sm font-medium leading-6 text-[#475467] transition hover:bg-[#f3f8ff]">
+              <label className="group flex cursor-pointer items-start gap-2.5 rounded-[10px] bg-[#f8fbff] px-3 py-2.5 text-xs font-normal leading-5 text-[#475467] transition hover:bg-[#f3f8ff]">
                 <input
                   name="privacy"
                   type="checkbox"
@@ -430,7 +444,7 @@ export default function ListingContactFormButton({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-[#0866ff] px-5 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
+                className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]"
               >
                 <Send className="h-4 w-4" />
                 {loading ? text.sending : text.submit}
@@ -446,6 +460,7 @@ export default function ListingContactFormButton({
     <>
       <button
         type="button"
+        style={{ fontWeight: 400 }}
         onClick={() => {
           setOpen(true)
           setStatus('idle')
@@ -536,6 +551,29 @@ const currencyOptions = [
   'USD',
 ] as const
 
+const phoneCountries = [
+  { code: 'SE', callingCode: '+46' },
+  { code: 'DE', callingCode: '+49' },
+  { code: 'AT', callingCode: '+43' },
+  { code: 'FI', callingCode: '+358' },
+  { code: 'DK', callingCode: '+45' },
+  { code: 'PL', callingCode: '+48' },
+  { code: 'NL', callingCode: '+31' },
+  { code: 'BE', callingCode: '+32' },
+  { code: 'FR', callingCode: '+33' },
+  { code: 'ES', callingCode: '+34' },
+  { code: 'IT', callingCode: '+39' },
+  { code: 'GB', callingCode: '+44' },
+  { code: 'IE', callingCode: '+353' },
+  { code: 'NO', callingCode: '+47' },
+  { code: 'CH', callingCode: '+41' },
+  { code: 'PT', callingCode: '+351' },
+] as const
+
+const localePhoneCountry: Partial<Record<PublicLocale, string>> = {
+  sv: 'SE', de: 'DE', at: 'AT', fi: 'FI', da: 'DK', pl: 'PL', nl: 'NL', be: 'BE', fr: 'FR', es: 'ES', it: 'IT', en: 'GB',
+}
+
 function normalizeCurrency(value?: string) {
   const normalized = (value || '').toUpperCase()
   return currencyOptions.includes(normalized as (typeof currencyOptions)[number])
@@ -543,30 +581,65 @@ function normalizeCurrency(value?: string) {
     : 'EUR'
 }
 
-function OfferField({ label, currency }: { label: string; currency: string }) {
+function PhoneField({ label, locale, defaultCountry }: { label: string; locale: PublicLocale; defaultCountry?: string }) {
+  const normalizedCountry = (defaultCountry || '').trim().toUpperCase()
+  const initialCountry = phoneCountries.some((country) => country.code === normalizedCountry)
+    ? normalizedCountry
+    : localePhoneCountry[locale] || 'GB'
+  const [selectedCountry, setSelectedCountry] = useState(initialCountry)
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false)
+  const selected = phoneCountries.find((country) => country.code === selectedCountry) || phoneCountries[11]
+
   return (
-    <label className="grid min-w-0 gap-2 text-sm font-semibold text-[#101828]">
-      {label}
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_104px] overflow-hidden rounded-[14px] border border-[#cfd8e6] bg-white transition focus-within:border-[#0866ff] focus-within:ring-4 focus-within:ring-[#0866ff]/10 sm:grid-cols-[minmax(0,1fr)_118px]">
-        <input
-          name="offer"
-          inputMode="decimal"
-          className="autorell-contact-placeholder h-12 min-w-0 border-0 bg-white px-4 text-base font-medium text-[#101828] outline-none"
-        />
-        <select
-          name="offerCurrency"
-          defaultValue={currency}
-          aria-label="Currency"
-          className="h-12 min-w-0 cursor-pointer border-0 border-l border-[#dfe6f2] bg-[#f8fbff] px-3 text-sm font-semibold text-[#101828] outline-none"
+    <div>
+      <span className="sr-only">{label}</span>
+      <div className="relative grid grid-cols-[112px_minmax(0,1fr)] rounded-[8px] border border-[#c7d0dd] bg-white transition focus-within:border-[#0866ff] focus-within:ring-3 focus-within:ring-[#0866ff]/10">
+        <input type="hidden" name="callingCode" value={selected.callingCode} />
+        <button
+          type="button"
+          style={{ fontWeight: 400 }}
+          onClick={() => setCountryMenuOpen((value) => !value)}
+          aria-label={`${label} country code`}
+          aria-haspopup="listbox"
+          aria-expanded={countryMenuOpen}
+          className="flex h-11 items-center gap-2 border-r border-[#dfe6f2] bg-[#f8fafc] px-2.5 text-[13px] font-normal text-[#344054] outline-none"
         >
-          {currencyOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          <CountryFlag code={selected.code} className="h-3.5 w-5 shrink-0 rounded-[2px]" />
+          <span>{selected.callingCode}</span>
+          <ChevronDown className="ml-auto h-3.5 w-3.5" />
+        </button>
+        {countryMenuOpen ? (
+          <div role="listbox" aria-label={`${label} country code`} className="absolute left-0 top-[calc(100%+5px)] z-20 grid max-h-56 w-48 overflow-y-auto rounded-[9px] border border-[#d7dee9] bg-white p-1.5 shadow-[0_14px_35px_rgba(16,24,40,.16)]">
+            {phoneCountries.map((country) => (
+              <button
+                key={country.code}
+                type="button"
+                style={{ fontWeight: 400 }}
+                role="option"
+                aria-selected={country.code === selected.code}
+                onClick={() => {
+                  setSelectedCountry(country.code)
+                  setCountryMenuOpen(false)
+                }}
+                className="flex min-h-9 items-center gap-2 rounded-[6px] px-2 text-left text-[13px] font-normal text-[#344054] hover:bg-[#f2f6fc]"
+              >
+                <CountryFlag code={country.code} className="h-3.5 w-5 shrink-0 rounded-[2px]" />
+                <span className="w-7">{country.code}</span>
+                <span className="text-[#667085]">{country.callingCode}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <input
+          name="phone"
+          type="tel"
+          autoComplete="tel-national"
+          required
+          placeholder={`${label}*`}
+          className="h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+        />
       </div>
-    </label>
+    </div>
   )
 }
 
@@ -603,33 +676,6 @@ function CompactFormField({ label, name, type = 'text', required = false }: { la
         required={required}
         placeholder={`${label}${required ? '*' : ''}`}
         className="h-11 w-full min-w-0 rounded-[8px] border border-[#c7d0dd] bg-white px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
-      />
-    </label>
-  )
-}
-
-function FormField({
-  label,
-  name,
-  type = 'text',
-  placeholder,
-  required = false,
-}: {
-  label: string
-  name: string
-  type?: string
-  placeholder?: string
-  required?: boolean
-}) {
-  return (
-    <label className="grid min-w-0 gap-2 text-sm font-semibold text-[#101828]">
-      {label}
-      <input
-        name={name}
-        type={type}
-        required={required}
-        placeholder={placeholder}
-        className="autorell-contact-placeholder h-12 w-full min-w-0 rounded-[14px] border border-[#cfd8e6] bg-white px-4 text-base font-medium text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10"
       />
     </label>
   )

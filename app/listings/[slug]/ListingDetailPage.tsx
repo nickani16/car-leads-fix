@@ -448,11 +448,16 @@ export default async function ListingDetailPage({
     ? listing.image_variants.map((image) => image.fullscreenUrl || image.listingUrl)
     : galleryImages
   const insightsAdmin = createAdminClient()
-  const [marketInsight, listingHistory, similarListings] = await Promise.all([
+  const [marketInsight, listingHistory, similarListings, favoriteCountResult] = await Promise.all([
     getListingMarketInsights(insightsAdmin, listing as InsightListingRow),
     getListingHistory(insightsAdmin, listing as InsightListingRow),
     getSimilarListings(insightsAdmin, listing as InsightListingRow, 4),
+    insightsAdmin
+      .from('marketplace_saved_listings')
+      .select('listing_id', { count: 'exact', head: true })
+      .eq('listing_id', listing.id),
   ])
+  const favoriteCount = favoriteCountResult.error ? 0 : favoriteCountResult.count || 0
 
   return (
     <ViewTransition enter="autorell-listing-enter" exit="autorell-listing-exit" default="none">
@@ -496,6 +501,8 @@ export default async function ListingDetailPage({
                 removeLabel={copy.favoriteRemove}
                 variant="plain"
                 iconClassName="h-4 w-4"
+                initialCount={favoriteCount}
+                showCount
               />
             </div>
           </div>
@@ -504,10 +511,18 @@ export default async function ListingDetailPage({
         <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
           <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start xl:grid-cols-[minmax(0,1fr)_370px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
-            <ListingQuickFactsRail
-              facts={quickFacts}
-              requestLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
-            />
+            <ListingQuickFactsRail facts={quickFacts}>
+              <ListingContactFormButton
+                listingId={listing.id}
+                listingTitle={listing.title}
+                locale={locale}
+                defaultCurrency={displayCurrency}
+                defaultPhoneCountry={listing.country_code || marketCode}
+                buttonLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
+                buttonClassName="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#aebbcf] bg-white px-3.5 text-[13px] font-normal text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                iconClassName="h-3.5 w-3.5 text-[#0866ff]"
+              />
+            </ListingQuickFactsRail>
             <ListingImageGallery
               images={galleryImages}
               fullscreenImages={fullscreenImages}
@@ -688,6 +703,7 @@ export default async function ListingDetailPage({
                       listingTitle={listing.title}
                       locale={locale}
                       defaultCurrency={displayCurrency}
+                      defaultPhoneCountry={listing.country_code || marketCode}
                     />
                   </>
                 )}
@@ -923,6 +939,7 @@ export default async function ListingDetailPage({
                     listingTitle={listing.title}
                     locale={locale}
                     defaultCurrency={displayCurrency}
+                    defaultPhoneCountry={listing.country_code || marketCode}
                     presentation="inline"
                   />
                 ) : null}

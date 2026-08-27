@@ -19,7 +19,8 @@ test('listing breadcrumbs are visible, data-driven and link category, make and m
 
 test('desktop listing has a request-information rail and a non-scrollable sticky contact form', () => {
   assert.match(detail, /<ListingQuickFactsRail/)
-  assert.match(factsRail, /href="#listing-contact-card-desktop"/)
+  assert.match(factsRail, /children: ReactNode/)
+  assert.match(detail, /<ListingQuickFactsRail facts=\{quickFacts\}>[\s\S]*<ListingContactFormButton/)
   assert.match(factsRail, /scrollBy\(\{ left: direction \* 320/)
   assert.match(detail, /lg:sticky lg:top-\[82px\]/)
   assert.doesNotMatch(detail, /listing-contact-card-desktop[^\n]+overflow-y-auto/)
@@ -32,6 +33,10 @@ test('contact form distinguishes professional and private buyers with calm place
   assert.match(contact, /name="firstName"/)
   assert.match(contact, /name="lastName"/)
   assert.match(contact, /placeholder:font-normal placeholder:text-\[#98a2b3\]/)
+  assert.match(contact, /name="callingCode"/)
+  assert.match(contact, /<CountryFlag code=\{selected\.code\}/)
+  assert.match(contact, /style=\{\{ fontWeight: 400 \}\}/)
+  assert.match(detail, /initialCount=\{favoriteCount\}/)
   assert.match(contactApi, /Buyer type: Professional/)
   assert.match(contactApi, /Company: \$\{company\}/)
 })

@@ -15,6 +15,7 @@ const flagBackgrounds: Record<string, string> = {
   es: 'linear-gradient(#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75%)',
   fi: 'linear-gradient(90deg,transparent 0 30%,#003580 30% 43%,transparent 43%),linear-gradient(transparent 0 40%,#003580 40% 58%,transparent 58%),#fff',
   fr: 'linear-gradient(90deg,#0055a4 0 33.33%,#fff 33.33% 66.66%,#ef4135 66.66%)',
+  gb: 'linear-gradient(90deg,transparent 0 43%,#fff 43% 57%,transparent 57%),linear-gradient(transparent 0 38%,#fff 38% 62%,transparent 62%),linear-gradient(90deg,transparent 0 47%,#c8102e 47% 53%,transparent 53%),linear-gradient(transparent 0 44%,#c8102e 44% 56%,transparent 56%),#21468b',
   gr: 'repeating-linear-gradient(#0d5eaf 0 11.11%,#fff 11.11% 22.22%)',
   hr: 'linear-gradient(#ff0000 0 33.33%,#fff 33.33% 66.66%,#171796 66.66%)',
   hu: 'linear-gradient(#ce2939 0 33.33%,#fff 33.33% 66.66%,#477050 66.66%)',
@@ -25,12 +26,14 @@ const flagBackgrounds: Record<string, string> = {
   lv: 'linear-gradient(#9e3039 0 40%,#fff 40% 60%,#9e3039 60%)',
   mt: 'linear-gradient(90deg,#fff 0 50%,#cf142b 50%)',
   nl: 'linear-gradient(#ae1c28 0 33.33%,#fff 33.33% 66.66%,#21468b 66.66%)',
+  no: 'linear-gradient(90deg,transparent 0 28%,#fff 28% 42%,transparent 42%),linear-gradient(transparent 0 39%,#fff 39% 61%,transparent 61%),linear-gradient(90deg,transparent 0 32%,#00205b 32% 38%,transparent 38%),linear-gradient(transparent 0 45%,#00205b 45% 55%,transparent 55%),#ba0c2f',
   pl: 'linear-gradient(#fff 0 50%,#dc143c 50%)',
   pt: 'linear-gradient(90deg,#046a38 0 40%,#da291c 40%)',
   ro: 'linear-gradient(90deg,#002b7f 0 33.33%,#fcd116 33.33% 66.66%,#ce1126 66.66%)',
   se: 'linear-gradient(90deg,transparent 0 30%,#fecb00 30% 42%,transparent 42%),linear-gradient(transparent 0 42%,#fecb00 42% 58%,transparent 58%),#006aa7',
   si: 'linear-gradient(#fff 0 33.33%,#005da4 33.33% 66.66%,#ed1c24 66.66%)',
   sk: 'linear-gradient(#fff 0 33.33%,#0b4ea2 33.33% 66.66%,#ee1c25 66.66%)',
+  ch: 'linear-gradient(90deg,transparent 0 42%,#fff 42% 58%,transparent 58%),linear-gradient(transparent 0 35%,#fff 35% 65%,transparent 65%),#d52b1e',
 }
 
 const flagCodeAliases: Record<string, string> = {

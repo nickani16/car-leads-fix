@@ -21,6 +21,8 @@ export default function SavedListingButton({
   className: extraClassName = '',
   labelClassName = '',
   iconClassName = '',
+  initialCount = 0,
+  showCount = false,
 }: {
   listingId: string
   label?: string
@@ -30,10 +32,13 @@ export default function SavedListingButton({
   className?: string
   labelClassName?: string
   iconClassName?: string
+  initialCount?: number
+  showCount?: boolean
 }) {
   const [saved, setSaved] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [count, setCount] = useState(Math.max(0, initialCount))
 
   useEffect(() => {
     const sync = () => setSaved(readSavedListingIds().includes(listingId))
@@ -80,6 +85,8 @@ export default function SavedListingButton({
           if (!toggleResult.authenticated) {
             setAuthenticated(false)
             setSaved(false)
+          } else {
+            setCount((value) => Math.max(0, value + (nextSaved ? 1 : -1)))
           }
           return
         }
@@ -97,6 +104,7 @@ export default function SavedListingButton({
     const nextSaved = !saved
     setBusy(true)
     setSaved(nextSaved)
+    setCount((value) => Math.max(0, value + (nextSaved ? 1 : -1)))
     try {
       const result = nextSaved
         ? await saveListingId(listingId)
@@ -104,6 +112,7 @@ export default function SavedListingButton({
       if (!result.authenticated) {
         setAuthenticated(false)
         setSaved(false)
+        setCount((value) => Math.max(0, value + (nextSaved ? -1 : 1)))
         window.dispatchEvent(
           new CustomEvent('autorell:open-auth', {
             detail: { mode: 'login', destination: '/saved' },
@@ -112,6 +121,7 @@ export default function SavedListingButton({
       }
     } catch {
       setSaved(!nextSaved)
+      setCount((value) => Math.max(0, value + (nextSaved ? -1 : 1)))
     } finally {
       setBusy(false)
     }
@@ -132,8 +142,9 @@ export default function SavedListingButton({
           busy ? 'opacity-70' : ''
         } ${extraClassName}`.trim()}
       >
+        {showCount && count > 0 ? <span className="tabular-nums">{count.toLocaleString()}</span> : null}
         <Heart className={`${iconClassName || 'h-4 w-4'} ${saved ? 'fill-current' : ''}`} />
-        <span className={labelClassName}>{saved ? savedLabel : label}</span>
+        {!showCount || count === 0 ? <span className={labelClassName}>{saved ? savedLabel : label}</span> : null}
       </button>
     )
   }
