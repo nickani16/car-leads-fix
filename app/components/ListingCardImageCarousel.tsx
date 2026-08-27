@@ -122,7 +122,7 @@ export default function ListingCardImageCarousel({
             }
             onNavigate?.()
           }}
-          className="absolute inset-0 z-0 block"
+          className="absolute inset-0 z-10 block"
         >
           {imageContent}
         </Link>

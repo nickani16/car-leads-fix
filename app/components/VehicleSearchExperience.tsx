@@ -5546,8 +5546,15 @@ function VehicleResultCard({
     const sellerDetail = listing.sellerIsTrader ? listing.sellerName.trim() : ''
 
     return (
-      <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d7dee8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.10)]">
-        <div className="relative aspect-[4/3] overflow-hidden bg-[#eef3f8]">
+      <article className="group relative flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-[8px] border border-[#d7dee8] bg-white shadow-[0_1px_3px_rgba(16,24,40,.10)]">
+        <Link
+          href={href}
+          prefetch
+          onClick={onBeforeNavigate}
+          aria-label={`${uiText(locale, 'View listing', 'Visa annons', 'Anzeige ansehen')}: ${listing.title}`}
+          className="absolute inset-0 z-10"
+        />
+        <div className="pointer-events-none relative z-20 aspect-[4/3] overflow-hidden bg-[#eef3f8]">
           {listing.imageUrls.length ? (
             <ListingCardImageCarousel
               images={listing.imageUrls}
@@ -5585,15 +5592,13 @@ function VehicleResultCard({
           </button>
         </div>
 
-        <div className="flex min-h-[190px] flex-1 flex-col px-3 py-3 sm:min-h-[205px] sm:px-3.5">
+        <div className="pointer-events-none relative z-20 flex min-h-[190px] flex-1 flex-col px-3 py-3 sm:min-h-[205px] sm:px-3.5">
           <span className={`mb-1.5 inline-flex w-max max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ring-1 ${offerBadge.className}`}>
             {offerBadge.label}
           </span>
-          <Link href={href} prefetch onClick={onBeforeNavigate} className="block">
-            <h2 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
-              {headline}
-            </h2>
-          </Link>
+          <h2 className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#050b18] transition group-hover:text-[#0866ff] sm:text-[17px] sm:leading-6">
+            {headline}
+          </h2>
           {versionLabel ? (
             <p className="mt-1 line-clamp-1 text-[13px] font-normal leading-5 text-[#101828] sm:text-[14px]">
               {versionLabel}
@@ -5630,7 +5635,12 @@ function VehicleResultCard({
 
   return (
     <article className="group relative mx-0 overflow-hidden border-b border-[#e5ebf3] bg-white px-4 py-5 transition hover:bg-[#fbfdff] sm:mx-6 sm:px-0">
-      <Link href={href} onClick={onBeforeNavigate} aria-label={`Visa annons: ${listing.title}`} className="absolute inset-0 z-10" />
+      <Link
+        href={href}
+        onClick={onBeforeNavigate}
+        aria-label={`${uiText(locale, 'View listing', 'Visa annons', 'Anzeige ansehen')}: ${listing.title}`}
+        className="absolute inset-0 z-10"
+      />
       <div className="pointer-events-none relative z-20 grid gap-4 sm:grid-cols-[260px_minmax(0,1fr)] sm:items-start">
         <div className="relative h-[246px] overflow-hidden rounded-[8px] bg-[#eef3f8] sm:h-[174px]">
           {listing.imageUrls.length ? (
@@ -5810,7 +5820,6 @@ function VehicleSearchMap({
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
   const mapLayerRef = useRef<AutorellMapLayer>(mapLayer)
-  mapLayerRef.current = mapLayer
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
   const [selectedListingGroup, setSelectedListingGroup] = useState<VehicleSearchListing[]>([])
   const [selectedListingIndex, setSelectedListingIndex] = useState(0)
@@ -5867,6 +5876,7 @@ function VehicleSearchMap({
   }, [country])
 
   useEffect(() => {
+    mapLayerRef.current = mapLayer
     const map = mapRef.current
     if (!map) return
     map.setStyle(getMapStyle(mapLayer))

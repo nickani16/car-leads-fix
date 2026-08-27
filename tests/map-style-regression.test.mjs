@@ -28,5 +28,7 @@ test('standard map loading no longer requests legacy CARTO raster tiles', () => 
 
 test('satellite fallback remains available', () => {
   assert.match(mapStyleSource, /World_Imagery\/MapServer\/tile/)
+  assert.match(mapStyleSource, /World_Transportation\/MapServer\/tile/)
+  assert.match(mapStyleSource, /World_Boundaries_and_Places\/MapServer\/tile/)
   assert.match(mapStyleSource, /NEXT_PUBLIC_SATELLITE_MAP_STYLE_URL/)
 })
