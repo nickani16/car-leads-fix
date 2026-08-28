@@ -663,7 +663,7 @@ export default async function ListingDetailPage({
                   buttonFontWeight={600}
                   buttonClassName="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
                 />
-                <RevealPhoneButton listingId={listing.id} locale={locale} />
+                <RevealPhoneButton listingId={listing.id} locale={locale} size="large" />
               </section>
             ) : null}
 
