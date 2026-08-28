@@ -28,7 +28,12 @@ test('desktop listing has a compact request-information rail and a non-sticky co
   assert.match(factsRail, /<FactIcon aria-hidden="true"/)
   assert.match(factsRail, /text-\[13px\]/)
   assert.match(factsRail, /h-8 w-8[^\"]*rounded-full/)
+  assert.match(factsRail, /canScrollLeft \? \(/)
+  assert.match(factsRail, /canScrollRight \? \(/)
+  assert.match(factsRail, /rail\.scrollLeft > 1/)
+  assert.match(factsRail, /rail\.scrollLeft < maximumScrollLeft - 1/)
   assert.match(detail, /buttonFontWeight=\{600\}/)
+  assert.doesNotMatch(detail, /<ShareListingButton(?:(?!\/>)[\s\S])*variant="plain"/)
   assert.doesNotMatch(detail, /order-4 grid gap-3 self-start lg:sticky/)
   assert.doesNotMatch(detail, /listing-contact-card-desktop[^\n]+overflow-y-auto/)
 })
@@ -51,6 +56,7 @@ test('contact form distinguishes professional and private buyers with calm place
   assert.match(detail, /variant="icon"/)
   assert.match(contactApi, /Buyer type: Professional/)
   assert.match(contactApi, /Company: \$\{company\}/)
+  assert.match(contact, /compact \? 'h-10 text-\[13px\]'/)
 })
 
 test('listing detail has an accessible localized back-to-top action', () => {

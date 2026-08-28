@@ -489,7 +489,7 @@ export default async function ListingDetailPage({
           contactLabel={localizedLabel(locale, 'Kontakta säljaren', 'Contact the seller', 'Verkäufer kontaktieren')}
         />
       ) : null}
-      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1260px] sm:px-8 sm:py-3 lg:py-4">
+      <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1180px] sm:px-8 sm:py-3 lg:py-4 2xl:max-w-[1260px]">
         <ListingBreadcrumbs items={breadcrumbItems} currentLabel={listing.title} ariaLabel={copy.breadcrumbLabel} />
         <div className="mt-4 hidden items-center justify-between gap-3 sm:flex">
           <ListingBackButton href={fallbackBackHref} label={copy.backToListings} className="shrink-0 whitespace-nowrap" />
@@ -519,7 +519,7 @@ export default async function ListingDetailPage({
         </div>
 
         <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
-          <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start xl:grid-cols-[minmax(0,1fr)_370px]">
+          <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_350px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
             <ListingQuickFactsRail facts={quickFacts}>
               <ListingContactFormButton
@@ -716,15 +716,6 @@ export default async function ListingDetailPage({
                     />
                   </>
                 )}
-                <div className="flex justify-start pt-0.5">
-                  <ShareListingButton
-                    title={listing.title}
-                    url={publicUrl}
-                    label={copy.shareListing}
-                    copiedLabel={copy.shareCopied}
-                    variant="plain"
-                  />
-                </div>
               </div>
 
               <Link
@@ -874,7 +865,7 @@ export default async function ListingDetailPage({
 
               <section className="hidden h-full scroll-mt-24 w-[calc(100vw-2rem)] sm:w-auto lg:block lg:self-stretch">
             <div id="listing-contact-card-desktop" className="grid h-full content-start gap-3">
-              <div className="order-3 rounded-[14px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-5">
+              <div className="order-3 rounded-[12px] border border-[#dfe6f2] bg-white p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#667085] sm:text-xs">
                   {copy.priceLabel}
                 </p>
@@ -889,13 +880,13 @@ export default async function ListingDetailPage({
                     </span>
                   </div>
                 ) : null}
-                <div className="mt-1 text-3xl font-semibold tracking-[-0.035em] sm:text-[34px]">
+                <div className="mt-0.5 text-[24px] font-semibold tracking-[-0.03em]">
                   {price.original}
                 </div>
                 {price.approximate ? (
-                  <p className="mt-1.5 text-sm font-medium text-[#667085]">{price.approximate}</p>
+                  <p className="mt-1 text-xs font-medium text-[#667085]">{price.approximate}</p>
                 ) : null}
-                <p className="mt-1.5 text-xs font-medium leading-4 text-[#667085]">
+                <p className="mt-1 text-[11px] font-medium leading-4 text-[#667085]">
                   {copy.vatInfo}
                 </p>
 
@@ -908,7 +899,7 @@ export default async function ListingDetailPage({
               ) : null}
               </div>
 
-              <div className="order-2 -mt-3 grid gap-2.5 rounded-b-[18px] border border-t-0 border-[#dfe6f2] bg-white p-4 pt-1 sm:p-5 sm:pt-1">
+              <div className="order-2 -mt-3 grid gap-2 rounded-b-[14px] border border-t-0 border-[#dfe6f2] bg-white p-3.5 pt-1">
                 {isListingOwner ? (
                   <Link
                     href={localizePublicHref(locale, `/account/listings/${listing.id}/edit`)}
@@ -930,15 +921,6 @@ export default async function ListingDetailPage({
                     <MessageSellerButton listingId={listing.id} enabled locale={locale} variant="button" />
                   </>
                 )}
-                <div className="flex justify-start pt-0.5">
-                  <ShareListingButton
-                    title={listing.title}
-                    url={publicUrl}
-                    label={copy.shareListing}
-                    copiedLabel={copy.shareCopied}
-                    variant="plain"
-                  />
-                </div>
               </div>
 
               <div className="order-4 grid gap-3 self-start">
@@ -961,7 +943,7 @@ export default async function ListingDetailPage({
                 </Link>
               </div>
 
-              <div className="order-1 rounded-t-[18px] border border-[#dfe6f2] bg-white p-4 pb-3 sm:p-5 sm:pb-3">
+              <div className="order-1 rounded-t-[14px] border border-[#dfe6f2] bg-white p-3.5 pb-2.5">
                 {listing.seller_type === 'private' ? (
                   <PrivateSellerProfileCard
                     name={sellerDisplayLabel}
@@ -1834,10 +1816,10 @@ function PrivateSellerProfileCard({
     : copy.privateSellerFallback
 
   return (
-    <div className="flex items-start gap-3 py-4">
-      <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-full border border-[#c7d3e2] bg-[#edf3f9]">
-        <div className="absolute left-1/2 top-[12px] h-[28px] w-[28px] -translate-x-1/2 rounded-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
-        <div className="absolute left-1/2 top-[44px] h-[42px] w-[54px] -translate-x-1/2 rounded-t-full border-[3px] border-[#b9c6d4] bg-[#f8fbff]" />
+    <div className="flex items-start gap-3 py-3">
+      <div className="relative h-[58px] w-[58px] shrink-0 overflow-hidden rounded-full border border-[#b8c1cc] bg-[#dfe3e8]">
+        <div className="absolute left-1/2 top-[11px] h-[25px] w-[25px] -translate-x-1/2 rounded-full border-[3px] border-[#8f9aa8] bg-[#e9edf1]" />
+        <div className="absolute left-1/2 top-[39px] h-[38px] w-[49px] -translate-x-1/2 rounded-t-full border-[3px] border-[#8f9aa8] bg-[#e9edf1]" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">

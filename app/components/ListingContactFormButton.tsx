@@ -282,10 +282,10 @@ export default function ListingContactFormButton({
   if (presentation === 'inline') {
     const fields = getContactFieldCopy(locale)
     return (
-      <div className="overflow-hidden rounded-[14px] border border-[#d7dee9] bg-[#f7f8fa] shadow-[0_10px_30px_rgba(16,24,40,.06)]">
-        <div className="border-b border-[#e1e6ee] bg-white px-5 py-4">
-          <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#101828]">{text.title}</h2>
-          <label style={{ fontWeight: 400 }} className="mt-3 inline-flex cursor-pointer items-center gap-2.5 text-sm font-normal text-[#344054]">
+      <div className="overflow-hidden rounded-[12px] border border-[#d7dee9] bg-[#f4f5f7]">
+        <div className="border-b border-[#e1e6ee] bg-white px-3.5 py-3">
+          <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-[#101828]">{text.title}</h2>
+          <label style={{ fontWeight: 400 }} className="mt-2 inline-flex cursor-pointer items-center gap-2 text-[13px] font-normal text-[#344054]">
             <input
               name="professional"
               form="listing-inline-contact-form"
@@ -298,14 +298,14 @@ export default function ListingContactFormButton({
             {fields.professional}
           </label>
         </div>
-        <form id="listing-inline-contact-form" onSubmit={submit} className="grid gap-3 p-4">
-          {isProfessional ? <CompactFormField label={fields.company} name="company" required /> : null}
-          <div className="grid grid-cols-2 gap-3">
-            <CompactFormField label={fields.firstName} name="firstName" required />
-            <CompactFormField label={fields.lastName} name="lastName" required />
+        <form id="listing-inline-contact-form" onSubmit={submit} className="grid gap-2.5 p-3.5">
+          {isProfessional ? <CompactFormField label={fields.company} name="company" required compact /> : null}
+          <div className="grid grid-cols-2 gap-2.5">
+            <CompactFormField label={fields.firstName} name="firstName" required compact />
+            <CompactFormField label={fields.lastName} name="lastName" required compact />
           </div>
-          <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} />
-          <CompactFormField label={text.email} name="email" type="email" required />
+          <PhoneField label={text.phone} locale={locale} defaultCountry={defaultPhoneCountry} compact />
+          <CompactFormField label={text.email} name="email" type="email" required compact />
           <label>
             <span className="sr-only">{text.message}</span>
             <textarea
@@ -315,10 +315,10 @@ export default function ListingContactFormButton({
               rows={4}
               defaultValue={getDefaultMessage(locale, listingTitle)}
               placeholder={text.message}
-              className="autorell-contact-placeholder min-h-[112px] w-full resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              className="autorell-contact-placeholder min-h-[96px] w-full resize-y rounded-[7px] border border-[#c7d0dd] bg-white px-2.5 py-2 text-[13px] font-normal leading-5 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
             />
           </label>
-          <label className="group flex cursor-pointer items-start gap-2.5 rounded-[12px] bg-white px-3 py-2.5 text-xs font-medium leading-5 text-[#475467]">
+          <label className="group flex cursor-pointer items-start gap-2 rounded-[9px] bg-white px-2.5 py-2 text-[11px] font-medium leading-4 text-[#475467]">
             <input name="privacy" type="checkbox" required className="peer sr-only" />
             <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-[6px] border border-[#b8c4d4] bg-white text-white transition peer-focus-visible:ring-4 peer-focus-visible:ring-[#0866ff]/15 peer-checked:border-[#0866ff] peer-checked:bg-[#0866ff] peer-checked:[&>svg]:opacity-100">
               <Check className="h-3.5 w-3.5 opacity-0 transition" strokeWidth={3} />
@@ -332,7 +332,7 @@ export default function ListingContactFormButton({
           </label>
           {status === 'success' ? <p className="rounded-[10px] bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700">{text.success}</p> : null}
           {status === 'error' ? <p className="rounded-[10px] bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700">{text.error}</p> : null}
-          <button type="submit" disabled={loading} className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]">
+          <button type="submit" disabled={loading} className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-[#0866ff] px-3.5 text-[13px] font-semibold text-white transition hover:bg-[#0057e6] disabled:cursor-not-allowed disabled:bg-[#c7d7f5]">
             <Send className="h-4 w-4" />
             {loading ? text.sending : text.submit}
           </button>
@@ -549,7 +549,7 @@ const localePhoneCountry: Partial<Record<PublicLocale, string>> = {
   sv: 'SE', de: 'DE', at: 'AT', fi: 'FI', da: 'DK', pl: 'PL', nl: 'NL', be: 'BE', fr: 'FR', es: 'ES', it: 'IT', en: 'GB',
 }
 
-function PhoneField({ label, locale, defaultCountry }: { label: string; locale: PublicLocale; defaultCountry?: string }) {
+function PhoneField({ label, locale, defaultCountry, compact = false }: { label: string; locale: PublicLocale; defaultCountry?: string; compact?: boolean }) {
   const normalizedCountry = (defaultCountry || '').trim().toUpperCase()
   const initialCountry = phoneCountries.some((country) => country.code === normalizedCountry)
     ? normalizedCountry
@@ -570,7 +570,7 @@ function PhoneField({ label, locale, defaultCountry }: { label: string; locale: 
           aria-label={`${label} country code`}
           aria-haspopup="listbox"
           aria-expanded={countryMenuOpen}
-          className="flex h-11 items-center gap-2 border-r border-[#dfe6f2] bg-[#f8fafc] px-2.5 text-[13px] font-normal text-[#344054] outline-none"
+          className={`flex items-center gap-2 border-r border-[#dfe6f2] bg-[#f8fafc] px-2.5 text-[13px] font-normal text-[#344054] outline-none ${compact ? 'h-10' : 'h-11'}`}
         >
           <CountryFlag code={selected.code} className="h-3.5 w-5 shrink-0 rounded-[2px]" />
           <span>{selected.callingCode}</span>
@@ -604,14 +604,14 @@ function PhoneField({ label, locale, defaultCountry }: { label: string; locale: 
           autoComplete="tel-national"
           required
           placeholder={`${label}*`}
-          className="autorell-contact-placeholder h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none"
+          className={`autorell-contact-placeholder min-w-0 border-0 bg-white px-3 font-normal text-[#101828] outline-none ${compact ? 'h-10 text-[13px]' : 'h-11 text-sm'}`}
         />
       </div>
     </div>
   )
 }
 
-function CompactFormField({ label, name, type = 'text', required = false }: { label: string; name: string; type?: string; required?: boolean }) {
+function CompactFormField({ label, name, type = 'text', required = false, compact = false }: { label: string; name: string; type?: string; required?: boolean; compact?: boolean }) {
   const autoComplete = {
     company: 'organization',
     firstName: 'given-name',
@@ -629,7 +629,7 @@ function CompactFormField({ label, name, type = 'text', required = false }: { la
         autoComplete={autoComplete}
         required={required}
         placeholder={`${label}${required ? '*' : ''}`}
-        className="autorell-contact-placeholder h-11 w-full min-w-0 rounded-[8px] border border-[#c7d0dd] bg-white px-3 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+        className={`autorell-contact-placeholder w-full min-w-0 border border-[#c7d0dd] bg-white px-3 font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10 ${compact ? 'h-10 rounded-[7px] text-[13px]' : 'h-11 rounded-[8px] text-sm'}`}
       />
     </label>
   )
