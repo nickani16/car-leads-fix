@@ -5772,6 +5772,54 @@ function marketplaceCardVersionLabel(listing: VehicleSearchListing, headline: st
   return version || null
 }
 
+type MarketplaceInitialMapCamera =
+  | {
+      center: [number, number]
+      zoom: number
+    }
+  | {
+      bounds: [[number, number], [number, number]]
+      fitBoundsOptions: {
+        padding: number
+        maxZoom: number
+        duration: number
+      }
+    }
+
+function getInitialMarketplaceMapCamera(
+  listings: Array<{ coordinates: [number, number] }>,
+  country: string,
+  geoBounds?: MarketplaceBoundingBox | null,
+): MarketplaceInitialMapCamera {
+  if (geoBounds) {
+    return {
+      bounds: [[geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north]],
+      fitBoundsOptions: { padding: 70, maxZoom: 12, duration: 0 },
+    }
+  }
+
+  if (listings.length === 1) {
+    return { center: listings[0].coordinates, zoom: 11.5 }
+  }
+
+  if (listings.length > 1) {
+    const longitudes = listings.map(({ coordinates }) => coordinates[0])
+    const latitudes = listings.map(({ coordinates }) => coordinates[1])
+    return {
+      bounds: [
+        [Math.min(...longitudes), Math.min(...latitudes)],
+        [Math.max(...longitudes), Math.max(...latitudes)],
+      ],
+      fitBoundsOptions: { padding: 70, maxZoom: 11.5, duration: 0 },
+    }
+  }
+
+  return {
+    center: countryCenters[country] || countryCenters.SE,
+    zoom: country === 'SE' ? 4.6 : 4.2,
+  }
+}
+
 function VehicleSearchMap({
   listings,
   country,
@@ -5817,7 +5865,9 @@ function VehicleSearchMap({
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<MapLibreMarker[]>([])
   const [mapReady, setMapReady] = useState(false)
+  const [mapContentReady, setMapContentReady] = useState(false)
   const [mapFailed, setMapFailed] = useState(false)
+  const initialCameraSyncRef = useRef(true)
   const [mapLayer, setMapLayer] = useState<AutorellMapLayer>('standard')
   const mapLayerRef = useRef<AutorellMapLayer>(mapLayer)
   const [selectedListing, setSelectedListing] = useState<VehicleSearchListing | null>(null)
@@ -5841,15 +5891,15 @@ function VehicleSearchMap({
       if (!containerRef.current || mapRef.current) return
       const maplibregl = await import('maplibre-gl')
       if (cancelled || !containerRef.current) return
-      const center = countryCenters[country] || countryCenters.SE
+      const initialCamera = getInitialMarketplaceMapCamera(mapListings, country, geoBounds)
       try {
         const map = new maplibregl.Map({
           container: containerRef.current,
           style: getMapStyle(mapLayerRef.current),
-          center,
-          zoom: country === 'SE' ? 4.6 : 4.2,
+          ...initialCamera,
           attributionControl: { compact: true },
         })
+        initialCameraSyncRef.current = true
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
         map.once('load', () => {
           if (!cancelled) {
@@ -5871,6 +5921,7 @@ function VehicleSearchMap({
       mapRef.current?.remove()
       mapRef.current = null
       setMapReady(false)
+      setMapContentReady(false)
       setMapFailed(false)
     }
   }, [country])
@@ -5905,18 +5956,21 @@ function VehicleSearchMap({
           .setLngLat(coordinates)
           .addTo(map)
       })
+      const cameraDuration = initialCameraSyncRef.current ? 0 : 500
       if (geoBounds) {
         const bounds = new maplibregl.LngLatBounds([geoBounds.west, geoBounds.south], [geoBounds.east, geoBounds.north])
-        map.fitBounds(bounds, { padding: 70, maxZoom: 12, duration: 500 })
+        map.fitBounds(bounds, { padding: 70, maxZoom: 12, duration: cameraDuration })
       } else if (mapListings.length === 1) {
-        map.flyTo({ center: mapListings[0].coordinates, zoom: 11.5, duration: 500 })
+        map.flyTo({ center: mapListings[0].coordinates, zoom: 11.5, duration: cameraDuration })
       } else if (mapListings.length) {
         const bounds = new maplibregl.LngLatBounds()
         mapListings.forEach(({ coordinates }) => bounds.extend(coordinates))
-        map.fitBounds(bounds, { padding: 70, maxZoom: 11.5, duration: 500 })
+        map.fitBounds(bounds, { padding: 70, maxZoom: 11.5, duration: cameraDuration })
       } else {
-        map.flyTo({ center: countryCenters[country] || countryCenters.SE, zoom: country === 'SE' ? 4.6 : 4.2, duration: 400 })
+        map.flyTo({ center: countryCenters[country] || countryCenters.SE, zoom: country === 'SE' ? 4.6 : 4.2, duration: cameraDuration })
       }
+      initialCameraSyncRef.current = false
+      setMapContentReady(true)
     }
 
     syncMarkers()
@@ -5927,7 +5981,7 @@ function VehicleSearchMap({
 
   return (
     <div className={`${mobileOverlay ? 'relative h-[100dvh] min-h-[100dvh]' : 'relative h-[calc(100vh-62px)] min-h-[520px] lg:h-full lg:min-h-0'} overflow-hidden bg-[#dce7ed]`}>
-      <div className={`${mapReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
+      <div className={`${mapReady && mapContentReady && !mapFailed ? 'opacity-0' : 'opacity-100'} absolute inset-0 grid grid-cols-3 grid-rows-3 transition-opacity duration-300 ${mapLayer === 'satellite' ? 'brightness-[.82] saturate-[1.08]' : ''}`}>
         {fallbackTiles.map((tile) => (
           <span
             key={tile}
@@ -5936,7 +5990,7 @@ function VehicleSearchMap({
           />
         ))}
       </div>
-      {!mapReady || mapFailed ? (
+      {!mapReady || !mapContentReady || mapFailed ? (
         <button
           type="button"
           className="absolute left-1/2 top-1/2 z-10 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-[#0866ff] text-xs font-semibold text-white shadow-[0_8px_22px_rgba(16,24,40,.28)]"

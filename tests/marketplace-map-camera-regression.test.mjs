@@ -21,3 +21,10 @@ test('marketplace map zooms close to one listing and local result bounds', () =>
   assert.match(source, /geoBounds[\s\S]*?maxZoom: 12/)
   assert.match(source, /mapListings\.forEach[\s\S]*?maxZoom: 11\.5/)
 })
+
+test('marketplace map starts at the result camera before revealing map content', () => {
+  assert.match(source, /const initialCamera = getInitialMarketplaceMapCamera\(mapListings, country, geoBounds\)/)
+  assert.match(source, /style: getMapStyle\(mapLayerRef\.current\),[\s\S]*?\.\.\.initialCamera/)
+  assert.match(source, /const cameraDuration = initialCameraSyncRef\.current \? 0 : 500/)
+  assert.match(source, /mapReady && mapContentReady && !mapFailed \? 'opacity-0' : 'opacity-100'/)
+})

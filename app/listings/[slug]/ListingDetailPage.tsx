@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ViewTransition, type ReactNode } from 'react'
+import { cache, ViewTransition, type ReactNode } from 'react'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -242,12 +242,12 @@ export default async function ListingDetailPage({
   const listing = await fetchListingFromSlug(slug)
   if (!listing) notFound()
 
-  const locale = await getRequestLocale()
-  const requestHeaders = await headers()
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const [locale, requestHeaders, supabase] = await Promise.all([
+    getRequestLocale(),
+    headers(),
+    createClient(),
+  ])
+  const userPromise = supabase.auth.getUser().then(({ data }) => data.user)
   const marketCode = requestHeaders.get('x-autorell-market') || undefined
   const canonicalPath = buildListingPath(listing, locale)
   const canonicalRequestPath = listingPathForHostname(
@@ -271,7 +271,7 @@ export default async function ListingDetailPage({
       ? category.labels[language]
       : translatePublic(locale, category.labels.en)
   const displayCurrency = displayCurrencyForMarket(marketCode)
-  const price = await formatMarketplacePriceDisplay({
+  const pricePromise = formatMarketplacePriceDisplay({
     amount: Number(listing.price),
     currency: listing.currency,
     locale,
@@ -288,14 +288,14 @@ export default async function ListingDetailPage({
     Number.isFinite(currentPrice) &&
     originalPrice - currentPrice >= 5000
   const priceDropAmount = hasPriceDrop && originalPrice !== null ? originalPrice - currentPrice : 0
-  const originalPriceDisplay = hasPriceDrop
-    ? await formatMarketplacePriceDisplay({
+  const originalPriceDisplayPromise = hasPriceDrop
+    ? formatMarketplacePriceDisplay({
         amount: originalPrice ?? currentPrice,
         currency: listing.currency,
         locale,
         targetCurrency: displayCurrency,
       })
-    : null
+    : Promise.resolve(null)
   const priceDropPercent = hasPriceDrop
     ? Math.max(1, Math.round((priceDropAmount / (originalPrice ?? currentPrice)) * 100))
     : null
@@ -304,7 +304,47 @@ export default async function ListingDetailPage({
       ? listing.country
       : getEuCountryName(listing.country || listing.country_code, locale)
   const location = [listing.city, listing.municipality, countryName].filter(Boolean).join(', ')
-  const sellerDetails = await getSellerDetails(listing.id, listing.seller_type, locale)
+  const sellerDetailsPromise = getSellerDetails(listing.seller_user_id, listing.seller_type, locale)
+  const technicalDetailsPromise = getListingTechnicalDetails(listing.id)
+  const mapCoordinatesPromise = resolveListingMapLocation({
+    id: listing.id,
+    address: listing.address,
+    postalCode: listing.postal_code,
+    latitude: listing.latitude,
+    longitude: listing.longitude,
+    city: listing.city,
+    country: listing.country,
+    countryCode: listing.country_code,
+  })
+  const insightsAdmin = createAdminClient()
+  const insightsPromise = Promise.all([
+    getListingMarketInsights(insightsAdmin, listing as InsightListingRow),
+    getListingHistory(insightsAdmin, listing as InsightListingRow),
+    getSimilarListings(insightsAdmin, listing as InsightListingRow, 4),
+    insightsAdmin
+      .from('marketplace_saved_listings')
+      .select('listing_id', { count: 'exact', head: true })
+      .eq('listing_id', listing.id),
+  ])
+  const isListingOwnerPromise = userPromise.then((user) => Boolean(user && listing.seller_user_id === user.id))
+  const [
+    price,
+    originalPriceDisplay,
+    sellerDetails,
+    technicalDetails,
+    mapCoordinates,
+    [marketInsight, listingHistory, similarListings, favoriteCountResult],
+    isListingOwner,
+  ] = await Promise.all([
+    pricePromise,
+    originalPriceDisplayPromise,
+    sellerDetailsPromise,
+    technicalDetailsPromise,
+    mapCoordinatesPromise,
+    insightsPromise,
+    isListingOwnerPromise,
+  ])
+  const favoriteCount = favoriteCountResult.error ? 0 : favoriteCountResult.count || 0
   const sellerVerification: SellerVerification = {
     label: sellerDetails.label,
     tone: sellerDetails.tone,
@@ -321,15 +361,11 @@ export default async function ListingDetailPage({
   const publishedDate = listing.published_at || listing.created_at
   const publicUrl = publicUrlForPath(canonicalPath)
   const daysLeft = getDaysLeft(listing.expires_at)
-  const isListingOwner = user
-    ? await isUserListingOwner(listing.id, user.id)
-    : false
   const equipmentKeys = Array.isArray(listing.equipment_keys)
     ? listing.equipment_keys.map(String)
     : []
   const equipmentGroups = selectedEquipmentGroups(equipmentKeys, locale)
   const fallbackEquipment = equipmentKeys.length ? [] : splitCsv(listing.equipment).map((item) => translateListingEquipmentValue(locale, item) || item)
-  const technicalDetails = await getListingTechnicalDetails(listing.id)
   const listingStructuredData = isRecord(listing.structured_data)
     ? (listing.structured_data as Record<string, string | number | string[] | null>)
     : {}
@@ -441,34 +477,12 @@ export default async function ListingDetailPage({
       { label: listing.title, href: publicUrl },
     ],
   })
-  const mapCoordinates = await resolveListingMapLocation({
-    id: listing.id,
-    address: listing.address,
-    postalCode: listing.postal_code,
-    latitude: listing.latitude,
-    longitude: listing.longitude,
-    city: listing.city,
-    country: listing.country,
-    countryCode: listing.country_code,
-  })
   const galleryImages = listing.image_variants?.length
     ? listing.image_variants.map((image) => image.listingUrl)
     : listing.images || []
   const fullscreenImages = listing.image_variants?.length
     ? listing.image_variants.map((image) => image.fullscreenUrl || image.listingUrl)
     : galleryImages
-  const insightsAdmin = createAdminClient()
-  const [marketInsight, listingHistory, similarListings, favoriteCountResult] = await Promise.all([
-    getListingMarketInsights(insightsAdmin, listing as InsightListingRow),
-    getListingHistory(insightsAdmin, listing as InsightListingRow),
-    getSimilarListings(insightsAdmin, listing as InsightListingRow, 4),
-    insightsAdmin
-      .from('marketplace_saved_listings')
-      .select('listing_id', { count: 'exact', head: true })
-      .eq('listing_id', listing.id),
-  ])
-  const favoriteCount = favoriteCountResult.error ? 0 : favoriteCountResult.count || 0
-
   return (
     <ViewTransition enter="autorell-listing-enter" exit="autorell-listing-exit" default="none">
       <main className="min-h-screen bg-white text-[#101828]">
@@ -1085,14 +1099,14 @@ export default async function ListingDetailPage({
   )
 }
 
-async function fetchListingFromSlug(slug: string) {
+const fetchListingFromSlug = cache(async (slug: string) => {
   const id = extractListingIdFromSlug(slug)
   if (!id) return null
 
   const data = await getMarketplaceListingForPublicDetail(id)
 
   return (data || null) as ListingRow | null
-}
+})
 
 function normalizeListingInsuranceOffers(value: ListingInsuranceOffer[] | null | undefined) {
   if (!Array.isArray(value)) return []
@@ -1636,7 +1650,7 @@ function ListingHistoryTimeline({
 }
 
 async function getSellerDetails(
-  listingId: string,
+  sellerUserId: string | null,
   sellerType: 'private' | 'business',
   locale: PublicLocale,
 ): Promise<SellerDetails> {
@@ -1653,25 +1667,26 @@ async function getSellerDetails(
     memberSinceYear: null,
   }
   const admin = createAdminClient()
-  const { data: listing } = await admin
-    .from('marketplace_listings')
-    .select('seller_user_id')
-    .eq('id', listingId)
-    .maybeSingle()
+  if (!sellerUserId) return empty
 
-  if (!listing?.seller_user_id) return empty
-
-  const [{ data: profile }, { data: reviews }] = await Promise.all([
+  const authUserPromise = sellerType === 'private'
+    ? admin.auth.admin
+        .getUserById(sellerUserId)
+        .then((result) => result.data.user)
+        .catch(() => null)
+    : Promise.resolve(null)
+  const [{ data: profile }, { data: reviews }, authUser] = await Promise.all([
     admin
       .from('marketplace_profiles')
       .select('user_id,company_id,email,website_url,logo_url,identity_status,business_verification_status,risk_status,address_line_1,postal_code,city,region,created_at')
-      .eq('user_id', listing.seller_user_id)
+      .eq('user_id', sellerUserId)
       .maybeSingle(),
     admin
       .from('marketplace_reviews')
       .select('rating')
-      .eq('reviewee_id', listing.seller_user_id)
+      .eq('reviewee_id', sellerUserId)
       .eq('status', 'visible'),
+    authUserPromise,
   ])
 
   const visibleRatings = (reviews || [])
@@ -1690,8 +1705,8 @@ async function getSellerDetails(
 
   const base = {
     websiteUrl: sellerType === 'business' ? textOrNull(profile?.website_url) : null,
-    companyPageHref: sellerType === 'business' && await sellerHasPublicCompanyPage(admin, listing.seller_user_id, profile?.company_id)
-      ? localizePublicHref(locale, `/company/${listing.seller_user_id}`)
+    companyPageHref: sellerType === 'business' && await sellerHasPublicCompanyPage(admin, sellerUserId, profile?.company_id)
+      ? localizePublicHref(locale, `/company/${sellerUserId}`)
       : null,
     logoUrl: sellerType === 'business' ? textOrNull(profile?.logo_url) : null,
     address: sellerType === 'business' ? textOrNull(addressLine) : null,
@@ -1723,10 +1738,6 @@ async function getSellerDetails(
     }
   }
 
-  const authUser = await admin.auth.admin
-    .getUserById(listing.seller_user_id)
-    .then((result) => result.data.user)
-    .catch(() => null)
   const identityStatus = String(profile?.identity_status || '')
   const riskOk = !['restricted', 'blocked', 'suspended'].includes(String(profile?.risk_status || '')) && identityStatus !== 'rejected'
   const identityApproved = ['verified', 'format_validated'].includes(identityStatus)
@@ -1887,17 +1898,6 @@ async function getListingTechnicalDetails(listingId: string): Promise<ListingTec
       machineType: technicalData.machineType ?? data.machine_type ?? null,
     },
   }
-}
-
-async function isUserListingOwner(listingId: string, userId: string) {
-  const { data } = await createAdminClient()
-    .from('marketplace_listings')
-    .select('id')
-    .eq('id', listingId)
-    .eq('seller_user_id', userId)
-    .maybeSingle()
-
-  return Boolean(data)
 }
 
 function localizedLabel(
