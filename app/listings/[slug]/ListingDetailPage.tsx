@@ -24,8 +24,6 @@ import ListingImageGallery from '@/app/components/ListingImageGallery'
 import ListingContactFormButton from '@/app/components/ListingContactFormButton'
 import ListingBackButton from '@/app/components/ListingBackButton'
 import ListingBreadcrumbs from '@/app/components/ListingBreadcrumbs'
-import ListingQuickFactsRail from '@/app/components/ListingQuickFactsRail'
-import ListingMobileContactBar from '@/app/components/ListingMobileContactBar'
 import ListingStickyContactBar from '@/app/components/ListingStickyContactBar'
 import ListingPageTopReset from '@/app/components/ListingPageTopReset'
 import ListingBackToTopButton from '@/app/components/ListingBackToTopButton'
@@ -447,11 +445,6 @@ export default async function ListingDetailPage({
       railIcon: 'calendar' as const,
     },
   ].filter((fact) => Boolean(fact.value))
-  const quickFacts = headlineFacts
-    .flatMap((fact) => typeof fact.label === 'string' && fact.value
-      ? [{ label: fact.label, value: String(fact.value), icon: fact.railIcon }]
-      : [])
-    .slice(0, 8)
   const copy = getListingDetailCopy(locale)
   const offerBadge = listingDetailOfferBadge(locale, listing.offer_type)
   const listingIdentity =
@@ -535,18 +528,6 @@ export default async function ListingDetailPage({
         <div className="mt-0 space-y-4 sm:mt-4 sm:space-y-6">
           <div className="grid w-[calc(100vw-2rem)] gap-4 sm:w-auto sm:gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_350px]">
             <div className="min-w-0 space-y-3 sm:space-y-6">
-            <ListingQuickFactsRail facts={quickFacts}>
-              <ListingContactFormButton
-                listingId={listing.id}
-                listingTitle={listing.title}
-                locale={locale}
-                defaultPhoneCountry={listing.country_code || marketCode}
-                buttonLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
-                buttonClassName="inline-flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-white px-4 text-[13px] font-semibold text-[#101828] transition hover:bg-[#f8fafc] hover:text-[#0866ff]"
-                iconClassName="h-3.5 w-3.5 text-[#0866ff]"
-                buttonFontWeight={600}
-              />
-            </ListingQuickFactsRail>
             <ListingImageGallery
               images={galleryImages}
               fullscreenImages={fullscreenImages}
@@ -701,7 +682,7 @@ export default async function ListingDetailPage({
               />
             ) : null}
 
-            <section id="listing-contact-card" className="grid gap-3 lg:hidden">
+            <section id="listing-contact-card" className="scroll-mt-20 grid gap-3 lg:hidden">
               <div className="grid gap-2.5 rounded-[14px] border border-[#dfe6f2] bg-white p-4">
                 {isListingOwner ? (
                   <Link
@@ -1081,13 +1062,6 @@ export default async function ListingDetailPage({
           </div>
         </section>
       </div>
-      {!isSold ? (
-        <ListingMobileContactBar
-          listingId={listing.id}
-          listingTitle={listing.title}
-          locale={locale}
-        />
-      ) : null}
       <ListingBackToTopButton locale={locale} />
       <PublicFooter locale={locale} />
       <script
