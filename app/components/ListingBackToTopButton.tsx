@@ -43,7 +43,7 @@ export default function ListingBackToTopButton({ locale }: { locale: PublicLocal
       aria-label={label}
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
-      className={`group fixed bottom-[calc(82px+env(safe-area-inset-bottom))] right-4 z-[110] inline-flex h-10 items-center justify-center overflow-hidden rounded-full bg-[#0866ff] text-white transition-[width,opacity,transform,background-color] duration-300 hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25 sm:bottom-6 sm:right-6 ${
+      className={`group fixed bottom-[calc(16px+env(safe-area-inset-bottom))] right-4 z-[110] inline-flex h-10 items-center justify-center overflow-hidden rounded-full bg-[#0866ff] text-white transition-[width,opacity,transform,background-color] duration-300 hover:bg-[#0057e6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0866ff]/25 sm:bottom-6 sm:right-6 ${
         visible ? 'w-10 translate-y-0 opacity-100 sm:hover:w-[150px]' : 'pointer-events-none w-10 translate-y-3 opacity-0'
       }`}
     >

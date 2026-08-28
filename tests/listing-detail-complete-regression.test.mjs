@@ -58,6 +58,8 @@ test('listing detail has an accessible localized back-to-top action', () => {
   assert.match(detail, /<ListingBackToTopButton locale=\{locale\}/)
   assert.match(backToTop, /window\.scrollY > 520/)
   assert.match(backToTop, /window\.scrollTo\(\{ top: 0/)
+  assert.match(backToTop, /bottom-\[calc\(16px\+env\(safe-area-inset-bottom\)\)\]/)
+  assert.doesNotMatch(backToTop, /bottom-\[calc\(82px\+env\(safe-area-inset-bottom\)\)\]/)
   assert.match(backToTop, /sm:hover:w-\[150px\]/)
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(backToTop, new RegExp(`\\b${locale}:`))
