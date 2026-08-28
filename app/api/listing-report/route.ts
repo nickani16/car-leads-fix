@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { verifyRecaptcha } from '@/lib/recaptcha'
 
 const allowedCategories = new Set([
   'suspected_fraud',
@@ -16,6 +17,12 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null
   if (!body || String(body.company || '').trim()) {
     return NextResponse.json({ error: 'Invalid report.' }, { status: 400 })
+  }
+
+  const recaptcha = await verifyRecaptcha(body.recaptchaToken, 'listing_report')
+  if (!recaptcha.ok) {
+    console.warn('Listing report reCAPTCHA rejected', { reason: recaptcha.reason })
+    return NextResponse.json({ error: 'Verification failed.' }, { status: 403 })
   }
 
   const listingId = String(body.listingId || '').trim()

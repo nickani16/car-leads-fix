@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { checkRateLimit, getClientIp, rateLimitJson } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { verifyRecaptcha } from '@/lib/recaptcha'
 
 type ContactPayload = {
   listingId?: string
@@ -15,6 +16,7 @@ type ContactPayload = {
   message?: string
   privacy?: boolean
   locale?: string
+  recaptchaToken?: string | null
 }
 
 function clean(value: unknown, maxLength: number) {
@@ -59,6 +61,11 @@ export async function POST(request: Request) {
   if (limit.limited) return rateLimitJson(limit.retryAfter)
 
   const body = (await request.json().catch(() => null)) as ContactPayload | null
+  const recaptcha = await verifyRecaptcha(body?.recaptchaToken, 'listing_contact')
+  if (!recaptcha.ok) {
+    console.warn('Listing contact reCAPTCHA rejected', { reason: recaptcha.reason })
+    return NextResponse.json({ error: 'Verification failed.' }, { status: 403 })
+  }
   const listingId = clean(body?.listingId, 80)
   const name = clean(body?.name, 120)
   const company = clean(body?.company, 160)

@@ -493,14 +493,14 @@ export default async function ListingDetailPage({
         <ListingBreadcrumbs items={breadcrumbItems} currentLabel={listing.title} ariaLabel={copy.breadcrumbLabel} />
         <div className="mt-4 hidden items-center justify-between gap-3 sm:flex">
           <ListingBackButton href={fallbackBackHref} label={copy.backToListings} className="shrink-0 whitespace-nowrap" />
-          <div className="hidden min-w-0 items-center gap-4 sm:flex">
+          <div className="hidden min-w-0 items-center gap-2 sm:flex">
             <ShareListingButton
               title={listing.title}
               url={publicUrl}
               label={copy.shareListing}
               copiedLabel={copy.shareCopied}
-              variant="plain"
-              className="shrink-0 whitespace-nowrap"
+              variant="icon"
+              className="shrink-0"
               iconClassName="h-4 w-4"
             />
             <div className="hidden lg:inline-flex">
@@ -941,7 +941,7 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              <div className="order-4 grid gap-3 self-start lg:sticky lg:top-[82px]">
+              <div className="order-4 grid gap-3 self-start">
                 {!isSold ? (
                   <ListingContactFormButton
                     listingId={listing.id}

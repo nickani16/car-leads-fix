@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## reCAPTCHA v3
+
+Listing enquiry and listing report forms use reCAPTCHA v3 when both variables below are configured. Register the production domains in Google reCAPTCHA and set the values in every Vercel environment that should enforce verification:
+
+```text
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
+RECAPTCHA_SECRET_KEY=
+RECAPTCHA_MIN_SCORE=0.5
+```
+
+If neither key is configured, verification remains disabled so local development is not blocked. A partial configuration fails closed.

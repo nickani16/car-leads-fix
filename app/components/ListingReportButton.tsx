@@ -4,6 +4,8 @@ import { AlertTriangle, X } from 'lucide-react'
 import { FormEvent, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { translatePublicObject, type PublicLocale } from '@/lib/public-i18n'
+import { getRecaptchaToken } from '@/lib/recaptcha-client'
+import RecaptchaNotice from '@/app/components/RecaptchaNotice'
 
 type ListingReportButtonProps = {
   listingId: string
@@ -123,21 +125,28 @@ export default function ListingReportButton({
     setSubmitting(true)
     setMessage('')
     const form = new FormData(event.currentTarget)
-    const response = await fetch('/api/listing-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        listingId,
-        listingTitle,
-        category: form.get('category'),
-        contactEmail: form.get('contactEmail'),
-        details: form.get('details'),
-        company: form.get('company'),
-      }),
-    })
-    setSubmitting(false)
-    setMessage(response.ok ? copy.success : copy.error)
-    if (response.ok) event.currentTarget.reset()
+    try {
+      const recaptchaToken = await getRecaptchaToken('listing_report')
+      const response = await fetch('/api/listing-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listingId,
+          listingTitle,
+          category: form.get('category'),
+          contactEmail: form.get('contactEmail'),
+          details: form.get('details'),
+          company: form.get('company'),
+          recaptchaToken,
+        }),
+      })
+      setMessage(response.ok ? copy.success : copy.error)
+      if (response.ok) event.currentTarget.reset()
+    } catch {
+      setMessage(copy.error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const modal =
@@ -203,6 +212,7 @@ export default function ListingReportButton({
               >
                 {copy.submit}
               </button>
+              <RecaptchaNotice locale={locale} />
             </form>
           </div>
         </div>,

@@ -43,16 +43,16 @@ export default function ListingQuickFactsRail({
   return (
     <div className="hidden h-12 overflow-hidden rounded-[9px] border border-[#d7dee9] bg-white sm:flex">
       <div className="shrink-0 border-r border-[#e4eaf3]">{children}</div>
-      <div className="grid min-w-0 flex-1 grid-cols-[34px_minmax(0,1fr)_34px]">
+      <div className="relative min-w-0 flex-1">
         <button
           type="button"
           onClick={() => move(-1)}
           aria-label="Scroll left"
-          className="grid place-items-center border-r border-[#edf1f6] bg-white text-[#475467] transition hover:bg-[#f8fafc] hover:text-[#0866ff]"
+          className="absolute left-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full border border-[#e1e6ee] bg-white text-[#475467] shadow-[0_2px_8px_rgba(16,24,40,.12)] transition hover:border-[#b9d5ff] hover:text-[#0866ff]"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
         </button>
-        <div ref={railRef} className="flex h-full snap-x items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={railRef} className="flex h-full snap-x items-stretch overflow-x-auto px-11 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {facts.map((fact) => {
             const FactIcon = quickFactIcons[fact.icon]
 
@@ -61,7 +61,7 @@ export default function ListingQuickFactsRail({
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] bg-[#eef1f5] text-[#475467]">
                   <FactIcon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
                 </span>
-                <span className="min-w-0 truncate text-[14px] font-normal leading-5 text-[#101828]">{fact.value}</span>
+                <span className="min-w-0 truncate text-[13px] font-normal leading-5 text-[#101828]">{fact.value}</span>
               </div>
             )
           })}
@@ -70,7 +70,7 @@ export default function ListingQuickFactsRail({
           type="button"
           onClick={() => move(1)}
           aria-label="Scroll right"
-          className="grid place-items-center border-l border-[#edf1f6] bg-white text-[#475467] transition hover:bg-[#f8fafc] hover:text-[#0866ff]"
+          className="absolute right-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full border border-[#e1e6ee] bg-white text-[#475467] shadow-[0_2px_8px_rgba(16,24,40,.12)] transition hover:border-[#b9d5ff] hover:text-[#0866ff]"
         >
           <ChevronRight className="h-3.5 w-3.5" />
         </button>

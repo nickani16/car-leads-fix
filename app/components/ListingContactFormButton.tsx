@@ -5,7 +5,9 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { Check, ChevronDown, Mail, Send, X } from 'lucide-react'
 import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { getRecaptchaToken } from '@/lib/recaptcha-client'
 import CountryFlag from '@/app/components/CountryFlag'
+import RecaptchaNotice from '@/app/components/RecaptchaNotice'
 
 type ListingContactFormButtonProps = {
   listingId: string
@@ -261,10 +263,11 @@ export default function ListingContactFormButton({
     }
 
     try {
+      const recaptchaToken = await getRecaptchaToken('listing_contact')
       const response = await fetch('/api/listing-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, recaptchaToken }),
       })
       if (!response.ok) throw new Error('Request failed')
       setStatus('success')
@@ -333,6 +336,7 @@ export default function ListingContactFormButton({
             <Send className="h-4 w-4" />
             {loading ? text.sending : text.submit}
           </button>
+          <RecaptchaNotice locale={locale} />
         </form>
       </div>
     )
@@ -434,6 +438,7 @@ export default function ListingContactFormButton({
                 <Send className="h-4 w-4" />
                 {loading ? text.sending : text.submit}
               </button>
+              <RecaptchaNotice locale={locale} />
             </form>
           </div>
         </div>,

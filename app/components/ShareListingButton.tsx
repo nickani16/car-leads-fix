@@ -17,7 +17,7 @@ export default function ShareListingButton({
   url: string
   label?: string
   copiedLabel?: string
-  variant?: 'button' | 'plain'
+  variant?: 'button' | 'plain' | 'icon'
   className?: string
   labelClassName?: string
   iconClassName?: string
@@ -68,7 +68,9 @@ export default function ShareListingButton({
     }
   }
   const buttonClassName =
-    variant === 'plain'
+    variant === 'icon'
+      ? 'grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-[#d7dee9] bg-white text-[#101828] transition hover:border-[#b9d5ff] hover:text-[#0866ff]'
+      : variant === 'plain'
       ? 'inline-flex cursor-pointer items-center justify-center gap-2 text-[14px] font-[500] text-[#101828] transition hover:text-[#0866ff]'
       : 'inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[#d9e1ec] bg-white px-4 text-sm font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]'
 
@@ -78,9 +80,10 @@ export default function ShareListingButton({
       onClick={share}
       style={variant === 'plain' ? { fontWeight: 500 } : undefined}
       className={`${buttonClassName} ${extraClassName}`.trim()}
+      aria-label={copied ? copiedLabel : label}
     >
       <Share2 className={iconClassName} />
-      <span className={labelClassName}>{copied ? copiedLabel : label}</span>
+      {variant === 'icon' ? null : <span className={labelClassName}>{copied ? copiedLabel : label}</span>}
     </button>
   )
 }

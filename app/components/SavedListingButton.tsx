@@ -99,6 +99,7 @@ export default function SavedListingButton({
       if (nextSaved) saveGuestListingId(listingId)
       else removeGuestListingId(listingId)
       setSaved(nextSaved)
+      setCount((value) => Math.max(0, value + (nextSaved ? 1 : -1)))
       return
     }
     const nextSaved = !saved
@@ -136,7 +137,7 @@ export default function SavedListingButton({
         aria-pressed={saved}
         disabled={busy}
         style={{ fontWeight: 500 }}
-        className={`inline-flex cursor-pointer items-center justify-center gap-1.5 text-[14px] font-[500] transition hover:text-[#0866ff] disabled:cursor-not-allowed sm:gap-2 ${
+        className={`inline-flex h-10 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#d7dee9] bg-white px-2.5 text-[13px] font-[500] transition hover:border-[#b9d5ff] hover:text-[#0866ff] disabled:cursor-not-allowed ${
           saved ? 'text-[#0866ff]' : 'text-[#101828]'
         } ${
           busy ? 'opacity-70' : ''
@@ -144,7 +145,7 @@ export default function SavedListingButton({
       >
         {showCount && count > 0 ? <span className="tabular-nums">{count.toLocaleString()}</span> : null}
         <Heart className={`${iconClassName || 'h-4 w-4'} ${saved ? 'fill-current' : ''}`} />
-        {!showCount || count === 0 ? <span className={labelClassName}>{saved ? savedLabel : label}</span> : null}
+        {!showCount ? <span className={labelClassName}>{saved ? savedLabel : label}</span> : null}
       </button>
     )
   }
