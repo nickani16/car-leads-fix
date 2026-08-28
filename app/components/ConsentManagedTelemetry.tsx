@@ -51,7 +51,7 @@ export default function ConsentManagedTelemetry() {
   return (
     <>
       <Analytics />
-      <SpeedInsights />
+      <SpeedInsights sampleRate={0.1} />
     </>
   )
 }

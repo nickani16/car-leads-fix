@@ -76,7 +76,6 @@ export async function sendBusinessApprovalEmail({
     console.error('[business-approval-email] provider error', { email, language, message: error.message })
     return { delivered: false, reason: error.message }
   }
-  console.info('[business-approval-email] sent', { email, language, providerMessageId: data?.id || null })
   return { delivered: true, providerMessageId: data?.id || null, language }
 }
 

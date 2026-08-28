@@ -27,7 +27,7 @@ test('optional telemetry and advertising load only after explicit consent', () =
   assert.match(telemetry, /consent === 'advertising' \|\| consent === 'all'/)
   assert.match(telemetry, /pagead2\.googlesyndication\.com/)
   assert.match(telemetry, /<Analytics \/>/)
-  assert.match(telemetry, /<SpeedInsights \/>/)
+  assert.match(telemetry, /<SpeedInsights sampleRate=\{0\.1\} \/>/)
   assert.match(cookieConsent, /autorell-cookie-consent-changed/)
   assert.match(cookieConsent, /role="switch"/)
   assert.match(cookieConsent, /setAnalyticsAllowed/)
