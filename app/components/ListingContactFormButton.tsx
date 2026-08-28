@@ -312,7 +312,7 @@ export default function ListingContactFormButton({
               rows={4}
               defaultValue={getDefaultMessage(locale, listingTitle)}
               placeholder={text.message}
-              className="min-h-[112px] w-full resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+              className="autorell-contact-placeholder min-h-[112px] w-full resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
             />
           </label>
           <label className="group flex cursor-pointer items-start gap-2.5 rounded-[12px] bg-white px-3 py-2.5 text-xs font-medium leading-5 text-[#475467]">
@@ -390,7 +390,7 @@ export default function ListingContactFormButton({
                   rows={4}
                   defaultValue={getDefaultMessage(locale, listingTitle)}
                   placeholder={text.message}
-                  className="min-h-[108px] w-full min-w-0 resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+                  className="autorell-contact-placeholder min-h-[108px] w-full min-w-0 resize-y rounded-[8px] border border-[#c7d0dd] bg-white px-3 py-2.5 text-sm font-normal leading-6 text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
                 />
               </label>
               <label className="group flex cursor-pointer items-start gap-2.5 rounded-[10px] bg-[#f8fbff] px-3 py-2.5 text-xs font-normal leading-5 text-[#475467] transition hover:bg-[#f3f8ff]">
@@ -599,7 +599,7 @@ function PhoneField({ label, locale, defaultCountry }: { label: string; locale: 
           autoComplete="tel-national"
           required
           placeholder={`${label}*`}
-          className="h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none placeholder:font-normal placeholder:text-[#98a2b3]"
+          className="autorell-contact-placeholder h-11 min-w-0 border-0 bg-white px-3 text-sm font-normal text-[#101828] outline-none"
         />
       </div>
     </div>
@@ -624,7 +624,7 @@ function CompactFormField({ label, name, type = 'text', required = false }: { la
         autoComplete={autoComplete}
         required={required}
         placeholder={`${label}${required ? '*' : ''}`}
-        className="h-11 w-full min-w-0 rounded-[8px] border border-[#c7d0dd] bg-white px-3 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
+        className="autorell-contact-placeholder h-11 w-full min-w-0 rounded-[8px] border border-[#c7d0dd] bg-white px-3 text-sm font-normal text-[#101828] outline-none transition focus:border-[#0866ff] focus:ring-3 focus:ring-[#0866ff]/10"
       />
     </label>
   )

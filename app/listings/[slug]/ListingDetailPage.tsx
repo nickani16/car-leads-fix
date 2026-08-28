@@ -528,7 +528,7 @@ export default async function ListingDetailPage({
                 locale={locale}
                 defaultPhoneCountry={listing.country_code || marketCode}
                 buttonLabel={localizedLabel(locale, 'Begär mer information', 'Request more information', 'Weitere Informationen anfordern')}
-                buttonClassName="inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#aebbcf] bg-white px-4 text-[13px] font-semibold text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff]"
+                buttonClassName="inline-flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-white px-4 text-[13px] font-semibold text-[#101828] transition hover:bg-[#f8fafc] hover:text-[#0866ff]"
                 iconClassName="h-3.5 w-3.5 text-[#0866ff]"
                 buttonFontWeight={600}
               />

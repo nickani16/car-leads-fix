@@ -8,6 +8,7 @@ const factsRail = readFileSync(new URL('../app/components/ListingQuickFactsRail.
 const contact = readFileSync(new URL('../app/components/ListingContactFormButton.tsx', import.meta.url), 'utf8')
 const contactApi = readFileSync(new URL('../app/api/listing-contact/route.ts', import.meta.url), 'utf8')
 const backToTop = readFileSync(new URL('../app/components/ListingBackToTopButton.tsx', import.meta.url), 'utf8')
+const globalStyles = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
 
 test('listing breadcrumbs are visible, data-driven and link category, make and model filters', () => {
   assert.match(detail, /<ListingBreadcrumbs items=\{breadcrumbItems\}/)
@@ -36,7 +37,9 @@ test('contact form distinguishes professional and private buyers with calm place
   assert.match(contact, /name="company"/)
   assert.match(contact, /name="firstName"/)
   assert.match(contact, /name="lastName"/)
-  assert.match(contact, /placeholder:font-normal placeholder:text-\[#98a2b3\]/)
+  assert.match(contact, /autorell-contact-placeholder/)
+  assert.match(globalStyles, /\.autorell-contact-placeholder:placeholder-shown[\s\S]*color: #98a2b3 !important/)
+  assert.match(globalStyles, /\.autorell-contact-placeholder:not\(:placeholder-shown\)[\s\S]*color: #101828 !important/)
   assert.match(contact, /name="callingCode"/)
   assert.match(contact, /<CountryFlag code=\{selected\.code\}/)
   assert.match(contact, /style=\{\{ fontWeight: 400 \}\}/)
@@ -51,7 +54,7 @@ test('listing detail has an accessible localized back-to-top action', () => {
   assert.match(detail, /<ListingBackToTopButton locale=\{locale\}/)
   assert.match(backToTop, /window\.scrollY > 520/)
   assert.match(backToTop, /window\.scrollTo\(\{ top: 0/)
-  assert.match(backToTop, /sm:hover:w-\[172px\]/)
+  assert.match(backToTop, /sm:hover:w-\[150px\]/)
   for (const locale of ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(backToTop, new RegExp(`\\b${locale}:`))
   }

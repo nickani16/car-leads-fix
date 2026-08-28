@@ -335,9 +335,20 @@ label {
 }
 
 .autorell-contact-placeholder::placeholder {
-  color: #98a2b3;
+  color: #98a2b3 !important;
+  -webkit-text-fill-color: #98a2b3;
   font-weight: 400;
   opacity: 1;
+}
+
+.autorell-contact-placeholder:placeholder-shown {
+  color: #98a2b3 !important;
+  -webkit-text-fill-color: #98a2b3;
+}
+
+.autorell-contact-placeholder:not(:placeholder-shown) {
+  color: #101828 !important;
+  -webkit-text-fill-color: #101828;
 }
 
 @media (max-width: 639px) {
