@@ -476,6 +476,7 @@ export default async function ListingDetailPage({
   const fullscreenImages = listing.image_variants?.length
     ? listing.image_variants.map((image) => image.fullscreenUrl || image.listingUrl)
     : galleryImages
+  const contactSellerLabel = localizedLabel(locale, 'Kontakta säljaren', 'Contact the seller', 'Verkäufer kontaktieren')
   return (
     <ViewTransition enter="autorell-listing-enter" exit="autorell-listing-exit" default="none">
       <main className="min-h-screen bg-white text-[#101828]">
@@ -493,7 +494,10 @@ export default async function ListingDetailPage({
           image={galleryImages[0]}
           title={listing.title}
           price={price.original}
-          contactLabel={localizedLabel(locale, 'Kontakta säljaren', 'Contact the seller', 'Verkäufer kontaktieren')}
+          contactLabel={contactSellerLabel}
+          listingId={listing.id}
+          locale={locale}
+          defaultPhoneCountry={listing.country_code || marketCode}
         />
       ) : null}
       <div className="mx-0 box-border w-full max-w-full px-4 pb-5 pt-0 min-[430px]:max-w-[430px] min-[430px]:px-5 sm:mx-auto sm:max-w-[1180px] sm:px-8 sm:py-3 lg:py-4 2xl:max-w-[1260px]">
@@ -646,6 +650,22 @@ export default async function ListingDetailPage({
                 />
               ) : null}
             </section>
+
+            {!isSold ? (
+              <section data-mobile-primary-contact className="grid gap-2.5 lg:hidden" aria-label={contactSellerLabel}>
+                <ListingContactFormButton
+                  listingId={listing.id}
+                  listingTitle={listing.title}
+                  locale={locale}
+                  defaultPhoneCountry={listing.country_code || marketCode}
+                  buttonLabel={contactSellerLabel}
+                  iconClassName="h-4 w-4 text-white"
+                  buttonFontWeight={600}
+                  buttonClassName="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] bg-[#0866ff] px-4 text-sm font-semibold text-white transition hover:bg-[#0758dc]"
+                />
+                <RevealPhoneButton listingId={listing.id} locale={locale} />
+              </section>
+            ) : null}
 
             <section className="rounded-[12px] border border-[#dfe6f2] bg-white p-4 sm:rounded-[18px] sm:p-7">
               <h2 className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl sm:tracking-[-0.03em]">
