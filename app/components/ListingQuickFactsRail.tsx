@@ -43,7 +43,8 @@ export default function ListingQuickFactsRail({
     if (!rail) return
 
     const maximumScrollLeft = Math.max(0, rail.scrollWidth - rail.clientWidth)
-    setCanScrollLeft(rail.scrollLeft > 1)
+    const leadingInset = Number.parseFloat(window.getComputedStyle(rail).paddingLeft) || 0
+    setCanScrollLeft(rail.scrollLeft > leadingInset + 1)
     setCanScrollRight(rail.scrollLeft < maximumScrollLeft - 1)
   }, [])
 

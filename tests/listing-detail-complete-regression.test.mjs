@@ -30,7 +30,7 @@ test('desktop listing has a compact request-information rail and a non-sticky co
   assert.match(factsRail, /h-8 w-8[^\"]*rounded-full/)
   assert.match(factsRail, /canScrollLeft \? \(/)
   assert.match(factsRail, /canScrollRight \? \(/)
-  assert.match(factsRail, /rail\.scrollLeft > 1/)
+  assert.match(factsRail, /rail\.scrollLeft > leadingInset \+ 1/)
   assert.match(factsRail, /rail\.scrollLeft < maximumScrollLeft - 1/)
   assert.match(detail, /buttonFontWeight=\{600\}/)
   assert.doesNotMatch(detail, /<ShareListingButton(?:(?!\/>)[\s\S])*variant="plain"/)
