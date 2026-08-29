@@ -1598,7 +1598,7 @@ export default function PublicHeader({
           visible || open ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <header className="relative border-b border-[#deddd8] bg-white text-[#202124]">
+        <header className="relative bg-white text-[#202124] shadow-[inset_0_-1px_0_#deddd8]">
           {renderTopCategoryNav ? (
             <div className="hidden border-b border-[#deddd8] bg-white min-[1120px]:block">
               <div className="mx-auto flex h-[30px] max-w-[1920px] items-center justify-between px-4 sm:px-8 min-[1120px]:px-4 2xl:px-4">

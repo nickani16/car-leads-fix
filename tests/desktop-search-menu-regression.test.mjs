@@ -43,6 +43,13 @@ test('desktop vehicle search menu keeps a focused category set', () => {
   assert.doesNotMatch(desktopSearchMenu, /group relative m-4 ml-0/)
 })
 
+test('desktop navigation underline sits on the header bottom edge', () => {
+  assert.match(header, /<header className="relative bg-white text-\[#202124\] shadow-\[inset_0_-1px_0_#deddd8\]">/)
+  assert.doesNotMatch(header, /<header className="relative border-b border-\[#deddd8\]/)
+  assert.match(header, /border-b-2 border-transparent pt-1 transition hover:border-\[#0866ff\]/)
+  assert.equal((header.match(/border-b-2 text-\[14px\][^\n]+hover:border-\[#0866ff\]/g) || []).length >= 4, true)
+})
+
 test('the active marketplace category stays highlighted in desktop and mobile menus', () => {
   assert.match(desktopSearchMenu, /aria-current=\{isCategoryActive \? 'page' : undefined\}/)
   assert.match(desktopSearchMenu, /isCategoryActive \? 'bg-\[#f5f7fa\]'/)
