@@ -26,6 +26,7 @@ import {
   type SitemapMarketCode,
   xmlResponse,
 } from '@/lib/sitemap-utils'
+import { homepageCategoryIndexPaths } from '@/lib/homepage-category-routes'
 
 const maxUrlsPerSitemap = 50_000
 const maxGeoUrlsPerSitemap = 10_000
@@ -289,6 +290,7 @@ function staticSeoUrls(market: SitemapMarketCode, name: string) {
 function staticPublicUrls(market: SitemapMarketCode) {
   const publicPaths = [
     '',
+    ...homepageCategoryIndexPaths,
     '/sell-car',
     '/sell-to-dealer',
     '/sell-van',

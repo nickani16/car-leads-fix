@@ -3,6 +3,7 @@ import {
   publicLanguages,
   publicPagePaths,
 } from '@/lib/public-i18n'
+import { homepageCategoryIndexPaths } from '@/lib/homepage-category-routes'
 
 export type PublicMarket = 'sv' | 'de' | 'en'
 
@@ -27,6 +28,7 @@ const marketConfig = {
       '/privacy',
       '/cookies',
       '/terms',
+      ...homepageCategoryIndexPaths,
       ...categoryPaths,
     ],
     priorityPath: '/marketplace/cars',
@@ -47,6 +49,7 @@ const marketConfig = {
       '/privacy',
       '/cookies',
       '/terms',
+      ...homepageCategoryIndexPaths,
       ...categoryPaths,
     ],
     priorityPath: '/marketplace/cars',
@@ -56,6 +59,10 @@ const marketConfig = {
     paths: [
       ...publicLanguages.flatMap((locale) =>
         publicPagePaths.map((path) => `/${locale}${path}`),
+      ),
+      ...homepageCategoryIndexPaths,
+      ...publicLanguages.flatMap((locale) =>
+        homepageCategoryIndexPaths.map((path) => `/${locale}${path}`),
       ),
       ...categoryPaths,
     ],

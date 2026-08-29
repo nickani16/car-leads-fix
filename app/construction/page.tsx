@@ -2,8 +2,8 @@ import HomepageCategoryLanding, {
   createHomepageCategoryMetadata,
 } from '@/app/components/HomepageCategoryLanding'
 
-export const generateMetadata = createHomepageCategoryMetadata('motorcycles')
+export const generateMetadata = createHomepageCategoryMetadata('construction')
 
 export default function Page() {
-  return <HomepageCategoryLanding category="motorcycles" />
+  return <HomepageCategoryLanding category="construction" />
 }

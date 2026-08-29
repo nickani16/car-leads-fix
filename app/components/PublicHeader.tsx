@@ -67,6 +67,8 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { fetchSavedListingIds, SAVED_LISTINGS_KEY } from '@/lib/saved-listings'
+import { homepageCategoryFromPath } from '@/lib/homepage-category-routes'
+import { usePreferredHomeHref } from './preferred-home-category'
 import {
   fetchSavedSearchCount,
   readSavedSearchCount,
@@ -1130,7 +1132,7 @@ export default function PublicHeader({
     marketplaceCategories.find(
       (category) =>
         unprefixedPathname === `/marketplace/${category.slug}`,
-    )?.slug || null
+    )?.slug || homepageCategoryFromPath(unprefixedPathname)
   const activeMarketplaceChannel =
     marketplaceChannel ||
     (activeCategorySlug
@@ -1202,7 +1204,7 @@ export default function PublicHeader({
     languageOptions.find(([code]) => code === activeMarketCode) ||
     (['eu', 'EU', 'Europe', 'https://www.autorell.com/'] as const)
 
-  const homeHref = localizePublicHref(locale, '/')
+  const homeHref = usePreferredHomeHref(locale)
   const marketPathPrefix =
     activeMarketCode === 'eu' || activeMarketCode === 'se' || activeMarketCode === 'de'
       ? ''

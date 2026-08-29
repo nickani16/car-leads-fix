@@ -26,6 +26,10 @@ const categoryProviderSource = readFileSync(
   new URL('../app/components/HomeCategoryProvider.tsx', import.meta.url),
   'utf8',
 )
+const preferredHomeCategorySource = readFileSync(
+  new URL('../app/components/preferred-home-category.ts', import.meta.url),
+  'utf8',
+)
 const categoryDiscoverySource = readFileSync(
   new URL('../app/components/HomeCategoryDiscovery.tsx', import.meta.url),
   'utf8',
@@ -92,10 +96,12 @@ test('homepage filter keeps a compact primary row and advanced controls in the d
   assert.doesNotMatch(homeSource, /<div className="mt-3">\s*<HomeBrowseByTypeSwitcher/)
 })
 
-test('direct homepage loads default to cars without persisted category state', () => {
+test('direct homepage defaults to cars and remembers an explicitly selected category', () => {
   assert.match(categoryProviderSource, /initialCategory = 'cars'/)
   assert.match(categoryProviderSource, /useState<MarketplaceCategorySlug>\(initialCategory\)/)
-  assert.doesNotMatch(categoryProviderSource, /localStorage|sessionStorage/)
+  assert.match(categoryProviderSource, /rememberPreferredHomeCategory\(category\)/)
+  assert.match(preferredHomeCategorySource, /window\.localStorage\.setItem\(PREFERRED_HOME_CATEGORY_KEY, category\)/)
+  assert.match(preferredHomeCategorySource, /homepageCategoryHref\(locale, category \|\| 'cars'\)/)
 })
 
 test('homepage search panels and placeholder retain their accessibility behavior', () => {
@@ -184,7 +190,7 @@ test('homepage popular brands keep an even logo grid', () => {
   assert.match(categoryDiscoverySource, /text-\[28px\][\s\S]*sm:text-\[30px\]/)
   assert.match(categoryDiscoverySource, /w-\[132px\][\s\S]*lg:w-\[180px\]/)
   assert.match(categoryDiscoverySource, /h-\[84px\][\s\S]*lg:h-\[96px\]/)
-  assert.match(categoryDiscoverySource, /h-\[76px\] w-\[118px\][\s\S]*lg:h-\[82px\] lg:w-\[156px\]/)
+  assert.match(categoryDiscoverySource, /h-\[62px\] w-\[98px\][\s\S]*lg:h-\[70px\] lg:w-\[132px\]/)
 })
 
 test('homepage sell cards scroll on mobile and iPad while remaining a desktop grid', () => {

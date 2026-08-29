@@ -1,5 +1,8 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound, permanentRedirect, redirect } from 'next/navigation'
 import BusinessMarketplaceHome from '@/app/components/BusinessMarketplaceHome'
+import HomepageCategoryLanding, {
+  buildHomepageCategoryMetadata,
+} from '@/app/components/HomepageCategoryLanding'
 import { HelpCenterArticlePage, HelpCenterCategory } from '@/app/components/HelpCenterPages'
 import PricingPage from '@/app/components/PricingPage'
 import AppDownloadPage, { generateAppDownloadMetadata } from '@/app/components/AppDownloadPage'
@@ -23,6 +26,7 @@ import PrivateSupportPage from '@/app/account/support/page'
 import { normalizeBillingMarket } from '@/lib/billing/product-catalog'
 import { getEuBuyerMarket } from '@/lib/eu-buyer-markets'
 import type { PublicLocale } from '@/lib/public-i18n'
+import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import BusinessSubscriptionPage from '@/app/konto/business/subscription/page'
 import BusinessSubscriptionCancelPage from '@/app/konto/business/subscription/cancel/page'
 import BusinessStatusPage from '@/app/konto/business/status/page'
@@ -44,6 +48,10 @@ import {
   resolveGeoLandingRoute,
 } from '@/lib/seo-geo-landings'
 import { getHelpCenterArticle, getHelpCenterCategory } from '@/lib/help-center'
+import {
+  homepageCategoryFromPath,
+  homepageCategoryHref,
+} from '@/lib/homepage-category-routes'
 
 const removedPublicPages = new Set([
   'sell-vehicle',
@@ -103,6 +111,16 @@ export async function generateMetadata({
   if (slug.join('/') === 'safety-tips') {
     return generatePublicInfoMetadata('safety-tips')()
   }
+  const homepageCategory = homepageCategoryFromPath(`/${slug.join('/')}`)
+  if (homepageCategory && homepageCategory !== 'cars') {
+    const locale = resolveMarketLocale(market)
+    if (!locale) return {}
+    return buildHomepageCategoryMetadata({
+      category: homepageCategory,
+      locale,
+      marketCode: normalizeBillingMarket(market).toUpperCase(),
+    })
+  }
   const listingParams = localizedListingParams({ market, slug })
   if (listingParams) {
     return generateListingMetadata({ params: listingParams })
@@ -140,6 +158,26 @@ export default async function LocalizedMarketPage({
 
   if (slugPath === 'safety-tips') {
     return <PublicInfoPage page="safety-tips" />
+  }
+
+  const legacyHomepageCategory = {
+    cars: 'cars',
+    farm: 'agriculture',
+    plant: 'construction',
+  }[slugPath] as MarketplaceCategorySlug | undefined
+  if (legacyHomepageCategory) {
+    permanentRedirect(homepageCategoryHref(locale, legacyHomepageCategory))
+  }
+
+  const homepageCategory = homepageCategoryFromPath(`/${slugPath}`)
+  if (homepageCategory && homepageCategory !== 'cars') {
+    return (
+      <HomepageCategoryLanding
+        category={homepageCategory}
+        locale={locale}
+        marketCode={normalizedMarket.toUpperCase()}
+      />
+    )
   }
 
   const helpCenterRoute = resolveHelpCenterRoute(slug)

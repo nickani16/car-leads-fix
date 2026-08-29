@@ -567,9 +567,11 @@ async function withHomeDataFallback<T>(
 export default async function BusinessMarketplaceHome({
   locale = 'sv',
   marketCode,
+  initialCategory = 'cars',
 }: {
   locale?: PublicLocale
   marketCode?: string
+  initialCategory?: MarketplaceCategorySlug
 }) {
   const t = getHomeCopy(locale)
   const localMarketCode =
@@ -637,7 +639,11 @@ export default async function BusinessMarketplaceHome({
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
 
-      <HomeCategoryProvider metadataByCategory={metadataByCategory}>
+      <HomeCategoryProvider
+        key={initialCategory}
+        metadataByCategory={metadataByCategory}
+        initialCategory={initialCategory}
+      >
         <section className="-mt-[2px] bg-white pt-0">
         <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
           <Image

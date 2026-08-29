@@ -88,7 +88,7 @@ test('category labels and SEO are explicit for every public locale', () => {
 })
 
 test('shared category state swaps only the active homepage content', () => {
-  assert.match(homeSource, /<HomeCategoryProvider metadataByCategory=\{metadataByCategory\}>/)
+  assert.match(homeSource, /<HomeCategoryProvider[\s\S]*metadataByCategory=\{metadataByCategory\}[\s\S]*initialCategory=\{initialCategory\}/)
   assert.match(homeSource, /<HomeBrowseByTypeSwitcher/)
   assert.match(homeSource, /<HomePopularBrandsSwitcher/)
   assert.match(homeSource, /<HomeListingCategorySwitcher categories=\{homeListingCategories\}>/)

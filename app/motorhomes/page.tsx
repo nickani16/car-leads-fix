@@ -1,5 +1,9 @@
-import { permanentRedirect } from 'next/navigation'
+import HomepageCategoryLanding, {
+  createHomepageCategoryMetadata,
+} from '@/app/components/HomepageCategoryLanding'
+
+export const generateMetadata = createHomepageCategoryMetadata('motorhomes')
 
 export default function Page() {
-  permanentRedirect('/marketplace/motorhomes')
+  return <HomepageCategoryLanding category="motorhomes" />
 }

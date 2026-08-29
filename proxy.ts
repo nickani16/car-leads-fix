@@ -171,25 +171,17 @@ const PUBLIC_LANGUAGE_PAGES = new Map([
 ])
 
 const RETIRED_CATEGORY_ROUTES = new Map([
-  ['/cars', '/marketplace/cars'],
-  ['/car', '/marketplace/cars'],
-  ['/vans', '/marketplace/vans'],
-  ['/van', '/marketplace/vans'],
-  ['/trucks', '/marketplace/trucks'],
-  ['/truck', '/marketplace/trucks'],
-  ['/motorcycles', '/marketplace/motorcycles'],
-  ['/motorcycle', '/marketplace/motorcycles'],
-  ['/bikes', '/marketplace/motorcycles'],
-  ['/motorhomes', '/marketplace/motorhomes'],
-  ['/motorhome', '/marketplace/motorhomes'],
-  ['/caravans', '/marketplace/caravans'],
-  ['/caravan', '/marketplace/caravans'],
-  ['/farm', '/marketplace/agriculture'],
-  ['/agriculture', '/marketplace/agriculture'],
-  ['/plant', '/marketplace/construction'],
-  ['/construction', '/marketplace/construction'],
-  ['/electric-bikes', '/marketplace/electric-bikes'],
-  ['/e-bikes', '/marketplace/electric-bikes'],
+  ['/cars', '/'],
+  ['/car', '/'],
+  ['/van', '/vans'],
+  ['/truck', '/trucks'],
+  ['/motorcycle', '/motorcycles'],
+  ['/bikes', '/motorcycles'],
+  ['/motorhome', '/motorhomes'],
+  ['/caravan', '/caravans'],
+  ['/farm', '/agriculture'],
+  ['/plant', '/construction'],
+  ['/e-bikes', '/electric-bikes'],
 ])
 
 const LANGUAGE_BY_COUNTRY: Record<string, PublicLanguage | 'sv' | 'de'> = {

@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -10,6 +11,7 @@ import {
 } from 'react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
 import type { HomepageCategorySeo } from '@/lib/homepage-category-config'
+import { rememberPreferredHomeCategory } from './preferred-home-category'
 
 type HomeCategoryContextValue = {
   activeCategory: MarketplaceCategorySlug
@@ -27,13 +29,18 @@ export default function HomeCategoryProvider({
   metadataByCategory: Record<MarketplaceCategorySlug, HomepageCategorySeo>
   initialCategory?: MarketplaceCategorySlug
 }) {
-  const [activeCategory, setActiveCategory] = useState<MarketplaceCategorySlug>(initialCategory)
+  const [activeCategory, setActiveCategoryState] = useState<MarketplaceCategorySlug>(initialCategory)
+  const setActiveCategory = useCallback((category: MarketplaceCategorySlug) => {
+    rememberPreferredHomeCategory(category)
+    setActiveCategoryState(category)
+  }, [])
   const value = useMemo(
     () => ({ activeCategory, setActiveCategory }),
-    [activeCategory],
+    [activeCategory, setActiveCategory],
   )
 
   useEffect(() => {
+    rememberPreferredHomeCategory(activeCategory)
     const metadata = metadataByCategory[activeCategory]
     if (!metadata) return
 

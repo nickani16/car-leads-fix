@@ -18,6 +18,7 @@ import {
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'
+import { usePreferredHomeHref } from './preferred-home-category'
 import BrandLogo from './BrandLogo'
 import InstallAutorellButton from './InstallAutorellButton'
 
@@ -338,7 +339,7 @@ export default function PublicFooter({
   const purchaseTermsHref = `${termsHref}#purchase-terms`
   const refundPolicyHref = localizePublicHref(locale, '/refund-policy')
   const withdrawalHref = localizePublicHref(locale, '/withdrawal')
-  const homeHref = localizePublicHref(locale, '/')
+  const homeHref = usePreferredHomeHref(locale)
 
   return (
     <footer className="border-t border-[#dbe3ee] bg-white px-0 pb-0 pt-10 text-[#101828] lg:pt-14">

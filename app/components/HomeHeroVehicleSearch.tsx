@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react'
 import { createPortal } from 'react-dom'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
@@ -58,6 +59,7 @@ import { getEuCountryName } from '@/lib/eu-countries'
 import { defaultSearchCountryForLocale } from '@/lib/market-locale'
 import { translateListingVehicleValue } from '@/lib/listing-display'
 import { marketplaceBodyTypeOptions } from '@/lib/marketplace-body-types'
+import { homepageCategoryHref } from '@/lib/homepage-category-routes'
 
 type Intent = 'all' | 'sale' | 'leasing'
 
@@ -861,6 +863,7 @@ export default function HomeHeroVehicleSearch({
       setActiveCategory('cars')
       setFilters(emptyFilters)
       setSelectedSuggestions([])
+      router.replace(homepageCategoryHref(locale, 'cars'))
     }
   }
 
@@ -872,7 +875,6 @@ export default function HomeHeroVehicleSearch({
     setFilters(emptyFilters)
     setVerifiedOnly(false)
     setMarket(defaultMarket)
-    setActiveCategory('cars')
     setSelectedSuggestions([])
     setMoreFiltersOpen(false)
   }
@@ -1035,9 +1037,9 @@ export default function HomeHeroVehicleSearch({
               {primaryCategories.map(({ slug, icon: Icon }) => {
                 const selected = category === slug
                 return (
-                  <button
+                  <Link
                     key={slug}
-                    type="button"
+                    href={homepageCategoryHref(locale, slug)}
                     role="tab"
                     aria-selected={selected}
                     onClick={() => selectCategory(slug)}
@@ -1050,7 +1052,7 @@ export default function HomeHeroVehicleSearch({
                     <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.6} aria-hidden="true" />
                     <span className="max-w-full truncate">{categoryLabel(slug, locale)}</span>
                     {selected ? <span className="absolute inset-x-0 bottom-0 h-[3px] bg-[#0866ff]" /> : null}
-                  </button>
+                  </Link>
                 )
               })}
               <button
@@ -1101,9 +1103,9 @@ export default function HomeHeroVehicleSearch({
                 {extraCategories.map(({ slug, icon: Icon }) => {
                   const selected = category === slug
                   return (
-                    <button
+                    <Link
                       key={slug}
-                      type="button"
+                      href={homepageCategoryHref(locale, slug)}
                       onClick={() => selectCategory(slug)}
                       className={`flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-[7px] border px-2 py-2 text-center text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] ${
                         selected
@@ -1113,7 +1115,7 @@ export default function HomeHeroVehicleSearch({
                     >
                       <Icon className="h-6 w-6" strokeWidth={1.6} aria-hidden="true" />
                       <span>{categoryLabel(slug, locale)}</span>
-                    </button>
+                    </Link>
                   )
                 })}
               </div>
