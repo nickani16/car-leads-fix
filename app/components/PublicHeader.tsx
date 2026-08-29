@@ -1828,7 +1828,7 @@ export default function PublicHeader({
                                 <Link
                                   href={desktopBikesItem.href}
                                   onClick={(event) => handleInternalNavigation(event, desktopBikesItem.href)}
-                                  className="group relative m-4 ml-0 min-h-[192px] overflow-hidden rounded-[10px] bg-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+                                  className="group relative m-4 min-h-[192px] overflow-hidden rounded-[10px] bg-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
                                 >
                                   <Image
                                     src="/vehicle-menu-bikes.webp"

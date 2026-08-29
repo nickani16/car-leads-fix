@@ -39,6 +39,8 @@ test('desktop vehicle search menu keeps a focused category set', () => {
   assert.doesNotMatch(desktopSearchMenu, /overflow-y-auto|scrollbar-width:thin/)
   assert.match(desktopSearchMenu, /publicLabel\('Sustainable mobility', 'Hållbar mobilitet', 'Nachhaltige Mobilität'\)/)
   assert.match(desktopSearchMenu, /brightness-\[1\.1\]/)
+  assert.match(desktopSearchMenu, /className="group relative m-4 min-h-\[192px\]/)
+  assert.doesNotMatch(desktopSearchMenu, /group relative m-4 ml-0/)
 })
 
 test('the active marketplace category stays highlighted in desktop and mobile menus', () => {
