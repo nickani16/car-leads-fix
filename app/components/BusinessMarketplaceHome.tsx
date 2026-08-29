@@ -11,7 +11,6 @@ import {
 } from './HomeCategoryDiscovery'
 import HomeVehicleLinkDirectory from './HomeVehicleLinkDirectory'
 import HomeVehicleNewsScroller from './HomeVehicleNewsScroller'
-import HomeLocationConsentPrompt from './HomeLocationConsentPrompt'
 import HomeListingCategorySwitcher from './HomeListingCategorySwitcher'
 import NewsletterSignup from './NewsletterSignup'
 import PublicFooter from './PublicFooter'
@@ -637,7 +636,6 @@ export default async function BusinessMarketplaceHome({
   return (
     <main className="min-h-screen max-w-full overflow-x-hidden bg-white text-[#101828]">
       <PublicHeader locale={locale} marketCode={marketCode} />
-      <HomeLocationConsentPrompt locale={locale} />
 
       <HomeCategoryProvider metadataByCategory={metadataByCategory}>
         <section className="-mt-[2px] bg-white pt-0">

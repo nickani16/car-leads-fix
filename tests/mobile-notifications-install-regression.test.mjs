@@ -8,7 +8,7 @@ const installButton = readFileSync(new URL('../app/components/InstallAutorellBut
 const installAction = readFileSync(new URL('../app/components/AppInstallAction.tsx', import.meta.url), 'utf8')
 const pwaRegistration = readFileSync(new URL('../app/components/PwaRegistration.tsx', import.meta.url), 'utf8')
 const footer = readFileSync(new URL('../app/components/PublicFooter.tsx', import.meta.url), 'utf8')
-const locationPrompt = readFileSync(new URL('../app/components/HomeLocationConsentPrompt.tsx', import.meta.url), 'utf8')
+const marketplaceHome = readFileSync(new URL('../app/components/BusinessMarketplaceHome.tsx', import.meta.url), 'utf8')
 const registerPage = readFileSync(new URL('../app/registrera/page.tsx', import.meta.url), 'utf8')
 const layout = readFileSync(new URL('../app/layout.tsx', import.meta.url), 'utf8')
 const serviceWorker = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
@@ -16,8 +16,8 @@ const globals = readFileSync(new URL('../app/globals.css', import.meta.url), 'ut
 
 const locales = ['sv', 'en', 'de', 'at', 'be', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']
 
-test('location sharing remains mobile-only and registration hides the mobile bottom navigation', () => {
-  assert.match(locationPrompt, /min-\[1120px\]:hidden/)
+test('home location sharing prompt is removed and registration hides the mobile bottom navigation', () => {
+  assert.doesNotMatch(marketplaceHome, /HomeLocationConsentPrompt/)
   assert.match(registerPage, /<PublicHeader locale=\{locale\} marketCode=\{marketCode\} hideMobileBottomNav \/>/)
   assert.match(header, /hideMobileBottomNav \|\| authModalOpen \? 'hidden' : ''/)
 })
