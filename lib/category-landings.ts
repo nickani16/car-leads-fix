@@ -7,7 +7,7 @@ import {
   translatePublic,
   translatePublicObject,
   type PublicLocale,
-} from './public-i18n'
+} from './public-client-i18n'
 
 type CoreLanguage = 'sv' | 'en' | 'de'
 type LocalizedText = Record<CoreLanguage, string>

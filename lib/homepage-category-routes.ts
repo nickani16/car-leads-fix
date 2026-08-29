@@ -1,5 +1,5 @@
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
-import { localizePublicHref, stripLocalePrefix, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, stripLocalePrefix, type PublicLocale } from '@/lib/public-locale'
 
 export const homepageCategoryPaths = {
   cars: '/',

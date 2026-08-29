@@ -19,7 +19,7 @@ import {
   localizePublicHref,
   translatePublicObject,
   type PublicLocale,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 import { createClient } from '@/lib/supabase/client'
 import { isStrongPassword, PASSWORD_REQUIREMENTS } from '@/lib/password-policy'
 

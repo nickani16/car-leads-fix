@@ -47,7 +47,7 @@ import {
   translatePublic,
   translatePublicObject,
   type PublicLocale,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 import {
   currencyForCountry,
   getMarketplaceCategory,

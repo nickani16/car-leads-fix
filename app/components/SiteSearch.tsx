@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-locale'
 
 type SearchResult = {
   href: string

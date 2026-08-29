@@ -647,19 +647,19 @@ export default async function BusinessMarketplaceHome({
         <section className="-mt-[2px] bg-white pt-0">
         <div className="relative aspect-[750/400] overflow-hidden bg-[#0866ff] sm:aspect-auto sm:h-[340px] lg:h-[330px]">
           <Image
-            src="/autorell-home-mobile-market-hero.png"
+            src="/autorell-home-mobile-market-hero.webp"
             alt={t.heroAlt}
             fill
-            priority
+            fetchPriority="high"
             unoptimized
             className="object-fill lg:hidden"
             sizes="100vw"
           />
           <Image
-            src="/autorell-home-desktop-market-hero.png"
+            src="/autorell-home-desktop-market-hero.webp"
             alt={t.heroAlt}
             fill
-            priority
+            loading="lazy"
             unoptimized
             className="hidden object-cover object-center lg:block"
             sizes="100vw"

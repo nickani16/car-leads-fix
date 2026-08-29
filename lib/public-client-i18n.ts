@@ -1,4 +1,4 @@
-import translations from './generated-public-translations.json'
+import translations from './generated-public-client-translations.json'
 import { manualPublicTranslation } from './manual-public-translations'
 import {
   repairMojibakeText,
@@ -27,9 +27,14 @@ const structuralKeys = new Set([
 export function translatePublic(locale: PublicLocale, value: string) {
   const cleanValue = repairMojibakeText(value)
   if (locale === 'en') return cleanValue
-  const manual = manualPublicTranslation(translationLocale(locale), cleanValue) || manualPublicTranslation(translationLocale(locale), value)
+  const normalizedLocale = translationLocale(locale)
+  const manual =
+    manualPublicTranslation(normalizedLocale, cleanValue) ||
+    manualPublicTranslation(normalizedLocale, value)
   if (manual) return repairMojibakeText(manual)
-  const dictionary = (translations as Record<string, Record<string, string> | undefined>)[translationLocale(locale)]
+  const dictionary = (
+    translations as Record<string, Record<string, string> | undefined>
+  )[normalizedLocale]
   return repairMojibakeText(dictionary?.[cleanValue] || dictionary?.[value] || cleanValue)
 }
 

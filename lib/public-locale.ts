@@ -1,0 +1,164 @@
+export const publicLanguages = [
+  'en',
+  'at',
+  'be',
+  'fr',
+  'es',
+  'it',
+  'pl',
+  'nl',
+  'fi',
+  'da',
+] as const
+
+export type PublicLanguage = (typeof publicLanguages)[number]
+export type PublicLocale = 'sv' | 'de' | PublicLanguage
+
+const localePathPrefixes: Record<PublicLocale, string> = {
+  sv: '/se',
+  de: '/de',
+  en: '',
+  at: '/at',
+  be: '/be',
+  fr: '/fr',
+  es: '/es',
+  it: '/it',
+  pl: '/pl',
+  nl: '/nl',
+  fi: '/fi',
+  da: '/dk',
+}
+
+const localePrefixes = new Set(
+  Object.values(localePathPrefixes).filter(Boolean).map((value) => value.slice(1)),
+)
+
+export function isPublicLanguage(value: string): value is PublicLanguage {
+  return publicLanguages.includes(value as PublicLanguage)
+}
+
+export function repairMojibakeText(value: string) {
+  let result = value
+  for (let index = 0; index < 3 && /Ã|Â|â/.test(result); index += 1) {
+    try {
+      result = decodeURIComponent(escape(result))
+    } catch {
+      break
+    }
+  }
+  return result
+}
+
+export function localizePublicHref(locale: PublicLocale, href: string) {
+  if (/^(https?:|mailto:|tel:)/.test(href)) return href
+  if (href.startsWith('#')) return href
+
+  const [beforeHash, hash = ''] = href.split('#')
+  const [rawPathname, query = ''] = beforeHash.split('?')
+  const normalizedPath = rawPathname || '/'
+  if (
+    normalizedPath.startsWith('/api/') ||
+    normalizedPath.startsWith('/_next/') ||
+    normalizedPath.startsWith('/admin')
+  ) {
+    return href
+  }
+
+  const strippedPath = stripLocalePrefix(normalizedPath)
+  const prefix = locale === 'sv' || locale === 'de' ? '' : localePathPrefix(locale)
+  const localized =
+    prefix === ''
+      ? strippedPath
+      : strippedPath === '/'
+        ? prefix
+        : `${prefix}${strippedPath}`
+  const withQuery = query ? `${localized}?${query}` : localized
+
+  return hash ? `${withQuery}#${hash}` : withQuery
+}
+
+export function localePathPrefix(locale: PublicLocale) {
+  return localePathPrefixes[locale] || ''
+}
+
+export function translationLocale(locale: PublicLocale): PublicLocale {
+  if (locale === 'at') return 'de'
+  if (locale === 'be') return 'nl'
+  return locale
+}
+
+export function stripLocalePrefix(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  const first = segments[0]
+  if (!first) return '/'
+  if (
+    localePrefixes.has(first) ||
+    publicLanguages.includes(first as PublicLanguage)
+  ) {
+    const rest = segments.slice(1).join('/')
+    return rest ? `/${rest}` : '/'
+  }
+  return pathname
+}
+
+export function switchLocaleHref(locale: PublicLocale, currentHref: string) {
+  return localizePublicHref(locale, currentHref || '/')
+}
+
+export const publicPagePaths = [
+  '',
+  '/find-cars',
+  '/vehicles',
+  '/how-it-works',
+  '/benefits',
+  '/sell-car',
+  '/sell-to-dealer',
+  '/sell-van',
+  '/about',
+  '/faq',
+  '/help-center',
+  '/safety-tips',
+  '/help-center/payment/private-listing-prices',
+  '/vehicle-news',
+  '/contact',
+  '/pricing',
+  '/business',
+  '/business/pilot',
+  '/business/inventory-import',
+  '/app',
+  '/saved-searches',
+  '/privacy',
+  '/cookies',
+  '/terms',
+  '/refund-policy',
+  '/report',
+  '/login',
+  '/register',
+] as const
+
+export function getPublicAlternates(pathname: string) {
+  const normalized = pathname === '/' ? '' : pathname
+  const domainAlternates: Array<[string, string]> =
+    normalized === ''
+      ? [
+          ['sv-SE', 'https://www.autorell.se/'],
+          ['de-DE', 'https://www.autorell.de/'],
+        ]
+      : normalized === '/find-cars'
+        ? [
+            ['sv-SE', 'https://www.autorell.se/hitta-bilar'],
+            ['de-DE', 'https://www.autorell.de/fahrzeuge-finden'],
+          ]
+        : []
+
+  return Object.fromEntries([
+    ...publicLanguages.map((locale) => [
+      locale,
+      locale === 'en'
+        ? `https://www.autorell.com${normalized || '/'}`
+        : `https://www.autorell.com/${locale}${normalized}`,
+    ]),
+    ...domainAlternates,
+    ['x-default', `https://www.autorell.com${normalized || '/'}`],
+  ])
+}

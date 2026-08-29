@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Smartphone } from 'lucide-react'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-locale'
 
 type InstallCopy = {
   button: string

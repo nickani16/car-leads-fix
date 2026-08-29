@@ -1,4 +1,4 @@
-import { repairMojibakeText } from './public-i18n'
+import { repairMojibakeText } from './public-locale'
 
 const translations: Record<string, string> = {
   // Swedish body types

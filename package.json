@@ -11,7 +11,8 @@
     "test": "node --test tests",
     "verify:seo-sitemaps": "node scripts/verify-seo-sitemap-metadata.mjs",
     "audit:live-sitemaps": "node scripts/audit-live-sitemaps.mjs",
-    "audit:live-seo-pages": "node scripts/audit-live-seo-pages.mjs"
+    "audit:live-seo-pages": "node scripts/audit-live-seo-pages.mjs",
+    "generate:client-translations": "node scripts/generate-public-client-translations.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

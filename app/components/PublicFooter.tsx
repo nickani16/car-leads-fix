@@ -14,7 +14,7 @@ import {
   localizePublicHref,
   translatePublicObject,
   type PublicLocale,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 import { activeMarketCountryCodes } from '@/lib/eu-countries'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import { marketForPathCode } from '@/lib/market-locale'

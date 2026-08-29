@@ -65,7 +65,7 @@ import {
   translatePublic,
   translatePublicObject,
   type PublicLocale,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 import { fetchSavedListingIds, SAVED_LISTINGS_KEY } from '@/lib/saved-listings'
 import { usePreferredHomeHref } from './preferred-home-category'
 import {

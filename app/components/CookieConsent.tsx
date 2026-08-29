@@ -8,7 +8,7 @@ import {
   isPublicLanguage,
   localizePublicHref,
   translatePublicObject,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 180

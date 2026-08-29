@@ -1,4 +1,4 @@
-import { translationLocale, type PublicLocale } from './public-i18n'
+import { translationLocale, type PublicLocale } from './public-locale'
 
 type AuthMode = 'login' | 'register'
 type AuthView = AuthMode | 'forgot' | 'reset'

@@ -1,4 +1,4 @@
-import { translatePublic, type PublicLocale } from './public-i18n'
+import { translatePublic, type PublicLocale } from './public-client-i18n'
 import { vehicleValueInEnglish } from './vehicle-translation'
 
 type ListingChipInput = {

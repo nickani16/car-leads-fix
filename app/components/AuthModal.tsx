@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, EyeOff, MailCheck, X }
 import {
   localizePublicHref,
   type PublicLocale,
-} from '@/lib/public-i18n'
+} from '@/lib/public-client-i18n'
 import { createClient } from '@/lib/supabase/client'
 import { isStrongPassword } from '@/lib/password-policy'
 import { getAuthSpamHintCopy, getLocalizedAuthModalCopy } from '@/lib/auth-copy'

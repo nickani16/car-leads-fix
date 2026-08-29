@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, Check, Mail } from 'lucide-react'
 import type { MarketplaceCategorySlug } from '@/lib/marketplace'
-import { localizePublicHref, type PublicLocale } from '@/lib/public-i18n'
+import { localizePublicHref, type PublicLocale } from '@/lib/public-locale'
 
 const newsletterCopy = {
   sv: {
