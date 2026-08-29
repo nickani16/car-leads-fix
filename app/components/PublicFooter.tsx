@@ -755,7 +755,7 @@ export function MarketSelectorModal({
         <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
           <label className="relative block max-w-[520px]">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98a2b3]" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={dialogCopy.search} className="h-11 w-full rounded-[10px] border border-[#cfd8e6] bg-white pl-10 pr-4 text-sm font-normal text-[#101828] outline-none transition placeholder:font-normal placeholder:text-[#98a2b3] focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10" autoFocus />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={dialogCopy.search} className="h-11 w-full rounded-[10px] border border-[#cfd8e6] bg-white pl-10 pr-4 text-[13px] font-normal text-[#667085] outline-none transition placeholder:font-normal placeholder:text-[#667085] placeholder:opacity-100 focus:border-[#0866ff] focus:ring-4 focus:ring-[#0866ff]/10" autoFocus />
           </label>
 
           <div className="mt-6">

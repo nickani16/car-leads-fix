@@ -30,9 +30,9 @@ test('marketplace filter surfaces use the intended heading and body weights', ()
   )
 })
 
-test('market selector search placeholder uses regular gray typography', () => {
+test('market selector search text uses small regular gray typography in Safari', () => {
   assert.match(
     footerSource,
-    /placeholder=\{dialogCopy\.search\} className="[^"]*font-normal text-\[#101828\][^"]*placeholder:font-normal placeholder:text-\[#98a2b3\]/,
+    /placeholder=\{dialogCopy\.search\} className="[^"]*text-\[13px\] font-normal text-\[#667085\][^"]*placeholder:font-normal placeholder:text-\[#667085\] placeholder:opacity-100/,
   )
 })
