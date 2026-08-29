@@ -36,7 +36,9 @@ test('listing removes the quick facts rail and mobile bottom contact menu', () =
   assert.match(detail, /data-mobile-primary-contact/)
   assert.match(detail, /buttonLabel=\{contactSellerLabel\}/)
   assert.match(detail, /data-mobile-primary-contact[\s\S]*<RevealPhoneButton/)
-  assert.match(detail, /<RevealPhoneButton listingId=\{listing\.id\} locale=\{locale\} size="large" \/>/)
+  assert.match(detail, /buttonClassName="inline-flex min-h-10/)
+  assert.match(detail, /<RevealPhoneButton listingId=\{listing\.id\} locale=\{locale\} \/>/)
+  assert.doesNotMatch(detail, /<RevealPhoneButton listingId=\{listing\.id\} locale=\{locale\} size="large" \/>/)
   assert.match(revealPhone, /size === 'large' \? 'min-h-12 rounded-\[10px\] text-sm'/)
   assert.doesNotMatch(stickyContact, /z-\[400\] hidden/)
   assert.match(detail, /id="listing-contact-card" className="scroll-mt-20/)
@@ -64,6 +66,7 @@ test('contact form distinguishes professional and private buyers with calm place
   assert.match(contactApi, /Buyer type: Professional/)
   assert.match(contactApi, /Company: \$\{company\}/)
   assert.match(contact, /compact \? 'h-10 text-\[13px\]'/)
+  assert.match(detail, /id="listing-contact-card"[\s\S]*buttonFontWeight=\{600\}/)
 })
 
 test('listing detail has an accessible localized back-to-top action', () => {

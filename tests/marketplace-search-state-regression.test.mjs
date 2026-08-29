@@ -511,16 +511,11 @@ test('electric listing range uses localized WLTP help and map previews badge off
   assert.match(vehicleSearchExperienceSource, /rounded-full px-2\.5 py-1 text-\[12px\][\s\S]*\{offerBadge\.label\}[\s\S]*uiText\(locale, 'Close', 'St\\u00e4ng', 'Schlie\\u00dfen'\)/)
 })
 
-test('listing vehicle profile is automatically built from listing data, history and market insights', () => {
-  assert.match(listingDetailPageSource, /<VehicleProfileSection[\s\S]*marketInsight=\{marketInsight\}[\s\S]*listingHistory=\{listingHistory\}/)
-  assert.match(listingDetailPageSource, /function buildVehicleProfileCompleteness\(listing: ListingRow, specsCount: number, equipmentCount: number\)/)
-  assert.match(listingDetailPageSource, /Automatisk profil/)
-  assert.match(listingDetailPageSource, /Datatäckning/)
-  assert.match(listingDetailPageSource, /completeness\.score/)
-  assert.match(listingDetailPageSource, /marketInsight\.matchingCriteria\.join/)
-  assert.match(listingDetailPageSource, /listingHistory\.length/)
-  assert.match(listingDetailPageSource, /Platsprofil/)
-  assert.match(listingDetailPageSource, /Publiceringsdata/)
+test('listing vehicle profile section is removed', () => {
+  assert.doesNotMatch(listingDetailPageSource, /<VehicleProfileSection/)
+  assert.doesNotMatch(listingDetailPageSource, /function VehicleProfileSection/)
+  assert.doesNotMatch(listingDetailPageSource, /function buildVehicleProfileCompleteness/)
+  assert.doesNotMatch(listingDetailPageSource, /Automatisk profil|Datatäckning/)
 })
 
 test('marketplace comparison is localized, capped at four and uses a comparison matrix', () => {

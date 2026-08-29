@@ -34,6 +34,12 @@ test('optional telemetry and advertising load only after explicit consent', () =
   assert.match(cookieConsent, /setAdvertisingAllowed/)
   assert.match(cookieConsent, /choiceFromPurposes\(analyticsAllowed, advertisingAllowed\)/)
   assert.match(cookieConsent, /\{purposes\.save\}/)
+  assert.match(cookieConsent, /max-w-\[460px\]/)
+  assert.match(cookieConsent, /bg-\[#111827\]\/60/)
+  assert.match(cookieConsent, /grid-cols-2 gap-3/)
+  assert.match(cookieConsent, /detailsExpanded/)
+  assert.match(cookieConsent, /manageChoices/)
+  assert.doesNotMatch(cookieConsent, /<BrandLogo/)
   for (const locale of ['en', 'sv', 'de', 'fr', 'es', 'it', 'pl', 'nl', 'fi', 'da']) {
     assert.match(cookieConsent, new RegExp(`\\n  ${locale}: \\{`))
   }

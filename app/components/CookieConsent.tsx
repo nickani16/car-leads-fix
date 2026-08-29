@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Settings2, X } from 'lucide-react'
+import { ChevronDown, MonitorSmartphone, UserRound, X } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import BrandLogo from './BrandLogo'
 import { euBuyerMarkets } from '@/lib/eu-buyer-markets'
 import {
   isPublicLanguage,
@@ -339,6 +338,25 @@ const purposeCopy: Record<CookieLocale, {
   },
 }
 
+const cookieUiCopy: Record<CookieLocale, {
+  welcome: string
+  consentTitle: string
+  learnMore: string
+  showLess: string
+  manageChoices: string
+}> = {
+  sv: { welcome: 'Välkommen till Autorell.se', consentTitle: 'Autorell behöver ditt samtycke för att använda personuppgifter till:', learnMore: 'Läs mer', showLess: 'Visa mindre', manageChoices: 'Hantera alternativ' },
+  de: { welcome: 'Willkommen bei Autorell', consentTitle: 'Autorell benötigt Ihre Einwilligung, um personenbezogene Daten zu verwenden für:', learnMore: 'Mehr erfahren', showLess: 'Weniger anzeigen', manageChoices: 'Optionen verwalten' },
+  en: { welcome: 'Welcome to Autorell', consentTitle: 'Autorell needs your consent to use personal data for:', learnMore: 'Read more', showLess: 'Show less', manageChoices: 'Manage choices' },
+  fr: { welcome: 'Bienvenue sur Autorell', consentTitle: 'Autorell a besoin de votre consentement pour utiliser vos données personnelles afin de :', learnMore: 'En savoir plus', showLess: 'Afficher moins', manageChoices: 'Gérer les choix' },
+  es: { welcome: 'Te damos la bienvenida a Autorell', consentTitle: 'Autorell necesita tu consentimiento para usar datos personales con el fin de:', learnMore: 'Más información', showLess: 'Mostrar menos', manageChoices: 'Gestionar opciones' },
+  it: { welcome: 'Benvenuto su Autorell', consentTitle: 'Autorell richiede il tuo consenso per utilizzare i dati personali per:', learnMore: 'Scopri di più', showLess: 'Mostra meno', manageChoices: 'Gestisci le opzioni' },
+  pl: { welcome: 'Witamy w Autorell', consentTitle: 'Autorell potrzebuje Twojej zgody na wykorzystywanie danych osobowych do:', learnMore: 'Dowiedz się więcej', showLess: 'Pokaż mniej', manageChoices: 'Zarządzaj opcjami' },
+  nl: { welcome: 'Welkom bij Autorell', consentTitle: 'Autorell heeft je toestemming nodig om persoonsgegevens te gebruiken voor:', learnMore: 'Lees meer', showLess: 'Toon minder', manageChoices: 'Keuzes beheren' },
+  fi: { welcome: 'Tervetuloa Autorelliin', consentTitle: 'Autorell tarvitsee suostumuksesi henkilötietojen käyttöön seuraaviin tarkoituksiin:', learnMore: 'Lue lisää', showLess: 'Näytä vähemmän', manageChoices: 'Hallitse valintoja' },
+  da: { welcome: 'Velkommen til Autorell', consentTitle: 'Autorell har brug for dit samtykke til at bruge personoplysninger til:', learnMore: 'Læs mere', showLess: 'Vis mindre', manageChoices: 'Administrer valg' },
+}
+
 function getCookieLocale(): CookieLocale {
   const marketCode = window.location.pathname.split('/').filter(Boolean)[0]
   if (marketCode === 'se') return 'sv'
@@ -404,6 +422,7 @@ export default function CookieConsent({
 }) {
   const [visible, setVisible] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [detailsExpanded, setDetailsExpanded] = useState(false)
   const [analyticsAllowed, setAnalyticsAllowed] = useState(false)
   const [advertisingAllowed, setAdvertisingAllowed] = useState(false)
   const locale = useSyncExternalStore(
@@ -416,6 +435,7 @@ export default function CookieConsent({
       ? cookieCopy[locale as keyof typeof cookieCopy]
       : translatePublicObject(locale, cookieCopy.en)
   const purposes = purposeCopy[locale]
+  const ui = cookieUiCopy[locale]
   const marketCode = initialMarketCode || ''
   const policyHref = euBuyerMarkets.some((market) => market.code === marketCode)
     ? `/${marketCode}/cookies`
@@ -453,6 +473,7 @@ export default function CookieConsent({
     }
     setVisible(false)
     setSettingsOpen(false)
+    setDetailsExpanded(false)
   }
 
   function toggleSettings() {
@@ -469,55 +490,81 @@ export default function CookieConsent({
   if (!visible) return null
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto bg-[#07111f]/15 p-0 backdrop-blur-[7px]">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto bg-[#111827]/60 p-3 sm:p-5">
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="my-auto overflow-hidden rounded-[14px] border border-[#d6dde8] bg-white shadow-[0_28px_90px_rgba(9,24,50,.22)]"
-        style={{ width: 'min(734px, calc(100vw - 32px))' }}
+        className="my-auto w-full max-w-[460px] overflow-hidden rounded-[5px] border border-[#d0d5dd] bg-white shadow-[0_12px_35px_rgba(16,24,40,.28)]"
       >
-        <div className="relative min-w-0 max-h-[calc(100dvh-32px)] overflow-y-auto px-6 py-7 sm:max-h-[calc(100dvh-48px)] sm:px-8 sm:py-9 lg:px-10">
+        <div className="relative min-w-0 max-h-[calc(100dvh-24px)] overflow-y-auto px-5 py-5 sm:max-h-[calc(100dvh-40px)] sm:px-9 sm:py-6">
           {readConsent() ? (
             <button
               type="button"
               onClick={() => {
                 setVisible(false)
                 setSettingsOpen(false)
+                setDetailsExpanded(false)
               }}
-              className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-[10px] text-[#667085] transition hover:bg-[#f1f4f9] hover:text-[#101828]"
+              className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-[#667085] transition hover:bg-[#f2f4f7] hover:text-[#101828]"
               aria-label={t.close}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           ) : null}
 
-          <div className="flex justify-center">
-            <BrandLogo compact underline={false} />
-          </div>
-
-          <div className="mt-7 min-w-0">
+          <div className="min-w-0 text-center">
             <h2
               id="cookie-title"
-              className="break-words text-[28px] font-medium leading-[1.12] tracking-normal text-[#101828] sm:text-[30px]"
+              className="break-words text-[13px] font-medium leading-5 text-[#667085]"
             >
-              {t.title}
+              {ui.welcome}
             </h2>
-            <p className="mt-4 break-words text-[15px] leading-7 text-[#1f2937] [overflow-wrap:anywhere]">
-              {t.intro}
-            </p>
-
-            <h3 className="mt-7 break-words text-[20px] font-medium leading-snug tracking-normal text-[#101828]">
-              {t.detailsTitle}
+            <h3 className="mx-auto mt-2 max-w-[340px] break-words text-[16px] font-semibold leading-[1.35] text-[#101828]">
+              {ui.consentTitle}
             </h3>
-            <p className="mt-3 break-words text-[14px] leading-6 text-[#1f2937] [overflow-wrap:anywhere]">
-              {t.details}
-            </p>
-            <p className="mt-3 break-words text-[14px] leading-6 text-[#475467] [overflow-wrap:anywhere]">
+          </div>
+
+          <div className="mt-5 grid gap-4">
+            <div className="grid grid-cols-[28px_1fr] items-start gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="text-[12px] leading-[1.35] text-[#344054]">{t.optionalText}</p>
+            </div>
+            <div className="grid grid-cols-[28px_1fr] items-start gap-3">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
+                <MonitorSmartphone className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="text-[12px] leading-[1.35] text-[#344054]">{t.necessaryText}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setDetailsExpanded((expanded) => !expanded)}
+            aria-expanded={detailsExpanded}
+            className="mt-4 inline-flex items-center gap-2 text-[12px] font-medium text-[#344054] transition hover:text-[#0866ff]"
+          >
+            <span className="grid h-7 w-7 place-items-center rounded-full border border-[#d0d5dd]">
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
+            </span>
+            {detailsExpanded ? ui.showLess : ui.learnMore}
+          </button>
+
+          {detailsExpanded ? (
+            <div className="mt-3 grid gap-2">
+              <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">{t.intro}</p>
+              <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">{t.details}</p>
+            </div>
+          ) : null}
+
+          <div className="mt-4 min-w-0">
+            <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">
               {t.rights}{' '}
               <Link
                 href={policyHref}
-                className="font-medium text-[#0866ff] underline underline-offset-2"
+                className="font-medium text-[#344054] underline underline-offset-2"
               >
                 {t.policy}
               </Link>
@@ -526,7 +573,7 @@ export default function CookieConsent({
           </div>
 
           {settingsOpen ? (
-            <div className="mt-6 grid gap-3 border-t border-[#e4e9f2] pt-5">
+            <div className="mt-4 grid gap-2.5 border-t border-[#e4e7ec] pt-4">
               <ConsentCategory
                 title={t.necessaryTitle}
                 description={t.necessaryText}
@@ -548,36 +595,27 @@ export default function CookieConsent({
               <button
                 type="button"
                 onClick={() => choose(choiceFromPurposes(analyticsAllowed, advertisingAllowed))}
-                className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[14px] bg-[#0866ff] px-5 text-[14px] font-medium text-white transition hover:bg-[#075be5]"
+                className="mt-1 inline-flex min-h-9 items-center justify-center rounded-full bg-[#0866ff] px-5 text-[12px] font-semibold text-white transition hover:bg-[#075be5]"
               >
                 {purposes.save}
               </button>
             </div>
           ) : null}
 
-          <div className="mt-7 grid min-w-0 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid min-w-0 grid-cols-2 gap-3 border-t border-[#d0d5dd] pt-4">
             <button
               type="button"
               onClick={toggleSettings}
               aria-expanded={settingsOpen}
-              className="order-3 inline-flex min-h-11 min-w-0 items-center justify-center rounded-[14px] border border-[#1d2939] bg-white px-5 text-[14px] font-medium text-[#101828] transition hover:border-[#0866ff] hover:text-[#0866ff] sm:order-1"
+              className="inline-flex min-h-9 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-3 text-center text-[12px] font-semibold text-white transition hover:bg-[#075be5]"
             >
-              <Settings2 className="mr-2 h-4 w-4 sm:hidden" />
-              {settingsOpen ? t.hide : t.settings}
-            </button>
-            <button
-              type="button"
-              onClick={() => choose('necessary')}
-              className="order-2 inline-flex min-h-11 min-w-0 items-center justify-center rounded-[14px] border border-[#0866ff] bg-white px-5 text-[14px] font-medium text-[#0866ff] transition hover:bg-[#f2f6ff]"
-            >
-              {t.acceptNecessary}
+              {settingsOpen ? t.hide : ui.manageChoices}
             </button>
             <button
               type="button"
               onClick={() => choose('all')}
-              className="order-1 inline-flex min-h-11 min-w-0 items-center justify-center rounded-[14px] border border-[#0866ff] bg-[#0866ff] px-5 text-[14px] font-medium text-white transition hover:border-[#075be5] hover:bg-[#075be5] sm:order-3"
+              className="inline-flex min-h-9 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-3 text-center text-[12px] font-semibold text-white transition hover:bg-[#075be5]"
             >
-              <Check className="mr-2 h-4 w-4" />
               {t.acceptAll}
             </button>
           </div>
