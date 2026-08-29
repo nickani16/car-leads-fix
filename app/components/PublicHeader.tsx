@@ -67,7 +67,6 @@ import {
   type PublicLocale,
 } from '@/lib/public-i18n'
 import { fetchSavedListingIds, SAVED_LISTINGS_KEY } from '@/lib/saved-listings'
-import { homepageCategoryFromPath } from '@/lib/homepage-category-routes'
 import { usePreferredHomeHref } from './preferred-home-category'
 import {
   fetchSavedSearchCount,
@@ -1132,7 +1131,7 @@ export default function PublicHeader({
     marketplaceCategories.find(
       (category) =>
         unprefixedPathname === `/marketplace/${category.slug}`,
-    )?.slug || homepageCategoryFromPath(unprefixedPathname)
+    )?.slug || null
   const activeMarketplaceChannel =
     marketplaceChannel ||
     (activeCategorySlug
