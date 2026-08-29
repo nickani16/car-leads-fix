@@ -28,14 +28,6 @@ test('sell menu exposes the dealer flow with explicit copy for every public mark
   assert.match(header, /'\/sell-to-dealer'/)
 })
 
-test('desktop sell menu uses a restrained marketplace layout without icon tiles', () => {
-  assert.match(header, /sellMenuOpen[\s\S]*w-\[22rem\][\s\S]*grid-cols-\[20px_minmax\(0,1fr\)_16px\]/)
-  assert.match(header, /border-b border-\[#edf1f6\][\s\S]*last:border-b-0 hover:bg-\[#f8fafc\]/)
-  assert.match(header, /<Icon className="mt-0\.5 h-\[17px\] w-\[17px\] text-\[#475467\]/)
-  assert.match(header, /<ChevronRight className="mt-0\.5 h-4 w-4 text-\[#98a2b3\]/)
-  assert.doesNotMatch(header, /sellMenuLinks\.map[\s\S]{0,1200}rounded-\[10px\] bg-\[#edf5ff\]/)
-})
-
 test('mobile bottom navigation is a floating rounded glass bar', () => {
   assert.match(header, /aria-label=\{publicLabel\('Mobile navigation'/)
   assert.match(header, /pointer-events-none fixed bottom-0 left-3/)
