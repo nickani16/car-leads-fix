@@ -6,8 +6,12 @@ const experienceSource = readFileSync(
   new URL('../app/components/VehicleSearchExperience.tsx', import.meta.url),
   'utf8',
 )
+const footerSource = readFileSync(
+  new URL('../app/components/PublicFooter.tsx', import.meta.url),
+  'utf8',
+)
 
-test('marketplace filter surfaces use weight 500 above the divider and 400 below it', () => {
+test('marketplace filter surfaces use the intended heading and body weights', () => {
   assert.match(
     experienceSource,
     /<h2 className="min-w-0 text-\[16px\] !font-medium[^>]*>\s*\{title\}/,
@@ -18,10 +22,17 @@ test('marketplace filter surfaces use weight 500 above the divider and 400 below
   )
   assert.match(
     experienceSource,
-    /<p className="min-w-0 text-\[17px\] font-medium[^>]*>\{uiText\(locale, 'Filter'/,
+    /<p className="min-w-0 text-\[17px\] font-semibold[^>]*>\{uiText\(locale, 'Filter'/,
   )
   assert.match(
     experienceSource,
     /min-h-0 flex-1 space-y-4[^"\n]*font-normal[^"\n]*\[&_\*\]:!font-normal/,
+  )
+})
+
+test('market selector search placeholder uses regular gray typography', () => {
+  assert.match(
+    footerSource,
+    /placeholder=\{dialogCopy\.search\} className="[^"]*font-normal text-\[#101828\][^"]*placeholder:font-normal placeholder:text-\[#98a2b3\]/,
   )
 })
