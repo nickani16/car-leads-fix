@@ -495,9 +495,9 @@ export default function CookieConsent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-title"
-        className="my-auto w-full max-w-[460px] overflow-hidden rounded-[5px] border border-[#d0d5dd] bg-white shadow-[0_12px_35px_rgba(16,24,40,.28)]"
+        className="my-auto w-full max-w-[520px] overflow-hidden rounded-[6px] border border-[#d0d5dd] bg-white shadow-[0_16px_45px_rgba(16,24,40,.3)]"
       >
-        <div className="relative min-w-0 max-h-[calc(100dvh-24px)] overflow-y-auto px-5 py-5 sm:max-h-[calc(100dvh-40px)] sm:px-9 sm:py-6">
+        <div className="relative min-w-0 max-h-[calc(100dvh-24px)] overflow-y-auto px-5 py-6 sm:max-h-[calc(100dvh-40px)] sm:px-11 sm:py-8">
           {readConsent() ? (
             <button
               type="button"
@@ -516,27 +516,27 @@ export default function CookieConsent({
           <div className="min-w-0 text-center">
             <h2
               id="cookie-title"
-              className="break-words text-[13px] font-medium leading-5 text-[#667085]"
+              className="break-words text-[14px] font-medium leading-5 text-[#667085]"
             >
               {ui.welcome}
             </h2>
-            <h3 className="mx-auto mt-2 max-w-[340px] break-words text-[16px] font-semibold leading-[1.35] text-[#101828]">
+            <h3 className="mx-auto mt-2 max-w-[390px] break-words text-[18px] font-semibold leading-[1.35] text-[#101828]">
               {ui.consentTitle}
             </h3>
           </div>
 
-          <div className="mt-5 grid gap-4">
-            <div className="grid grid-cols-[28px_1fr] items-start gap-3">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
-                <UserRound className="h-4 w-4" aria-hidden="true" />
+          <div className="mt-6 grid gap-5">
+            <div className="grid grid-cols-[32px_1fr] items-start gap-3.5">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
+                <UserRound className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
-              <p className="text-[12px] leading-[1.35] text-[#344054]">{t.optionalText}</p>
+              <p className="pt-0.5 text-[13px] leading-[1.45] text-[#344054]">{t.optionalText}</p>
             </div>
-            <div className="grid grid-cols-[28px_1fr] items-start gap-3">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
-                <MonitorSmartphone className="h-4 w-4" aria-hidden="true" />
+            <div className="grid grid-cols-[32px_1fr] items-start gap-3.5">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8f2ff] text-[#0866ff]">
+                <MonitorSmartphone className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
-              <p className="text-[12px] leading-[1.35] text-[#344054]">{t.necessaryText}</p>
+              <p className="pt-0.5 text-[13px] leading-[1.45] text-[#344054]">{t.necessaryText}</p>
             </div>
           </div>
 
@@ -544,7 +544,7 @@ export default function CookieConsent({
             type="button"
             onClick={() => setDetailsExpanded((expanded) => !expanded)}
             aria-expanded={detailsExpanded}
-            className="mt-4 inline-flex items-center gap-2 text-[12px] font-medium text-[#344054] transition hover:text-[#0866ff]"
+            className="mt-5 inline-flex items-center gap-2.5 text-[13px] font-medium text-[#344054] transition hover:text-[#0866ff]"
           >
             <span className="grid h-7 w-7 place-items-center rounded-full border border-[#d0d5dd]">
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
@@ -552,15 +552,18 @@ export default function CookieConsent({
             {detailsExpanded ? ui.showLess : ui.learnMore}
           </button>
 
+          <p className="mt-4 break-words text-[12px] leading-[1.5] text-[#667085] [overflow-wrap:anywhere]">
+            {t.intro}
+          </p>
+
           {detailsExpanded ? (
-            <div className="mt-3 grid gap-2">
-              <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">{t.intro}</p>
-              <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">{t.details}</p>
-            </div>
+            <p className="mt-3 break-words text-[12px] leading-[1.5] text-[#667085] [overflow-wrap:anywhere]">
+              {t.details}
+            </p>
           ) : null}
 
           <div className="mt-4 min-w-0">
-            <p className="break-words text-[11px] leading-[1.45] text-[#667085] [overflow-wrap:anywhere]">
+            <p className="break-words text-[12px] leading-[1.5] text-[#667085] [overflow-wrap:anywhere]">
               {t.rights}{' '}
               <Link
                 href={policyHref}
@@ -602,19 +605,19 @@ export default function CookieConsent({
             </div>
           ) : null}
 
-          <div className="mt-4 grid min-w-0 grid-cols-2 gap-3 border-t border-[#d0d5dd] pt-4">
+          <div className="mt-5 grid min-w-0 grid-cols-2 gap-4 border-t border-[#d0d5dd] pt-5">
             <button
               type="button"
               onClick={toggleSettings}
               aria-expanded={settingsOpen}
-              className="inline-flex min-h-9 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-3 text-center text-[12px] font-semibold text-white transition hover:bg-[#075be5]"
+              className="inline-flex min-h-10 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-4 text-center text-[13px] font-semibold text-white transition hover:bg-[#075be5]"
             >
               {settingsOpen ? t.hide : ui.manageChoices}
             </button>
             <button
               type="button"
               onClick={() => choose('all')}
-              className="inline-flex min-h-9 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-3 text-center text-[12px] font-semibold text-white transition hover:bg-[#075be5]"
+              className="inline-flex min-h-10 min-w-0 items-center justify-center rounded-full bg-[#0866ff] px-4 text-center text-[13px] font-semibold text-white transition hover:bg-[#075be5]"
             >
               {t.acceptAll}
             </button>
