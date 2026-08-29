@@ -10,6 +10,10 @@ const footerSource = readFileSync(
   new URL('../app/components/PublicFooter.tsx', import.meta.url),
   'utf8',
 )
+const globalStyles = readFileSync(
+  new URL('../app/globals.css', import.meta.url),
+  'utf8',
+)
 
 test('marketplace filter surfaces use the intended heading and body weights', () => {
   assert.match(
@@ -30,9 +34,17 @@ test('marketplace filter surfaces use the intended heading and body weights', ()
   )
 })
 
-test('market selector search text uses small regular gray typography in Safari', () => {
+test('market selector search uses a dedicated class that overrides global mobile input styles', () => {
   assert.match(
     footerSource,
-    /placeholder=\{dialogCopy\.search\} className="[^"]*text-\[13px\] font-normal text-\[#667085\][^"]*placeholder:font-normal placeholder:text-\[#667085\] placeholder:opacity-100/,
+    /placeholder=\{dialogCopy\.search\} className="market-selector-search /,
+  )
+  assert.match(
+    globalStyles,
+    /input\.market-selector-search\s*\{[^}]*-webkit-text-fill-color:\s*#101828\s*!important;[^}]*font-size:\s*13px\s*!important;/s,
+  )
+  assert.match(
+    globalStyles,
+    /input\.market-selector-search::placeholder,\s*input\.market-selector-search::-webkit-input-placeholder\s*\{[^}]*color:\s*#667085\s*!important;[^}]*-webkit-text-fill-color:\s*#667085\s*!important;[^}]*font-size:\s*13px\s*!important;[^}]*opacity:\s*1\s*!important;/s,
   )
 })

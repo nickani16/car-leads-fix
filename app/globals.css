@@ -698,6 +698,23 @@ input, textarea, select {
   }
 }
 
+/* Keep the market selector compact and gray despite the global mobile input fixes above. */
+input.market-selector-search {
+  color: #101828 !important;
+  -webkit-text-fill-color: #101828 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+input.market-selector-search::placeholder,
+input.market-selector-search::-webkit-input-placeholder {
+  color: #667085 !important;
+  -webkit-text-fill-color: #667085 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
 .market-blob {
   border-radius: 38% 62% 54% 46% / 42% 35% 65% 58%;
 }
