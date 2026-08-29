@@ -55,6 +55,9 @@ test('category landings expose localized canonical and language alternate metada
   assert.match(localizedCatchallSource, /homepageCategoryFromPath\(`\/\$\{slugPath\}`\)/)
   assert.match(localizedCatchallSource, /<HomepageCategoryLanding[\s\S]*locale=\{locale\}[\s\S]*marketCode=\{normalizedMarket\.toUpperCase\(\)\}/)
   assert.match(sitemapSource, /\.\.\.homepageCategoryIndexPaths/)
+  assert.ok(landingSource.indexOf("marketCode === 'AT'") < landingSource.indexOf("language === 'de'"))
+  assert.match(landingSource, /marketCode === 'BE'\) return 'be'/)
+  assert.match(landingSource, /marketCode === 'DK'\) return 'da'/)
 })
 
 test('logo and home links retain the visitor selected vehicle category', () => {
@@ -75,4 +78,6 @@ test('legacy category paths permanently redirect to canonical landing paths', ()
   assert.doesNotMatch(proxySource, /\['\/trucks', '\/marketplace\/trucks'\]/)
   assert.match(proxySource, /\['\/van', '\/vans'\]/)
   assert.match(proxySource, /\['\/farm', '\/agriculture'\]/)
+  assert.match(proxySource, /HOMEPAGE_CATEGORY_SEGMENTS\.has\(segments\[1\]/)
+  assert.match(proxySource, /HOMEPAGE_CATEGORY_SEGMENTS\.has\(englishSegments\[0\]/)
 })

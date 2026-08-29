@@ -5,6 +5,7 @@ import {
   isPublicLanguage,
   type PublicLanguage,
 } from '@/lib/public-i18n'
+import { homepageCategoryIndexPaths } from '@/lib/homepage-category-routes'
 import { isEnglishSeoVehiclePath, isSeoVehiclePath } from '@/lib/seo-routes'
 
 const CANONICAL_HOSTS: Record<string, string> = {
@@ -36,6 +37,9 @@ const SUSPICIOUS_BOT_PATTERN =
 const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
+)
+const HOMEPAGE_CATEGORY_SEGMENTS = new Set(
+  homepageCategoryIndexPaths.map((path) => path.slice(1)),
 )
 const MARKET_SELECTION_PARAM = 'market'
 type RateBucket = {
@@ -1049,7 +1053,7 @@ export async function proxy(request: NextRequest) {
       // These pages own market-prefixed App Router routes because their
       // metadata, content, and canonical URLs are market-specific. Do not strip
       // the market segment through the legacy localized-page rewrite below.
-      if (segments[1] === 'app' || segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car' || LOCALIZED_AD_SEGMENTS.has(segments[1] || '')) {
+      if (segments[1] === 'app' || segments[1] === 'vehicle-news' || segments[1] === 'fordonsnyheter' || segments[1] === 'sell-vehicle' || segments[1] === 'benefits' || segments[1] === 'sell-car' || (segments.length === 2 && HOMEPAGE_CATEGORY_SEGMENTS.has(segments[1] || '')) || LOCALIZED_AD_SEGMENTS.has(segments[1] || '')) {
         const localizedUrl = request.nextUrl.clone()
         localizedUrl.pathname = routingPathname
         return withMarketCookie(
@@ -1123,11 +1127,13 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  const englishSegments = pathname.split('/').filter(Boolean)
   if (
     (hostname === MARKET_HOSTS.en || hostname === 'localhost' || hostname === '127.0.0.1') &&
-    isEnglishSeoVehiclePath(pathname.split('/').filter(Boolean))
+    !(englishSegments.length === 1 && HOMEPAGE_CATEGORY_SEGMENTS.has(englishSegments[0] || '')) &&
+    isEnglishSeoVehiclePath(englishSegments)
   ) {
-    const englishSeoSegments = pathname.split('/').filter(Boolean)
+    const englishSeoSegments = englishSegments
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-autorell-language', 'en')
     requestHeaders.set('x-autorell-market', 'EU')

@@ -90,9 +90,12 @@ export default async function HomepageCategoryLanding({
 }
 
 function localeFromRequest(language: string, marketCode: string): PublicLocale {
-  if (marketCode === 'SE' || language === 'sv') return 'sv'
-  if (marketCode === 'DE' || language === 'de') return 'de'
+  if (marketCode === 'SE') return 'sv'
+  if (marketCode === 'DE') return 'de'
   if (marketCode === 'AT') return 'at'
   if (marketCode === 'BE') return 'be'
+  if (marketCode === 'DK') return 'da'
+  if (language === 'sv') return 'sv'
+  if (language === 'de') return 'de'
   return isPublicLanguage(language) ? language : 'en'
 }
