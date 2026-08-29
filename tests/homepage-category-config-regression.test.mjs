@@ -147,9 +147,17 @@ test('new discovery remains swipeable and uses generated transparent assets', ()
   assert.match(configSource, /\/homepage-discovery\/sell\/electric-bikes\.webp/)
 })
 
-test('non-car brands use the intentional fallback instead of invented logos', () => {
+test('van brands use supplied local logos while other non-car brands keep the fallback', () => {
   assert.match(configSource, /function brandPlaceholders/)
-  assert.match(configSource, /brands: brandPlaceholders\(\['Mercedes-Benz'/)
-  assert.doesNotMatch(configSource, /vehicle-brand-logos\/vans\//)
+  assert.match(configSource, /vans: \{[\s\S]*brands: \[[\s\S]*vehicle-brand-logos\/vans\/ford\.png[\s\S]*vehicle-brand-logos\/vans\/renault\.avif[\s\S]*vehicle-brand-logos\/vans\/iveco\.svg[\s\S]*vehicle-brand-logos\/vans\/peugeot\.avif/)
+  assert.match(configSource, /trucks: \{[\s\S]*brands: brandPlaceholders\(\['Volvo'/)
   assert.doesNotMatch(configSource, /vehicle-brand-logos\/trucks\//)
+
+  for (const filename of ['ford.png', 'renault.avif', 'iveco.svg', 'peugeot.avif']) {
+    assert.equal(
+      existsSync(new URL(`../public/vehicle-brand-logos/vans/${filename}`, import.meta.url)),
+      true,
+      `Missing van brand logo: ${filename}`,
+    )
+  }
 })

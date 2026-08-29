@@ -240,7 +240,14 @@ const homepageCategoryDefinitions: Record<MarketplaceCategorySlug, HomepageCateg
     ],
     selected: selectedTypes(['panel', 'crew', 'pickup', 'refrigerated', 'box', 'electric', 'minibus', 'flatbed']),
     popular: popularTypes(['pickup', 'panel', 'electric', 'crew']),
-    brands: brandPlaceholders(['Mercedes-Benz', 'Volkswagen', 'Ford', 'Renault', 'Iveco', 'Peugeot']),
+    brands: [
+      { id: 'mercedes-benz', title: 'Mercedes-Benz', logo: '/vehicle-brand-logos/mercedes-benz.png' },
+      { id: 'volkswagen', title: 'Volkswagen', logo: '/vehicle-brand-logos/volkswagen.png' },
+      { id: 'ford', title: 'Ford', logo: '/vehicle-brand-logos/vans/ford.png' },
+      { id: 'renault', title: 'Renault', logo: '/vehicle-brand-logos/vans/renault.avif' },
+      { id: 'iveco', title: 'Iveco', logo: '/vehicle-brand-logos/vans/iveco.svg' },
+      { id: 'peugeot', title: 'Peugeot', logo: '/vehicle-brand-logos/vans/peugeot.avif' },
+    ],
     sellImage: '/homepage-discovery/sell/vans.webp',
   },
   trucks: {
