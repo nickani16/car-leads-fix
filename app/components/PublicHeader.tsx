@@ -1085,7 +1085,7 @@ export default function PublicHeader({
     {
       key: 'personal',
       label: desktopSearchCopy.personal,
-      slugs: ['cars', 'motorcycles', 'motorhomes', 'caravans', 'electric-bikes'] as const,
+      slugs: ['cars', 'motorcycles', 'motorhomes', 'caravans'] as const,
     },
     {
       key: 'work',
@@ -1770,7 +1770,7 @@ export default function PublicHeader({
                             </div>
                             <div className="grid grid-cols-[minmax(0,1fr)_260px]">
                               <div className="min-w-0 border-r border-[#e4e7ec]">
-                                <div className="max-h-[224px] overflow-y-auto [scrollbar-color:#b8c4d4_#eef2f7] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#b8c4d4] [&::-webkit-scrollbar-track]:bg-[#eef2f7]">
+                                <div>
                                   <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
                                     {desktopSearchGroups.map((group) => (
                                       <div key={group.key} className="px-6 py-5">
@@ -1835,13 +1835,13 @@ export default function PublicHeader({
                                     alt={`${desktopBikesItem.label} – ${desktopSearchCopy.title}`}
                                     fill
                                     sizes="260px"
-                                    className="object-cover object-[64%_center] transition duration-500 group-hover:scale-[1.035]"
+                                    className="object-cover object-[64%_center] brightness-[1.1] transition duration-500 group-hover:scale-[1.035]"
                                   />
-                                  <span className="absolute inset-0 bg-gradient-to-t from-[#101828]/90 via-[#101828]/18 to-transparent" aria-hidden="true" />
+                                  <span className="absolute inset-0 bg-gradient-to-t from-[#101828]/58 via-transparent to-transparent" aria-hidden="true" />
                                   <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
                                     <span>
                                       <span className="block text-[11px] font-semibold uppercase tracking-[0.13em] text-white/75">
-                                        {desktopSearchCopy.personal}
+                                        {publicLabel('Sustainable mobility', 'Hållbar mobilitet', 'Nachhaltige Mobilität')}
                                       </span>
                                       <span className="mt-1 block text-[18px] font-semibold leading-6">
                                         {desktopBikesItem.label}

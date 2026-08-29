@@ -34,10 +34,11 @@ test('desktop vehicle search menu has explicit copy for every public locale', ()
 })
 
 test('desktop vehicle search menu keeps a focused category set', () => {
-  assert.match(header, /slugs: \['cars', 'motorcycles', 'motorhomes', 'caravans', 'electric-bikes'\] as const/)
+  assert.match(header, /slugs: \['cars', 'motorcycles', 'motorhomes', 'caravans'\] as const/)
   assert.match(header, /slugs: \['vans', 'trucks', 'agriculture', 'construction'\] as const/)
-  assert.match(desktopSearchMenu, /max-h-\[224px\] overflow-y-auto/)
-  assert.match(desktopSearchMenu, /scrollbar-width:thin/)
+  assert.doesNotMatch(desktopSearchMenu, /overflow-y-auto|scrollbar-width:thin/)
+  assert.match(desktopSearchMenu, /publicLabel\('Sustainable mobility', 'Hållbar mobilitet', 'Nachhaltige Mobilität'\)/)
+  assert.match(desktopSearchMenu, /brightness-\[1\.1\]/)
 })
 
 test('the active marketplace category stays highlighted in desktop and mobile menus', () => {
