@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   ArrowRight,
@@ -1084,7 +1085,7 @@ export default function PublicHeader({
     {
       key: 'personal',
       label: desktopSearchCopy.personal,
-      slugs: ['cars', 'motorcycles', 'motorhomes', 'caravans'] as const,
+      slugs: ['cars', 'motorcycles', 'motorhomes', 'caravans', 'electric-bikes'] as const,
     },
     {
       key: 'work',
@@ -1097,6 +1098,7 @@ export default function PublicHeader({
       .map((slug) => desktopSearchItemsBySlug.get(slug))
       .filter((item): item is MenuItem => Boolean(item)),
   }))
+  const desktopBikesItem = desktopSearchItemsBySlug.get('electric-bikes')
   const desktopSearchCategoryItem = desktopSearchCategory
     ? desktopSearchItemsBySlug.get(desktopSearchCategory)
     : undefined
@@ -1696,7 +1698,11 @@ export default function PublicHeader({
                         <ChevronDown className={`h-4 w-4 transition ${searchMenuOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
                       </button>
                       <div
-                        className={`absolute left-0 top-full z-[150] mt-2 w-[min(600px,calc(100vw-2rem))] overflow-hidden rounded-[12px] border border-[#d9e1ec] bg-white shadow-[0_20px_55px_rgba(16,24,40,.14)] transition ${
+                        className={`absolute left-0 top-full z-[150] mt-2 overflow-hidden rounded-[12px] border border-[#d9e1ec] bg-white shadow-[0_20px_55px_rgba(16,24,40,.14)] transition ${
+                          desktopSearchCategory
+                            ? 'w-[min(600px,calc(100vw-2rem))]'
+                            : 'w-[min(880px,calc(100vw-2rem))]'
+                        } ${
                           searchMenuOpen
                             ? 'pointer-events-auto translate-y-0 opacity-100'
                             : 'pointer-events-none -translate-y-1 opacity-0'
@@ -1762,49 +1768,92 @@ export default function PublicHeader({
                                 {desktopSearchCopy.intro}
                               </p>
                             </div>
-                            <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
-                              {desktopSearchGroups.map((group) => (
-                                <div key={group.key} className="px-6 py-5">
-                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">
-                                    {group.label}
-                                  </p>
-                                  <div className="mt-2">
-                                    {group.items.map(({ label: categoryLabel, slug: categorySlug, href: categoryHref }) => (
-                                      <div
-                                        key={categorySlug}
-                                        className="group flex w-full items-center rounded-[6px] transition hover:bg-[#f5f7fa]"
-                                      >
-                                        <Link
-                                          href={categoryHref}
-                                          onClick={(event) => handleInternalNavigation(event, categoryHref)}
-                                          className="min-w-0 flex-1 rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 text-[#101828] transition group-hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1"
-                                        >
-                                          {categoryLabel}
-                                        </Link>
-                                        <button
-                                          type="button"
-                                          aria-label={`${categoryLabel}: ${desktopSearchCopy.browseTypes}`}
-                                          onClick={() => {
-                                            setDesktopSearchMotion('forward')
-                                            setDesktopSearchCategory(categorySlug || null)
-                                          }}
-                                          className="mr-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[6px] text-[#98a2b3] transition hover:bg-white hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff]"
-                                        >
-                                          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
-                                        </button>
+                            <div className="grid grid-cols-[minmax(0,1fr)_260px]">
+                              <div className="min-w-0 border-r border-[#e4e7ec]">
+                                <div className="max-h-[224px] overflow-y-auto [scrollbar-color:#b8c4d4_#eef2f7] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#b8c4d4] [&::-webkit-scrollbar-track]:bg-[#eef2f7]">
+                                  <div className="grid grid-cols-2 divide-x divide-[#e4e7ec]">
+                                    {desktopSearchGroups.map((group) => (
+                                      <div key={group.key} className="px-6 py-5">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#667085]">
+                                          {group.label}
+                                        </p>
+                                        <div className="mt-2">
+                                          {group.items.map(({ label: categoryLabel, slug: categorySlug, href: categoryHref }) => {
+                                            const categoryPath = stripLocalePrefix(categoryHref.split('?')[0] || categoryHref)
+                                            const isCategoryActive =
+                                              unprefixedPathname === categoryPath ||
+                                              marketplaceChannel?.slug === categorySlug
+                                            return (
+                                              <div
+                                                key={categorySlug}
+                                                className={`group flex w-full items-center rounded-[6px] transition ${
+                                                  isCategoryActive ? 'bg-[#f5f7fa]' : 'hover:bg-[#f5f7fa]'
+                                                }`}
+                                              >
+                                                <Link
+                                                  href={categoryHref}
+                                                  aria-current={isCategoryActive ? 'page' : undefined}
+                                                  onClick={(event) => handleInternalNavigation(event, categoryHref)}
+                                                  className={`min-w-0 flex-1 rounded-[6px] px-2 py-2.5 text-[14px] font-medium leading-5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-1 ${
+                                                    isCategoryActive
+                                                      ? 'text-[#0866ff]'
+                                                      : 'text-[#101828] group-hover:text-[#0866ff]'
+                                                  }`}
+                                                >
+                                                  {categoryLabel}
+                                                </Link>
+                                                <button
+                                                  type="button"
+                                                  aria-label={`${categoryLabel}: ${desktopSearchCopy.browseTypes}`}
+                                                  onClick={() => {
+                                                    setDesktopSearchMotion('forward')
+                                                    setDesktopSearchCategory(categorySlug || null)
+                                                  }}
+                                                  className={`mr-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[6px] transition hover:bg-white hover:text-[#0866ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] ${
+                                                    isCategoryActive ? 'text-[#0866ff]' : 'text-[#98a2b3]'
+                                                  }`}
+                                                >
+                                                  <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true" />
+                                                </button>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
-                              ))}
+                              </div>
+                              {desktopBikesItem ? (
+                                <Link
+                                  href={desktopBikesItem.href}
+                                  onClick={(event) => handleInternalNavigation(event, desktopBikesItem.href)}
+                                  className="group relative m-4 ml-0 min-h-[192px] overflow-hidden rounded-[10px] bg-[#101828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0866ff] focus-visible:ring-offset-2"
+                                >
+                                  <Image
+                                    src="/vehicle-menu-bikes.webp"
+                                    alt={`${desktopBikesItem.label} – ${desktopSearchCopy.title}`}
+                                    fill
+                                    sizes="260px"
+                                    className="object-cover object-[64%_center] transition duration-500 group-hover:scale-[1.035]"
+                                  />
+                                  <span className="absolute inset-0 bg-gradient-to-t from-[#101828]/90 via-[#101828]/18 to-transparent" aria-hidden="true" />
+                                  <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
+                                    <span>
+                                      <span className="block text-[11px] font-semibold uppercase tracking-[0.13em] text-white/75">
+                                        {desktopSearchCopy.personal}
+                                      </span>
+                                      <span className="mt-1 block text-[18px] font-semibold leading-6">
+                                        {desktopBikesItem.label}
+                                      </span>
+                                    </span>
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#0866ff] shadow-[0_8px_22px_rgba(16,24,40,.2)] transition group-hover:translate-x-0.5">
+                                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                    </span>
+                                  </span>
+                                </Link>
+                              ) : null}
                             </div>
-                            <Link
-                              href={href}
-                              onClick={(event) => handleInternalNavigation(event, href)}
-                              className="block border-t border-[#e4e7ec] bg-[#f8fafc] px-6 py-4 text-[14px] font-semibold text-[#0866ff] transition hover:bg-[#f1f5f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0866ff]"
-                            >
-                              {desktopSearchCopy.viewAll}
-                            </Link>
                           </div>
                         )}
                       </div>
@@ -2192,13 +2241,19 @@ export default function PublicHeader({
                   const CategoryIcon =
                     (categorySlug && autorellCategoryIcons[categorySlug]) || Icon
                   const itemHref = searchCategoryHref(href)
+                  const isActive = categorySlug === mobileMenuActiveSlug
 
                   return (
                     <Link
                       key={`${searchMenuIntent}-${itemHref}`}
                       href={itemHref}
+                      aria-current={isActive ? 'page' : undefined}
                       onClick={closeMobile}
-                      className="flex min-h-12 items-center gap-2 rounded-[14px] border border-[#dfe4ec] bg-[#fbfcff] px-3 text-sm font-semibold text-[#344054] transition hover:border-[#bcd3ff] hover:bg-white"
+                      className={`flex min-h-12 items-center gap-2 rounded-[14px] border px-3 text-sm font-semibold transition ${
+                        isActive
+                          ? 'border-[#bcd3ff] bg-[#f5f7fa] text-[#0866ff]'
+                          : 'border-[#dfe4ec] bg-[#fbfcff] text-[#344054] hover:border-[#bcd3ff] hover:bg-white'
+                      }`}
                     >
                       <CategoryIcon className="h-4 w-4 shrink-0 text-[#0866ff]" />
                       <span className="min-w-0 truncate">{label}</span>

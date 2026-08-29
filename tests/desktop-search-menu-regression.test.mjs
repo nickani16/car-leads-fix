@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const header = readFileSync(new URL('../app/components/PublicHeader.tsx', import.meta.url), 'utf8')
@@ -10,13 +10,17 @@ const desktopSearchStart = header.indexOf("if (item.kind === 'search')")
 const desktopSearchEnd = header.indexOf("if (item.kind === 'sell')", desktopSearchStart)
 const desktopSearchMenu = header.slice(desktopSearchStart, desktopSearchEnd)
 
-test('desktop vehicle search menu is compact, text-only and separated from mobile intent controls', () => {
+test('desktop vehicle search menu keeps focused categories and a visual bikes panel', () => {
   assert.ok(desktopSearchStart >= 0 && desktopSearchEnd > desktopSearchStart)
   assert.match(desktopSearchMenu, /w-\[min\(600px,calc\(100vw-2rem\)\)\]/)
+  assert.match(desktopSearchMenu, /w-\[min\(880px,calc\(100vw-2rem\)\)\]/)
   assert.match(desktopSearchMenu, /desktopSearchGroups\.map/)
-  assert.match(desktopSearchMenu, /desktopSearchCopy\.viewAll/)
+  assert.doesNotMatch(desktopSearchMenu, /desktopSearchCopy\.viewAll/)
+  assert.match(desktopSearchMenu, /vehicle-menu-bikes\.webp/)
+  assert.match(desktopSearchMenu, /<Image/)
+  assert.ok(existsSync(new URL('../public/vehicle-menu-bikes.webp', import.meta.url)))
   assert.doesNotMatch(desktopSearchMenu, /searchIntentOptions\.map|role="tablist"/)
-  assert.doesNotMatch(desktopSearchMenu, /CategoryIcon|autorellCategoryIcons|<ArrowRight/)
+  assert.doesNotMatch(desktopSearchMenu, /CategoryIcon|autorellCategoryIcons/)
 
   assert.match(header, /visibleSearchCategoryItems\.map/)
   assert.equal((header.match(/searchIntentOptions\.map/g) || []).length, 0)
@@ -30,9 +34,17 @@ test('desktop vehicle search menu has explicit copy for every public locale', ()
 })
 
 test('desktop vehicle search menu keeps a focused category set', () => {
-  assert.match(header, /slugs: \['cars', 'motorcycles', 'motorhomes', 'caravans'\] as const/)
+  assert.match(header, /slugs: \['cars', 'motorcycles', 'motorhomes', 'caravans', 'electric-bikes'\] as const/)
   assert.match(header, /slugs: \['vans', 'trucks', 'agriculture', 'construction'\] as const/)
-  assert.doesNotMatch(desktopSearchMenu, /electric-bikes/)
+  assert.match(desktopSearchMenu, /max-h-\[224px\] overflow-y-auto/)
+  assert.match(desktopSearchMenu, /scrollbar-width:thin/)
+})
+
+test('the active marketplace category stays highlighted in desktop and mobile menus', () => {
+  assert.match(desktopSearchMenu, /aria-current=\{isCategoryActive \? 'page' : undefined\}/)
+  assert.match(desktopSearchMenu, /isCategoryActive \? 'bg-\[#f5f7fa\]'/)
+  assert.match(desktopSearchMenu, /isCategoryActive[\s\S]*'text-\[#0866ff\]'/)
+  assert.match(header, /aria-current=\{isActive \? 'page' : undefined\}/)
 })
 
 test('desktop categories drill into localized vehicle types inside the same dropdown', () => {
