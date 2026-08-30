@@ -1660,8 +1660,6 @@ function botRateLimitedResponse(retryAfter: number) {
 export const config = {
   matcher: [
     '/api/marketplace/search-v2',
-    '/sitemap.xml',
-    '/sitemaps/:path*',
     '/((?!api|_next/static|_next/image|favicon.ico|favicon-.*\\.png|icon.*\\.png|apple-icon.png|manifest.webmanifest|.*\\..*).*)',
   ],
 }
