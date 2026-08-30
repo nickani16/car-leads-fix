@@ -22,6 +22,7 @@ test('homepage category URLs do not activate the legacy mobile category subnavig
 test('the normal mobile header row has a visible gray bottom divider', () => {
   assert.match(
     headerSource,
-    /h-\[56px\][^\n]+border-b border-\[#deddd8\][^\n]+min-\[1120px\]:border-b-0/,
+    /data-mobile-header-divider[\s\S]*?absolute inset-x-0 top-\[55px\] h-px bg-\[#d0d5dd\] min-\[1120px\]:hidden/,
   )
+  assert.doesNotMatch(headerSource, /h-\[56px\][^\n]+border-b border-\[#deddd8\]/)
 })
