@@ -215,7 +215,7 @@ const homepageCategoryDefinitions: Record<MarketplaceCategorySlug, HomepageCateg
       ['volkswagen', 'Volkswagen', '/vehicle-brand-logos/volkswagen.png'],
       ['bmw', 'BMW', '/vehicle-brand-logos/bmw.png'],
       ['audi', 'Audi', '/vehicle-brand-logos/audi.png'],
-      ['mercedes-benz', 'Mercedes-Benz', '/vehicle-brand-logos/mercedes-benz.png'],
+      ['mercedes-benz', 'Mercedes-Benz', '/vehicle-brand-logos/mercedes-benz.svg'],
       ['toyota', 'Toyota', '/vehicle-brand-logos/toyota.png'],
       ['ford', 'Ford', '/vehicle-brand-logos/ford.png'],
       ['tesla', 'Tesla', '/vehicle-brand-logos/tesla.png'],
@@ -241,7 +241,7 @@ const homepageCategoryDefinitions: Record<MarketplaceCategorySlug, HomepageCateg
     selected: selectedTypes(['panel', 'crew', 'pickup', 'refrigerated', 'box', 'electric', 'minibus', 'flatbed']),
     popular: popularTypes(['pickup', 'panel', 'electric', 'crew']),
     brands: [
-      { id: 'mercedes-benz', title: 'Mercedes-Benz', logo: '/vehicle-brand-logos/mercedes-benz.png' },
+      { id: 'mercedes-benz', title: 'Mercedes-Benz', logo: '/vehicle-brand-logos/mercedes-benz.svg' },
       { id: 'volkswagen', title: 'Volkswagen', logo: '/vehicle-brand-logos/volkswagen.png' },
       { id: 'ford', title: 'Ford', logo: '/vehicle-brand-logos/vans/ford.png' },
       { id: 'renault', title: 'Renault', logo: '/vehicle-brand-logos/vans/renault.avif' },

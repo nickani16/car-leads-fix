@@ -18,3 +18,10 @@ test('homepage category URLs do not activate the legacy mobile category subnavig
     /Boolean\(categoryPrimaryLinks\) && !isMarketplaceResults && !isListingDetail/,
   )
 })
+
+test('the normal mobile header row has a visible gray bottom divider', () => {
+  assert.match(
+    headerSource,
+    /h-\[56px\][^\n]+border-b border-\[#deddd8\][^\n]+min-\[1120px\]:border-b-0/,
+  )
+})

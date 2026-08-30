@@ -1644,7 +1644,7 @@ export default function PublicHeader({
             </div>
           ) : null}
 
-          <div className={`relative mx-auto h-[56px] max-w-[var(--autorell-page-max)] items-center px-4 sm:px-8 ${hideOnMobile ? 'hidden min-[1120px]:flex' : 'flex'} ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:px-4 2xl:px-4`}>
+          <div className={`relative mx-auto h-[56px] max-w-[var(--autorell-page-max)] items-center border-b border-[#deddd8] px-4 sm:px-8 ${hideOnMobile ? 'hidden min-[1120px]:flex' : 'flex'} ${desktopMainRowHeightClass} min-[1120px]:max-w-[1920px] min-[1120px]:border-b-0 min-[1120px]:px-4 2xl:px-4`}>
             <Link
               href={homeHref}
               aria-label="Autorell"

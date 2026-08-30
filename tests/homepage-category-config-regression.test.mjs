@@ -161,3 +161,15 @@ test('van brands use supplied local logos while other non-car brands keep the fa
     )
   }
 })
+
+test('cars and vans share the high-resolution Mercedes-Benz logo', () => {
+  assert.equal(
+    (configSource.match(/logo: '\/vehicle-brand-logos\/mercedes-benz\.svg'|\['mercedes-benz', 'Mercedes-Benz', '\/vehicle-brand-logos\/mercedes-benz\.svg'\]/g) || []).length,
+    2,
+  )
+  assert.equal(
+    existsSync(new URL('../public/vehicle-brand-logos/mercedes-benz.svg', import.meta.url)),
+    true,
+    'Missing high-resolution Mercedes-Benz logo',
+  )
+})
