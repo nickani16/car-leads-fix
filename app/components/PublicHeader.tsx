@@ -2433,7 +2433,7 @@ export default function PublicHeader({
       </div>
       <div
         data-mobile-visible-header
-        className={`fixed left-0 right-auto top-0 z-[130] h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden border-b border-[#c4cad3] bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${hideOnMobile ? 'hidden' : 'grid'} ${
+        className={`fixed left-0 right-auto top-0 z-[130] h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden border-b border-[#e4e7ec] bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${hideOnMobile ? 'hidden' : 'grid'} ${
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -2572,7 +2572,6 @@ export default function PublicHeader({
             className="fixed inset-x-0 bottom-0 top-[56px] z-[118] bg-[#101828]/18 backdrop-blur-[1px] min-[1120px]:hidden"
           />
           <div className="fixed bottom-0 left-0 top-[56px] z-[126] w-[100dvw] max-w-[100dvw] animate-[autorell-mobile-menu-slide-in_240ms_cubic-bezier(.2,.7,.2,1)_both] overflow-y-auto bg-white px-4 pb-[calc(98px+env(safe-area-inset-bottom))] pt-5 shadow-[20px_0_70px_rgba(16,24,40,.18)] min-[1120px]:hidden">
-            <div data-mobile-menu-divider aria-hidden="true" className="-mx-4 -mt-5 mb-4 h-px bg-[#e4e7ec]" />
             <section className={headerAccount.authenticated ? 'mb-5 rounded-[24px] bg-[#f6f6f4] p-5' : 'mb-4 px-1'}>
               {headerAccount.authenticated ? (
                 <div>
