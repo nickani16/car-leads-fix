@@ -26,3 +26,10 @@ test('the normal mobile header row has a visible gray bottom divider', () => {
   )
   assert.doesNotMatch(headerSource, /h-\[56px\][^\n]+border-b border-\[#deddd8\]/)
 })
+
+test('the fixed mobile header layer has its own visible gray bottom divider', () => {
+  assert.match(
+    headerSource,
+    /data-mobile-visible-header[\s\S]*?z-\[130\] h-\[56px\][^\n]+border-b border-\[#c4cad3\]/,
+  )
+})

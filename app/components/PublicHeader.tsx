@@ -2432,7 +2432,8 @@ export default function PublicHeader({
         </div>
       </div>
       <div
-        className={`fixed left-0 right-auto top-0 z-[130] h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${hideOnMobile ? 'hidden' : 'grid'} ${
+        data-mobile-visible-header
+        className={`fixed left-0 right-auto top-0 z-[130] h-[56px] w-[100dvw] max-w-[100dvw] transform-gpu grid-cols-[minmax(0,1fr)_auto] items-center overflow-hidden border-b border-[#c4cad3] bg-white pl-3 pr-3 transition-transform duration-300 min-[1120px]:hidden ${hideOnMobile ? 'hidden' : 'grid'} ${
           visible || mobileCategoryOpen || mobileMoreOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
