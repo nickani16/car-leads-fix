@@ -40,6 +40,23 @@ const expandedCountryGeometry: Record<string, typeof swedenGeometry> = {
   PL: { centroid: { latitude: 52.1, longitude: 19.4 }, bounds: { north: 54.9, east: 24.2, south: 49, west: 14.1 } },
 }
 
+// Keep the indexable geo surface focused on the largest buyer markets instead
+// of publishing every imported locality. The full datasets remain available to
+// marketplace search; this list only controls sitemap discovery.
+const prioritySitemapPlaceSlugs: Record<string, readonly string[]> = {
+  AT: ['wien', 'graz', 'linz', 'salzburg', 'innsbruck'],
+  BE: ['bruxelles-brussel', 'gent', 'charleroi', 'liege'],
+  DE: ['berlin', 'hamburg', 'munchen', 'koln', 'frankfurt-am-main'],
+  DK: ['k-benhavn', 'aarhus', 'odense', 'aalborg', 'esbjerg'],
+  ES: ['madrid', 'barcelona', 'valencia', 'sevilla', 'zaragoza'],
+  FI: ['helsinki', 'espoo', 'tampere', 'vantaa', 'oulu'],
+  FR: ['paris', 'marseille', 'lyon', 'toulouse', 'nice'],
+  IT: ['roma', 'milano', 'napoli', 'torino', 'palermo'],
+  NL: ['amsterdam', 'rotterdam', 'den-haag', 'utrecht', 'eindhoven'],
+  PL: ['warszawa', 'krakow', 'odz', 'wroc-aw', 'poznan'],
+  SE: ['stockholm', 'goteborg', 'malmo', 'uppsala', 'vasteras'],
+}
+
 const swedenSitemapPlaces = (swedenSitemapPlaceRows as SwedenSitemapPlaceRow[]).map((place) => ({
   id: `SE:sitemap-locality:${place.municipalityCode}`,
   countryCode: 'SE',
@@ -79,8 +96,12 @@ export function getSeoSitemapAreas(countryCode: string) {
     seen.add(area.slug)
     return true
   })
-  cachedSeoAreas.set(country, areas)
-  return areas
+  const prioritySlugs = new Set(prioritySitemapPlaceSlugs[country] || [])
+  const priorityAreas = areas.filter(
+    (area) => Boolean(area.slug && prioritySlugs.has(area.slug)),
+  )
+  cachedSeoAreas.set(country, priorityAreas)
+  return priorityAreas
 }
 
 function buildExpandedCountryAreas(country: string): MarketplaceGeoArea[] {

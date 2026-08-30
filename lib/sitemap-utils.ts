@@ -98,10 +98,12 @@ export function geoModelsForSitemapMarket(market: SitemapMarketCode) {
 }
 
 export function xmlResponse(body: string, cacheControl?: string) {
+  const sharedCacheControl = cacheControl || 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
   return new Response(body, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': cacheControl || 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': sharedCacheControl,
+      'Vercel-CDN-Cache-Control': sharedCacheControl,
       Vary: 'Host, X-Forwarded-Host',
     },
   })

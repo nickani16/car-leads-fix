@@ -19,15 +19,14 @@ const swedishTermsPage = read('app/villkor/page.tsx')
 const publicLegalPage = read('app/components/PublicLegalPage.tsx')
 const translations = JSON.parse(read('lib/generated-public-translations.json'))
 
-test('optional telemetry and advertising load only after explicit consent', () => {
+test('paid Vercel telemetry stays disabled while advertising still requires consent', () => {
   assert.doesNotMatch(layout, /pagead2\.googlesyndication\.com/)
   assert.doesNotMatch(layout, /<Analytics\s*\/>/)
   assert.match(layout, /<ConsentManagedTelemetry \/>/)
-  assert.match(telemetry, /consent === 'analytics' \|\| consent === 'all'/)
   assert.match(telemetry, /consent === 'advertising' \|\| consent === 'all'/)
   assert.match(telemetry, /pagead2\.googlesyndication\.com/)
-  assert.match(telemetry, /<Analytics \/>/)
-  assert.match(telemetry, /<SpeedInsights sampleRate=\{0\.1\} \/>/)
+  assert.doesNotMatch(telemetry, /@vercel\/analytics|<Analytics/)
+  assert.doesNotMatch(telemetry, /@vercel\/speed-insights|<SpeedInsights/)
   assert.match(cookieConsent, /autorell-cookie-consent-changed/)
   assert.match(cookieConsent, /role="switch"/)
   assert.match(cookieConsent, /setAnalyticsAllowed/)

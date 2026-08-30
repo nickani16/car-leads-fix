@@ -23,6 +23,12 @@ test('robots advertises the canonical XML sitemap for the request host', () => {
   assert.doesNotMatch(robots, /getPublicMarketConfig/)
 })
 
+test('robots excludes GoogleOther without restricting Google Search crawlers', () => {
+  assert.match(robots, /'User-Agent: GoogleOther',[\s\S]*?'Disallow: \/'/)
+  assert.match(robots, /'User-Agent: \*',[\s\S]*?'Allow: \/'/)
+  assert.doesNotMatch(robots, /User-Agent: Googlebot[\s\S]*Disallow: \/'/)
+})
+
 test('autorell.com exposes one aggregate, one English and nine market-specific sitemap indexes', () => {
   assert.match(sitemapUtils, /comSitemapMarkets = allSitemapMarkets\.filter/)
   assert.match(sitemapUtils, /`\$\{host\}\/\$\{market\}\/sitemap\.xml`/)

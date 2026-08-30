@@ -1,7 +1,5 @@
 'use client'
 
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { useEffect, useState } from 'react'
 
 const CONSENT_COOKIE = 'autorell_cookie_consent'
@@ -31,7 +29,6 @@ export default function ConsentManagedTelemetry() {
     return () => window.removeEventListener('autorell-cookie-consent-changed', handleConsent)
   }, [])
 
-  const analyticsConsent = consent === 'analytics' || consent === 'all'
   const advertisingConsent = consent === 'advertising' || consent === 'all'
 
   useEffect(() => {
@@ -46,12 +43,5 @@ export default function ConsentManagedTelemetry() {
     document.head.appendChild(script)
   }, [advertisingConsent])
 
-  if (!analyticsConsent) return null
-
-  return (
-    <>
-      <Analytics />
-      <SpeedInsights sampleRate={0.1} />
-    </>
-  )
+  return null
 }
