@@ -5,6 +5,7 @@ import {
   marketplaceGeoSlug,
 } from './marketplace-geo'
 import type { MarketplaceGeoArea } from './marketplace-search-state'
+import { prioritySeoPlaceSlugs } from './seo-priority-places'
 
 type SwedenSitemapPlaceRow = {
   municipalityCode: string
@@ -38,23 +39,6 @@ const expandedCountryGeometry: Record<string, typeof swedenGeometry> = {
   FI: { centroid: { latitude: 64.5, longitude: 26 }, bounds: { north: 70.1, east: 31.6, south: 59.7, west: 19.1 } },
   NL: { centroid: { latitude: 52.1, longitude: 5.3 }, bounds: { north: 53.7, east: 7.3, south: 50.7, west: 3.3 } },
   PL: { centroid: { latitude: 52.1, longitude: 19.4 }, bounds: { north: 54.9, east: 24.2, south: 49, west: 14.1 } },
-}
-
-// Keep the indexable geo surface focused on the largest buyer markets instead
-// of publishing every imported locality. The full datasets remain available to
-// marketplace search; this list only controls sitemap discovery.
-const prioritySitemapPlaceSlugs: Record<string, readonly string[]> = {
-  AT: ['wien', 'graz', 'linz', 'salzburg', 'innsbruck'],
-  BE: ['bruxelles-brussel', 'gent', 'charleroi', 'liege'],
-  DE: ['berlin', 'hamburg', 'munchen', 'koln', 'frankfurt-am-main'],
-  DK: ['k-benhavn', 'aarhus', 'odense', 'aalborg', 'esbjerg'],
-  ES: ['madrid', 'barcelona', 'valencia', 'sevilla', 'zaragoza'],
-  FI: ['helsinki', 'espoo', 'tampere', 'vantaa', 'oulu'],
-  FR: ['paris', 'marseille', 'lyon', 'toulouse', 'nice'],
-  IT: ['roma', 'milano', 'napoli', 'torino', 'palermo'],
-  NL: ['amsterdam', 'rotterdam', 'den-haag', 'utrecht', 'eindhoven'],
-  PL: ['warszawa', 'krakow', 'odz', 'wroc-aw', 'poznan'],
-  SE: ['stockholm', 'goteborg', 'malmo', 'uppsala', 'vasteras'],
 }
 
 const swedenSitemapPlaces = (swedenSitemapPlaceRows as SwedenSitemapPlaceRow[]).map((place) => ({
@@ -96,7 +80,7 @@ export function getSeoSitemapAreas(countryCode: string) {
     seen.add(area.slug)
     return true
   })
-  const prioritySlugs = new Set(prioritySitemapPlaceSlugs[country] || [])
+  const prioritySlugs = new Set(prioritySeoPlaceSlugs[country] || [])
   const priorityAreas = areas.filter(
     (area) => Boolean(area.slug && prioritySlugs.has(area.slug)),
   )

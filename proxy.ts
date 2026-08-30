@@ -7,6 +7,7 @@ import {
 } from '@/lib/public-i18n'
 import { homepageCategoryIndexPaths } from '@/lib/homepage-category-routes'
 import { isEnglishSeoVehiclePath, isSeoVehiclePath } from '@/lib/seo-routes'
+import { isPrioritySeoPlace } from '@/lib/seo-priority-places'
 
 const CANONICAL_HOSTS: Record<string, string> = {
   'autorell.com': 'www.autorell.com',
@@ -36,6 +37,33 @@ const GOOGLE_OTHER_PATTERN = /googleother/i
 const SUSPICIOUS_BOT_PATTERN =
   /ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|claudebot|gptbot|ccbot|perplexitybot|amazonbot|python-requests|scrapy|curl|wget|go-http-client|headlesschrome/i
 const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
+const SEO_MARKET_COUNTRIES: Record<string, string> = {
+  se: 'SE', de: 'DE', at: 'AT', fr: 'FR', it: 'IT', es: 'ES',
+  nl: 'NL', be: 'BE', pl: 'PL', dk: 'DK', fi: 'FI',
+}
+const ENGLISH_SEO_COUNTRIES: Record<string, string> = {
+  austria: 'AT', belgium: 'BE', denmark: 'DK', finland: 'FI', france: 'FR',
+  germany: 'DE', italy: 'IT', netherlands: 'NL', poland: 'PL', spain: 'ES', sweden: 'SE',
+}
+const SEO_MAKE_SLUGS = new Set([
+  'adria', 'audi', 'bmw', 'bmw-motorrad', 'bobcat', 'canyon', 'case-ih', 'caterpillar',
+  'citroen', 'claas', 'cube', 'daf', 'dethleffs', 'ducati', 'fendt', 'fiat', 'ford',
+  'gazelle', 'giant', 'haibike', 'harley-davidson', 'hitachi', 'hobby', 'honda', 'hymer',
+  'iveco', 'jcb', 'john-deere', 'kabe', 'kawasaki', 'knaus', 'komatsu', 'ktm', 'liebherr',
+  'man', 'massey-ferguson', 'mercedes-benz', 'new-holland', 'opel', 'peugeot', 'polar',
+  'rapido', 'renault', 'scania', 'skoda', 'specialized', 'suzuki', 'tesla', 'toyota',
+  'trek', 'valtra', 'volkswagen', 'volvo', 'volvo-ce', 'yamaha',
+])
+const SEO_MODEL_SLUGS = new Set([
+  '1-series', '2008', '208', '3-series', '3008', '308', '500', '5008', '5-series', '600',
+  'a-class', 'a3', 'a4', 'a5', 'a6', 'austral', 'captur', 'c-class', 'c-hr', 'clio',
+  'corolla', 'cybertruck', 'e-class', 'enyaq', 'fabia', 'fiesta', 'focus', 'glc', 'gle',
+  'golf', 'id-4', 'karoq', 'kodiaq', 'kuga', 'land-cruiser', 'megane', 'model-3',
+  'model-s', 'model-x', 'model-y', 'mustang', 'octavia', 'panda', 'passat', 'polo',
+  'prius', 'puma', 'q3', 'q5', 'ranger', 'rav4', 'roadster', 'scenic', 'sprinter',
+  'superb', 'tiguan', 'tipo', 't-roc', 'v40', 'v60', 'v90', 'x1', 'x3', 'x5',
+  'xc40', 'xc60', 'xc90', 'yaris',
+])
 const EU_BUYER_MARKET_CODES = new Set(
   euBuyerMarkets.map((market) => market.code),
 )
@@ -842,6 +870,20 @@ export async function proxy(request: NextRequest) {
       headers: {
         'Cache-Control': 'no-store',
         'X-Autorell-Bot-Protection': 'google-other-blocked',
+      },
+    })
+  }
+  if (
+    methodCanRedirect &&
+    SEARCH_CRAWLER_PATTERN.test(request.headers.get('user-agent') || '') &&
+    isRetiredSeoLocalityPath(pathname)
+  ) {
+    return new NextResponse('Gone', {
+      status: 410,
+      headers: {
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800',
+        'X-Robots-Tag': 'noindex, follow',
+        'X-Autorell-Bot-Protection': 'retired-seo-locality',
       },
     })
   }
@@ -1672,4 +1714,34 @@ export const config = {
     '/api/marketplace/search-v2',
     '/((?!api|_next/static|_next/image|favicon.ico|favicon-.*\\.png|icon.*\\.png|apple-icon.png|manifest.webmanifest|.*\\..*).*)',
   ],
+}
+
+function isRetiredSeoLocalityPath(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  let countryCode: string | undefined
+  let routeParts: string[]
+
+  if (isEnglishSeoVehiclePath(segments)) {
+    countryCode = ENGLISH_SEO_COUNTRIES[segments[1] || '']
+    routeParts = segments.slice(2)
+  } else if (segments.length >= 2 && isSeoVehiclePath(segments[0] || '', segments.slice(1))) {
+    countryCode = SEO_MARKET_COUNTRIES[segments[0] || '']
+    routeParts = segments.slice(2)
+  } else {
+    return false
+  }
+
+  if (!countryCode || routeParts.length === 0) return false
+  if (routeParts.length === 1) {
+    const candidate = routeParts[0] || ''
+    return !SEO_MAKE_SLUGS.has(candidate) && !isPrioritySeoPlace(countryCode, candidate)
+  }
+  if (routeParts.length === 2) {
+    const candidate = routeParts[1] || ''
+    return !SEO_MODEL_SLUGS.has(candidate) && !isPrioritySeoPlace(countryCode, candidate)
+  }
+  if (routeParts.length === 3) {
+    return !isPrioritySeoPlace(countryCode, routeParts[2] || '')
+  }
+  return false
 }

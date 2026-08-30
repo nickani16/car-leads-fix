@@ -9,6 +9,7 @@ const sitemapIndex = readFileSync(new URL('../app/sitemap.xml/route.ts', import.
 const sitemapShard = readFileSync(new URL('../app/sitemaps/[name]/route.ts', import.meta.url), 'utf8')
 const sitemapUtils = readFileSync(new URL('../lib/sitemap-utils.ts', import.meta.url), 'utf8')
 const seoSitemapPlaces = readFileSync(new URL('../lib/seo-sitemap-places.ts', import.meta.url), 'utf8')
+const seoPriorityPlaces = readFileSync(new URL('../lib/seo-priority-places.ts', import.meta.url), 'utf8')
 
 test('English .com SEO routes use clean category, country and place paths', () => {
   assert.match(geoLandings, /market: 'en'/)
@@ -42,6 +43,9 @@ test('English sitemap plan stays within a cost-safe curated locality budget', ()
   assert.match(geoLandings, /englishSeoSitemapCategories/)
   assert.match(sitemapShard, /englishSeoSitemapCategories\.map/)
   assert.match(sitemapShard, /getEnglishSeoSitemapAreas\(\)/)
-  assert.match(seoSitemapPlaces, /prioritySitemapPlaceSlugs/)
+  assert.match(seoSitemapPlaces, /prioritySeoPlaceSlugs/)
+  assert.match(seoPriorityPlaces, /prioritySeoPlaceSlugs/)
+  assert.match(proxy, /isRetiredSeoLocalityPath/)
+  assert.match(proxy, /X-Autorell-Bot-Protection': 'retired-seo-locality'/)
   assert.match(seoSitemapPlaces, /priorityAreas = areas\.filter/)
 })
