@@ -19,7 +19,8 @@ const localizedReportRoute = readFileSync(new URL('../app/rapportera/page.tsx', 
 test('robots advertises the canonical XML sitemap for the request host', () => {
   assert.match(robots, /sitemapIndexUrlsForRequest\(request\)/)
   assert.match(robots, /sitemapIndexes\.map\(\(sitemap\) => `Sitemap: \$\{sitemap\}`\)/)
-  assert.match(robots, /Vary: 'Host, X-Forwarded-Host'/)
+  assert.match(robots, /'Vercel-CDN-Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'/)
+  assert.doesNotMatch(robots, /Vary: 'Host, X-Forwarded-Host'/)
   assert.doesNotMatch(robots, /getPublicMarketConfig/)
 })
 
@@ -65,7 +66,7 @@ test('generated sitemap shards advertise freshness without week-old CDN response
   assert.match(sitemapIndex, /<lastmod>\$\{lastModified\}<\/lastmod>/)
   assert.match(sitemapUtils, /generatedSitemapLastModified = '\d{4}-\d{2}-\d{2}'/)
   assert.match(sitemapUtils, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)
-  assert.doesNotMatch(sitemapUtils, /stale-while-revalidate=604800/)
+  assert.match(sitemapUtils, /'Vercel-CDN-Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800'/)
   assert.doesNotMatch(sitemapUtils, /generatedSitemapLastModified\s*=\s*new Date/)
 })
 

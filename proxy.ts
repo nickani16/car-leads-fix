@@ -32,6 +32,7 @@ const MARKET_BY_HOST: Record<string, Market> = {
 
 const SEARCH_CRAWLER_PATTERN =
   /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|applebot/i
+const GOOGLE_OTHER_PATTERN = /googleother/i
 const SUSPICIOUS_BOT_PATTERN =
   /ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|claudebot|gptbot|ccbot|perplexitybot|amazonbot|python-requests|scrapy|curl|wget|go-http-client|headlesschrome/i
 const GENERIC_BOT_PATTERN = /bot|crawler|spider|scraper|crawl/i
@@ -835,6 +836,15 @@ export async function proxy(request: NextRequest) {
   const selectedMarket = request.nextUrl.searchParams.get(MARKET_SELECTION_PARAM)
   const selectedLanguage = request.nextUrl.searchParams.get('language')
   const pathname = request.nextUrl.pathname
+  if (methodCanRedirect && GOOGLE_OTHER_PATTERN.test(request.headers.get('user-agent') || '')) {
+    return new NextResponse('Forbidden', {
+      status: 403,
+      headers: {
+        'Cache-Control': 'no-store',
+        'X-Autorell-Bot-Protection': 'google-other-blocked',
+      },
+    })
+  }
   const botProtectionResponse = protectExpensiveCrawlSurfaces(request, pathname)
   if (botProtectionResponse) return botProtectionResponse
 
