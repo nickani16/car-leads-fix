@@ -876,7 +876,7 @@ export async function proxy(request: NextRequest) {
   if (
     methodCanRedirect &&
     SEARCH_CRAWLER_PATTERN.test(request.headers.get('user-agent') || '') &&
-    isRetiredSeoLocalityPath(pathname)
+    isRetiredSeoLocalityPath(pathname, hostname)
   ) {
     return new NextResponse('Gone', {
       status: 410,
@@ -1716,7 +1716,7 @@ export const config = {
   ],
 }
 
-function isRetiredSeoLocalityPath(pathname: string) {
+function isRetiredSeoLocalityPath(pathname: string, hostname: string) {
   const segments = pathname.split('/').filter(Boolean)
   let countryCode: string | undefined
   let routeParts: string[]
@@ -1724,6 +1724,12 @@ function isRetiredSeoLocalityPath(pathname: string) {
   if (isEnglishSeoVehiclePath(segments)) {
     countryCode = ENGLISH_SEO_COUNTRIES[segments[1] || '']
     routeParts = segments.slice(2)
+  } else if (
+    (hostname === MARKET_HOSTS.sv || hostname === MARKET_HOSTS.de) &&
+    isSeoVehiclePath(hostname === MARKET_HOSTS.sv ? 'se' : 'de', segments)
+  ) {
+    countryCode = hostname === MARKET_HOSTS.sv ? 'SE' : 'DE'
+    routeParts = segments.slice(1)
   } else if (segments.length >= 2 && isSeoVehiclePath(segments[0] || '', segments.slice(1))) {
     countryCode = SEO_MARKET_COUNTRIES[segments[0] || '']
     routeParts = segments.slice(2)
