@@ -40,8 +40,7 @@ export function GET(request: Request) {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
-      'Vercel-CDN-Cache-Control': 's-maxage=86400, stale-while-revalidate=604800',
-      Vary: 'Host, X-Forwarded-Host',
+      'Vercel-CDN-Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
     },
   })
 }
